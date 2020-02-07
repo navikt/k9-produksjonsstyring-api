@@ -162,5 +162,5 @@ jobs:
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.DEPLOY_KEY }}
-          CLUSTER: dev-fss
+          CLUSTER: prod-fss
           RESOURCE: nais/prod-fss.yml

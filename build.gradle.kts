@@ -35,10 +35,8 @@ dependencies {
     testImplementation ("io.ktor:ktor-server-test-host:1.3.0") {
         exclude(group = "org.eclipse.jetty")
     }
-    testCompile("org.skyscreamer:jsonassert:1.5.0")
+    testImplementation("org.skyscreamer:jsonassert:1.5.0")
     implementation(kotlin("stdlib-jdk8"))
-
-    testCompile ("org.skyscreamer:jsonassert:1.5.0")
 }
 
 repositories {
