@@ -1,0 +1,54 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: k9-los-api
+  namespace: default
+  labels:
+    team: {{team}}
+spec:
+  image: {{ image }}:{{ tag }}
+  port: 8080
+  liveness:
+    path: isalive
+    initialDelay: 20
+    timeout: 1
+    periodSeconds: 5
+    failureThreshold: 10
+  readiness:
+    path: isready
+    initialDelay: 20
+    timeout: 1
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  ingresses:
+    - https://k9-los-api.nais.preprod.local
+  replicas:
+    min: 1
+    max: 1
+    cpuThresholdPercentage: 90
+  prometheus:
+    enabled: true
+    path: /metrics
+  vault:
+    enabled: true
+  webproxy: true
+  env:
+    - name: DOKARKIV_BASE_URL
+      value: https://dokarkiv-q1.nais.preprod.local
+    - name: NAIS_STS_DISCOVERY_ENDPOINT
+      value: https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration
+    - name: AZURE_CLIENT_ID
+      value: b32ae17c-0276-4006-9507-4ef49e0e5e20
+    - name: AZURE_AUTHORIZED_CLIENTS
+      value: a6aef297-b9c9-4cac-82be-060d4fa68bb8
+    - name: AZURE_V1_DISCOVERY_ENDPOINT
+      value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/.well-known/openid-configuration
+    - name: AZURE_V2_DISCOVERY_ENDPOINT
+      value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0/.well-known/openid-configuration
+    - name: HENTE_DOKUMENT_SCOPES
+      value: 97f0b1bc-6aa9-4d44-a3c7-60b4318fbec4/.default
