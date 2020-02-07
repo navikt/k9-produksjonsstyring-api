@@ -1,2 +1,2 @@
-# k9-produksjonsstyring-api
-Produksjonsstyring for kapittel 9
+# k9-los-api
+Los for kapittel 9

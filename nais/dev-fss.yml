@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: k9-produksjonsstyring-api
+  name: k9-los-api
   namespace: default
   labels:
     team: {{team}}
@@ -26,7 +26,7 @@ spec:
       cpu: 200m
       memory: 512Mi
   ingresses:
-    - https://k9-produksjonsstyring-api.nais.preprod.local
+    - https://k9-los-api.nais.preprod.local
   replicas:
     min: 1
     max: 1

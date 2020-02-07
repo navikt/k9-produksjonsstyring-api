@@ -28,7 +28,7 @@ import java.net.URI
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @KtorExperimentalAPI
-fun Application.k9Produksjonsstyring() {
+fun Application.k9Los() {
     val appId = environment.config.id()
     logProxyProperties()
     DefaultExports.initialize()

@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val ktorVersion = ext.get("ktorVersion").toString()
 val dusseldorfKtorVersion = "1.3.0.b7013ab"
 val pdfBoxVersion = "2.0.16"
-val mainClass = "no.nav.helse.k9Produksjonsstyring"
+val mainClass = "no.nav.helse.k9Los"
 
 plugins {
     kotlin("jvm") version "1.3.50"

@@ -14,7 +14,7 @@ object TestConfiguration {
             dokarkivUrl : String? = wireMockServer?.getDokarkivUrl(),
 
             azureAuthorizedClients: Set<String> = setOf("azure-client-1", "azure-client-2","azure-client-3"),
-            k9ProduksjonsstyringAzureClientId: String = "k9-produkjsonsstyring-api"
+            k9LosAzureClientId: String = "k9-produkjsonsstyring-api"
 
     ) : Map<String, String>{
         val map = mutableMapOf(
@@ -44,14 +44,14 @@ object TestConfiguration {
             map["nav.auth.issuers.0.type"] = "azure"
             map["nav.auth.issuers.0.alias"] = "azure-v1"
             map["nav.auth.issuers.0.discovery_endpoint"] = wireMockServer.getAzureV1WellKnownUrl()
-            map["nav.auth.issuers.0.audience"] = k9ProduksjonsstyringAzureClientId
+            map["nav.auth.issuers.0.audience"] = k9LosAzureClientId
             map["nav.auth.issuers.0.azure.require_certificate_client_authentication"] = "true"
             map["nav.auth.issuers.0.azure.authorized_clients"] = azureAuthorizedClients.joinToString(",")
 
             map["nav.auth.issuers.1.type"] = "azure"
             map["nav.auth.issuers.1.alias"] = "azure-v2"
             map["nav.auth.issuers.1.discovery_endpoint"] = wireMockServer.getAzureV2WellKnownUrl()
-            map["nav.auth.issuers.1.audience"] = k9ProduksjonsstyringAzureClientId
+            map["nav.auth.issuers.1.audience"] = k9LosAzureClientId
             map["nav.auth.issuers.1.azure.require_certificate_client_authentication"] = "true"
             map["nav.auth.issuers.1.azure.authorized_clients"] = azureAuthorizedClients.joinToString(",")
         }

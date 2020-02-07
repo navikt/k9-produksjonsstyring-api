@@ -35,10 +35,10 @@ internal class AccessTokenClientResolver(
 
         val azureV2Client = azureV2Client()
         accessTokenClient = if (azureV2Client == null) {
-            logger.info("Bruker Client[$NAIS_STS_ALIAS] ved kommunikasjon med k9-produksjonsstyring-api")
+            logger.info("Bruker Client[$NAIS_STS_ALIAS] ved kommunikasjon med k9-los-api")
             naisSts
         } else {
-            logger.info("Bruker Client[$AZURE_V2_ALIAS] ved kommunikasjon med k9-produksjonsstyring-api")
+            logger.info("Bruker Client[$AZURE_V2_ALIAS] ved kommunikasjon med k9-los-api")
             SignedJwtAccessTokenClient(
                 clientId = azureV2Client.clientId(),
                 tokenEndpoint = azureV2Client.tokenEndpoint(),
@@ -62,6 +62,6 @@ internal class AccessTokenClientResolver(
         return client as PrivateKeyClient
     }
 
-    internal fun k9ProduksjonsstyringApi() = naisSts
+    internal fun k9LosApi() = naisSts
     internal fun accessTokenClient() = accessTokenClient
 }

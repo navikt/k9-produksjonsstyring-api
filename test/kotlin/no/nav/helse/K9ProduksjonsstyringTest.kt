@@ -28,6 +28,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @KtorExperimentalAPI
-class K9ProduksjonsstyringTest {
+class K9LosTest {
 
 }
