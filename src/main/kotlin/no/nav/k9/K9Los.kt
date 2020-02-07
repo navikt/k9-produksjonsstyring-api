@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav.k9
 
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCallPipeline

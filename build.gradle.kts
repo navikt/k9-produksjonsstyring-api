@@ -5,6 +5,7 @@ val ktorVersion = ext.get("ktorVersion").toString()
 val dusseldorfKtorVersion = "1.3.0.b7013ab"
 val pdfBoxVersion = "2.0.16"
 val mainClass = "no.nav.helse.k9Los"
+val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -27,8 +28,8 @@ dependencies {
     implementation ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-oauth2-client:$dusseldorfKtorVersion")
 
-    // Bilde til PNG
-    implementation("org.apache.pdfbox:pdfbox:$pdfBoxVersion")
+    // Kafka
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
     // Test
     testImplementation ( "no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")

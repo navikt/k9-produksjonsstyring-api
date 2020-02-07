@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav.k9
 
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
