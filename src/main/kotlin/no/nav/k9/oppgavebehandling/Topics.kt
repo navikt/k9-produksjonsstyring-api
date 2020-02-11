@@ -22,8 +22,8 @@ internal data class Topic<V>(
 
 internal object Topics {
 
-    val OPPGAVE_OPPRETTET = Topic(
-        name = "privat-pleiepengesoknad-oppgaveOpprettet",
+    val AKSJONSPUNKT_LAGET = Topic(
+        name = "privat-k9-aksjonspunkthendelse-local",
         serDes = OppgaveOpprettetSerDes()
     )
 }

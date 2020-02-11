@@ -7,10 +7,9 @@ import no.nav.k9.kafka.KafkaConfig
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Consumed
-import org.apache.kafka.streams.kstream.Produced
 import org.slf4j.LoggerFactory
 
-internal class OpprettOppgaveStream(
+internal class AksjonspunktStream(
     kafkaConfig: KafkaConfig
 ) {
 
@@ -30,13 +29,12 @@ internal class OpprettOppgaveStream(
 
         private fun topology() : Topology {
             val builder = StreamsBuilder()
-            val fromTopic = Topics.OPPGAVE_OPPRETTET
-            val toTopic = Topics.OPPGAVE_OPPRETTET
+            val fromTopic = Topics.AKSJONSPUNKT_LAGET
 
             builder
                 .stream<String, TopicEntry<Any>>(fromTopic.name, Consumed.with(fromTopic.keySerde, fromTopic.valueSerde))
+                // behandle stream
 
-                .to(toTopic.name, Produced.with(toTopic.keySerde, toTopic.valueSerde))
             return builder.build()
         }
     }
