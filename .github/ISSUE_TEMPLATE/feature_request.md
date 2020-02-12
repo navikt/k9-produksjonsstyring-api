@@ -10,7 +10,7 @@ assignees: ''
 **Er featuren relatert til et problem**
 Beskriv problemet
 
-**Beskriv løsningen du lnsker**
+**Beskriv løsningen du ønsker**
 Hva skal skje?
 
 **Annen relevant informasjon**
