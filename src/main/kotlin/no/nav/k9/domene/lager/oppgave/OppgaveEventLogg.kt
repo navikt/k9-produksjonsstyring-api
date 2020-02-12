@@ -4,11 +4,10 @@ import java.time.LocalDateTime
 import java.util.*
 
 class OppgaveEventLogg(
-    private val id: Long,
     val behandlingId: Long,
     var eventType: OppgaveEventType,
-    var andreKriterierType: AndreKriterierType,
+    var andreKriterierType: AndreKriterierType?,
     var behandlendeEnhet: String,
-    var fristTid: LocalDateTime,
+    var fristTid: LocalDateTime?,
     var eksternId: UUID
 )

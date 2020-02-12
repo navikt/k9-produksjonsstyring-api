@@ -1,9 +1,10 @@
-package no.nav.k9.oppgavebehandling
+package no.nav.k9.aksjonspunktbehandling
 
 import no.nav.helse.kafka.ManagedKafkaStreams
 import no.nav.helse.kafka.ManagedStreamHealthy
 import no.nav.helse.kafka.ManagedStreamReady
 import no.nav.k9.kafka.KafkaConfig
+import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Consumed
@@ -24,7 +25,7 @@ internal class AksjonspunktStream(
     internal val healthy = ManagedStreamHealthy(stream)
 
     private companion object {
-        private const val NAME = "OpprettOppgaveV1"
+        private const val NAME = "AksjonspunktLagetV1"
         private val logger = LoggerFactory.getLogger("no.nav.$NAME.topology")
 
         private fun topology() : Topology {
@@ -32,9 +33,11 @@ internal class AksjonspunktStream(
             val fromTopic = Topics.AKSJONSPUNKT_LAGET
 
             builder
-                .stream<String, TopicEntry<Any>>(fromTopic.name, Consumed.with(fromTopic.keySerde, fromTopic.valueSerde))
-                // behandle stream
-
+                .stream<String, TopicEntry<BehandlingProsessEventDto>>(fromTopic.name, Consumed.with(fromTopic.keySerde, fromTopic.valueSerde))
+                .foreach { _, topicEntry ->
+                    val event = topicEntry.data
+                    K9sakEventHandler().prosesser(event)
+                }
             return builder.build()
         }
     }

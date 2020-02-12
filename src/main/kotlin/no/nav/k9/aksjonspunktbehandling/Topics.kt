@@ -1,9 +1,10 @@
-package no.nav.k9.oppgavebehandling
+package no.nav.k9.aksjonspunktbehandling
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
+import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.serialization.Serializer
@@ -21,10 +22,9 @@ internal data class Topic<V>(
 }
 
 internal object Topics {
-
     val AKSJONSPUNKT_LAGET = Topic(
         name = "privat-k9-aksjonspunkthendelse-local",
-        serDes = OppgaveOpprettetSerDes()
+        serDes = AksjosnpunktLaget()
     )
 }
 
@@ -41,8 +41,8 @@ internal abstract class SerDes<V> : Serializer<V>, Deserializer<V> {
     override fun close() {}
 }
 
-private class OppgaveOpprettetSerDes: SerDes<TopicEntry<Any>>() {
-    override fun deserialize(topic: String?, data: ByteArray?): TopicEntry<Any>? {
+private class AksjosnpunktLaget: SerDes<TopicEntry<BehandlingProsessEventDto>>() {
+    override fun deserialize(topic: String?, data: ByteArray?): TopicEntry<BehandlingProsessEventDto>? {
         return data?.let {
             objectMapper.readValue(it)
         }
