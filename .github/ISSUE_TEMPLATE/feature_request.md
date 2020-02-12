@@ -1,6 +1,6 @@
 ---
 name: Feature
-about: ''
+about: 'Feature request'
 title: ''
 labels: ''
 assignees: ''
