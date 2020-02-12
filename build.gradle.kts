@@ -6,6 +6,9 @@ val dusseldorfKtorVersion = "1.3.0.b7013ab"
 val pdfBoxVersion = "2.0.16"
 val mainClass = "no.nav.helse.k9Los"
 val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
+val hikariVersion = "3.3.1"
+val flywayVersion = "6.0.8"
+val vaultJdbcVersion = "1.3.1"
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -23,7 +26,12 @@ dependencies {
     implementation ( "no.nav.helse:dusseldorf-ktor-metrics:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-ktor-health:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-ktor-auth:$dusseldorfKtorVersion")
-    
+
+    // Database
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("no.nav:vault-jdbc:$vaultJdbcVersion")
+
     // Client
     implementation ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-oauth2-client:$dusseldorfKtorVersion")

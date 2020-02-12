@@ -3,6 +3,7 @@ package no.nav.k9.aksjonspunktbehandling
 import no.nav.helse.kafka.ManagedKafkaStreams
 import no.nav.helse.kafka.ManagedStreamHealthy
 import no.nav.helse.kafka.ManagedStreamReady
+import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.kafka.KafkaConfig
 import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
 import org.apache.kafka.streams.StreamsBuilder
@@ -11,13 +12,14 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.slf4j.LoggerFactory
 
 internal class AksjonspunktStream(
-    kafkaConfig: KafkaConfig
+    kafkaConfig: KafkaConfig,
+    oppgaveRepository: OppgaveRepository
 ) {
 
     private val stream = ManagedKafkaStreams(
         name = NAME,
         properties = kafkaConfig.stream(NAME),
-        topology = topology(),
+        topology = topology(oppgaveRepository = oppgaveRepository),
         unreadyAfterStreamStoppedIn = kafkaConfig.unreadyAfterStreamStoppedIn
     )
 
@@ -28,7 +30,7 @@ internal class AksjonspunktStream(
         private const val NAME = "AksjonspunktLagetV1"
         private val logger = LoggerFactory.getLogger("no.nav.$NAME.topology")
 
-        private fun topology() : Topology {
+        private fun topology(oppgaveRepository: OppgaveRepository): Topology {
             val builder = StreamsBuilder()
             val fromTopic = Topics.AKSJONSPUNKT_LAGET
 
@@ -36,7 +38,7 @@ internal class AksjonspunktStream(
                 .stream<String, TopicEntry<BehandlingProsessEventDto>>(fromTopic.name, Consumed.with(fromTopic.keySerde, fromTopic.valueSerde))
                 .foreach { _, topicEntry ->
                     val event = topicEntry.data
-                    K9sakEventHandler().prosesser(event)
+                    K9sakEventHandler(oppgaveRepository = oppgaveRepository).prosesser(event)
                 }
             return builder.build()
         }

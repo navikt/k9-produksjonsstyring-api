@@ -23,6 +23,9 @@ import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
+import no.nav.k9.db.hikariConfig
+import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import java.net.URI
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -66,7 +69,12 @@ fun Application.k9Los() {
 //            ))
 //    )
 
-
+    val dataSource = hikariConfig()
+    val oppgaveRepository = OppgaveRepository(dataSource)
+    val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
+        kafkaConfig = configuration.getKafkaConfig(),
+        oppgaveRepository = oppgaveRepository
+    )
     install(CallIdRequired)
 
     install(Routing) {

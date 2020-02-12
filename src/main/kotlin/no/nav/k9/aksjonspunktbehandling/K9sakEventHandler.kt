@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 
-class K9sakEventHandler() {
+class K9sakEventHandler(val oppgaveRepository: OppgaveRepository) {
 
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
@@ -25,7 +25,7 @@ class K9sakEventHandler() {
 
         val eksternId = behandling.uuid
 
-        val tidligereEventer = OppgaveRepository().hentEventer(eksternId)
+        val tidligereEventer = oppgaveRepository.hentEventer(eksternId)
         val aksjonspunkter = behandling.aksjonspunkter
         val oppgaveEgenskapFinner = OppgaveEgenskapFinner(behandling, tidligereEventer, aksjonspunkter)
 
@@ -57,7 +57,7 @@ class K9sakEventHandler() {
             }
             EventResultat.GJENÅPNE_OPPGAVE -> {
                 log.info("Gjenåpner oppgave")
-                val gjenåpneOppgave = OppgaveRepository().gjenåpneOppgave(event.eksternId);
+                val gjenåpneOppgave = oppgaveRepository.gjenåpneOppgave(event.eksternId);
                 loggEvent(
                     behandlingId = behandlingId,
                     eksternId = gjenåpneOppgave.eksternId,
@@ -132,8 +132,9 @@ class K9sakEventHandler() {
         eventType: OppgaveEventType,
         frist: LocalDateTime?
     ) {
-        OppgaveRepository().avsluttOppgave(event.behandlingId)
-        OppgaveRepository().lagre(
+        val oppgaveRepository = oppgaveRepository
+        oppgaveRepository.avsluttOppgave(event.behandlingId)
+        oppgaveRepository.lagre(
             OppgaveEventLogg(
                 eksternId = eksternId,
                 eventType = eventType,
@@ -152,7 +153,7 @@ class K9sakEventHandler() {
         andreKriterierType: AndreKriterierType?,
         behandlendeEnhet: String
     ) {
-        OppgaveRepository().lagre(
+        oppgaveRepository.lagre(
             OppgaveEventLogg(
                 eksternId = eksternId,
                 eventType = oppgaveEventType,
