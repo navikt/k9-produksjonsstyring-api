@@ -26,6 +26,15 @@ import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
+import no.nav.k9.tjenester.admin.AdminApis
+import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
+import no.nav.k9.tjenester.avdelingsleder.NavAnsattApis
+import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
+import no.nav.k9.tjenester.avdelingsleder.oppgave.AvdelingslederOppgaveApis
+import no.nav.k9.tjenester.avdelingsleder.saksbehandler.AvdelingslederSaksbehandlerApis
+import no.nav.k9.tjenester.avdelingsleder.saksliste.AvdelingslederSakslisteApis
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaverApis
+import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import java.net.URI
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -85,6 +94,16 @@ fun Application.k9Los() {
         }
         MetricsRoute()
         DefaultProbeRoutes()
+
+        AdminApis()
+        AvdelingslederApis()
+        AvdelingslederOppgaveApis()
+        AvdelingslederSaksbehandlerApis()
+        AvdelingslederSakslisteApis()
+        NøkkeltallApis()
+        OppgaverApis()
+        NavAnsattApis()
+        SaksbehandlerSakslisteApis()
 
     }
 
