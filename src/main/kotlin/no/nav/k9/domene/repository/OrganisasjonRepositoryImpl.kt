@@ -17,7 +17,7 @@
 //import no.nav.vedtak.felles.jpa.VLPersistenceUnit
 //
 //@ApplicationScoped
-//class OrganisasjonRepositoryImpl : OrganisasjonRepository {
+//class OrganisasjonRepositoryImpl : OrganisasjonRepository.kt {
 //
 //    internal val entityManager: EntityManager
 //

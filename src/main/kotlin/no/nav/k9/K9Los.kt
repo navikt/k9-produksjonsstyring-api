@@ -33,6 +33,7 @@ import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgave.AvdelingslederOppgaveApis
 import no.nav.k9.tjenester.avdelingsleder.saksbehandler.AvdelingslederSaksbehandlerApis
 import no.nav.k9.tjenester.avdelingsleder.saksliste.AvdelingslederSakslisteApis
+import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaverApis
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import java.net.URI
@@ -104,6 +105,7 @@ fun Application.k9Los() {
         OppgaverApis()
         NavAnsattApis()
         SaksbehandlerSakslisteApis()
+        SaksbehandlerNøkkeltallApis()
 
     }
 
