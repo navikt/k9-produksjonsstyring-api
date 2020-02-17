@@ -29,9 +29,9 @@ internal data class Configuration(private val config : ApplicationConfig) {
     private fun azureClientConfigured() = clients().containsKey(AZURE_V2_ALIAS)
 
     internal fun hikariConfig() = createHikariConfig(
-        jdbcUrl =  config.getRequiredString("db.url", secret = false),
-        username =  config.getRequiredString("db.username", secret = false),
-        password =  config.getRequiredString("db.password", secret = true)
+        jdbcUrl =  config.getRequiredString("nav.db.url", secret = false),
+        username =  config.getRequiredString("nav.db.username", secret = false),
+        password =  config.getRequiredString("nav.db.password", secret = true)
     )
 
     internal fun getKafkaConfig() =
