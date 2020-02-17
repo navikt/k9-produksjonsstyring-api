@@ -5,6 +5,11 @@ val ktorVersion = ext.get("ktorVersion").toString()
 val dusseldorfKtorVersion = "1.3.0.b7013ab"
 val pdfBoxVersion = "2.0.16"
 val mainClass = "no.nav.helse.k9Los"
+val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
+val hikariVersion = "3.3.1"
+val flywayVersion = "6.0.8"
+val vaultJdbcVersion = "1.3.1"
+val kafkaEmbeddedEnvVersion = "2.2.3"
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -22,21 +27,32 @@ dependencies {
     implementation ( "no.nav.helse:dusseldorf-ktor-metrics:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-ktor-health:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-ktor-auth:$dusseldorfKtorVersion")
-    
+
+    // Database
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("no.nav:vault-jdbc:$vaultJdbcVersion")
+
+    implementation ("io.ktor:ktor-locations:$ktorVersion")
+
     // Client
     implementation ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-oauth2-client:$dusseldorfKtorVersion")
 
-    // Bilde til PNG
-    implementation("org.apache.pdfbox:pdfbox:$pdfBoxVersion")
+    // Kafka
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
     // Test
+    testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
+    testImplementation ("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation ( "no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
     testImplementation ("io.ktor:ktor-server-test-host:1.3.0") {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
+
     implementation(kotlin("stdlib-jdk8"))
+
 }
 
 repositories {

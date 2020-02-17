@@ -1,8 +1,8 @@
-package no.nav.helse
+package no.nav.k9
 
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.helse.Configuration.Companion.AZURE_V2_ALIAS
-import no.nav.helse.Configuration.Companion.NAIS_STS_ALIAS
+import no.nav.k9.Configuration.Companion.AZURE_V2_ALIAS
+import no.nav.k9.Configuration.Companion.NAIS_STS_ALIAS
 import no.nav.helse.dusseldorf.ktor.auth.Client
 import no.nav.helse.dusseldorf.ktor.auth.ClientSecretClient
 import no.nav.helse.dusseldorf.ktor.auth.PrivateKeyClient

@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav.k9
 
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.httpGet
