@@ -20,19 +20,7 @@ fun createHikariConfig(jdbcUrl: String, username: String? = null, password: Stri
     }
 
 @KtorExperimentalAPI
-fun Application.createHikariConfigFromEnvironment() =
-    createHikariConfig(
-        jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s%s",
-            environment.config.property("database.host").getString(),
-            environment.config.property("database.port").getString(),
-            environment.config.property("database.name").getString(),
-            environment.config.propertyOrNull("database.username")?.getString()?.let {"?user=$it"}),
-        username = environment.config.propertyOrNull("database.username")?.getString(),
-        password = environment.config.propertyOrNull("database.password")?.getString()
-    )
-
-@KtorExperimentalAPI
-fun Application.hikariConfig(): HikariDataSource {
-    migrate(createHikariConfigFromEnvironment())
-    return getDataSource(createHikariConfigFromEnvironment())
+fun Application.hikariConfig(hikariConfig: HikariConfig): HikariDataSource {
+    migrate(hikariConfig)
+    return getDataSource(hikariConfig)
 }

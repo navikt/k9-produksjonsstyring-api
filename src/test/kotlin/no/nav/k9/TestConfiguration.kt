@@ -46,11 +46,9 @@ object TestConfiguration {
             map["nav.kafka.unready_after_stream_stopped_in.amount"] = "1010"
             map["nav.kafka.unready_after_stream_stopped_in.unit"] = "SECONDS"
         }
-        map["database.host"] = "localhost"
-        map["database.port"] = "5432"
-        map["database.name"] = "k9los"
-        map["database.username"] = "k9los"
-        map["database.password"] = "k9los"
+        map["db.url"] = "localhost"
+        map["db.username"] = "k9los"
+        map["db.password"] = "k9los"
         return map.toMap()
     }
     private fun String.getAsJson() = JSONObject(this.httpGet().responseString().third.component1())

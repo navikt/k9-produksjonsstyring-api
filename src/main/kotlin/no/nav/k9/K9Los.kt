@@ -77,7 +77,7 @@ fun Application.k9Los() {
 //            ))
 //    )
 
-    val dataSource = hikariConfig()
+    val dataSource = hikariConfig(configuration.hikariConfig())
     val oppgaveRepository = OppgaveRepository(dataSource)
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(

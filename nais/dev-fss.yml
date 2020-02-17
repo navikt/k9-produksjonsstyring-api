@@ -38,8 +38,6 @@ spec:
     enabled: true
   webproxy: true
   env:
-    - name: DOKARKIV_BASE_URL
-      value: https://dokarkiv-q1.nais.preprod.local
     - name: NAIS_STS_DISCOVERY_ENDPOINT
       value: https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration
     - name: AZURE_CLIENT_ID

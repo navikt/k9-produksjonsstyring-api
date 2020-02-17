@@ -1,13 +1,19 @@
 package no.nav.k9.aksjonspunktbehandling
 
+import no.nav.k9.domene.repository.BehandlingProsessEventRepository
+import no.nav.k9.domene.repository.OppgaveRepository
 import org.junit.Test
 
 
-class K9sakEventHandlerTest{
+class K9sakEventHandlerTest {
     @Test
     internal fun `opprettingOgAvsluttingTest`() {
-/*
-*       when(foreldrepengerBehandlingRestKlient.getBehandling(anyLong())).thenReturn(behandlingDtoFra(aksjonspunktKoderSkalHaOppgaveDto));
+
+   //     val k9sakEventHandler = K9sakEventHandler(OppgaveRepository(), BehandlingProsessEventRepository())
+
+
+
+/*       when(foreldrepengerBehandlingRestKlient.getBehandling(anyLong())).thenReturn(behandlingDtoFra(aksjonspunktKoderSkalHaOppgaveDto));
         fpsakEventHandler.prosesser(eventDrammenFra(aksjonspunktKoderSkalHaOppgave));
         when(foreldrepengerBehandlingRestKlient.getBehandling(anyLong())).thenReturn(behandlingDtoFra(aksjonspunktKoderPåVentDto));
         fpsakEventHandler.prosesser(eventDrammenFra(aksjonspunktKoderPåVent));
