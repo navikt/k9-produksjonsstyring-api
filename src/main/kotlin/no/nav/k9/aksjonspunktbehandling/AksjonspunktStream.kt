@@ -3,6 +3,7 @@ package no.nav.k9.aksjonspunktbehandling
 import no.nav.helse.kafka.ManagedKafkaStreams
 import no.nav.helse.kafka.ManagedStreamHealthy
 import no.nav.helse.kafka.ManagedStreamReady
+import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.kafka.KafkaConfig
 import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
@@ -13,13 +14,17 @@ import org.slf4j.LoggerFactory
 
 internal class AksjonspunktStream(
     kafkaConfig: KafkaConfig,
-    oppgaveRepository: OppgaveRepository
+    oppgaveRepository: OppgaveRepository,
+    behandlingProsessEventRepository: BehandlingProsessEventRepository
 ) {
 
     private val stream = ManagedKafkaStreams(
         name = NAME,
         properties = kafkaConfig.stream(NAME),
-        topology = topology(oppgaveRepository = oppgaveRepository),
+        topology = topology(
+            oppgaveRepository = oppgaveRepository,
+            behandlingProsessEventRepository = behandlingProsessEventRepository
+        ),
         unreadyAfterStreamStoppedIn = kafkaConfig.unreadyAfterStreamStoppedIn
     )
 
@@ -28,17 +33,26 @@ internal class AksjonspunktStream(
 
     private companion object {
         private const val NAME = "AksjonspunktLagetV1"
-        private val logger = LoggerFactory.getLogger("no.nav.$NAME.topology")
+        private val log = LoggerFactory.getLogger("no.nav.$NAME.topology")
 
-        private fun topology(oppgaveRepository: OppgaveRepository): Topology {
+        private fun topology(
+            oppgaveRepository: OppgaveRepository,
+            behandlingProsessEventRepository: BehandlingProsessEventRepository
+        ): Topology {
             val builder = StreamsBuilder()
             val fromTopic = Topics.AKSJONSPUNKT_LAGET
 
             builder
-                .stream<String, TopicEntry<BehandlingProsessEventDto>>(fromTopic.name, Consumed.with(fromTopic.keySerde, fromTopic.valueSerde))
+                .stream<String, TopicEntry<BehandlingProsessEventDto>>(
+                    fromTopic.name,
+                    Consumed.with(fromTopic.keySerde, fromTopic.valueSerde)
+                )
                 .foreach { _, topicEntry ->
                     val event = topicEntry.data
-                    K9sakEventHandler(oppgaveRepository = oppgaveRepository).prosesser(event)
+                    K9sakEventHandler(
+                        oppgaveRepository = oppgaveRepository,
+                        behandlingProsessEventRepository = behandlingProsessEventRepository
+                    ).prosesser(event)
                 }
             return builder.build()
         }

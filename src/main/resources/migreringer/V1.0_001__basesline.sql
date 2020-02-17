@@ -52,3 +52,10 @@ create table if not exists EVENTMOTTAK_FEILLOGG
     ENDRET_TID    TIMESTAMP(3),
     VENT_AARSAK   VARCHAR(100) DEFAULT '-'               NOT NULL
 );
+
+
+create table if not exists BEHANDLING_PROSESS_EVENTS_K9
+(
+    ID   VARCHAR(100) NOT NULL PRIMARY KEY,
+    DATA jsonb        NOT NULL
+);

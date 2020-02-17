@@ -1,12 +1,12 @@
 package no.nav.k9.aksjonspunktbehandling
 
-import no.nav.k9.aksjonspunktbehandling.eventresultat.EventResultat
+import no.nav.k9.aksjonspunktbehandling.eventresultat.EventResultat.*
 import no.nav.k9.aksjonspunktbehandling.eventresultat.K9SakEventMapper
-import no.nav.k9.domene.lager.oppgave.AndreKriterierType
-import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.lager.oppgave.OppgaveEventLogg
-import no.nav.k9.domene.lager.oppgave.OppgaveEventType
+import no.nav.k9.domene.lager.oppgave.*
+import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.sisteBehandling
+import no.nav.k9.domene.repository.sisteOppgave
 import no.nav.k9.integrasjon.Aksjonspunkt
 import no.nav.k9.integrasjon.BehandlingK9sak
 import no.nav.k9.integrasjon.K9SakRestKlient
@@ -15,49 +15,50 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 
-class K9sakEventHandler(val oppgaveRepository: OppgaveRepository) {
-
+class K9sakEventHandler(
+    val oppgaveRepository: OppgaveRepository,
+    val behandlingProsessEventRepository: BehandlingProsessEventRepository
+) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
     fun prosesser(event: BehandlingProsessEventDto) {
-        val behandlingId = event.behandlingId
-        val behandling = K9SakRestKlient().getBehandling(behandlingId)
 
-        val eksternId = behandling.uuid
+        // event til oppgave
+        val behandling = K9SakRestKlient().getBehandling(behandlingId = event.behandlingId)
+        val eventer =
+            behandlingProsessEventRepository.lagreBehandlingProsessEvent(event, behandling)
 
-        val tidligereEventer = oppgaveRepository.hentEventer(eksternId)
-        val aksjonspunkter = behandling.aksjonspunkter
-        val oppgaveEgenskapFinner = OppgaveEgenskapFinner(behandling, tidligereEventer, aksjonspunkter)
+        val behandlingId = eventer.behandlingsId
 
-        val eventResultat =
-            K9SakEventMapper().signifikantEventFra(aksjonspunkter, tidligereEventer, event.behandlendeEnhet)
+        val sisteBehandling = eventer.sisteBehandling()
+        val eksternId = sisteBehandling.uuid
+      //    val oppgaveEgenskapFinner = OppgaveEgenskapFinner(behandling, tidligereEventer, aksjonspunkter)
 
-        when (eventResultat) {
-            EventResultat.LUKK_OPPGAVE -> {
+        when (K9SakEventMapper().signifikantEventFra(eventer)) {
+            LUKK_OPPGAVE -> {
                 log.info("Lukker oppgave")
-                avsluttOppgaveOgLoggEvent(eksternId, event, eventType = OppgaveEventType.LUKKET, frist = null)
+                eventer.sisteOppgave().behandlingStatus = BehandlingStatus.AVSLUTTET
+                eventer.sisteOppgave().eventType = OppgaveEventType.LUKKET
+
             }
-            EventResultat.LUKK_OPPGAVE_VENT -> {
+            LUKK_OPPGAVE_VENT -> {
                 log.info("Behandling satt automatisk på vent, lukker oppgave.")
-                avsluttOppgaveOgLoggEvent(
-                    eksternId,
-                    event,
-                    OppgaveEventType.VENT,
-                    finnVentAksjonspunktFrist(aksjonspunkter)
-                )
+                eventer.sisteOppgave().behandlingStatus = BehandlingStatus.AVSLUTTET
+                eventer.sisteOppgave().eventType = OppgaveEventType.VENT
             }
-            EventResultat.LUKK_OPPGAVE_MANUELT_VENT -> {
+            LUKK_OPPGAVE_MANUELT_VENT -> {
                 log.info("Behandling satt manuelt på vent, lukker oppgave.")
-                avsluttOppgaveOgLoggEvent(
-                    eksternId,
-                    event,
-                    OppgaveEventType.MANU_VENT,
-                    finnManuellAksjonspunktFrist(aksjonspunkter)
-                )
+                eventer.sisteOppgave().behandlingStatus = BehandlingStatus.AVSLUTTET
+                eventer.sisteOppgave().eventType = OppgaveEventType.MANU_VENT
             }
-            EventResultat.GJENÅPNE_OPPGAVE -> {
+
+            GJENÅPNE_OPPGAVE -> {
                 log.info("Gjenåpner oppgave")
                 val gjenåpneOppgave = oppgaveRepository.gjenåpneOppgave(event.eksternId);
+
+                eventer.sisteOppgave().behandlingStatus = BehandlingStatus.OPPRETTET
+                eventer.sisteOppgave().eventType = OppgaveEventType.GJENAPNET
+
                 loggEvent(
                     behandlingId = behandlingId,
                     eksternId = gjenåpneOppgave.eksternId,
@@ -65,12 +66,12 @@ class K9sakEventHandler(val oppgaveRepository: OppgaveRepository) {
                     andreKriterierType = null,
                     behandlendeEnhet = event.behandlendeEnhet
                 )
-                OppgaveEgenskapHandler().håndterOppgaveEgenskaper(gjenåpneOppgave, oppgaveEgenskapFinner)
+         //       OppgaveEgenskapHandler().håndterOppgaveEgenskaper(gjenåpneOppgave, oppgaveEgenskapFinner)
             }
-            EventResultat.OPPRETT_BESLUTTER_OPPGAVE -> {
-                avsluttOppgaveHvisÅpen(behandlingId, eksternId, tidligereEventer, event.behandlendeEnhet)
+            OPPRETT_BESLUTTER_OPPGAVE -> {
+           //     avsluttOppgaveHvisÅpen(behandlingId, eksternId, tidligereEventer, event.behandlendeEnhet)
                 val oppgave = nyOppgave(eksternId, event, behandling)
-                reserverOppgaveFraTidligereReservasjon(null, oppgave.id)
+                reserverOppgaveFraTidligereReservasjon(null)
                 loggEvent(
                     behandlingId = behandlingId,
                     eksternId = oppgave.eksternId,
@@ -78,12 +79,12 @@ class K9sakEventHandler(val oppgaveRepository: OppgaveRepository) {
                     andreKriterierType = AndreKriterierType.TIL_BESLUTTER,
                     behandlendeEnhet = event.behandlendeEnhet
                 )
-                OppgaveEgenskapHandler().håndterOppgaveEgenskaper(oppgave, oppgaveEgenskapFinner)
+      //          OppgaveEgenskapHandler().håndterOppgaveEgenskaper(oppgave, oppgaveEgenskapFinner)
             }
-            EventResultat.OPPRETT_PAPIRSØKNAD_OPPGAVE -> {
-                avsluttOppgaveHvisÅpen(behandlingId, eksternId, tidligereEventer, event.behandlendeEnhet)
+            OPPRETT_PAPIRSØKNAD_OPPGAVE -> {
+        //        avsluttOppgaveHvisÅpen(behandlingId, eksternId, tidligereEventer, event.behandlendeEnhet)
                 val oppgave = nyOppgave(eksternId, event, behandling)
-                reserverOppgaveFraTidligereReservasjon(null, oppgave.id)
+                reserverOppgaveFraTidligereReservasjon(null)
                 loggEvent(
                     behandlingId = behandlingId,
                     eksternId = oppgave.eksternId,
@@ -91,12 +92,12 @@ class K9sakEventHandler(val oppgaveRepository: OppgaveRepository) {
                     andreKriterierType = AndreKriterierType.PAPIRSØKNAD,
                     behandlendeEnhet = event.behandlendeEnhet
                 )
-                OppgaveEgenskapHandler().håndterOppgaveEgenskaper(oppgave, oppgaveEgenskapFinner)
+        //        OppgaveEgenskapHandler().håndterOppgaveEgenskaper(oppgave, oppgaveEgenskapFinner)
             }
-            EventResultat.OPPRETT_OPPGAVE -> {
-                avsluttOppgaveHvisÅpen(behandlingId, eksternId, tidligereEventer, event.behandlendeEnhet)
+            OPPRETT_OPPGAVE -> {
+         //       avsluttOppgaveHvisÅpen(behandlingId, eksternId, tidligereEventer, event.behandlendeEnhet)
                 val oppgave = nyOppgave(eksternId, event, behandling)
-                reserverOppgaveFraTidligereReservasjon(null, oppgave.id)
+                reserverOppgaveFraTidligereReservasjon(null)
                 loggEvent(
                     behandlingId = behandlingId,
                     eksternId = oppgave.eksternId,
@@ -104,17 +105,36 @@ class K9sakEventHandler(val oppgaveRepository: OppgaveRepository) {
                     andreKriterierType = null,
                     behandlendeEnhet = event.behandlendeEnhet
                 )
-                OppgaveEgenskapHandler().håndterOppgaveEgenskaper(oppgave, oppgaveEgenskapFinner)
+            //    OppgaveEgenskapHandler().håndterOppgaveEgenskaper(oppgave, oppgaveEgenskapFinner)
             }
         }
     }
 
-    private fun reserverOppgaveFraTidligereReservasjon(nothing: Nothing?, id: Long) {
+    private fun reserverOppgaveFraTidligereReservasjon(nothing: Nothing?) {
         TODO("Not yet implemented")
     }
 
     private fun nyOppgave(eksternId: UUID, event: BehandlingProsessEventDto, behandling: BehandlingK9sak): Oppgave {
-        TODO("Not yet implemented")
+        val oppgave = Oppgave(
+            behandlingId = event.behandlingId,
+            fagsakSaksnummer = event.saksnummer.toLong(),
+            aktorId = event.aktørId.toLong(),
+            behandlendeEnhet = event.behandlendeEnhet,
+            behandlingType = BehandlingType.valueOf(event.behandlingTypeKode),
+            fagsakYtelseType = FagsakYtelseType.valueOf(event.ytelseTypeKode),
+            aktiv = true,
+            forsteStonadsdag = behandling.førsteUttaksdag,
+            utfortFraAdmin = false,
+            behandlingsfrist = behandling.behandlingstidFrist.atStartOfDay(),
+            behandlingStatus = BehandlingStatus.valueOf(behandling.status),
+            eksternId = eksternId,
+            behandlingOpprettet = event.opprettetBehandling,
+            oppgaveAvsluttet = null,
+            reservasjon = null,
+            system = event.fagsystem.name
+        )
+        oppgaveRepository.opprettOppgave(oppgave)
+        return oppgave
     }
 
     private fun avsluttOppgaveHvisÅpen(
@@ -123,7 +143,16 @@ class K9sakEventHandler(val oppgaveRepository: OppgaveRepository) {
         tidligereEventer: List<OppgaveEventLogg>,
         behandlendeEnhet: String
     ) {
-        TODO("Not yet implemented")
+        if (!tidligereEventer.isEmpty() && tidligereEventer[0].eventType.erÅpningsevent()) {
+            loggEvent(
+                behandlingId = behandlingId,
+                eksternId = eksternId,
+                oppgaveEventType = OppgaveEventType.LUKKET,
+                andreKriterierType = null,
+                behandlendeEnhet = behandlendeEnhet
+            )
+            //  oppgaveRepository.avsluttOppgave(eksternId)
+        }
     }
 
     private fun avsluttOppgaveOgLoggEvent(
@@ -132,8 +161,11 @@ class K9sakEventHandler(val oppgaveRepository: OppgaveRepository) {
         eventType: OppgaveEventType,
         frist: LocalDateTime?
     ) {
+
         val oppgaveRepository = oppgaveRepository
-        oppgaveRepository.avsluttOppgave(event.behandlingId)
+        val oppgave = oppgaveRepository.hentOppgave(event.eksternId)
+        oppgave.behandlingStatus = BehandlingStatus.AVSLUTTET
+        oppgaveRepository.opprettEllerEndreOppgave(oppgave)
         oppgaveRepository.lagre(
             OppgaveEventLogg(
                 eksternId = eksternId,

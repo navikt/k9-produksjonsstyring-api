@@ -1,9 +1,6 @@
 package no.nav.k9
 
-import io.ktor.application.Application
-import io.ktor.application.ApplicationCallPipeline
-import io.ktor.application.call
-import io.ktor.application.install
+import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
 import io.ktor.features.CallId
@@ -24,6 +21,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.db.hikariConfig
+import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.tjenester.admin.AdminApis
@@ -81,10 +79,19 @@ fun Application.k9Los() {
 
     val dataSource = hikariConfig()
     val oppgaveRepository = OppgaveRepository(dataSource)
+    val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
         kafkaConfig = configuration.getKafkaConfig(),
-        oppgaveRepository = oppgaveRepository
+        oppgaveRepository = oppgaveRepository,
+        behandlingProsessEventRepository = behandlingProsessEventRepository
     )
+
+    environment.monitor.subscribe(ApplicationStopping) {
+        log.info("Stopper AsynkronProsesseringV1Service.")
+        asynkronProsesseringV1Service.stop()
+        log.info("AsynkronProsesseringV1Service Stoppet.")
+    }
+
     install(CallIdRequired)
 
     install(Routing) {
