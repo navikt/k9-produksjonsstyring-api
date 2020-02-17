@@ -43,10 +43,14 @@ object TestConfiguration {
             map["nav.kafka.bootstrap_servers"] = it.brokersURL
             map["nav.kafka.username"] = it.username()
             map["nav.kafka.password"] = it.password()
+            map["nav.kafka.unready_after_stream_stopped_in.amount"] = "1010"
+            map["nav.kafka.unready_after_stream_stopped_in.unit"] = "SECONDS"
         }
         map["database.host"] = "localhost"
         map["database.port"] = "5432"
         map["database.name"] = "k9los"
+        map["database.username"] = "k9los"
+        map["database.password"] = "k9los"
         return map.toMap()
     }
     private fun String.getAsJson() = JSONObject(this.httpGet().responseString().third.component1())
