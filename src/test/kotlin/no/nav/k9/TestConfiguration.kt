@@ -13,7 +13,7 @@ object TestConfiguration {
     fun asMap(
         wireMockServer: WireMockServer? = null,
         kafkaEnvironment: KafkaEnvironment? = null,
-        port : Int = 8080
+        port : Int = 8020
     ) : Map<String, String>{
         val map = mutableMapOf(
             Pair("ktor.deployment.port","$port")
