@@ -23,7 +23,7 @@ internal data class Topic<V>(
 
 internal object Topics {
     val AKSJONSPUNKT_LAGET = Topic(
-        name = "privat-k9-aksjonspunkthendelse-local",
+        name = "privat-foreldrepenger-aksjonspunkthendelse-local",
         serDes = AksjosnpunktLaget()
     )
 }

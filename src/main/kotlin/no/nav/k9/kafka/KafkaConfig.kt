@@ -13,7 +13,7 @@ import java.time.Duration
 import java.util.*
 
 private val logger: Logger = LoggerFactory.getLogger(KafkaConfig::class.java)
-private const val ID_PREFIX = "srvpps-prosessering-"
+private const val ID_PREFIX = "srvpps-k9los-"
 
 internal class KafkaConfig(
     bootstrapServers: String,
@@ -40,7 +40,6 @@ private fun Properties.medProcessingGuarantee(exactlyOnce: Boolean) {
     if (exactlyOnce) {
         logger.info("$PROCESSING_GUARANTEE_CONFIG=$EXACTLY_ONCE")
         put(PROCESSING_GUARANTEE_CONFIG, EXACTLY_ONCE)
-        put(REPLICATION_FACTOR_CONFIG, "3")
     } else {
         logger.info("$PROCESSING_GUARANTEE_CONFIG=$AT_LEAST_ONCE")
         put(PROCESSING_GUARANTEE_CONFIG, AT_LEAST_ONCE)
