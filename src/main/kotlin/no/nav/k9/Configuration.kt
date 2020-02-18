@@ -36,7 +36,7 @@ internal data class Configuration(private val config : ApplicationConfig) {
 
     internal fun getKafkaConfig() =
         config.getRequiredString("nav.kafka.bootstrap_servers", secret = false).let { bootstrapServers ->
-            val trustStore = config.getOptionalString("nav.trust_store.path", secret = false)?.let { trustStorePath ->
+            val trustStore = config.getRequiredString("nav.trust_store.path", secret = false)?.let { trustStorePath ->
                 config.getOptionalString("nav.trust_store.password", secret = true)?.let { trustStorePassword ->
                     Pair(trustStorePath, trustStorePassword)
                 }
@@ -49,7 +49,7 @@ internal data class Configuration(private val config : ApplicationConfig) {
                     config.getRequiredString("nav.kafka.password", secret = true)
                 ),
                 trustStore = trustStore,
-                exactlyOnce = trustStore != null,
+                exactlyOnce = false, // settes til true når vi skal gå mot prod cluster
                 unreadyAfterStreamStoppedIn = unreadyAfterStreamStoppedIn()
             )
         }
