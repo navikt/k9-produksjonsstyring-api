@@ -1,13 +1,14 @@
 package no.nav.k9.kafka
 
 import no.nav.k9.aksjonspunktbehandling.AksjonspunktStream
+import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import org.slf4j.LoggerFactory
 
 internal class AsynkronProsesseringV1Service(
     kafkaConfig: KafkaConfig,
-    oppgaveRepository: OppgaveRepository
-
+    oppgaveRepository: OppgaveRepository,
+    behandlingProsessEventRepository: BehandlingProsessEventRepository
 ) {
 
     private companion object {
@@ -17,7 +18,8 @@ internal class AsynkronProsesseringV1Service(
 
     private val aksjonspunktStream = AksjonspunktStream(
         kafkaConfig = kafkaConfig,
-        oppgaveRepository = oppgaveRepository
+        oppgaveRepository = oppgaveRepository,
+        behandlingProsessEventRepository = behandlingProsessEventRepository
     )
 
 

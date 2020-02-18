@@ -17,7 +17,8 @@ class OppgaveRepository(private val dataSource: HikariDataSource) {
                 pst.executeQuery().use { rs ->
                     while (rs.next()) {
                         eventer.add(
-                            ObjectMapper().readValue(rs.getString("data"), OppgaveEventLogg::class.java))
+                            ObjectMapper().readValue(rs.getString("data"), OppgaveEventLogg::class.java)
+                        )
                     }
                 }
             }
@@ -25,8 +26,39 @@ class OppgaveRepository(private val dataSource: HikariDataSource) {
         return eventer
     }
 
-    fun avsluttOppgave(behandlingId: Long) {
-       TODO("Not yet implemented")
+
+    fun hentOppgave(eksternId: UUID): Oppgave {
+        val SQL_QUERY = "select data -> (json_array_length(data ->'items')-1) from oppgave where id == ?"
+        val oppgaver: MutableList<Oppgave> = ArrayList()
+        dataSource.connection.use { con ->
+            con.prepareStatement(SQL_QUERY).use { pst ->
+                pst.setString(0, eksternId.toString())
+                pst.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        oppgaver.add(
+                            ObjectMapper().readValue(rs.getString("data"), Oppgave::class.java)
+                        )
+                    }
+                }
+            }
+        }
+        return oppgaver[oppgaver.lastIndex]
+    }
+
+    fun opprettEllerEndreOppgave(oppgave: Oppgave) {
+        val SQL_QUERY = """
+            insert into oppgave
+            values (id = ?, data = ?)
+            on conflict (id) do update
+                set data = data || ? :: jsonb"""
+        dataSource.connection.use { con ->
+            con.prepareStatement(SQL_QUERY).use { pst ->
+                pst.setString(0, oppgave.eksternId.toString())
+                pst.setString(1, ObjectMapper().writeValueAsString(oppgave))
+                pst.setString(2, ObjectMapper().writeValueAsString(oppgave))
+                pst.executeQuery()
+            }
+        }
     }
 
     fun lagre(oppgaveEventLogg: OppgaveEventLogg) {
@@ -42,4 +74,16 @@ class OppgaveRepository(private val dataSource: HikariDataSource) {
     fun gjenåpneOppgave(eksternId: UUID): Oppgave {
         TODO("Not yet implemented")
     }
+
+    fun opprettOppgave(oppgave: Oppgave) {
+        val SQL_QUERY = "insert into oppgave values (data = ?)"
+        dataSource.connection.use { con ->
+            con.prepareStatement(SQL_QUERY).use { pst ->
+                pst.setString(0, ObjectMapper().writeValueAsString(oppgave))
+                pst.executeQuery()
+            }
+        }
+    }
+
+
 }

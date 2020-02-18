@@ -3,23 +3,22 @@ package no.nav.k9.integrasjon
 import java.time.LocalDate
 import java.util.*
 
-
 data class BehandlingK9sak(
-    var behandlingId: Long,
-    var uuid: UUID,
-    var status: String,
-    var behandlingstidFrist: LocalDate,
-    var type: String,
-    var tema: String,
-    var Årsak: String,
-    var behandlendeEnhet: String,
-    var behandlendeEnhetNavn: String,
-    var ansvarligSaksbehandler: String,
-    var førsteUttaksdag: LocalDate,
-    var inntektsmeldinger: List<String>,
-    var aksjonspunkter: List<Aksjonspunkt>,
+    val behandlingId: Long,
+    val uuid: UUID,
+    val status: String,
+    val behandlingstidFrist: LocalDate,
+    val type: String,
+    val tema: String,
+    val Årsak: String,
+    val behandlendeEnhet: String,
+    val behandlendeEnhetNavn: String,
+    val ansvalligSaksbehandler: String,
+    val førsteUttaksdag: LocalDate,
+    val inntektsmeldinger: List<String>,
+    val aksjonspunkter: List<Aksjonspunkt>,
     var erUtlandssak: Boolean,
-    var harRefusjonskravFraArbeidsgiver: Boolean,
+    val harRefusjonskravFraArbeidsgiver: Boolean,
     var harGradering: Boolean,
     var harVurderSykdom: Boolean
 )
