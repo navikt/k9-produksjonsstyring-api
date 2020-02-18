@@ -60,7 +60,9 @@ jobs:
         run: |
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
-        run: "docker push $(cat .docker_image):$(cat .docker_tag)"
+        run: |
+          docker push $(cat .docker_image):latest
+          docker push $(cat .docker_image):$(cat .docker_tag)
       - name: pass image file to next job.
         uses: actions/upload-artifact@v1
         with:
