@@ -49,7 +49,7 @@ internal data class Configuration(private val config : ApplicationConfig) {
                     config.getRequiredString("nav.kafka.password", secret = true)
                 ),
                 trustStore = trustStore,
-                exactlyOnce = trustStore != null,
+                exactlyOnce = false, // settes til true når vi skal gå mot prod cluster
                 unreadyAfterStreamStoppedIn = unreadyAfterStreamStoppedIn()
             )
         }

@@ -40,6 +40,7 @@ private fun Properties.medProcessingGuarantee(exactlyOnce: Boolean) {
     if (exactlyOnce) {
         logger.info("$PROCESSING_GUARANTEE_CONFIG=$EXACTLY_ONCE")
         put(PROCESSING_GUARANTEE_CONFIG, EXACTLY_ONCE)
+        put(REPLICATION_FACTOR_CONFIG, "3")
     } else {
         logger.info("$PROCESSING_GUARANTEE_CONFIG=$AT_LEAST_ONCE")
         put(PROCESSING_GUARANTEE_CONFIG, AT_LEAST_ONCE)
