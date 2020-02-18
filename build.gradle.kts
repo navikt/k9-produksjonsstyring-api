@@ -42,6 +42,10 @@ dependencies {
     // Kafka
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
+    implementation("com.sun.istack:istack-commons-runtime:2.2")
+    implementation("no.nav.foreldrepenger.felles.integrasjon:felles-integrasjon-rest-klient:1.5.0-20200123060955-7e89e24")
+
+
     // Test
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation ("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
