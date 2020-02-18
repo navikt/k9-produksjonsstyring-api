@@ -13,31 +13,25 @@ object TestConfiguration {
     fun asMap(
         wireMockServer: WireMockServer? = null,
         kafkaEnvironment: KafkaEnvironment? = null,
-        port : Int = 8020
-    ) : Map<String, String>{
+        port: Int = 8020
+    ): Map<String, String> {
         val map = mutableMapOf(
-            Pair("ktor.deployment.port","$port")
+            Pair("ktor.deployment.port", "$port")
         )
 
-        // Clients
-        if (wireMockServer != null) {
-            map["nav.auth.clients.0.alias"] = "nais-sts"
-            map["nav.auth.clients.0.client_id"] = "srvpps-prosessering"
-            map["nav.auth.clients.0.client_secret"] = "very-secret"
-            map["nav.auth.clients.0.discovery_endpoint"] = wireMockServer.getNaisStsWellKnownUrl()
-        }
+        map["nav.auth.trustore.path"] = "vtp"
+        map["nav.auth.trustore.password"] = "vtp"
 
-        if (wireMockServer != null) {
-            map["nav.auth.clients.1.alias"] = "azure-v2"
-            map["nav.auth.clients.1.client_id"] = "pleiepengesoknad-prosessering"
-            map["nav.auth.clients.1.private_key_jwk"] = ClientCredentials.ClientA.privateKeyJwk
-            map["nav.auth.clients.1.certificate_hex_thumbprint"] = ClientCredentials.ClientA.certificateHexThumbprint
-            map["nav.auth.clients.1.discovery_endpoint"] = wireMockServer.getAzureV2WellKnownUrl()
-            map["nav.auth.scopes.lagre-dokument"] = "k9-dokument/.default"
-            map["nav.auth.scopes.slette-dokument"] = "k9-dokument/.default"
-            map["nav.auth.scopes.journalfore"] = "pleiepenger-joark/.default"
-            map["nav.auth.scopes.opprette-oppgave"] = "pleiepenger-oppgave/.default"
-        }
+        map["nav.auth.clients.0.alias"] = "nais-sts"
+        map["nav.auth.clients.0.client_id"] = "srvpps-k9-los-api"
+        map["nav.auth.clients.0.client_secret"] = "very-secret"
+        map["nav.auth.clients.0.discovery_endpoint"] = "https://vtp:8063/rest/isso/oauth2/.well-known/openid-configuration"
+
+        map["nav.auth.clients.1.alias"] = "azure-v2"
+        map["nav.auth.clients.1.client_id"] = "pleiepengesoknad-prosessering"
+        map["nav.auth.clients.1.private_key_jwk"] = ClientCredentials.ClientA.privateKeyJwk
+        map["nav.auth.clients.1.certificate_hex_thumbprint"] = ClientCredentials.ClientA.certificateHexThumbprint
+        map["nav.auth.clients.1.discovery_endpoint"] = "http://azure-mock:8100/v2.0/.well-known/openid-configuration"
 
         kafkaEnvironment?.let {
             map["nav.kafka.bootstrap_servers"] = it.brokersURL
@@ -51,5 +45,6 @@ object TestConfiguration {
         map["nav.db.password"] = "k9los"
         return map.toMap()
     }
+
     private fun String.getAsJson() = JSONObject(this.httpGet().responseString().third.component1())
 }
