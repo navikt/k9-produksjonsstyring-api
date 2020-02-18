@@ -131,12 +131,14 @@ jobs:
           cp docker_tag/.docker_tag .
       - name: debug
         run: ls -la
-      - name: Deploy til Preprod
-        uses: nais/deploy/actions/deploy@v1
+      - name: deploy to dev-fss
+        uses: navikt/deployment-cli/action@0.4.0
         env:
-          APIKEY: ${{ secrets.DEPLOY_KEY }}
-          CLUSTER: dev-fss
-          RESOURCE: nais/dev-fss.yml
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          cluster: dev-fss
+          team: dusseldorf
+          resources: nais/dev-fss.yml
 
   deploy-prod-fss:
     name: Deploy to prod-fss
@@ -161,9 +163,11 @@ jobs:
           cp docker_tag/.docker_tag .
       - name: debug
         run: ls -la
-      - name: Deploy til Prod
-        uses: nais/deploy/actions/deploy@v1
+      - name: deploy to prod-fss
+        uses: navikt/deployment-cli/action@0.4.0
         env:
-          APIKEY: ${{ secrets.DEPLOY_KEY }}
-          CLUSTER: prod-fss
-          RESOURCE: nais/prod-fss.yml
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          cluster: prod-fss
+          team: k9saksbehandling
+          resources: nais/prod-fss.yml
