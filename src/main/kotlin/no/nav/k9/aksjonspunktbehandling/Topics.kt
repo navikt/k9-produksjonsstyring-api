@@ -1,5 +1,7 @@
 package no.nav.k9.aksjonspunktbehandling
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -27,11 +29,18 @@ internal object Topics {
         serDes = AksjosnpunktLaget()
     )
 }
-
-internal abstract class SerDes<V> : Serializer<V>, Deserializer<V> {
-    protected val objectMapper = jacksonObjectMapper()
+fun objectMapper(): ObjectMapper {
+    return jacksonObjectMapper()
         .dusseldorfConfigured()
         .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
+        .setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+}
+
+internal abstract class SerDes<V> : Serializer<V>, Deserializer<V> {
+    protected val objectMapper = objectMapper()
+
+
+
     override fun serialize(topic: String?, data: V): ByteArray? {
         return data?.let {
             objectMapper.writeValueAsBytes(it)

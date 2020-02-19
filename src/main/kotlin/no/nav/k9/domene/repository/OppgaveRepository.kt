@@ -5,9 +5,10 @@ import com.zaxxer.hikari.HikariDataSource
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.OppgaveEventLogg
 import java.util.*
+import javax.sql.DataSource
 
 
-class OppgaveRepository(private val dataSource: HikariDataSource) {
+class OppgaveRepository(private val dataSource: DataSource) {
     fun hentEventer(uuid: UUID): List<OppgaveEventLogg> {
         val SQL_QUERY = "select data from oppgave_event_logg where data -> 'uuid' == ? order by id desc"
         val eventer: MutableList<OppgaveEventLogg> = ArrayList()

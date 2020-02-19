@@ -5,6 +5,7 @@ import no.nav.helse.kafka.ManagedStreamHealthy
 import no.nav.helse.kafka.ManagedStreamReady
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.K9SakRestKlient
 import no.nav.k9.kafka.KafkaConfig
 import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
 import org.apache.kafka.streams.StreamsBuilder
@@ -51,7 +52,8 @@ internal class AksjonspunktStream(
                     val event = topicEntry.data
                     K9sakEventHandler(
                         oppgaveRepository = oppgaveRepository,
-                        behandlingProsessEventRepository = behandlingProsessEventRepository
+                        behandlingProsessEventRepository = behandlingProsessEventRepository,
+                        k9SakRestKlient = K9SakRestKlient()
                     ).prosesser(event)
                 }
             return builder.build()

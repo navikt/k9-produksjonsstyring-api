@@ -7,15 +7,13 @@ import no.nav.k9.integrasjon.Aksjonspunkt
 import no.nav.k9.integrasjon.BehandlingK9sak
 import no.nav.k9.kafka.dto.EventHendelse
 import no.nav.k9.kafka.dto.Fagsystem
+import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
 import java.time.LocalDateTime
 import java.util.*
 
 data class BehandlingProsessEventer (
-   val uuid:UUID,
-   val behandlingsId: Long,
-   val oppgaver: List<Oppgave>,
-   val eventer: List<Event>,
-   val behandlinger: List<BehandlingK9sak>
+   //val uuid:UUID,
+   val eventer: List<BehandlingProsessEventDto>
 )
 
 
@@ -58,26 +56,26 @@ data class Oppgave(
     var eventType: OppgaveEventType
 
 )
-
-fun BehandlingProsessEventer.sisteOppgave(): Oppgave {
-    return this.oppgaver[this.oppgaver.lastIndex]
-}
-
-fun BehandlingProsessEventer.sisteEvent(): Event {
-    return this.eventer[this.eventer.lastIndex]
-}
-
-fun BehandlingProsessEventer.nestSisteOppgave(): Oppgave {
-    return this.oppgaver[this.oppgaver.lastIndex-1]
-}
-
-fun BehandlingProsessEventer.nestSisteEvent(): Event {
-    return this.eventer[this.eventer.lastIndex-1]
-}
-
-fun BehandlingProsessEventer.sisteBehandling(): BehandlingK9sak {
-    return this.behandlinger[this.behandlinger.lastIndex]
-}
+//
+//fun BehandlingProsessEventer.sisteOppgave(): Oppgave {
+//    return this.oppgaver[this.oppgaver.lastIndex]
+//}
+//
+//fun BehandlingProsessEventer.sisteEvent(): Event {
+//    return this.eventer[this.eventer.lastIndex]
+//}
+//
+//fun BehandlingProsessEventer.nestSisteOppgave(): Oppgave {
+//    return this.oppgaver[this.oppgaver.lastIndex-1]
+//}
+//
+//fun BehandlingProsessEventer.nestSisteEvent(): Event {
+//    return this.eventer[this.eventer.lastIndex-1]
+//}
+//
+//fun BehandlingProsessEventer.sisteBehandling(): BehandlingK9sak {
+//    return this.behandlinger[this.behandlinger.lastIndex]
+//}
 
 fun BehandlingK9sak.åpneAksjonspunkt(): List<Aksjonspunkt> {
     return this.aksjonspunkter.filter(Aksjonspunkt::erAktiv)

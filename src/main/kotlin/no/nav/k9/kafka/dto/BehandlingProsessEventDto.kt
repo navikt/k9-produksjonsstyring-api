@@ -27,10 +27,10 @@ data class BehandlingProsessEventDto (
      */
     @JsonSerialize(using = ToStringSerializer::class)
     @JsonDeserialize(using = LocalDateTimeDeserializer::class)
-    val eventTid: LocalDateTime,
+    val eventTid: LocalDateTime?,
     val eventHendelse: EventHendelse,
     val behandlinStatus: String, // fjernes etter overgang til behandlingStatus
-    val behandlingStatus: String,
+    val behandlingStatus: String?,
     val behandlingSteg: String,
     val behandlendeEnhet: String,
 

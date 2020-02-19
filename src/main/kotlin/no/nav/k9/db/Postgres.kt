@@ -7,6 +7,7 @@ import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
+import javax.sql.DataSource
 
 @KtorExperimentalAPI
 fun ApplicationConfig.isVaultEnabled() =
@@ -42,9 +43,11 @@ fun Application.migrate(hikariConfig: HikariConfig) =
         runMigration(HikariDataSource(hikariConfig))
     }
 
-fun runMigration(dataSource: HikariDataSource, initSql: String? = null) =
-    Flyway.configure()
+fun runMigration(dataSource: DataSource, initSql: String? = null): Int {
+    return Flyway.configure()
+        .locations("migreringer/")
         .dataSource(dataSource)
         .initSql(initSql)
         .load()
         .migrate()
+}

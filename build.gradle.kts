@@ -55,6 +55,8 @@ dependencies {
     }
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
 
+    testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
+
     implementation(kotlin("stdlib-jdk8"))
 
 }
