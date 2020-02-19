@@ -42,10 +42,7 @@ class K9SakRestKlient {
 
         return try {
 
-            LOGGER.info(
-                "Kaller {}",
-                uriBuilder.build()
-            )
+            LOGGER.info("Kaller {}", uriBuilder.build())
 
             val response: UtvidetBehandlingDto =
                 oidcRestClient.get(uriBuilder.build(), UtvidetBehandlingDto::class.java)

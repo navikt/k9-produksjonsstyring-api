@@ -9,6 +9,7 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
+import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
@@ -93,6 +94,8 @@ fun Application.k9Los() {
     }
 
     install(CallIdRequired)
+
+    install(Locations)
 
     install(Routing) {
         authenticate(*issuers.allIssuers()) {
