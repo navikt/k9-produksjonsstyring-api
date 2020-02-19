@@ -25,7 +25,8 @@ object TestConfiguration {
         map["nav.auth.clients.0.alias"] = "nais-sts"
         map["nav.auth.clients.0.client_id"] = "srvpps-k9-los-api"
         map["nav.auth.clients.0.client_secret"] = "very-secret"
-        map["nav.auth.clients.0.discovery_endpoint"] = "https://vtp:8063/rest/isso/oauth2/.well-known/openid-configuration"
+        map["nav.auth.clients.0.discovery_endpoint"] =
+            "https://vtp:8063/rest/isso/oauth2/.well-known/openid-configuration"
 
         map["nav.auth.clients.1.alias"] = "azure-v2"
         map["nav.auth.clients.1.client_id"] = "pleiepengesoknad-prosessering"
@@ -33,13 +34,14 @@ object TestConfiguration {
         map["nav.auth.clients.1.certificate_hex_thumbprint"] = ClientCredentials.ClientA.certificateHexThumbprint
         map["nav.auth.clients.1.discovery_endpoint"] = "http://azure-mock:8100/v2.0/.well-known/openid-configuration"
 
-        kafkaEnvironment?.let {
-            map["nav.kafka.bootstrap_servers"] = it.brokersURL
-            map["nav.kafka.username"] = it.username()
-            map["nav.kafka.password"] = it.password()
-            map["nav.kafka.unready_after_stream_stopped_in.amount"] = "1010"
-            map["nav.kafka.unready_after_stream_stopped_in.unit"] = "SECONDS"
-        }
+        map["nav.kafka.bootstrap_servers"] = kafkaEnvironment?.brokersURL ?: "vtp:9092"
+        map["nav.kafka.username"] = kafkaEnvironment?.username() ?: "vtp"
+        map["nav.kafka.password"] = kafkaEnvironment?.password() ?: "vtp"
+        map["nav.kafka.unready_after_stream_stopped_in.amount"] = "1010"
+        map["nav.kafka.unready_after_stream_stopped_in.unit"] = "SECONDS"
+        map["nav.trust_store.path"] = "${System.getProperty("user.home")}/.modig/trustStore.jks"
+        map["nav.trust_store.password"] = "changeit"
+
         map["nav.db.url"] = "jdbc:postgresql://localhost:5432/k9los"
         map["nav.db.username"] = "k9los"
         map["nav.db.password"] = "k9los"
