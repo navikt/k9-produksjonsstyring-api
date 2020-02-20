@@ -20,5 +20,6 @@ data class Oppgave(
     val oppgaveAvsluttet: LocalDateTime?,
     val utfortFraAdmin: Boolean,
     val eksternId: UUID,
-    val reservasjon: Reservasjon?
+    val reservasjon: Reservasjon?,
+    val oppgaveEgenskap: List<OppgaveEgenskap>
 )

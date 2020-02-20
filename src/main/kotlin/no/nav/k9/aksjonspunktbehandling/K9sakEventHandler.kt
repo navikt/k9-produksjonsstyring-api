@@ -4,6 +4,8 @@ import no.nav.k9.aksjonspunktbehandling.eventresultat.EventResultat.*
 import no.nav.k9.domene.lager.oppgave.*
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.aktiveAksjonspunkt
+import no.nav.k9.domene.repository.sisteEvent
 import no.nav.k9.integrasjon.Aksjonspunkt
 import no.nav.k9.integrasjon.BehandlingK9sak
 import no.nav.k9.integrasjon.K9SakRestKlient
@@ -25,6 +27,24 @@ class K9sakEventHandler(
         // val behandling = k9SakRestKlient.getBehandling(behandlingId = event.behandlingId)
         val eventer =
             behandlingProsessEventRepository.lagreBehandlingProsessEvent(event)
+
+        val sisteEvent = eventer.sisteEvent()
+        val aktiveAksjonspunkt = sisteEvent.aktiveAksjonspunkt()
+
+        if (aktiveAksjonspunkt.erTom()) {
+            //Avslutt
+        }
+
+//        if (aktiveAksjonspunkt.påVent()) {
+//            eventer.avsluttSisteOppgave()
+//        } else if (aktiveAksjonspunkt.opprettOppgave() || aktiveAksjonspunkt.tilBeslutter()|| aktiveAksjonspunkt.papirsøknad()) {
+//            eventer.opprettOppgave()
+//        } else if (aktiveAksjonspunkt.gjenåpneOppgave()) {
+//            eventer.opprettOppgave()
+//        }
+
+
+        // finnAktiveAksjonspunkter har statuscode oppr
 
 //        val behandlingId = eventer.behandlingsId
 
@@ -129,7 +149,8 @@ class K9sakEventHandler(
             behandlingOpprettet = event.opprettetBehandling,
             oppgaveAvsluttet = null,
             reservasjon = null,
-            system = event.fagsystem.name
+            system = event.fagsystem.name,
+            oppgaveEgenskap = emptyList()
         )
         oppgaveRepository.opprettOppgave(oppgave)
         return oppgave

@@ -61,9 +61,27 @@ data class Oppgave(
 //    return this.oppgaver[this.oppgaver.lastIndex]
 //}
 //
-//fun BehandlingProsessEventer.sisteEvent(): Event {
-//    return this.eventer[this.eventer.lastIndex]
-//}
+fun BehandlingProsessEventer.sisteEvent(): BehandlingProsessEventDto {
+    return this.eventer[this.eventer.lastIndex]
+}
+
+fun BehandlingProsessEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
+    return Aksjonspunkter(this.aksjonspunktKoderMedStatusListe.filter { entry -> entry.value == "OPPR" })
+}
+
+data class Aksjonspunkter(private val liste: Map<String, String>) {
+    fun påVent(): Boolean {
+       return this.liste.any { entry -> entry.key.startsWith("7") }
+    }
+    fun erTom(): Boolean {
+        return this.liste.isEmpty()
+    }
+    fun tilBeslutter(): Boolean {
+        return this.liste.any { entry -> entry.key == "5016" }
+    }
+}
+
+
 //
 //fun BehandlingProsessEventer.nestSisteOppgave(): Oppgave {
 //    return this.oppgaver[this.oppgaver.lastIndex-1]
