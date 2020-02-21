@@ -6,7 +6,7 @@ import java.util.*
 
 data class Oppgave(
     val behandlingId: Long,
-    val fagsakSaksnummer: Long,
+    val fagsakSaksnummer: String,
     val aktorId: Long,
     val behandlendeEnhet: String,
     val behandlingsfrist: LocalDateTime,

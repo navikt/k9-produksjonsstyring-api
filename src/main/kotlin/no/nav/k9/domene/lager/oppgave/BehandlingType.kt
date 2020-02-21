@@ -7,4 +7,7 @@ enum class BehandlingType (    val kode: String, val navn: String)  {
     SØKNAD("BT-005", "Søknad"),
     INNSYN("BT-006", "Innsyn"),
     ANKE("BT-008", "Anke");
+    companion object {
+        fun fraKode(kode: String): BehandlingType = values().find { it.kode == kode }!!
+    }
 }

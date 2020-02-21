@@ -6,4 +6,8 @@ enum class BehandlingStatus (val kode: String) {
     IVERKSETTER_VEDTAK("IVED"),
     OPPRETTET("OPPRE"),
     UTREDES("UTRED");
+
+    companion object {
+        fun fraKode(kode: String): BehandlingStatus = values().find { it.kode == kode }!!
+    }
 }

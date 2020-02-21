@@ -1,68 +1,65 @@
 package no.nav.k9.domene.repository
 
-import no.nav.k9.domene.lager.oppgave.AndreKriterierType
-import no.nav.k9.domene.lager.oppgave.BehandlingStatus
-import no.nav.k9.domene.lager.oppgave.OppgaveEventType
-import no.nav.k9.integrasjon.Aksjonspunkt
-import no.nav.k9.integrasjon.BehandlingK9sak
-import no.nav.k9.kafka.dto.EventHendelse
-import no.nav.k9.kafka.dto.Fagsystem
+import no.nav.k9.aksjonspunktbehandling.eventresultat.EventResultat
+import no.nav.k9.domene.lager.oppgave.*
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
+import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
 
-data class BehandlingProsessEventer (
-   //val uuid:UUID,
-   val eventer: List<BehandlingProsessEventDto>
-)
+data class Modell(
+    val eventer: List<BehandlingProsessEventDto>
+) {
 
+    fun oppgave(): Oppgave {
+        val event = sisteEvent()
+        val eventResultat = sisteEvent().aktiveAksjonspunkt().eventResultat()
+        var aktiv = true
+        var oppgaveAvsluttet: LocalDateTime? = null
 
-data class Event(
-    val uuid: UUID,
-    val fagsystem: Fagsystem,
-    val saksnummer: String,
-    val aktørId: String,
+        when (eventResultat) {
+            EventResultat.LUKK_OPPGAVE -> {
+                aktiv = false
+                oppgaveAvsluttet = LocalDateTime.now()
+            }
+            EventResultat.LUKK_OPPGAVE_VENT -> {
+                aktiv = false
+                oppgaveAvsluttet = LocalDateTime.now()
+            }
+            EventResultat.LUKK_OPPGAVE_MANUELT_VENT -> {
+                aktiv = false
+                oppgaveAvsluttet = LocalDateTime.now()
+            }
+            EventResultat.GJENÅPNE_OPPGAVE -> TODO()
+            EventResultat.OPPRETT_BESLUTTER_OPPGAVE -> TODO()
+            EventResultat.OPPRETT_PAPIRSØKNAD_OPPGAVE -> TODO()
+            EventResultat.OPPRETT_OPPGAVE -> TODO()
+        }
 
-    val eventTid: LocalDateTime,
-    val eventHendelse: EventHendelse,
-    var behandlingStatus: BehandlingStatus,
-    val behandlingSteg: String,
-    val behandlendeEnhet: String,
-    val ytelseTypeKode: String,
-    val behandlingTypeKode: String,
-    val opprettetBehandling: LocalDateTime,
-    val aksjonspunktKoderMedStatusListe: Map<String, String>,
-    val andreKriterierType: AndreKriterierType,
-    var eventType: OppgaveEventType
+        return Oppgave(
+            behandlingId = event.behandlingId,
+            fagsakSaksnummer = event.saksnummer,
+            aktorId = event.aktørId.toLong(),
+            behandlendeEnhet = event.behandlendeEnhet,
+            behandlingType = BehandlingType.fraKode(event.behandlingTypeKode),
+            fagsakYtelseType = FagsakYtelseType.fraKode(event.ytelseTypeKode),
+            aktiv = aktiv,
+            forsteStonadsdag = LocalDate.now(),
+            utfortFraAdmin = false,
+            behandlingsfrist = LocalDateTime.now(),
+            behandlingStatus = BehandlingStatus.fraKode(event.behandlinStatus),
+            eksternId = event.eksternId,
+            behandlingOpprettet = event.opprettetBehandling,
+            oppgaveAvsluttet = oppgaveAvsluttet,
+            reservasjon = null,
+            system = event.fagsystem.name,
+            oppgaveEgenskap = emptyList()
+        )
+    }
 
-)
-
-data class Oppgave(
-    val uuid: UUID,
-    val fagsystem: Fagsystem,
-    val saksnummer: String,
-    val aktørId: String,
-
-    val eventTid: LocalDateTime,
-    val eventHendelse: EventHendelse,
-    var behandlingStatus: BehandlingStatus,
-    val behandlingSteg: String,
-    val behandlendeEnhet: String,
-    val ytelseTypeKode: String,
-    val behandlingTypeKode: String,
-    val opprettetBehandling: LocalDateTime,
-    val aksjonspunktKoderMedStatusListe: Map<String, String>,
-    val andreKriterierType: AndreKriterierType,
-    var eventType: OppgaveEventType
-
-)
-//
-//fun BehandlingProsessEventer.sisteOppgave(): Oppgave {
-//    return this.oppgaver[this.oppgaver.lastIndex]
-//}
-//
-fun BehandlingProsessEventer.sisteEvent(): BehandlingProsessEventDto {
-    return this.eventer[this.eventer.lastIndex]
+    fun sisteEvent(): BehandlingProsessEventDto {
+        return this.eventer[this.eventer.lastIndex]
+    }
 }
 
 fun BehandlingProsessEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
@@ -71,36 +68,30 @@ fun BehandlingProsessEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
 
 data class Aksjonspunkter(private val liste: Map<String, String>) {
     fun påVent(): Boolean {
-       return this.liste.any { entry -> entry.key.startsWith("7") }
+        return this.liste.any { entry -> entry.key.startsWith("7") }
     }
+
     fun erTom(): Boolean {
         return this.liste.isEmpty()
     }
+
     fun tilBeslutter(): Boolean {
         return this.liste.any { entry -> entry.key == "5016" }
     }
-}
 
+    fun eventResultat(): EventResultat {
+        if (erTom()) {
+            return EventResultat.LUKK_OPPGAVE
+        }
 
-//
-//fun BehandlingProsessEventer.nestSisteOppgave(): Oppgave {
-//    return this.oppgaver[this.oppgaver.lastIndex-1]
-//}
-//
-//fun BehandlingProsessEventer.nestSisteEvent(): Event {
-//    return this.eventer[this.eventer.lastIndex-1]
-//}
-//
-//fun BehandlingProsessEventer.sisteBehandling(): BehandlingK9sak {
-//    return this.behandlinger[this.behandlinger.lastIndex]
-//}
+        if (påVent()) {
+            return EventResultat.LUKK_OPPGAVE_VENT
+        }
 
-fun BehandlingK9sak.åpneAksjonspunkt(): List<Aksjonspunkt> {
-    return this.aksjonspunkter.filter(Aksjonspunkt::erAktiv)
-}
-fun AndreKriterierType.tilBeslutter(): Boolean {
-    return this == AndreKriterierType.TIL_BESLUTTER
-}
-fun AndreKriterierType.papirsøknad(): Boolean {
-    return this == AndreKriterierType.PAPIRSØKNAD
+        if (tilBeslutter()) {
+            return EventResultat.OPPRETT_BESLUTTER_OPPGAVE
+        }
+
+        return EventResultat.OPPRETT_OPPGAVE
+    }
 }

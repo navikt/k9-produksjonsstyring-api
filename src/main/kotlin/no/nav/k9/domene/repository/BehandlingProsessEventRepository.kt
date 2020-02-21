@@ -1,16 +1,13 @@
 package no.nav.k9.domene.repository
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.zaxxer.hikari.HikariDataSource
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.integrasjon.BehandlingK9sak
 import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
 import java.util.*
 import javax.sql.DataSource
 
 
 class BehandlingProsessEventRepository(private val dataSource: DataSource) {
-    fun behandlingProsessEventer(uuid: UUID): BehandlingProsessEventer {
+    fun behandlingProsessEventer(uuid: UUID): Modell {
         val SQL_QUERY = "select data from behandling_prosess_events_k9 where id = ?"
 
         dataSource.connection.use { con ->
@@ -19,7 +16,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
                 pst.executeQuery().use { rs ->
                     while (rs.next()) {
                         val string = rs.getString("data")
-                        return objectMapper().readValue(string, BehandlingProsessEventer::class.java)
+                        return objectMapper().readValue(string, Modell::class.java)
                     }
                 }
             }
@@ -29,7 +26,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
 
     fun lagreBehandlingProsessEvent(
         event: BehandlingProsessEventDto
-    ): BehandlingProsessEventer {
+    ): Modell {
         // Legge service i mellom og mappe fra event til returverdi
 
         val SQL_QUERY = """
