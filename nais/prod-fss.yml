@@ -4,7 +4,7 @@ metadata:
   name: k9-los-api
   namespace: default
   labels:
-    team: {{team}}
+    team: k9saksbehandling
 spec:
   image: {{ image }}:{{ tag }}
   port: 8080
