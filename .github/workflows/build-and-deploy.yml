@@ -72,8 +72,6 @@ jobs:
       - name: unpack
         run: |
           echo "::set-env name=IMAGE::$BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)"
-      - name: debug
-        run: ls -la
       - name: Deploy
         uses: nais/deploy/actions/deploy@v1
         env:
@@ -92,8 +90,6 @@ jobs:
       - name: unpack
         run: |
           echo "::set-env name=IMAGE::$BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)"
-      - name: debug
-        run: ls -la
       - name: Deploy
         uses: nais/deploy/actions/deploy@v1
         env:
