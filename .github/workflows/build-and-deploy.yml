@@ -59,17 +59,7 @@ jobs:
       - name: Push Docker image
         run: |
           docker push $BASE_IMAGE:latest
-          docker push $BASE_IMAGE:$(cat .docker_tag)
-      - name: pass image file to next job.
-        uses: actions/upload-artifact@v1
-        with:
-          name: docker_image
-          path: .docker_image
-      - name: pass tag file to next job.
-        uses: actions/upload-artifact@v1
-        with:
-          name: docker_tag
-          path: .docker_tag
+          docker push $BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)
 
   deploy-dev-fss:
     name: Deploy to dev-fss
@@ -80,14 +70,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v1
         # Download the image and tag file to use for the deployment cli.
-      - name: Download image file
-        uses: actions/download-artifact@v1
-        with:
-          name: docker_image
-      - name: Download tag file
-        uses: actions/download-artifact@v1
-        with:
-          name: docker_tag
       - name: unpack
         run: |
           echo "::set-env name=IMAGE::$BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)"
@@ -109,17 +91,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v1
         # Download the image and tag file to use for the deployment cli.
-      - name: Download image file
-        uses: actions/download-artifact@v1
-        with:
-          name: docker_image
-      - name: Download tag file
-        uses: actions/download-artifact@v1
-        with:
-          name: docker_tag
-      - name: unpack
         run: |
-          cp docker_image/.docker_image .
           echo "::set-env name=IMAGE::$BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)"
       - name: debug
         run: ls -la
