@@ -98,7 +98,7 @@ jobs:
         run: |
           cp docker_image/.docker_image .
           cp docker_tag/.docker_tag .
-          echo "::set-env name=IMAGE::$BASE_IMAGE:$(cat .docker_image)-$(cat .docker_tag)"
+          echo "::set-env name=IMAGE::$BASE_IMAGE:$(cat .docker_tag)"
       - name: debug
         run: ls -la
       - name: Deploy
@@ -110,7 +110,7 @@ jobs:
 
   deploy-prod-fss:
     name: Deploy to prod-fss
-    if: startsWith(github.ref, 'refs/heads/master')  # If the branch is master
+    if: startsWith(github.ref, 'refs/heads/master') && false  # If the branch is master
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
@@ -129,7 +129,7 @@ jobs:
         run: |
           cp docker_image/.docker_image .
           cp docker_tag/.docker_tag .
-          echo "::set-env name=IMAGE::$BASE_IMAGE:$(cat .docker_image)-$(cat .docker_tag)"
+          echo "::set-env name=IMAGE::$BASE_IMAGE:$(cat .docker_tag)"
       - name: debug
         run: ls -la
       - name: Deploy
