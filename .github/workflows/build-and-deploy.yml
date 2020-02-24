@@ -131,7 +131,7 @@ jobs:
       - name: Deploy
         uses: nais/deploy/actions/deploy@v1
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          APIKEY: ${{ secrets.DEPLOY_KEY }}
           CLUSTER: dev-fss
           RESOURCE: ${{  format('nais/{0}.yml', github.event.deployment.environment) }}
 
@@ -161,6 +161,6 @@ jobs:
       - name: Deploy
         uses: nais/deploy/actions/deploy@v1
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          APIKEY: ${{ secrets.DEPLOY_KEY }}
           CLUSTER: prod-fss
           RESOURCE: nais/prod-fss.yml
