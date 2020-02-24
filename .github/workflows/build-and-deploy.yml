@@ -46,16 +46,10 @@ jobs:
           GITHUB_USERNAME: x-access-token
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew clean shadowjar # Creates a combined JAR of project and runTime dependencies.
-      - name: Create Docker tag
-        env:
-          NAME: k9-los-api
-        run: |
-          echo "docker.pkg.github.com"/"$GITHUB_REPOSITORY"/"$NAME" > .docker_image
-          echo "$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)" > .docker_tag
       - name: Build Docker image
         run: |
-          docker build -t $(cat .docker_image):latest .
-          docker build -t $(cat .docker_image):$(cat .docker_tag) .
+          docker build -t $BASE_IMAGE:latest .
+          docker build -t $BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD) .
       - name: Login to Github Package Registry
         env:
           DOCKER_USERNAME: x-access-token
@@ -64,8 +58,8 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: |
-          docker push $(cat .docker_image):latest
-          docker push $(cat .docker_image):$(cat .docker_tag)
+          docker push $BASE_IMAGE:latest
+          docker push $BASE_IMAGE:$(cat .docker_tag)
       - name: pass image file to next job.
         uses: actions/upload-artifact@v1
         with:
@@ -96,9 +90,7 @@ jobs:
           name: docker_tag
       - name: unpack
         run: |
-          cp docker_image/.docker_image .
-          cp docker_tag/.docker_tag .
-          echo "::set-env name=IMAGE::$BASE_IMAGE:$(cat .docker_tag)"
+          echo "::set-env name=IMAGE::$BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)"
       - name: debug
         run: ls -la
       - name: Deploy
@@ -128,8 +120,7 @@ jobs:
       - name: unpack
         run: |
           cp docker_image/.docker_image .
-          cp docker_tag/.docker_tag .
-          echo "::set-env name=IMAGE::$BASE_IMAGE:$(cat .docker_tag)"
+          echo "::set-env name=IMAGE::$BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)"
       - name: debug
         run: ls -la
       - name: Deploy
