@@ -128,6 +128,7 @@ jobs:
           cp docker_tag/.docker_tag .
       - name: debug
         run: ls -la
+      - name: Deploy
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
@@ -157,6 +158,7 @@ jobs:
           cp docker_tag/.docker_tag .
       - name: debug
         run: ls -la
+      - name: Deploy
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
