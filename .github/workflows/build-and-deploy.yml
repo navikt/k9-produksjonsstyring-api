@@ -10,6 +10,9 @@ on:
       - 'CODEOWNERS'
     branches:
 
+env:
+  BASE_IMAGE: docker.pkg.github.com/${{ github.repository }}/k9-los-api
+
 jobs:
   test:
     name: Check Code
@@ -103,7 +106,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: ${{ github.event.deployment.environment }}
-          RESOURCE: ${{  format('nais/{0}.yml', github.event.deployment.environment) }}
+          RESOURCE: ${{ format('nais/{0}.yml', github.event.deployment.environment) }}
 
   deploy-dev-fss:
     name: Deploy to dev-fss
@@ -126,6 +129,7 @@ jobs:
         run: |
           cp docker_image/.docker_image .
           cp docker_tag/.docker_tag .
+          echo "::set-env name=IMAGE::$BASE_IMAGE:$(cat .docker_image)-$(cat .docker_tag)"
       - name: debug
         run: ls -la
       - name: Deploy
@@ -133,7 +137,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.DEPLOY_KEY }}
           CLUSTER: dev-fss
-          RESOURCE: ${{  format('nais/{0}.yml', github.event.deployment.environment) }}
+          RESOURCE: nais/dev-fss.yml
 
   deploy-prod-fss:
     name: Deploy to prod-fss
@@ -156,6 +160,7 @@ jobs:
         run: |
           cp docker_image/.docker_image .
           cp docker_tag/.docker_tag .
+          echo "::set-env name=IMAGE::$BASE_IMAGE:$(cat .docker_image)-$(cat .docker_tag)"
       - name: debug
         run: ls -la
       - name: Deploy
