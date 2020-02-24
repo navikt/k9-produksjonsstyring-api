@@ -69,7 +69,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
-        # Download the image and tag file to use for the deployment cli.
       - name: unpack
         run: |
           echo "::set-env name=IMAGE::$BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)"
@@ -90,7 +89,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
-        # Download the image and tag file to use for the deployment cli.
+      - name: unpack
         run: |
           echo "::set-env name=IMAGE::$BASE_IMAGE:$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)"
       - name: debug
