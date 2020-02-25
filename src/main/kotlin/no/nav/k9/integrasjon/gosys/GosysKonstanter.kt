@@ -8,7 +8,7 @@ class GosysKonstanter private constructor() {
 
     enum class OppgaveType(val dto: String) {
         JOURNALFØRING("JFR"),
-        BEHANDLE("BEH");
+        BEHANDLE("BEH_SAK");
     }
 
     enum class Prioritet(val dto: String) {
