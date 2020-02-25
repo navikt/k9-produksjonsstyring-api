@@ -10,6 +10,7 @@ import no.nav.helse.dusseldorf.ktor.core.getRequiredString
 import no.nav.k9.db.createHikariConfig
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.kafka.KafkaConfig
+import java.net.URI
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
@@ -58,4 +59,8 @@ internal data class Configuration(private val config : ApplicationConfig) {
         config.getRequiredString("nav.kafka.unready_after_stream_stopped_in.amount", secret = false).toLong(),
         ChronoUnit.valueOf(config.getRequiredString("nav.kafka.unready_after_stream_stopped_in.unit", secret = false))
     )
+
+    fun getOppgaveBaseUri(): URI {
+       return URI(config.getRequiredString("nav.gosys.baseuri", secret = false))
+    }
 }

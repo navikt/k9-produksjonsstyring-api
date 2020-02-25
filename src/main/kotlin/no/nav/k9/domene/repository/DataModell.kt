@@ -1,8 +1,10 @@
 package no.nav.k9.domene.repository
 
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.aksjonspunktbehandling.eventresultat.EventResultat
 import no.nav.k9.domene.lager.oppgave.*
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.integrasjon.gosys.*
 import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -10,6 +12,100 @@ import java.time.LocalDateTime
 data class Modell(
     val eventer: List<BehandlingProsessEventDto>
 ) {
+
+    @KtorExperimentalAPI
+    fun syncOppgaveTilGosys(gosysOppgaveGateway: GosysOppgaveGateway): Oppgave {
+        val event = sisteEvent()
+        when (sisteEvent().aktiveAksjonspunkt().eventResultat()) {
+            EventResultat.LUKK_OPPGAVE -> {
+                avsluttOppgave(gosysOppgaveGateway, event)
+            }
+            EventResultat.LUKK_OPPGAVE_VENT -> {
+                avsluttOppgave(gosysOppgaveGateway, event)
+            }
+            EventResultat.LUKK_OPPGAVE_MANUELT_VENT -> {
+                avsluttOppgave(gosysOppgaveGateway, event)
+            }
+            EventResultat.GJENÅPNE_OPPGAVE -> {
+                avsluttOppgave(gosysOppgaveGateway, event)
+            }
+            EventResultat.OPPRETT_BESLUTTER_OPPGAVE -> {
+                if (finnesOppgaveIGosys(gosysOppgaveGateway, event)) {
+                    opprettOppgave(gosysOppgaveGateway, event)
+                }
+            }
+            EventResultat.OPPRETT_PAPIRSØKNAD_OPPGAVE -> {
+                if (finnesOppgaveIGosys(gosysOppgaveGateway, event)) {
+                    opprettOppgave(gosysOppgaveGateway, event)
+                }
+            }
+            EventResultat.OPPRETT_OPPGAVE -> {
+                if (finnesOppgaveIGosys(gosysOppgaveGateway, event)) {
+                    opprettOppgave(gosysOppgaveGateway, event)
+                }
+            }
+        }
+
+        return oppgave()
+    }
+
+    @KtorExperimentalAPI
+    private fun avsluttOppgave(
+        gosysOppgaveGateway: GosysOppgaveGateway,
+        event: BehandlingProsessEventDto
+    ) {
+        val gosysOppgave = finnOppgaveIGosys(gosysOppgaveGateway, event)[0]
+        gosysOppgaveGateway.avsluttOppgave(
+            AvsluttGosysOppgaveRequest(
+                id = gosysOppgave.oppgaveId,
+                versjon = gosysOppgave.versjon
+            )
+        )
+    }
+
+    @KtorExperimentalAPI
+    private fun finnesOppgaveIGosys(
+        gosysOppgaveGateway: GosysOppgaveGateway,
+        event: BehandlingProsessEventDto
+    ): Boolean {
+        val oppgaver = finnOppgaveIGosys(gosysOppgaveGateway, event)
+        return oppgaver.isEmpty()
+    }
+
+    @KtorExperimentalAPI
+    private fun finnOppgaveIGosys(
+        gosysOppgaveGateway: GosysOppgaveGateway,
+        event: BehandlingProsessEventDto
+    ): List<GosysOppgave> {
+        return gosysOppgaveGateway.hentOppgaver(
+            HentGosysOppgaverRequest(
+                aktørId = event.aktørId,
+                tema = GosysKonstanter.Tema.KAPITTEL_9_YTELSER,
+                oppgaveType = GosysKonstanter.OppgaveType.BEHANDLE
+            )
+        )
+    }
+
+
+    @KtorExperimentalAPI
+    private fun opprettOppgave(
+        gosysOppgaveGateway: GosysOppgaveGateway,
+        event: BehandlingProsessEventDto
+    ) {
+        gosysOppgaveGateway.opprettOppgave(
+            OpprettGosysOppgaveRequest(
+                oppgaveType = GosysKonstanter.OppgaveType.BEHANDLE,
+                aktørId = event.aktørId,
+                fagsakId = event.saksnummer,
+                fagsaksystem = GosysKonstanter.Fagsaksystem.K9SAK,
+                aktiv = LocalDate.now(),
+                fristIDager = 1,
+                prioritet = GosysKonstanter.Prioritet.NORMAL,
+                temaGruppe = GosysKonstanter.TemaGruppe.FAMILIE,
+                enhetsNummer = "enhetsNummer"
+            )
+        )
+    }
 
     fun oppgave(): Oppgave {
         val event = sisteEvent()
@@ -39,7 +135,7 @@ data class Modell(
         return Oppgave(
             behandlingId = event.behandlingId,
             fagsakSaksnummer = event.saksnummer,
-            aktorId = event.aktørId.toLong(),
+            aktorId = event.aktørId,
             behandlendeEnhet = event.behandlendeEnhet,
             behandlingType = BehandlingType.fraKode(event.behandlingTypeKode),
             fagsakYtelseType = FagsakYtelseType.fraKode(event.ytelseTypeKode),

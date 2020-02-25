@@ -14,7 +14,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
-internal class AccessTokenClientResolver(
+class AccessTokenClientResolver(
     private val clients: Map<String, Client>
 ) {
 
@@ -62,6 +62,6 @@ internal class AccessTokenClientResolver(
         return client as PrivateKeyClient
     }
 
-    internal fun k9LosApi() = naisSts
+    internal fun naisSts() = naisSts
     internal fun accessTokenClient() = accessTokenClient
 }

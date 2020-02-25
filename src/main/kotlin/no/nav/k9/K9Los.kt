@@ -34,7 +34,9 @@ import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaverApis
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
+import org.apache.http.impl.client.HttpClients
 import java.net.URI
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -68,6 +70,13 @@ fun Application.k9Los() {
         clients = configuration.clients()
     )
 
+    val gosysOppgaveGateway =
+        GosysOppgaveGateway(
+            httpClient = HttpClients.createSystem(),
+            uri = configuration.getOppgaveBaseUri(),
+            accessTokenClientResolver = accessTokenClientResolver
+        )
+
 //    val healthService = HealthService(setOf(
 //            journalforingGateway,
 //            dokumentGateway,
@@ -84,7 +93,8 @@ fun Application.k9Los() {
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
         kafkaConfig = configuration.getKafkaConfig(),
         oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository
+        behandlingProsessEventRepository = behandlingProsessEventRepository,
+        gosysOppgaveGateway = gosysOppgaveGateway
     )
 
     environment.monitor.subscribe(ApplicationStopping) {

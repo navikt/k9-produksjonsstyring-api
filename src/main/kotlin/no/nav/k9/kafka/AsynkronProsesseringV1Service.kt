@@ -1,14 +1,17 @@
 package no.nav.k9.kafka
 
+import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.aksjonspunktbehandling.AksjonspunktStream
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import org.slf4j.LoggerFactory
 
 internal class AsynkronProsesseringV1Service(
     kafkaConfig: KafkaConfig,
     oppgaveRepository: OppgaveRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository
+    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    gosysOppgaveGateway: GosysOppgaveGateway
 ) {
 
     private companion object {
@@ -19,7 +22,8 @@ internal class AsynkronProsesseringV1Service(
     private val aksjonspunktStream = AksjonspunktStream(
         kafkaConfig = kafkaConfig,
         oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository
+        behandlingProsessEventRepository = behandlingProsessEventRepository,
+        gosysOppgaveGateway= gosysOppgaveGateway
     )
 
 
