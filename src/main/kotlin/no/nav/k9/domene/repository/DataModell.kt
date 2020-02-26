@@ -112,6 +112,7 @@ data class Modell(
         val eventResultat = sisteEvent().aktiveAksjonspunkt().eventResultat()
         var aktiv = true
         var oppgaveAvsluttet: LocalDateTime? = null
+        var beslutterOppgave = false
 
         when (eventResultat) {
             EventResultat.LUKK_OPPGAVE -> {
@@ -127,9 +128,13 @@ data class Modell(
                 oppgaveAvsluttet = LocalDateTime.now()
             }
             EventResultat.GJENÅPNE_OPPGAVE -> TODO()
-            EventResultat.OPPRETT_BESLUTTER_OPPGAVE -> TODO()
+            EventResultat.OPPRETT_BESLUTTER_OPPGAVE -> {
+                beslutterOppgave = true
+            }
             EventResultat.OPPRETT_PAPIRSØKNAD_OPPGAVE -> TODO()
-            EventResultat.OPPRETT_OPPGAVE -> TODO()
+            EventResultat.OPPRETT_OPPGAVE -> {
+                aktiv = true
+            }
         }
 
         return Oppgave(
@@ -142,14 +147,16 @@ data class Modell(
             aktiv = aktiv,
             forsteStonadsdag = LocalDate.now(),
             utfortFraAdmin = false,
-            behandlingsfrist = LocalDateTime.now(),
+            behandlingsfrist = LocalDateTime.now().plusDays(1),
             behandlingStatus = BehandlingStatus.fraKode(event.behandlinStatus),
             eksternId = event.eksternId,
             behandlingOpprettet = event.opprettetBehandling,
             oppgaveAvsluttet = oppgaveAvsluttet,
             reservasjon = null,
             system = event.fagsystem.name,
-            oppgaveEgenskap = emptyList()
+            oppgaveEgenskap = emptyList(),
+            aksjonspunkter = event.aktiveAksjonspunkt(),
+            beslutterOppgave = beslutterOppgave
         )
     }
 
@@ -163,6 +170,10 @@ fun BehandlingProsessEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
 }
 
 data class Aksjonspunkter(private val liste: Map<String, String>) {
+    fun lengde(): Int {
+        return liste.size
+    }
+
     fun påVent(): Boolean {
         return this.liste.any { entry -> entry.key.startsWith("7") }
     }
@@ -172,7 +183,36 @@ data class Aksjonspunkter(private val liste: Map<String, String>) {
     }
 
     fun tilBeslutter(): Boolean {
-        return this.liste.any { entry -> entry.key == "5016" }
+       val tilBeslutter =  listOf(
+            "5031",
+            "5038",
+            "5039",
+            "5042",
+            "5046",
+            "5047",
+            "5049",
+            "5050",
+            "5052",
+            "5053",
+            "5058",
+            "5072",
+            "5074",
+            "5076",
+            "5077",
+            "5078",
+            "5079",
+            "5089",
+            "5090",
+            "5095",
+            "9001",
+            "6005",
+            "6007",
+            "6011",
+            "6012",
+            "6014",
+            "6015"
+        )
+        return this.liste.all { entry -> tilBeslutter.contains(entry.key)}
     }
 
     fun eventResultat(): EventResultat {

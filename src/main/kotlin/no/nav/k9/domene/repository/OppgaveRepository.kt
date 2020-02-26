@@ -31,7 +31,7 @@ class OppgaveRepository(private val dataSource: DataSource) {
 
 
     fun hentOppgave(eksternId: UUID): Oppgave {
-       return hashMap[eksternId]!!
+        return hashMap[eksternId]!!
     }
 
     fun opprettEllerEndreOppgave(oppgave: Oppgave) {
@@ -65,7 +65,7 @@ class OppgaveRepository(private val dataSource: DataSource) {
     }
 
     fun opprettOppgave(oppgave: Oppgave) {
-       hashMap.put(oppgave.eksternId, oppgave)
+        hashMap.put(oppgave.eksternId, oppgave)
     }
 
     fun lukkOppgave(uuid: UUID) {

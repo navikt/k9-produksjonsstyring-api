@@ -1,5 +1,6 @@
 package no.nav.k9.domene.lager.oppgave
 
+import no.nav.k9.domene.repository.Aksjonspunkter
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -21,5 +22,7 @@ data class Oppgave(
     val utfortFraAdmin: Boolean,
     val eksternId: UUID,
     val reservasjon: Reservasjon?,
-    val oppgaveEgenskap: List<OppgaveEgenskap>
+    val oppgaveEgenskap: List<OppgaveEgenskap>,
+    val beslutterOppgave: Boolean,
+    val aksjonspunkter: Aksjonspunkter
 )

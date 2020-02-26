@@ -22,6 +22,7 @@ import org.intellij.lang.annotations.Language
 import org.junit.Test
 import java.util.*
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 
 class K9sakEventHandlerTest {
@@ -115,6 +116,103 @@ class K9sakEventHandlerTest {
 
         k9sakEventHandler.prosesser(event)
 
+    }
+
+    @KtorExperimentalAPI
+    @Test
+    fun `Skal opprette oppgave dersom 5009`() {
+        val pg = EmbeddedPostgres.start()
+        val dataSource = pg.postgresDatabase
+        runMigration(dataSource)
+        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1,1))
+        every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
+
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val k9sakEventHandler = K9sakEventHandler(
+            oppgaveRepository,
+            BehandlingProsessEventRepository(dataSource = dataSource),
+            gosysOppgaveGateway = gosysOppgaveGateway
+        )
+
+        @Language("JSON") val json =
+            """{
+                  "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+                  "fagsystem": "FPSAK",
+                  "saksnummer": "5YC4K",
+                  "aktørId": "9906098522415",
+                  "behandlingId": 1000001,
+                  "eventTid": null,
+                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+                  "behandlinStatus": "UTRED",
+                  "behandlingStatus": null,
+                  "behandlingSteg": "INREG_AVSL",
+                  "behandlendeEnhet": "0300",
+                  "ytelseTypeKode": "PSB",
+                  "behandlingTypeKode": "BT-002",
+                  "opprettetBehandling": "2020-02-20T07:38:49",
+                  "aksjonspunktKoderMedStatusListe": {
+                    "5009": "OPPR"
+                  }
+                }"""
+        val objectMapper = jacksonObjectMapper()
+            .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+
+        val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
+
+        k9sakEventHandler.prosesser(event)
+        val oppgave = oppgaveRepository.hentOppgave(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        assertTrue { oppgave.aktiv }
+    }
+
+    @KtorExperimentalAPI
+    @Test
+    fun `Skal ha 1 oppgave med 3 aksjonspunkter`() {
+        val pg = EmbeddedPostgres.start()
+        val dataSource = pg.postgresDatabase
+        runMigration(dataSource)
+        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1,2))
+        every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1,3)
+
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val k9sakEventHandler = K9sakEventHandler(
+            oppgaveRepository,
+            BehandlingProsessEventRepository(dataSource = dataSource),
+            gosysOppgaveGateway = gosysOppgaveGateway
+        )
+
+        @Language("JSON") val json =
+            """{
+                  "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+                  "fagsystem": "FPSAK",
+                  "saksnummer": "5YC4K",
+                  "aktørId": "9906098522415",
+                  "behandlingId": 1000001,
+                  "eventTid": null,
+                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+                  "behandlinStatus": "UTRED",
+                  "behandlingStatus": null,
+                  "behandlingSteg": "INREG_AVSL",
+                  "behandlendeEnhet": "0300",
+                  "ytelseTypeKode": "PSB",
+                  "behandlingTypeKode": "BT-002",
+                  "opprettetBehandling": "2020-02-20T07:38:49",
+                  "aksjonspunktKoderMedStatusListe": {
+                    "5009": "OPPR",
+                    "5084": "OPPR",
+                    "5085": "OPPR"
+                  }
+                }"""
+        val objectMapper = jacksonObjectMapper()
+            .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+
+        val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
+
+        k9sakEventHandler.prosesser(event)
+        val oppgave = oppgaveRepository.hentOppgave(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        assertTrue { oppgave.aktiv }
+        assertTrue( oppgave.aksjonspunkter.lengde() == 3)
     }
 
 }
