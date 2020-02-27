@@ -9,9 +9,6 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
-import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
-import no.nav.helse.dusseldorf.oauth2.client.AccessTokenResponse
-import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -69,7 +66,8 @@ class K9sakEventHandlerTest {
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
 
         k9sakEventHandler.prosesser(event)
-        val oppgave = oppgaveRepository.hentOppgave(UUID.fromString("e84300c6-8976-46fa-8a68-9c7ac27ee636"))
+        val oppgaveModell = oppgaveRepository.hentOppgave(UUID.fromString("e84300c6-8976-46fa-8a68-9c7ac27ee636"))
+        val oppgave = oppgaveModell.sisteOppgave()
         assertFalse { oppgave.aktiv }
     }
 
@@ -161,7 +159,8 @@ class K9sakEventHandlerTest {
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
 
         k9sakEventHandler.prosesser(event)
-        val oppgave = oppgaveRepository.hentOppgave(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        val oppgave =
+            oppgaveRepository.hentOppgave(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
         assertTrue { oppgave.aktiv }
     }
 
@@ -210,9 +209,10 @@ class K9sakEventHandlerTest {
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
 
         k9sakEventHandler.prosesser(event)
-        val oppgave = oppgaveRepository.hentOppgave(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        val oppgave =
+            oppgaveRepository.hentOppgave(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
         assertTrue { oppgave.aktiv }
-        assertTrue( oppgave.aksjonspunkter.lengde() == 3)
+        assertTrue(oppgave.aksjonspunkter.lengde() == 3)
     }
 
 }

@@ -33,7 +33,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
             insert into behandling_prosess_events_k9 as k (id, data)
             values (?, ? :: jsonb)
             on conflict (id) do update
-            set data = jsonb_set(k.data, '{eventer,-1}', ? :: jsonb, true)
+            set data = jsonb_set(k.data, '{eventer,999999}', ? :: jsonb, true)
          """
 
 

@@ -2,7 +2,9 @@ package no.nav.k9.domene.repository
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.aksjonspunktbehandling.eventresultat.EventResultat
-import no.nav.k9.domene.lager.oppgave.*
+import no.nav.k9.domene.lager.oppgave.BehandlingStatus
+import no.nav.k9.domene.lager.oppgave.BehandlingType
+import no.nav.k9.domene.lager.oppgave.FagsakYtelseType
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.integrasjon.gosys.*
 import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
@@ -169,7 +171,7 @@ fun BehandlingProsessEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
     return Aksjonspunkter(this.aksjonspunktKoderMedStatusListe.filter { entry -> entry.value == "OPPR" })
 }
 
-data class Aksjonspunkter(private val liste: Map<String, String>) {
+data class Aksjonspunkter(val liste: Map<String, String>) {
     fun lengde(): Int {
         return liste.size
     }

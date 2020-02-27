@@ -1,76 +1,47 @@
 package no.nav.k9.domene.repository
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.zaxxer.hikari.HikariDataSource
+import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.lager.oppgave.OppgaveEventLogg
+import no.nav.k9.domene.lager.oppgave.OppgaveModell
 import java.util.*
 import javax.sql.DataSource
-import kotlin.collections.HashMap
 
 
 class OppgaveRepository(private val dataSource: DataSource) {
-    val hashMap = HashMap<UUID, Oppgave>()
-    fun hentEventer(uuid: UUID): List<OppgaveEventLogg> {
-        val SQL_QUERY = "select data from oppgave_event_logg where data -> 'uuid' == ? order by id desc"
-        val eventer: MutableList<OppgaveEventLogg> = ArrayList()
+
+    fun hentOppgave(uuid: UUID): OppgaveModell {
+        val SQL_QUERY = "select data from oppgave where id = ?"
+
         dataSource.connection.use { con ->
             con.prepareStatement(SQL_QUERY).use { pst ->
-                pst.setString(0, uuid.toString())
+                pst.setString(1, uuid.toString())
                 pst.executeQuery().use { rs ->
                     while (rs.next()) {
-                        eventer.add(
-                            ObjectMapper().readValue(rs.getString("data"), OppgaveEventLogg::class.java)
-                        )
+                        val string = rs.getString("data")
+                        return objectMapper().readValue(string, OppgaveModell::class.java)
                     }
                 }
             }
         }
-        return eventer
-    }
-
-
-    fun hentOppgave(eksternId: UUID): Oppgave {
-        return hashMap[eksternId]!!
-    }
-
-    fun opprettEllerEndreOppgave(oppgave: Oppgave) {
-        val SQL_QUERY = """
-            insert into oppgave
-            values (id = ?, data = ?)
-            on conflict (id) do update
-                set data = data || ? :: jsonb"""
-        dataSource.connection.use { con ->
-            con.prepareStatement(SQL_QUERY).use { pst ->
-                pst.setString(0, oppgave.eksternId.toString())
-                pst.setString(1, ObjectMapper().writeValueAsString(oppgave))
-                pst.setString(2, ObjectMapper().writeValueAsString(oppgave))
-                pst.executeQuery()
-            }
-        }
-    }
-
-    fun lagre(oppgaveEventLogg: OppgaveEventLogg) {
-        val SQL_QUERY = "insert into oppgave_event_logg values (data = ?)"
-        dataSource.connection.use { con ->
-            con.prepareStatement(SQL_QUERY).use { pst ->
-                pst.setString(0, ObjectMapper().writeValueAsString(oppgaveEventLogg))
-                pst.executeQuery()
-            }
-        }
-    }
-
-    fun gjenåpneOppgave(eksternId: UUID): Oppgave {
-        TODO("Not yet implemented")
+        throw IllegalArgumentException()
     }
 
     fun opprettOppgave(oppgave: Oppgave) {
-        hashMap.put(oppgave.eksternId, oppgave)
+        val SQL_QUERY = """
+            insert into oppgave as k (id, data)
+            values (?, ? :: jsonb)
+            on conflict (id) do update
+            set data = jsonb_set(k.data, '{oppgaver,999999}', ? :: jsonb, true)
+         """
+
+        val eventJson = objectMapper().writeValueAsString(oppgave)
+        dataSource.connection.use { con ->
+            con.prepareStatement(SQL_QUERY).use { pst ->
+                pst.setString(1, oppgave.eksternId.toString())
+                pst.setString(2, "{\"oppgaver\": [$eventJson]}")
+                pst.setString(3, eventJson)
+                pst.executeUpdate()
+            }
+        }
     }
-
-    fun lukkOppgave(uuid: UUID) {
-        TODO("Not yet implemented")
-    }
-
-
 }
