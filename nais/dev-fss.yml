@@ -36,6 +36,11 @@ spec:
     path: /metrics
   vault:
     enabled: true
+    paths:
+      - mountPath: /var/run/secrets/nais.io/serviceuser
+        kvPath: /serviceuser/data/dev/srvk9los
+      - mountPath: /var/run/secrets/nais.io/application
+        kvPath: /kv/preprod/fss/k9-los-api/default
   webproxy: true
   env:
     - name: NAIS_STS_DISCOVERY_ENDPOINT

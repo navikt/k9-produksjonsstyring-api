@@ -21,6 +21,6 @@
     <logger name="io.ktor.auth.jwt" level="TRACE"/>
     
     <root level="INFO">
-        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDOUT_JSON"/>
     </root>
 </configuration>
