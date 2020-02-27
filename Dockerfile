@@ -1,6 +1,5 @@
 FROM navikt/java:11
 
 COPY build/libs/app.jar ./
-COPY build/resources/main/scripts ./
-RUN chmod +x run.sh
-COPY run.sh /init-scripts/.
+RUN chmod +x build/resources/main/scripts/run.sh
+COPY build/resources/main/scripts /init-scripts/.
