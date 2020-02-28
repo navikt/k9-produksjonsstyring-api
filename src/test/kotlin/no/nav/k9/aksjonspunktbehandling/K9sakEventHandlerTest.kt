@@ -66,7 +66,7 @@ class K9sakEventHandlerTest {
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
 
         k9sakEventHandler.prosesser(event)
-        val oppgaveModell = oppgaveRepository.hentOppgave(UUID.fromString("e84300c6-8976-46fa-8a68-9c7ac27ee636"))
+        val oppgaveModell = oppgaveRepository.hent(UUID.fromString("e84300c6-8976-46fa-8a68-9c7ac27ee636"))
         val oppgave = oppgaveModell.sisteOppgave()
         assertFalse { oppgave.aktiv }
     }
@@ -160,7 +160,7 @@ class K9sakEventHandlerTest {
 
         k9sakEventHandler.prosesser(event)
         val oppgave =
-            oppgaveRepository.hentOppgave(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
+            oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
         assertTrue { oppgave.aktiv }
     }
 
@@ -210,7 +210,7 @@ class K9sakEventHandlerTest {
 
         k9sakEventHandler.prosesser(event)
         val oppgave =
-            oppgaveRepository.hentOppgave(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
+            oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
         assertTrue { oppgave.aktiv }
         assertTrue(oppgave.aksjonspunkter.lengde() == 3)
     }

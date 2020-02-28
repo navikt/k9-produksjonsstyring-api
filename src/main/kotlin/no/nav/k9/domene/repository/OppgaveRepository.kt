@@ -9,7 +9,7 @@ import javax.sql.DataSource
 
 class OppgaveRepository(private val dataSource: DataSource) {
 
-    fun hentOppgave(uuid: UUID): OppgaveModell {
+    fun hent(uuid: UUID): OppgaveModell {
         val SQL_QUERY = "select data from oppgave where id = ?"
 
         dataSource.connection.use { con ->
@@ -26,7 +26,7 @@ class OppgaveRepository(private val dataSource: DataSource) {
         throw IllegalArgumentException()
     }
 
-    fun opprettOppgave(oppgave: Oppgave) {
+    fun lagre(oppgave: Oppgave) {
         val SQL_QUERY = """
             insert into oppgave as k (id, data)
             values (?, ? :: jsonb)

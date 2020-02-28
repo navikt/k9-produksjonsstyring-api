@@ -7,6 +7,7 @@ import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
+import java.sql.Connection
 import javax.sql.DataSource
 
 @KtorExperimentalAPI

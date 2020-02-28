@@ -1,52 +1,52 @@
 package no.nav.k9.domene.repository
 
+import kotliquery.queryOf
+import kotliquery.sessionOf
+import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.domene.modell.Modell
 import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
 import java.util.*
 import javax.sql.DataSource
 
 
 class BehandlingProsessEventRepository(private val dataSource: DataSource) {
-    fun behandlingProsessEventer(uuid: UUID): Modell {
-        val SQL_QUERY = "select data from behandling_prosess_events_k9 where id = ?"
-
-        dataSource.connection.use { con ->
-            con.prepareStatement(SQL_QUERY).use { pst ->
-                pst.setString(1, uuid.toString())
-                pst.executeQuery().use { rs ->
-                    while (rs.next()) {
-                        val string = rs.getString("data")
-                        return objectMapper().readValue(string, Modell::class.java)
-                    }
-                }
-            }
+    private fun hent(uuid: UUID): Modell {
+        val json: String? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select data from behandling_prosess_events_k9 where id = :id",
+                    mapOf("id" to uuid.toString())
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asSingle
+            )
         }
-        throw IllegalArgumentException()
+        return objectMapper().readValue(json!!, Modell::class.java)
     }
 
-    fun lagreBehandlingProsessEvent(
+    fun lagre(
         event: BehandlingProsessEventDto
     ): Modell {
-        // Legge service i mellom og mappe fra event til returverdi
+        val json = objectMapper().writeValueAsString(event)
 
-        val SQL_QUERY = """
-            insert into behandling_prosess_events_k9 as k (id, data)
-            values (?, ? :: jsonb)
-            on conflict (id) do update
-            set data = jsonb_set(k.data, '{eventer,999999}', ? :: jsonb, true)
-         """
+        val id = event.eksternId.toString()
+        using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """
+                    insert into behandling_prosess_events_k9 as k (id, data)
+                    values (:id, :dataInitial :: jsonb)
+                    on conflict (id) do update
+                    set data = jsonb_set(k.data, '{eventer,999999}', :data :: jsonb, true)
+                 """, mapOf("id" to id, "dataInitial" to "{\"eventer\": [$json]}", "data" to json)
+                ).asUpdate
+            )
 
-
-        val eventJson = objectMapper().writeValueAsString(event)
-        dataSource.connection.use { con ->
-            con.prepareStatement(SQL_QUERY).use { pst ->
-                pst.setString(1, event.eksternId.toString())
-                pst.setString(2, "{\"eventer\": [$eventJson]}")
-                pst.setString(3, eventJson)
-                pst.executeUpdate()
-            }
         }
-        return behandlingProsessEventer(event.eksternId)
+
+        return hent(event.eksternId)
     }
 
 }
