@@ -42,6 +42,7 @@ spec:
       - mountPath: /var/run/secrets/nais.io/application
         kvPath: /kv/preprod/fss/k9-los-api/default
   sidecar: true
+  webproxy: true
   env:
     - name: NAIS_STS_DISCOVERY_ENDPOINT
       value: https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration
