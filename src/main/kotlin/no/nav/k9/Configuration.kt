@@ -72,6 +72,6 @@ data class Configuration(private val config: ApplicationConfig) {
     }
 
     fun databaseName(): String {
-        return "k9-los"
+        return "k9-los-dev"
     }
 }
