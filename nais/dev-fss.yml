@@ -58,6 +58,4 @@ spec:
     - name: OPPGAVE_BASE_URI
       value: https://oppgave.nais.preprod.local
     - name: DB_URL
-      value: jdbc:postgresql://b27dbvl014.preprod.local:5432/k9los-dev
-    - name: DB_URL
-      value: jdbc:postgresql://b27dbvl014.preprod.local:5432/k9los-dev
+      value: jdbc:postgresql://b27dbvl014.preprod.local:5432/k9-los-dev
