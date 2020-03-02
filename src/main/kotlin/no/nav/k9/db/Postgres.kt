@@ -1,17 +1,17 @@
 package no.nav.k9.db
 
-import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.Application
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.Configuration
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
-import java.sql.Connection
 import javax.sql.DataSource
 
 @KtorExperimentalAPI
 fun ApplicationConfig.isVaultEnabled() =
+
     propertyOrNull("database.vault.mountpath") != null
 
 enum class Role {
@@ -21,27 +21,29 @@ enum class Role {
 }
 
 @KtorExperimentalAPI
-fun Application.getDataSource(hikariConfig: HikariConfig) =
+fun Application.getDataSource(configuration: Configuration) =
     if (environment.config.isVaultEnabled()) {
-        dataSourceFromVault(hikariConfig, Role.k9los)
+        dataSourceFromVault(configuration, Role.k9los)
     } else {
-        HikariDataSource(hikariConfig)
+        HikariDataSource(configuration.hikariConfig())
     }
 
 @KtorExperimentalAPI
-fun Application.dataSourceFromVault(hikariConfig: HikariConfig, role: Role) =
+fun Application.dataSourceFromVault(hikariConfig: Configuration, role: Role) =
     HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(
-        hikariConfig,
-        environment.config.property("database.vault.mountpath").getString(),
-        "${environment.config.property("database.name").getString()}-$role"
+        hikariConfig.hikariConfig(),
+        hikariConfig.getVaultDbPath(),
+        "${hikariConfig.databaseName()}-$role"
     )
 
 @KtorExperimentalAPI
-fun Application.migrate(hikariConfig: HikariConfig) =
-    if (environment.config.isVaultEnabled()) {
-        runMigration(dataSourceFromVault(hikariConfig, Role.k9los), "SET ROLE \"${environment.config.property("database.name").getString()}-${Role.k9los}\"")
+fun Application.migrate(configuration: Configuration) =
+    if (configuration.isVaultEnabled()) {
+        runMigration(
+            dataSourceFromVault(configuration, Role.k9los), "SET ROLE \"${configuration.databaseName()}-${Role.k9los}\""
+        )
     } else {
-        runMigration(HikariDataSource(hikariConfig))
+        runMigration(HikariDataSource(configuration.hikariConfig()))
     }
 
 fun runMigration(dataSource: DataSource, initSql: String? = null): Int {

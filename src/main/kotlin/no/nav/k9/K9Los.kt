@@ -22,6 +22,10 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.db.hikariConfig
+import no.nav.k9.domene.repository.BehandlingProsessEventRepository
+import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
+import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.NavAnsattApis
@@ -32,10 +36,6 @@ import no.nav.k9.tjenester.avdelingsleder.saksliste.AvdelingslederSakslisteApis
 import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaverApis
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
-import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import org.apache.http.impl.client.HttpClients
 import java.net.URI
 
@@ -87,7 +87,7 @@ fun Application.k9Los() {
 //            ))
 //    )
 
-    val dataSource = hikariConfig(configuration.hikariConfig())
+    val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(

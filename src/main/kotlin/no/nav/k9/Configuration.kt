@@ -14,7 +14,7 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit
 
 @KtorExperimentalAPI
-internal data class Configuration(private val config : ApplicationConfig) {
+data class Configuration(private val config: ApplicationConfig) {
     companion object {
         internal const val NAIS_STS_ALIAS = "nais-sts"
         internal const val AZURE_V2_ALIAS = "azure-v2"
@@ -60,6 +60,18 @@ internal data class Configuration(private val config : ApplicationConfig) {
     )
 
     fun getOppgaveBaseUri(): URI {
-       return URI(config.getRequiredString("nav.gosys.baseuri", secret = false))
+        return URI(config.getRequiredString("nav.gosys.baseuri", secret = false))
+    }
+
+    fun isVaultEnabled(): Boolean {
+        return config.getOptionalString("db.vault.mountpath", secret = false)!!.isNotEmpty()
+    }
+
+    fun getVaultDbPath(): String {
+        return config.getOptionalString("db.vault.mountpath", secret = false)!!
+    }
+
+    fun databaseName(): String {
+        return "k9-los"
     }
 }

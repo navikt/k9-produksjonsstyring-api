@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.Application
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.Configuration
 
 fun createHikariConfig(jdbcUrl: String, username: String? = null, password: String? = null) =
     HikariConfig().apply {
@@ -20,7 +21,7 @@ fun createHikariConfig(jdbcUrl: String, username: String? = null, password: Stri
     }
 
 @KtorExperimentalAPI
-fun Application.hikariConfig(hikariConfig: HikariConfig): HikariDataSource {
+fun Application.hikariConfig(hikariConfig: Configuration): HikariDataSource {
     migrate(hikariConfig)
     return getDataSource(hikariConfig)
 }
