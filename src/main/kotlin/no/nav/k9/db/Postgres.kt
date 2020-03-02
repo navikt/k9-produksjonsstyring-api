@@ -15,7 +15,7 @@ fun ApplicationConfig.isVaultEnabled() =
     propertyOrNull("database.vault.mountpath") != null
 
 enum class Role {
-     k9los;
+    Admin, User, ReadOnly;
 
     override fun toString() = name.toLowerCase()
 }
@@ -23,7 +23,7 @@ enum class Role {
 @KtorExperimentalAPI
 fun Application.getDataSource(configuration: Configuration) =
     if (environment.config.isVaultEnabled()) {
-        dataSourceFromVault(configuration, Role.k9los)
+        dataSourceFromVault(configuration, Role.User)
     } else {
         HikariDataSource(configuration.hikariConfig())
     }
@@ -40,7 +40,7 @@ fun Application.dataSourceFromVault(hikariConfig: Configuration, role: Role) =
 fun Application.migrate(configuration: Configuration) =
     if (configuration.isVaultEnabled()) {
         runMigration(
-            dataSourceFromVault(configuration, Role.k9los), "SET ROLE \"${configuration.databaseName()}-${Role.k9los}\""
+            dataSourceFromVault(configuration, Role.Admin), "SET ROLE \"${configuration.databaseName()}-${Role.Admin}\""
         )
     } else {
         runMigration(HikariDataSource(configuration.hikariConfig()))
