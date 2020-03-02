@@ -32,21 +32,32 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
         val json = objectMapper().writeValueAsString(event)
 
         val id = event.eksternId.toString()
-        using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    """
+        val out = using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                tx.run(
+                    queryOf(
+                        """
                     insert into behandling_prosess_events_k9 as k (id, data)
                     values (:id, :dataInitial :: jsonb)
                     on conflict (id) do update
                     set data = jsonb_set(k.data, '{eventer,999999}', :data :: jsonb, true)
                  """, mapOf("id" to id, "dataInitial" to "{\"eventer\": [$json]}", "data" to json)
-                ).asUpdate
-            )
+                    ).asUpdate
+                )
+                tx.run(
+                    queryOf(
+                        "select data from behandling_prosess_events_k9 where id = :id",
+                        mapOf("id" to id)
+                    )
+                        .map { row ->
+                            row.string("data")
+                        }.asSingle
+                )
+            }
 
         }
+        return objectMapper().readValue(out!!, Modell::class.java)
 
-        return hent(event.eksternId)
     }
 
 }

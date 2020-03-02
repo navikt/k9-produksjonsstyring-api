@@ -1,5 +1,8 @@
 package no.nav.k9.domene.repository
 
+import kotliquery.queryOf
+import kotliquery.sessionOf
+import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.OppgaveModell
@@ -10,38 +13,35 @@ import javax.sql.DataSource
 class OppgaveRepository(private val dataSource: DataSource) {
 
     fun hent(uuid: UUID): OppgaveModell {
-        val SQL_QUERY = "select data from oppgave where id = ?"
-
-        dataSource.connection.use { con ->
-            con.prepareStatement(SQL_QUERY).use { pst ->
-                pst.setString(1, uuid.toString())
-                pst.executeQuery().use { rs ->
-                    while (rs.next()) {
-                        val string = rs.getString("data")
-                        return objectMapper().readValue(string, OppgaveModell::class.java)
-                    }
-                }
-            }
+        val json: String? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select data from oppgave where id = :id",
+                    mapOf("id" to uuid.toString())
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asSingle
+            )
         }
-        throw IllegalArgumentException()
+        return objectMapper().readValue(json!!, OppgaveModell::class.java)
+
     }
 
     fun lagre(oppgave: Oppgave) {
-        val SQL_QUERY = """
-            insert into oppgave as k (id, data)
-            values (?, ? :: jsonb)
-            on conflict (id) do update
-            set data = jsonb_set(k.data, '{oppgaver,999999}', ? :: jsonb, true)
-         """
-
-        val eventJson = objectMapper().writeValueAsString(oppgave)
-        dataSource.connection.use { con ->
-            con.prepareStatement(SQL_QUERY).use { pst ->
-                pst.setString(1, oppgave.eksternId.toString())
-                pst.setString(2, "{\"oppgaver\": [$eventJson]}")
-                pst.setString(3, eventJson)
-                pst.executeUpdate()
-            }
+        val json = objectMapper().writeValueAsString(oppgave)
+        val id = oppgave.eksternId.toString()
+        using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """
+                    insert into oppgave as k (id, data)
+                    values (:id, :dataInitial :: jsonb)
+                    on conflict (id) do update
+                    set data = jsonb_set(k.data, '{oppgaver,999999}', :data :: jsonb, true)
+                 """, mapOf("id" to id, "dataInitial" to "{\"oppgaver\": [$json]}", "data" to json)
+                ).asUpdate
+            )
         }
     }
 }
