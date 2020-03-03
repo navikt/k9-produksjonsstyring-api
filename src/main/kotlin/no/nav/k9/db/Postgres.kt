@@ -9,11 +9,6 @@ import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
 import javax.sql.DataSource
 
-@KtorExperimentalAPI
-fun ApplicationConfig.isVaultEnabled() =
-
-    propertyOrNull("database.vault.mountpath") != null
-
 enum class Role {
     Admin, User, ReadOnly;
 
@@ -22,7 +17,7 @@ enum class Role {
 
 @KtorExperimentalAPI
 fun Application.getDataSource(configuration: Configuration) =
-    if (environment.config.isVaultEnabled()) {
+    if (configuration.isVaultEnabled()) {
         dataSourceFromVault(configuration, Role.User)
     } else {
         HikariDataSource(configuration.hikariConfig())

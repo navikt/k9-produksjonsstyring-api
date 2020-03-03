@@ -64,11 +64,11 @@ data class Configuration(private val config: ApplicationConfig) {
     }
 
     fun isVaultEnabled(): Boolean {
-        return config.getOptionalString("nav.db.vault.mountpath", secret = false)!!.isNotEmpty()
+        return config.getOptionalString("nav.db.vault_mountpath", secret = false)!!.isNotEmpty()
     }
 
     fun getVaultDbPath(): String {
-        return config.getOptionalString("nav.db.vault.mountpath", secret = false)!!
+        return config.getOptionalString("nav.db.vault_mountpath", secret = false)!!
     }
 
     fun databaseName(): String {
