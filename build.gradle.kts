@@ -10,6 +10,8 @@ val hikariVersion = "3.3.1"
 val flywayVersion = "6.0.8"
 val vaultJdbcVersion = "1.3.1"
 val kafkaEmbeddedEnvVersion = "2.2.3"
+val cxf = "3.3.1"
+val jaxwsTools = "2.3.1"
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -36,8 +38,8 @@ dependencies {
     implementation ("io.ktor:ktor-locations:$ktorVersion")
 
     // Client
-    implementation ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
-    implementation ( "no.nav.helse:dusseldorf-oauth2-client:$dusseldorfKtorVersion")
+    implementation("no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
+    implementation("no.nav.helse:dusseldorf-oauth2-client:$dusseldorfKtorVersion")
 
     // Kafka
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
@@ -45,11 +47,26 @@ dependencies {
     implementation("com.sun.istack:istack-commons-runtime:2.2")
     implementation("com.github.seratch:kotliquery:1.3.1")
 
+    // SakOgBehandling
+    //<sakogbehandling-tjenestespesifikasjon.version>1.2018.11.06-01.45-c7f37fed0647</sakogbehandling-tjenestespesifikasjon.version>
+    implementation("no.nav.tjenestespesifikasjoner:sakogbehandling-tjenestespesifikasjon:1.2020.01.30-14.36-cdf257baea96")
+    implementation("no.nav.tjenestespesifikasjoner:nav-virksomhet-hendelsehandterer-behandlingstatus-v1-meldingsdefinisjon:1.2020.01.30-14.36-cdf257baea96")
+    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:${cxf}")
+    implementation("org.apache.cxf:cxf-rt-features-logging:${cxf}")
+    implementation("org.apache.cxf:cxf-rt-transports-http:${cxf}")
+    implementation("org.apache.cxf:cxf-rt-ws-security:${cxf}")
+    implementation("org.apache.ws.xmlschema:xmlschema-core:2.2.4") // Force newer version of XMLSchema to fix illegal reflective access warning
+    implementation("com.sun.xml.ws:jaxws-tools:${jaxwsTools}") {
+        exclude(group = "com.sun.xml.ws", module = "policy")
+    }
+
+    implementation("com.ibm.mq:com.ibm.mq.allclient:9.1.0.4")
+
     // Test
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
-    testImplementation ("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
-    testImplementation ( "no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
-    testImplementation ("io.ktor:ktor-server-test-host:1.3.0") {
+    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
+    testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
+    testImplementation("io.ktor:ktor-server-test-host:1.3.0") {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
