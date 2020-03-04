@@ -62,3 +62,5 @@ spec:
       value: jdbc:postgresql://b27dbvl014.preprod.local:5432/k9-los
     - name: DB_VAULT_MOUNTPATH
       value: postgresql/preprod-fss/
+    - name: BOOTSTRAP_SERVERS
+      value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
