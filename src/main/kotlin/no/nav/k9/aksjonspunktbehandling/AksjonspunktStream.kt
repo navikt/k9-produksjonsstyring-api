@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory
 internal class AksjonspunktStream(
     kafkaConfig: KafkaConfig,
     oppgaveRepository: OppgaveRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    gosysOppgaveGateway: GosysOppgaveGateway
+    behandlingProsessEventRepository: BehandlingProsessEventRepository
+//    gosysOppgaveGateway: GosysOppgaveGateway
 ) {
 
     private val stream = ManagedKafkaStreams(
@@ -27,8 +27,8 @@ internal class AksjonspunktStream(
         properties = kafkaConfig.stream(NAME),
         topology = topology(
             oppgaveRepository = oppgaveRepository,
-            behandlingProsessEventRepository = behandlingProsessEventRepository,
-            gosysOppgaveGateway = gosysOppgaveGateway
+            behandlingProsessEventRepository = behandlingProsessEventRepository
+//            gosysOppgaveGateway = gosysOppgaveGateway
         ),
         unreadyAfterStreamStoppedIn = kafkaConfig.unreadyAfterStreamStoppedIn
     )
@@ -43,8 +43,8 @@ internal class AksjonspunktStream(
         @KtorExperimentalAPI
         private fun topology(
             oppgaveRepository: OppgaveRepository,
-            behandlingProsessEventRepository: BehandlingProsessEventRepository,
-            gosysOppgaveGateway: GosysOppgaveGateway
+            behandlingProsessEventRepository: BehandlingProsessEventRepository
+//            gosysOppgaveGateway: GosysOppgaveGateway
         ): Topology {
             val builder = StreamsBuilder()
             val fromTopic = Topics.AKSJONSPUNKT_LAGET
@@ -58,8 +58,8 @@ internal class AksjonspunktStream(
                     val event = topicEntry.data
                     K9sakEventHandler(
                         oppgaveRepository = oppgaveRepository,
-                        behandlingProsessEventRepository = behandlingProsessEventRepository,
-                        gosysOppgaveGateway = gosysOppgaveGateway
+                        behandlingProsessEventRepository = behandlingProsessEventRepository
+//                        gosysOppgaveGateway = gosysOppgaveGateway
                     ).prosesser(event)
                 }
             return builder.build()

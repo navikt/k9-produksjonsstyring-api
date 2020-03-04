@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory
 
 class K9sakEventHandler @KtorExperimentalAPI constructor(
     val oppgaveRepository: OppgaveRepository,
-    val behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    val gosysOppgaveGateway: GosysOppgaveGateway
+    val behandlingProsessEventRepository: BehandlingProsessEventRepository
+//    val gosysOppgaveGateway: GosysOppgaveGateway
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
@@ -30,7 +30,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
 
 
-        val oppgave = modell.syncOppgaveTilGosys(gosysOppgaveGateway)
+        val oppgave = modell.oppgave()
         oppgaveRepository.lagre(oppgave)
     }
 }

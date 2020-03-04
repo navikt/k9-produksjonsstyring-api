@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory
 internal class AsynkronProsesseringV1Service(
     kafkaConfig: KafkaConfig,
     oppgaveRepository: OppgaveRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    gosysOppgaveGateway: GosysOppgaveGateway
+    behandlingProsessEventRepository: BehandlingProsessEventRepository
+//    gosysOppgaveGateway: GosysOppgaveGateway
 ) {
 
     private companion object {
@@ -22,8 +22,8 @@ internal class AsynkronProsesseringV1Service(
     private val aksjonspunktStream = AksjonspunktStream(
         kafkaConfig = kafkaConfig,
         oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository,
-        gosysOppgaveGateway= gosysOppgaveGateway
+        behandlingProsessEventRepository = behandlingProsessEventRepository
+//        gosysOppgaveGateway= gosysOppgaveGateway
     )
 
 

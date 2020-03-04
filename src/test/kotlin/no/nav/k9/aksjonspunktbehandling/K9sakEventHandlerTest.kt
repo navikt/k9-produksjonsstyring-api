@@ -38,8 +38,8 @@ class K9sakEventHandlerTest {
 
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource),
-            gosysOppgaveGateway = gosysOppgaveGateway
+            BehandlingProsessEventRepository(dataSource = dataSource)
+//            gosysOppgaveGateway = gosysOppgaveGateway
         )
 
         val json =
@@ -83,8 +83,8 @@ class K9sakEventHandlerTest {
 
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource),
-            BehandlingProsessEventRepository(dataSource = dataSource),
-            gosysOppgaveGateway = gosysOppgaveGateway
+            BehandlingProsessEventRepository(dataSource = dataSource)
+//            gosysOppgaveGateway = gosysOppgaveGateway
         )
 
         @Language("JSON") val json =
@@ -129,8 +129,8 @@ class K9sakEventHandlerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource),
-            gosysOppgaveGateway = gosysOppgaveGateway
+            BehandlingProsessEventRepository(dataSource = dataSource)
+//            gosysOppgaveGateway = gosysOppgaveGateway
         )
 
         @Language("JSON") val json =
@@ -177,8 +177,8 @@ class K9sakEventHandlerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource),
-            gosysOppgaveGateway = gosysOppgaveGateway
+            BehandlingProsessEventRepository(dataSource = dataSource)
+//            gosysOppgaveGateway = gosysOppgaveGateway
         )
 
         @Language("JSON") val json =

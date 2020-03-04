@@ -66,16 +66,16 @@ fun Application.k9Los() {
         AuthStatusPages()
     }
 
-    val accessTokenClientResolver = AccessTokenClientResolver(
-        clients = configuration.clients()
-    )
+//    val accessTokenClientResolver = AccessTokenClientResolver(
+//        clients = configuration.clients()
+//    )
 
-    val gosysOppgaveGateway =
-        GosysOppgaveGateway(
-            httpClient = HttpClients.createSystem(),
-            uri = configuration.getOppgaveBaseUri(),
-            accessTokenClientResolver = accessTokenClientResolver
-        )
+//    val gosysOppgaveGateway =
+//        GosysOppgaveGateway(
+//            httpClient = HttpClients.createSystem(),
+//            uri = configuration.getOppgaveBaseUri(),
+//            accessTokenClientResolver = accessTokenClientResolver
+//        )
 
 //    val healthService = HealthService(setOf(
 //            journalforingGateway,
@@ -93,8 +93,8 @@ fun Application.k9Los() {
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
         kafkaConfig = configuration.getKafkaConfig(),
         oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository,
-        gosysOppgaveGateway = gosysOppgaveGateway
+        behandlingProsessEventRepository = behandlingProsessEventRepository
+//        gosysOppgaveGateway = gosysOppgaveGateway
     )
 
     environment.monitor.subscribe(ApplicationStopping) {
