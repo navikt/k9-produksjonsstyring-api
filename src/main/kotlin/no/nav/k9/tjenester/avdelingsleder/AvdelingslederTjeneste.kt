@@ -1,12 +1,14 @@
 package no.nav.k9.tjenester.avdelingsleder
 
 import no.nav.k9.domene.lager.oppgave.*
+import no.nav.k9.domene.modell.AndreKriterierType
+import no.nav.k9.domene.modell.BehandlingType
 import java.time.LocalDate
 
 interface AvdelingslederTjeneste {
-    fun hentOppgaveFiltreringer(avdelingsEnhet: String): List<OppgaveFiltrering>
+    fun hentOppgaveFiltreringer(avdelingsEnhet: String): List<OppgaveKø>
 
-    fun hentOppgaveFiltering(oppgaveFiltrering: Long?): OppgaveFiltrering
+    fun hentOppgaveFiltering(oppgaveFiltrering: Long?): OppgaveKø
 
     fun lagNyOppgaveFiltrering(avdelingEnhet: String): Long?
 

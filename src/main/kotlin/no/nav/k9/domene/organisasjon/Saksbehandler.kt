@@ -1,6 +1,6 @@
 package no.nav.k9.domene.organisasjon
 
-import no.nav.k9.domene.lager.oppgave.OppgaveFiltrering
+import no.nav.k9.domene.lager.oppgave.OppgaveKø
 import java.util.*
 
 class Saksbehandler(val saksbehandlerIdent: String) {
@@ -8,7 +8,7 @@ class Saksbehandler(val saksbehandlerIdent: String) {
 
     private val avdelinger = ArrayList<Avdeling>()
 
-    private val oppgaveFiltreringer = ArrayList<OppgaveFiltrering>()
+    private val oppgaveFiltreringer = ArrayList<OppgaveKø>()
 
     fun getAvdelinger(): List<Avdeling> {
         return avdelinger
@@ -22,7 +22,7 @@ class Saksbehandler(val saksbehandlerIdent: String) {
         avdelinger.remove(avdeling)
     }
 
-    fun getOppgaveFiltreringer(): List<OppgaveFiltrering> {
+    fun getOppgaveFiltreringer(): List<OppgaveKø> {
         return Collections.unmodifiableList(oppgaveFiltreringer)
     }
 }

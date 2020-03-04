@@ -1,6 +1,7 @@
 package no.nav.k9.domene.lager.oppgave
 
 import no.nav.k9.domene.modell.Aksjonspunkter
+import no.nav.k9.domene.modell.BehandlingType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*

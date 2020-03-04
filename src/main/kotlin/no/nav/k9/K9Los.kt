@@ -11,9 +11,11 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
+import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.routing.Routing
+import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dusseldorf.ktor.auth.*
@@ -30,20 +32,25 @@ import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
-import no.nav.k9.tjenester.avdelingsleder.NavAnsattApis
+import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
 import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgave.AvdelingslederOppgaveApis
 import no.nav.k9.tjenester.avdelingsleder.saksbehandler.AvdelingslederSaksbehandlerApis
 import no.nav.k9.tjenester.avdelingsleder.saksliste.AvdelingslederSakslisteApis
 import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
-import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaverApis
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import org.apache.http.impl.client.HttpClients
+import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
+import no.nav.k9.tjenester.kodeverk.KodeverkApis
+import no.nav.k9.tjenester.konfig.KonfigApis
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjenesteImpl
 import java.net.URI
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @KtorExperimentalAPI
+@KtorExperimentalLocationsAPI
 fun Application.k9Los() {
     val appId = environment.config.id()
     logProxyProperties()
@@ -61,12 +68,6 @@ fun Application.k9Los() {
             dusseldorfConfigured()
                 .setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
                 .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
-        }
-    }
-
-    install(ContentNegotiation) {
-        jackson {
-            dusseldorfConfigured()
         }
     }
 
@@ -99,6 +100,7 @@ fun Application.k9Los() {
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
+    val oppgaveTjeneste = OppgaveTjenesteImpl(oppgaveRepository)
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
         kafkaConfig = configuration.getKafkaConfig(),
@@ -118,6 +120,9 @@ fun Application.k9Los() {
     install(Locations)
 
     install(Routing) {
+
+        val kodeverkTjeneste = HentKodeverkTjeneste()
+
         authenticate(*issuers.allIssuers()) {
             requiresCallId {
 
@@ -126,16 +131,25 @@ fun Application.k9Los() {
         MetricsRoute()
         DefaultProbeRoutes()
 
-        AdminApis()
-        AvdelingslederApis()
-        AvdelingslederOppgaveApis()
-        AvdelingslederSaksbehandlerApis()
-        AvdelingslederSakslisteApis()
-        NøkkeltallApis()
-        OppgaverApis()
-        NavAnsattApis()
-        SaksbehandlerSakslisteApis()
-        SaksbehandlerNøkkeltallApis()
+        route("api") {
+            AdminApis()
+            AvdelingslederApis()
+            AvdelingslederOppgaveApis()
+            AvdelingslederSaksbehandlerApis()
+            AvdelingslederSakslisteApis()
+            NøkkeltallApis()
+            route("saksbehandler") {
+                OppgaveApis(oppgaveTjeneste)
+                SaksbehandlerSakslisteApis()
+                SaksbehandlerNøkkeltallApis()
+            }
+            NavAnsattApis()
+
+            SaksbehandlerNøkkeltallApis()
+            route("konfig") { KonfigApis() }
+            KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
+        }
+
 
     }
 
@@ -159,10 +173,11 @@ fun Application.k9Los() {
 }
 
 private fun Map<Issuer, Set<ClaimRule>>.healthCheckMap(
-    initial : MutableMap<URI, HttpRequestHealthConfig>
-) : Map<URI, HttpRequestHealthConfig> {
+    initial: MutableMap<URI, HttpRequestHealthConfig>
+): Map<URI, HttpRequestHealthConfig> {
     forEach { issuer, _ ->
-        initial[issuer.jwksUri()] = HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, includeExpectedStatusEntity = false)
+        initial[issuer.jwksUri()] =
+            HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, includeExpectedStatusEntity = false)
     }
     return initial.toMap()
 }

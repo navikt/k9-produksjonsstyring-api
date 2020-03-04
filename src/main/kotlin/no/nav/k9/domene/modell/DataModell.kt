@@ -3,7 +3,6 @@ package no.nav.k9.domene.modell
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.aksjonspunktbehandling.eventresultat.EventResultat
 import no.nav.k9.domene.lager.oppgave.BehandlingStatus
-import no.nav.k9.domene.lager.oppgave.BehandlingType
 import no.nav.k9.domene.lager.oppgave.FagsakYtelseType
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.integrasjon.gosys.*
@@ -122,7 +121,7 @@ data class Modell(
                 oppgaveAvsluttet = LocalDateTime.now()
             }
             EventResultat.LUKK_OPPGAVE_VENT -> {
-                aktiv = false
+    aktiv = false
                 oppgaveAvsluttet = LocalDateTime.now()
             }
             EventResultat.LUKK_OPPGAVE_MANUELT_VENT -> {

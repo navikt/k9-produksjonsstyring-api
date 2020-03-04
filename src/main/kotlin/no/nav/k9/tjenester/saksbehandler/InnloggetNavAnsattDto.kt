@@ -1,6 +1,6 @@
 package no.nav.k9.tjenester.avdelingsleder
 
-data class InnloggetNavAnsatt(
+data class InnloggetNavAnsattDto(
     val brukernavn: String,
     val navn: String,
     val kanSaksbehandle: Boolean,

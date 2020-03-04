@@ -4,7 +4,7 @@ import ResourceLink
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonProperty
 import no.nav.k9.domene.lager.oppgave.BehandlingStatus
-import no.nav.k9.domene.lager.oppgave.BehandlingType
+import no.nav.k9.domene.modell.BehandlingType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*

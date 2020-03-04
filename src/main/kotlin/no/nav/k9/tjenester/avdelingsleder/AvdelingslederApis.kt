@@ -14,5 +14,6 @@ fun Route.AvdelingslederApis(
     class getAvdelinger
 
     get { _: getAvdelinger ->
+        call.respond(listOf(Avdeling(33, "Enhet", "Avdeling", false)))
     }
 }

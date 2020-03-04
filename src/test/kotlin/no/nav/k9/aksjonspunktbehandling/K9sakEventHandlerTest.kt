@@ -100,7 +100,7 @@ class K9sakEventHandlerTest {
   "behandlingStatus": null,
   "behandlingSteg": "INREG_AVSL",
   "behandlendeEnhet": "0300",
-  "ytelseTypeKode": "PSB",
+  "ytelseTypeKode": "SVP",
   "behandlingTypeKode": "BT-002",
   "opprettetBehandling": "2020-02-20T07:38:49",
   "aksjonspunktKoderMedStatusListe": {
@@ -146,7 +146,7 @@ class K9sakEventHandlerTest {
                   "behandlingStatus": null,
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
-                  "ytelseTypeKode": "PSB",
+                  "ytelseTypeKode": "SVP",
                   "behandlingTypeKode": "BT-002",
                   "opprettetBehandling": "2020-02-20T07:38:49",
                   "aksjonspunktKoderMedStatusListe": {
@@ -194,7 +194,7 @@ class K9sakEventHandlerTest {
                   "behandlingStatus": null,
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
-                  "ytelseTypeKode": "PSB",
+                  "ytelseTypeKode": "SVP",
                   "behandlingTypeKode": "BT-002",
                   "opprettetBehandling": "2020-02-20T07:38:49",
                   "aksjonspunktKoderMedStatusListe": {

@@ -42,9 +42,9 @@ object TestConfiguration {
         map["nav.trust_store.path"] = "${System.getProperty("user.home")}/.modig/trustStore.jks"
         map["nav.trust_store.password"] = "changeit"
 
-        map["nav.db.url"] = "jdbc:postgresql://localhost:5432/k9los"
-        map["nav.db.username"] = "k9los"
-        map["nav.db.password"] = "k9los"
+        map["nav.db.url"] = "jdbc:postgresql://localhost:5432/k9los_unit"
+        map["nav.db.username"] = "k9los_unit"
+        map["nav.db.password"] = "k9los_unit"
         return map.toMap()
     }
 

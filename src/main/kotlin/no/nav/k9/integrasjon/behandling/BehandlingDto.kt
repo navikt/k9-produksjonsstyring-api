@@ -2,7 +2,7 @@ package no.nav.k9.integrasjon.behandling
 
 import ResourceLink
 import no.nav.k9.domene.lager.oppgave.BehandlingStatus
-import no.nav.k9.domene.lager.oppgave.BehandlingType
+import no.nav.k9.domene.modell.BehandlingType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
