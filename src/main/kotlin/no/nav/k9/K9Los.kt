@@ -1,5 +1,7 @@
 package no.nav.k9
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy
+import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
@@ -52,6 +54,14 @@ fun Application.k9Los() {
 
     install(Authentication) {
         multipleJwtIssuers(issuers)
+    }
+
+    install(ContentNegotiation) {
+        jackson {
+            dusseldorfConfigured()
+                .setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+                .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
+        }
     }
 
     install(ContentNegotiation) {
