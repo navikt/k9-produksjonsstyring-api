@@ -105,7 +105,8 @@ fun Application.k9Los() {
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
         kafkaConfig = configuration.getKafkaConfig(),
         oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository
+        behandlingProsessEventRepository = behandlingProsessEventRepository,
+        configuration = configuration
 //        gosysOppgaveGateway = gosysOppgaveGateway
     )
 

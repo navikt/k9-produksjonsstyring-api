@@ -11,8 +11,6 @@ import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.serialization.Serializer
 import org.apache.kafka.common.serialization.StringSerializer
-import org.apache.kafka.connect.data.SchemaBuilder.string
-import kotlin.math.log
 
 data class TopicEntry<V>(val metadata: Metadata, val data: V)
 
@@ -28,7 +26,7 @@ internal data class Topic<V>(
 internal object Topics {
     val AKSJONSPUNKT_LAGET = Topic(
         name = "privat-foreldrepenger-aksjonspunkthendelse-local",
-        serDes = AksjosnpunktLaget()
+        serDes = AksjonspunktLaget()
     )
 }
 fun objectMapper(): ObjectMapper {
@@ -52,7 +50,7 @@ internal abstract class SerDes<V> : Serializer<V>, Deserializer<V> {
     override fun close() {}
 }
 
-private class AksjosnpunktLaget: SerDes<TopicEntry<BehandlingProsessEventDto>>() {
+internal class AksjonspunktLaget : SerDes<TopicEntry<BehandlingProsessEventDto>>() {
     @ExperimentalStdlibApi
     override fun deserialize(topic: String?, data: ByteArray?): TopicEntry<BehandlingProsessEventDto>? {
         return data?.let {

@@ -34,6 +34,11 @@ data class Configuration(private val config: ApplicationConfig) {
         password = config.getOptionalString("nav.db.password", secret = true)
     )
 
+    internal fun getAksjonspunkthendelseTopic(): String {
+        return config.getOptionalString("nav.kafka.aksjonshendelseTopic", secret = false)
+            ?: "privat-foreldrepenger-aksjonspunkthendelse-local"
+    }
+
     internal fun getKafkaConfig() =
         config.getRequiredString("nav.kafka.bootstrap_servers", secret = false).let { bootstrapServers ->
             val trustStore = config.getRequiredString("nav.trust_store.path", secret = false).let { trustStorePath ->

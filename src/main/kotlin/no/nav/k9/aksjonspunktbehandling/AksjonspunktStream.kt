@@ -5,6 +5,7 @@ import no.nav.helse.kafka.ManagedKafkaStreams
 import no.nav.helse.kafka.ManagedStreamHealthy
 import no.nav.helse.kafka.ManagedStreamReady
 import no.nav.k9.AccessTokenClientResolver
+import no.nav.k9.Configuration
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
@@ -18,7 +19,8 @@ import org.slf4j.LoggerFactory
 internal class AksjonspunktStream(
     kafkaConfig: KafkaConfig,
     oppgaveRepository: OppgaveRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository
+    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    configuration: Configuration
 //    gosysOppgaveGateway: GosysOppgaveGateway
 ) {
 
@@ -27,7 +29,8 @@ internal class AksjonspunktStream(
         properties = kafkaConfig.stream(NAME),
         topology = topology(
             oppgaveRepository = oppgaveRepository,
-            behandlingProsessEventRepository = behandlingProsessEventRepository
+            behandlingProsessEventRepository = behandlingProsessEventRepository,
+            configuration = configuration
 //            gosysOppgaveGateway = gosysOppgaveGateway
         ),
         unreadyAfterStreamStoppedIn = kafkaConfig.unreadyAfterStreamStoppedIn
@@ -43,12 +46,15 @@ internal class AksjonspunktStream(
         @KtorExperimentalAPI
         private fun topology(
             oppgaveRepository: OppgaveRepository,
-            behandlingProsessEventRepository: BehandlingProsessEventRepository
+            behandlingProsessEventRepository: BehandlingProsessEventRepository,
+            configuration: Configuration
 //            gosysOppgaveGateway: GosysOppgaveGateway
         ): Topology {
             val builder = StreamsBuilder()
-            val fromTopic = Topics.AKSJONSPUNKT_LAGET
-
+            val fromTopic = Topic(
+                name = configuration.getAksjonspunkthendelseTopic(),
+                serDes = AksjonspunktLaget()
+            )
             builder
                 .stream<String, TopicEntry<BehandlingProsessEventDto>>(
                     fromTopic.name,
