@@ -42,6 +42,14 @@ fun Application.migrate(configuration: Configuration) =
     }
 
 fun runMigration(dataSource: DataSource, initSql: String? = null): Int {
+    // todo: fjernes når vi går i prod 
+    Flyway.configure()
+        .locations("migreringer/")
+        .dataSource(dataSource)
+        .initSql(initSql)
+        .load()
+        .clean()
+
     return Flyway.configure()
         .locations("migreringer/")
         .dataSource(dataSource)
