@@ -45,6 +45,7 @@ class AccessTokenClientResolver(
 //        }
     }
 
+
     private fun naisStsClient() : ClientSecretClient {
         val client = clients.getOrElse(NAIS_STS_ALIAS) {
             throw IllegalStateException("Client[$NAIS_STS_ALIAS] må være satt opp.")
