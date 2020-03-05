@@ -67,10 +67,4 @@ spec:
     - name: BOOTSTRAP_SERVERS
       value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
     - name: KAFKA_AKSJONSPUNKTHENDELSE_TOPIC
-      value: privat-k9-aksjonspunkthendelse-q1
-    - name: KAFKA_AKSJONSPUNKTHENDELSE_CLIENT_ID
-      value: KP-privat-k9-aksjonspunkthendelse-q1
-    - name: KAFKA_AKSJONSPUNKTHENDELSE_SCHEMA_REGISTRY_URL
-      value: https://kafka-schema-registry.nais.preprod.local
-    - name: KAFKA_AKSJONSPUNKTHENDELSE_GROUP_ID
-      value: KC-privat-k9-aksjonspunkthendelse-q1
+      value: privat-k9-aksjonspunkthendelse
