@@ -10,17 +10,24 @@ import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.Url
 import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
+import io.ktor.response.respondText
 import io.ktor.routing.Routing
+import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dusseldorf.ktor.auth.*
+import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
+import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.*
+import no.nav.helse.dusseldorf.ktor.health.HealthRoute
+import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
@@ -88,15 +95,17 @@ fun Application.k9Los() {
 //            accessTokenClientResolver = accessTokenClientResolver
 //        )
 
-//    val healthService = HealthService(setOf(
-//            journalforingGateway,
-//            dokumentGateway,
-//            HttpRequestHealthCheck(
-//                    urlConfigMap = issuers.healthCheckMap(mutableMapOf(
-//                            Url.buildURL(baseUrl = configuration.getDokarkivBaseUrl(), pathParts = listOf("isReady")) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK)
-//                    ))
-//            ))
-//    )
+    val healthService = HealthService(
+        setOf(
+
+            HttpRequestHealthCheck(
+                urlConfigMap = issuers.healthCheckMap(
+                    mutableMapOf(
+                    )
+                )
+            )
+        )
+    )
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
@@ -132,6 +141,15 @@ fun Application.k9Los() {
         MetricsRoute()
         DefaultProbeRoutes()
 
+        HealthRoute(
+            path = Paths.DEFAULT_ALIVE_PATH,
+            healthService = HealthService(
+                healthChecks = asynkronProsesseringV1Service.isReadyChecks()
+            )
+        )
+        get(Paths.DEFAULT_READY_PATH) {
+            call.respondText("READY")
+        }
         route("api") {
             AdminApis()
             AvdelingslederApis()
