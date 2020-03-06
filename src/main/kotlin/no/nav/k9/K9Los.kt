@@ -32,6 +32,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
+import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -118,6 +119,7 @@ fun Application.k9Los() {
         configuration = configuration
 //        gosysOppgaveGateway = gosysOppgaveGateway
     )
+    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
 
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
@@ -188,6 +190,10 @@ fun Application.k9Los() {
     install(CallLogging) {
         correlationIdAndRequestIdInMdc()
         logRequests()
+        mdc("id_token_jti") { call ->
+            try { idTokenProvider.getIdToken(call).getId() }
+            catch (cause: Throwable) { null }
+        }
     }
 }
 

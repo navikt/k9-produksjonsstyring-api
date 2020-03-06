@@ -59,6 +59,10 @@ data class Configuration(private val config: ApplicationConfig) {
             )
         }
 
+    internal fun getCookieName() : String {
+        return config.getRequiredString("nav.authorization.cookie_name", secret = false)
+    }
+
     private fun unreadyAfterStreamStoppedIn() = Duration.of(
         config.getRequiredString("nav.kafka.unready_after_stream_stopped_in.amount", secret = false).toLong(),
         ChronoUnit.valueOf(config.getRequiredString("nav.kafka.unready_after_stream_stopped_in.unit", secret = false))
