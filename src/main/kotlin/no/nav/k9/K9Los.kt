@@ -119,7 +119,7 @@ fun Application.k9Los() {
         configuration = configuration
 //        gosysOppgaveGateway = gosysOppgaveGateway
     )
-    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
+//    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
 
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
@@ -190,10 +190,10 @@ fun Application.k9Los() {
     install(CallLogging) {
         correlationIdAndRequestIdInMdc()
         logRequests()
-        mdc("id_token_jti") { call ->
-            try { idTokenProvider.getIdToken(call).getId() }
-            catch (cause: Throwable) { null }
-        }
+//        mdc("id_token_jti") { call ->
+//            try { idTokenProvider.getIdToken(call).getId() }
+//            catch (cause: Throwable) { null }
+//        }
     }
 }
 
