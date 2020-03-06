@@ -62,6 +62,8 @@ spec:
       value: jdbc:postgresql://b27dbvl014.preprod.local:5432/k9-los
     - name: DB_VAULT_MOUNTPATH
       value: postgresql/preprod-fss/
+    - name: COOKIE_NAME
+      value: selvbetjening-idtoken
 
       # Kafka 
     - name: BOOTSTRAP_SERVERS
