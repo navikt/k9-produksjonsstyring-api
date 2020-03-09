@@ -145,7 +145,6 @@ fun Application.k9Los() {
             frequency = Duration.ofMinutes(1)
         )
 
-
         route("api") {
             AdminApis()
             AvdelingslederApis()
