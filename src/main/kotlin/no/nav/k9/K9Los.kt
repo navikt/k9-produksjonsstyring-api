@@ -26,6 +26,7 @@ import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
 import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.*
+import no.nav.helse.dusseldorf.ktor.health.HealthReporter
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
 import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
@@ -54,6 +55,7 @@ import no.nav.k9.tjenester.kodeverk.KodeverkApis
 import no.nav.k9.tjenester.konfig.KonfigApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjenesteImpl
 import java.net.URI
+import java.time.Duration
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -96,17 +98,6 @@ fun Application.k9Los() {
 //            accessTokenClientResolver = accessTokenClientResolver
 //        )
 
-    val healthService = HealthService(
-        setOf(
-
-            HttpRequestHealthCheck(
-                urlConfigMap = issuers.healthCheckMap(
-                    mutableMapOf(
-                    )
-                )
-            )
-        )
-    )
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
@@ -143,15 +134,18 @@ fun Application.k9Los() {
         MetricsRoute()
         DefaultProbeRoutes()
 
-        HealthRoute(
-            path = Paths.DEFAULT_ALIVE_PATH,
-            healthService = HealthService(
-                healthChecks = asynkronProsesseringV1Service.isReadyChecks()
-            )
+
+        val healthService = HealthService(
+            healthChecks = asynkronProsesseringV1Service.isReadyChecks()
         )
-        get(Paths.DEFAULT_READY_PATH) {
-            call.respondText("READY")
-        }
+
+        HealthReporter(
+            app = appId,
+            healthService = healthService,
+            frequency = Duration.ofMinutes(1)
+        )
+
+
         route("api") {
             AdminApis()
             AvdelingslederApis()
