@@ -39,7 +39,7 @@ object TestConfiguration {
         map["nav.kafka.password"] = kafkaEnvironment?.password() ?: "vtp"
         map["nav.kafka.unready_after_stream_stopped_in.amount"] = "1010"
         map["nav.kafka.unready_after_stream_stopped_in.unit"] = "SECONDS"
-        map["nav.trust_store.path"] = "${System.getProperty("user.home")}/.modig/trustStore.jks"
+        map["nav.trust_store.path"] = "${System.getProperty("user.home")}/.modig/truststore.jks"
         map["nav.trust_store.password"] = "changeit"
 
         map["nav.db.url"] = "jdbc:postgresql://localhost:5432/k9los_unit"

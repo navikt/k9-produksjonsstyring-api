@@ -6,9 +6,10 @@ import no.nav.k9.domene.lager.oppgave.BehandlingStatus
 import no.nav.k9.domene.lager.oppgave.FagsakYtelseType
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.integrasjon.gosys.*
-import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
+import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 data class Modell(
     val eventer: List<BehandlingProsessEventDto>
@@ -150,7 +151,7 @@ data class Modell(
             utfortFraAdmin = false,
             behandlingsfrist = LocalDateTime.now().plusDays(1),
             behandlingStatus = BehandlingStatus.fraKode(event.behandlinStatus),
-            eksternId = event.eksternId,
+            eksternId = event.eksternId?: UUID.randomUUID(),
             behandlingOpprettet = event.opprettetBehandling,
             oppgaveAvsluttet = oppgaveAvsluttet,
             reservasjon = null,

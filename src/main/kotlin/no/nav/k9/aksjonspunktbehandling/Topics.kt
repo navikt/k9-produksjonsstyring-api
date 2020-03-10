@@ -6,13 +6,12 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
-import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
+import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.serialization.Serializer
 import org.apache.kafka.common.serialization.StringSerializer
 
-data class TopicEntry<V>(val metadata: Metadata, val data: V)
 
 internal data class Topic<V>(
     val name: String,
@@ -25,7 +24,7 @@ internal data class Topic<V>(
 
 internal object Topics {
     val AKSJONSPUNKT_LAGET = Topic(
-        name = "privat-foreldrepenger-aksjonspunkthendelse-local",
+        name = "privat-k9-aksjonspunkthendelse",
         serDes = AksjonspunktLaget()
     )
 }
@@ -50,11 +49,9 @@ internal abstract class SerDes<V> : Serializer<V>, Deserializer<V> {
     override fun close() {}
 }
 
-internal class AksjonspunktLaget : SerDes<TopicEntry<BehandlingProsessEventDto>>() {
-    @ExperimentalStdlibApi
-    override fun deserialize(topic: String?, data: ByteArray?): TopicEntry<BehandlingProsessEventDto>? {
+internal class AksjonspunktLaget : SerDes<BehandlingProsessEventDto>() {
+    override fun deserialize(topic: String?, data: ByteArray?): BehandlingProsessEventDto? {
         return data?.let {
-            println(it.decodeToString())
             objectMapper.readValue(it)
         }
     }

@@ -3,7 +3,6 @@ package no.nav.k9.kafka.dto
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
-import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
 import org.junit.Test
 
 

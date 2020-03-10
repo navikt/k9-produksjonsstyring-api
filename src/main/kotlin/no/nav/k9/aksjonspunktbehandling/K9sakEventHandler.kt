@@ -7,7 +7,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.sakogbehandling.sendBehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.sendBehandlingOpprettet
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.*
-import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
+import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
