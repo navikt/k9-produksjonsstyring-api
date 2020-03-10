@@ -47,6 +47,11 @@ dependencies {
     implementation("com.sun.istack:istack-commons-runtime:2.2")
     implementation("com.github.seratch:kotliquery:1.3.1")
 
+    // Tilgangskontroll
+    implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
+    implementation("no.nav.common:rest:1.2020.02.18-16.01-aba1e77ea3f9")
+    implementation("com.google.code.gson:gson:2.7")
+
     // SakOgBehandling
     //<sakogbehandling-tjenestespesifikasjon.version>1.2018.11.06-01.45-c7f37fed0647</sakogbehandling-tjenestespesifikasjon.version>
     implementation("no.nav.tjenestespesifikasjoner:sakogbehandling-tjenestespesifikasjon:1.2020.01.30-14.36-cdf257baea96")
@@ -74,7 +79,9 @@ dependencies {
     testImplementation("io.mockk:mockk:1.9.3.kotlin12")
     testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
 
+
     implementation(kotlin("stdlib-jdk8"))
+    implementation("javax.ws.rs:javax.ws.rs-api:2.0")
 
 }
 
