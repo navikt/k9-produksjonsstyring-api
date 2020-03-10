@@ -1,4 +1,4 @@
-package no.nav.vedtak.felles.integrasjon.kafka
+package no.nav.k9.kafka.dto
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
@@ -15,7 +15,7 @@ data class BehandlingProsessEventDto (
      * Ekstern id for behandlingen. Id benyttes til oppslag i fagsystem.
      * Benytt samme id for alle oppdateringer av aksjonspunkt/prosess innenfor samme behandling.
      */
-    val eksternId: UUID,
+    val eksternId: UUID?,
     val fagsystem: Fagsystem,
     val saksnummer: String,
     val aktørId: String,

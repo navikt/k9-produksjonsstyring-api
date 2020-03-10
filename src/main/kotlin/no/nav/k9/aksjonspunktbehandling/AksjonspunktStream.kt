@@ -4,13 +4,11 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.kafka.ManagedKafkaStreams
 import no.nav.helse.kafka.ManagedStreamHealthy
 import no.nav.helse.kafka.ManagedStreamReady
-import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.Configuration
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import no.nav.k9.kafka.KafkaConfig
-import no.nav.vedtak.felles.integrasjon.kafka.BehandlingProsessEventDto
+import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Consumed
@@ -56,12 +54,12 @@ internal class AksjonspunktStream(
                 serDes = AksjonspunktLaget()
             )
             builder
-                .stream<String, TopicEntry<BehandlingProsessEventDto>>(
+                .stream(
                     fromTopic.name,
                     Consumed.with(fromTopic.keySerde, fromTopic.valueSerde)
                 )
-                .foreach { _, topicEntry ->
-                    val event = topicEntry.data
+                .foreach { _, entry ->
+                    val event = entry
                     K9sakEventHandler(
                         oppgaveRepository = oppgaveRepository,
                         behandlingProsessEventRepository = behandlingProsessEventRepository
