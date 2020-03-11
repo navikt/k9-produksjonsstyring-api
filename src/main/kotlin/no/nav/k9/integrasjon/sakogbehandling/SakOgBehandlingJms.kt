@@ -45,7 +45,8 @@ fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet) {
     val writer = StringWriter()
     marshaller.marshal(ObjectFactory().createBehandlingOpprettet(behandlingOpprettet), writer)
     val xml = writer.toString()
-    sendTilKø(xml)
+    println("Sender behandling opprettet: " + xml)
+    //sendTilKø(xml)
 }
 
 private fun sendTilKø(xml: String) {

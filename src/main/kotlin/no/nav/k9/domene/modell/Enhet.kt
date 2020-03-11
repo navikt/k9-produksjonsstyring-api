@@ -1,7 +1,8 @@
 package no.nav.k9.domene.modell
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
-import org.apache.kafka.common.protocol.types.Field
 import java.time.LocalDate
 
 data class Enhet(
@@ -60,6 +61,12 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 
 }
 
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
+@JsonAutoDetect(
+    getterVisibility = JsonAutoDetect.Visibility.NONE,
+    setterVisibility = JsonAutoDetect.Visibility.NONE,
+    fieldVisibility = JsonAutoDetect.Visibility.ANY
+)
 enum class FagsakYtelseType private constructor(override val kode: String, override val navn: String) : Kodeverdi {
     ENGANGSTØNAD("ES", "Engangsstønad"),
     FORELDREPENGER("FP", "Foreldrepenger"),

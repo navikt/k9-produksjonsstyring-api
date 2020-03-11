@@ -122,7 +122,7 @@ data class Modell(
                 oppgaveAvsluttet = LocalDateTime.now()
             }
             EventResultat.LUKK_OPPGAVE_VENT -> {
-    aktiv = false
+                aktiv = false
                 oppgaveAvsluttet = LocalDateTime.now()
             }
             EventResultat.LUKK_OPPGAVE_MANUELT_VENT -> {
@@ -151,7 +151,7 @@ data class Modell(
             utfortFraAdmin = false,
             behandlingsfrist = LocalDateTime.now().plusDays(1),
             behandlingStatus = BehandlingStatus.fraKode(event.behandlinStatus),
-            eksternId = event.eksternId?: UUID.randomUUID(),
+            eksternId = event.eksternId ?: UUID.randomUUID(),
             behandlingOpprettet = event.opprettetBehandling,
             oppgaveAvsluttet = oppgaveAvsluttet,
             reservasjon = null,
@@ -164,6 +164,14 @@ data class Modell(
 
     fun sisteEvent(): BehandlingProsessEventDto {
         return this.eventer[this.eventer.lastIndex]
+    }
+
+    fun starterSak(): Boolean {
+        return this.eventer.size == 1
+    }
+
+    fun avslutterSak(): Boolean {
+        return false
     }
 }
 
@@ -185,7 +193,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     }
 
     fun tilBeslutter(): Boolean {
-       val tilBeslutter =  listOf(
+        val tilBeslutter = listOf(
             "5031",
             "5038",
             "5039",
@@ -214,7 +222,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
             "6014",
             "6015"
         )
-        return this.liste.all { entry -> tilBeslutter.contains(entry.key)}
+        return this.liste.all { entry -> tilBeslutter.contains(entry.key) }
     }
 
     fun eventResultat(): EventResultat {

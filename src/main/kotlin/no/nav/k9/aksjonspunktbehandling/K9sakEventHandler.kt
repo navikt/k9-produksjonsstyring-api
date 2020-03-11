@@ -1,6 +1,7 @@
 package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -28,13 +29,14 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     fun prosesser(event: BehandlingProsessEventDto) {
         val modell = behandlingProsessEventRepository.lagre(event)
 
-
         // Sjekk om behandlingen starter eller avsluttes, skal da sende en melding til behandlesak for å fortelle modia.
-        if (false) {
+        if (modell.starterSak()) {
             behandlingOpprettet(modell)
-            behandlingAvsluttet(modell)
         }
 
+        if (modell.avslutterSak() && false) {
+            behandlingAvsluttet(modell)
+        }
 
         val oppgave = modell.oppgave()
         oppgaveRepository.lagre(oppgave)
@@ -49,19 +51,31 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         primaerRelasjonstyper.value =
             "forrige" //Er fra kodeverk: http://nav.no/kodeverk/Kode/Prim_c3_a6rRelasjonstyper/forrige?v=1
         val aktoer = Aktoer()
-        aktoer.withAktoerId(modell.sisteEvent().aktørId)
+        val sisteEvent = modell.sisteEvent()
+        val fagsakYtelseType = FagsakYtelseType.fraKode(sisteEvent.ytelseTypeKode)
+        aktoer.withAktoerId(sisteEvent.aktørId)
         sendBehandlingOpprettet(
             BehandlingOpprettet()
-                .withBehandlingsID("k9-los-" + modell.sisteEvent().behandlingId)
-                .withBehandlingstema(Behandlingstemaer("", "", ""))
+                .withBehandlingsID("k9-los-" + sisteEvent.behandlingId)
+                .withBehandlingstema(
+                    Behandlingstemaer(
+                        fagsakYtelseType.navn,
+                        fagsakYtelseType.kode,
+                        fagsakYtelseType.kodeverk
+                    )
+                )
                 .withHendelsesId(UUID.randomUUID().toString())
                 .withHendelsesprodusentREF(applikasjoner)
-                .withHendelsesTidspunkt(gregDate(modell.sisteEvent().eventTid!!.toLocalDate()))
-                .withBehandlingstype(Behandlingstyper().withValue("aS"))
+                .withHendelsesTidspunkt(gregDate(sisteEvent.eventTid.toLocalDate()))
+                .withBehandlingstype(
+                    Behandlingstyper(
+                    ).withKodeRef(sisteEvent.behandlingTypeKode)
+                )
                 .withAktoerREF(aktoer)
-                .withSakstema(Sakstemaer())
-                .withAnsvarligEnhetREF("")
+                .withSakstema(Sakstemaer().withKodeRef("k9 kode"))
+                .withAnsvarligEnhetREF("minEnhet")
         )
+
     }
 
     private fun behandlingAvsluttet(modell: Modell) {
@@ -80,7 +94,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 .withBehandlingstema(Behandlingstemaer("", "", ""))
                 .withHendelsesId(UUID.randomUUID().toString())
                 .withHendelsesprodusentREF(applikasjoner)
-                .withHendelsesTidspunkt(gregDate(modell.sisteEvent().eventTid!!.toLocalDate()))
+                .withHendelsesTidspunkt(gregDate(modell.sisteEvent().eventTid.toLocalDate()))
                 .withBehandlingstype(Behandlingstyper().withValue("aS"))
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer())

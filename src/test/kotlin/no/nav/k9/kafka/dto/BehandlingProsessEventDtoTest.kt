@@ -16,7 +16,7 @@ internal class BehandlingProsessEventDtoTest {
   "saksnummer": "5YC7C",
   "aktørId": "9916108039470",
   "behandlingId": 1000001,
-  "eventTid": null,
+  "eventTid": "2020-02-20T07:38:49",
   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
   "behandlinStatus": "UTRED",
   "behandlingStatus": null,

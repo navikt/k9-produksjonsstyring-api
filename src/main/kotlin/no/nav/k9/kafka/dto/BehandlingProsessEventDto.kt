@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.kafka.dto.EventHendelse
 import no.nav.k9.kafka.dto.Fagsystem
 import java.time.LocalDateTime
@@ -27,7 +28,7 @@ data class BehandlingProsessEventDto (
      */
     @JsonSerialize(using = ToStringSerializer::class)
     @JsonDeserialize(using = LocalDateTimeDeserializer::class)
-    val eventTid: LocalDateTime?,
+    val eventTid: LocalDateTime,
     val eventHendelse: EventHendelse,
     val behandlinStatus: String, // fjernes etter overgang til behandlingStatus
     val behandlingStatus: String?,
