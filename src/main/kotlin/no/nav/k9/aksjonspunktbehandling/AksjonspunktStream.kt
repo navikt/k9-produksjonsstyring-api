@@ -64,6 +64,7 @@ internal class AksjonspunktStream(
                         oppgaveRepository = oppgaveRepository,
                         behandlingProsessEventRepository = behandlingProsessEventRepository
 //                        gosysOppgaveGateway = gosysOppgaveGateway
+                    ,config = configuration
                     ).prosesser(event)
                 }
             return builder.build()

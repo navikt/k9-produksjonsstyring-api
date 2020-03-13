@@ -1,6 +1,7 @@
 package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.Configuration
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
@@ -20,7 +21,8 @@ import javax.xml.datatype.XMLGregorianCalendar
 
 class K9sakEventHandler @KtorExperimentalAPI constructor(
     val oppgaveRepository: OppgaveRepository,
-    val behandlingProsessEventRepository: BehandlingProsessEventRepository
+    val behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    val config: Configuration
 //    val gosysOppgaveGateway: GosysOppgaveGateway
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
@@ -35,7 +37,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
 
         if (modell.avslutterSak() && false) {
-            behandlingAvsluttet(modell)
+            behandlingAvsluttet(modell, config)
         }
 
         val oppgave = modell.oppgave()
@@ -73,12 +75,13 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 )
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer().withKodeRef("k9 kode"))
-                .withAnsvarligEnhetREF(modell.sisteEvent().behandlendeEnhet)
+                .withAnsvarligEnhetREF(modell.sisteEvent().behandlendeEnhet),
+            config
         )
 
     }
 
-    private fun behandlingAvsluttet(modell: Modell) {
+    private fun behandlingAvsluttet(modell: Modell, config: Configuration) {
         val applikasjoner =
             Applikasjoner()
         applikasjoner.value = "k9-sak"
@@ -98,7 +101,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 .withBehandlingstype(Behandlingstyper().withValue("aS"))
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer())
-                .withAnsvarligEnhetREF("")
+                .withAnsvarligEnhetREF(""),
+            config
         )
     }
 
