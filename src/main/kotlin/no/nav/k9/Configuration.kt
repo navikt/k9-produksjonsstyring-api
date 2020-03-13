@@ -80,6 +80,18 @@ data class Configuration(private val config: ApplicationConfig) {
         return config.getOptionalString("nav.db.vault_mountpath", secret = false)!!
     }
 
+    fun getSakOgBehandlingMqGateway(): String {
+        return config.getOptionalString("nav.sak_og_behandling.gateway", secret = false)!!
+    }
+
+    fun getSakOgBehandlingMqGatewayHostname(): String {
+        return config.getOptionalString("nav.sak_og_behandling.hostname", secret = false)!!
+    }
+
+    fun getSakOgBehandlingMqGatewayPort(): String {
+        return config.getOptionalString("nav.sak_og_behandling.port", secret = false)!!
+    }
+
     fun databaseName(): String {
         return "k9-los"
     }
