@@ -59,3 +59,11 @@ spec:
       value: https://oppgave.nais.adeo.no
     - name: DB_VAULT_MOUNTPATH
       value: postgresql/prod-fss/
+
+    #Mq sak og behandling
+    - name: MQGATEWAY02_NAME
+      value: MPLSC02
+    - name: MQGATEWAY02_HOSTNAME
+      value: a01apvl063.adeo.no
+    - name: MQGATEWAY02_PORT
+      value: 1414

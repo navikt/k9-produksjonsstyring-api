@@ -71,7 +71,7 @@ enum class FagsakYtelseType private constructor(override val kode: String, overr
     ENGANGSTØNAD("ES", "Engangsstønad"),
     FORELDREPENGER("FP", "Foreldrepenger"),
     SVANGERSKAPSPENGER("SVP", "Svangerskapspenger"),
-    PLEIEPENGER_SYKT_BARN("PSB", "Svangerskapspenger");
+    PLEIEPENGER_SYKT_BARN("PSB", "Pleiepenger sykt barn");
 
     override val kodeverk = "FAGSAK_YTELSE_TYPE"
 
