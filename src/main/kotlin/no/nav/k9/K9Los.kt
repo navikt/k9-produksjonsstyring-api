@@ -53,6 +53,7 @@ import org.apache.http.impl.client.HttpClients
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
 import no.nav.k9.tjenester.kodeverk.KodeverkApis
 import no.nav.k9.tjenester.konfig.KonfigApis
+import no.nav.k9.tjenester.mock.MockGrensesnitt
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjenesteImpl
 import java.net.URI
 import java.time.Duration
@@ -144,8 +145,11 @@ fun Application.k9Los() {
             healthService = healthService,
             frequency = Duration.ofMinutes(1)
         )
-
+        route("mock") {
+            MockGrensesnitt()
+        }
         route("api") {
+           
             AdminApis()
             AvdelingslederApis()
             AvdelingslederOppgaveApis()

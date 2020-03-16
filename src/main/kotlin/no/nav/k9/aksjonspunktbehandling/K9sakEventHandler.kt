@@ -29,6 +29,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     fun prosesser(event: BehandlingProsessEventDto) {
+
+        log.info(objectMapper().writeValueAsString(event))
+
         val modell = behandlingProsessEventRepository.lagre(event)
 
         // Sjekk om behandlingen starter eller avsluttes, skal da sende en melding til behandlesak for å fortelle modia.

@@ -35,7 +35,8 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("no.nav:vault-jdbc:$vaultJdbcVersion")
 
-    implementation ("io.ktor:ktor-locations:$ktorVersion")
+    implementation("io.ktor:ktor-locations:$ktorVersion")
+    implementation("io.ktor:ktor-html-builder:$ktorVersion")
 
     // Client
     implementation("no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
