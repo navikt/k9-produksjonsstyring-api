@@ -167,8 +167,6 @@ fun Application.k9Los() {
             route("konfig") { KonfigApis() }
             KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
         }
-
-
     }
 
     install(MicrometerMetrics) {
