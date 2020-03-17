@@ -47,7 +47,7 @@ fun Route.MockGrensesnitt(
                             div { +"Navn: ${aksjonspunkt.navn}" }
                             div { +"Behandlingsstegtype: ${aksjonspunkt.behandlingsstegtype}" }
                             div { +"Plassering: ${aksjonspunkt.plassering}" }
-                            div { +"Totrinns behandling: ${aksjonspunkt.totrinn.toString()}" }
+                            div { +"Totrinnsbehandling: ${aksjonspunkt.totrinn.toString()}" }
                             checkBoxInput {
                                 id = "Checkbox${aksjonspunkt.kode}"
                                 onClick = "toggle('${aksjonspunkt.kode}')"
