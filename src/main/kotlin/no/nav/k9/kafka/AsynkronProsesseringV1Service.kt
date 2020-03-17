@@ -1,18 +1,16 @@
 package no.nav.k9.kafka
 
-import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.AksjonspunktStream
+import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import org.slf4j.LoggerFactory
 
 internal class AsynkronProsesseringV1Service(
     kafkaConfig: KafkaConfig,
-    oppgaveRepository: OppgaveRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    configuration: Configuration
+    configuration: Configuration,
+    k9sakEventHandler: K9sakEventHandler
 //    gosysOppgaveGateway: GosysOppgaveGateway
 ) {
 
@@ -23,9 +21,8 @@ internal class AsynkronProsesseringV1Service(
 
     private val aksjonspunktStream = AksjonspunktStream(
         kafkaConfig = kafkaConfig,
-        oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository,
-        configuration = configuration
+        configuration = configuration,
+        k9sakEventHandler1 = k9sakEventHandler
 //        gosysOppgaveGateway= gosysOppgaveGateway
     )
 

@@ -8,7 +8,6 @@ import no.nav.k9.Configuration
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.kafka.KafkaConfig
-import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Consumed
@@ -16,9 +15,8 @@ import org.slf4j.LoggerFactory
 
 internal class AksjonspunktStream(
     kafkaConfig: KafkaConfig,
-    oppgaveRepository: OppgaveRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    configuration: Configuration
+    configuration: Configuration,
+    k9sakEventHandler1: K9sakEventHandler
 //    gosysOppgaveGateway: GosysOppgaveGateway
 ) {
 
@@ -26,9 +24,8 @@ internal class AksjonspunktStream(
         name = NAME,
         properties = kafkaConfig.stream(NAME),
         topology = topology(
-            oppgaveRepository = oppgaveRepository,
-            behandlingProsessEventRepository = behandlingProsessEventRepository,
-            configuration = configuration
+            configuration = configuration,
+            k9sakEventHandler = k9sakEventHandler1
 //            gosysOppgaveGateway = gosysOppgaveGateway
         ),
         unreadyAfterStreamStoppedIn = kafkaConfig.unreadyAfterStreamStoppedIn
@@ -43,9 +40,8 @@ internal class AksjonspunktStream(
 
         @KtorExperimentalAPI
         private fun topology(
-            oppgaveRepository: OppgaveRepository,
-            behandlingProsessEventRepository: BehandlingProsessEventRepository,
-            configuration: Configuration
+            configuration: Configuration,
+            k9sakEventHandler: K9sakEventHandler
 //            gosysOppgaveGateway: GosysOppgaveGateway
         ): Topology {
             val builder = StreamsBuilder()
@@ -60,12 +56,7 @@ internal class AksjonspunktStream(
                 )
                 .foreach { _, entry ->
                     val event = entry
-                    K9sakEventHandler(
-                        oppgaveRepository = oppgaveRepository,
-                        behandlingProsessEventRepository = behandlingProsessEventRepository
-//                        gosysOppgaveGateway = gosysOppgaveGateway
-                    ,config = configuration
-                    ).prosesser(event)
+                    k9sakEventHandler.prosesser(event)
                 }
             return builder.build()
         }

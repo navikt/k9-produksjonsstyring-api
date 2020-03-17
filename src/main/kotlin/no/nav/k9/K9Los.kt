@@ -6,38 +6,33 @@ import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
 import io.ktor.features.CallId
-import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.Url
+import io.ktor.http.content.files
+import io.ktor.http.content.static
+import io.ktor.http.content.staticRootFolder
 import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.response.respondText
 import io.ktor.routing.Routing
-import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dusseldorf.ktor.auth.*
-import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
-import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthReporter
-import no.nav.helse.dusseldorf.ktor.health.HealthRoute
 import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
-import no.nav.k9.auth.IdTokenProvider
+import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
@@ -49,12 +44,12 @@ import no.nav.k9.tjenester.avdelingsleder.saksliste.AvdelingslederSakslisteApis
 import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
-import org.apache.http.impl.client.HttpClients
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
 import no.nav.k9.tjenester.kodeverk.KodeverkApis
 import no.nav.k9.tjenester.konfig.KonfigApis
 import no.nav.k9.tjenester.mock.MockGrensesnitt
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjenesteImpl
+import java.io.File
 import java.net.URI
 import java.time.Duration
 
@@ -104,11 +99,16 @@ fun Application.k9Los() {
     val oppgaveRepository = OppgaveRepository(dataSource)
     val oppgaveTjeneste = OppgaveTjenesteImpl(oppgaveRepository)
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
+    val k9sakEventHandler = K9sakEventHandler(
+        oppgaveRepository = oppgaveRepository,
+        behandlingProsessEventRepository = behandlingProsessEventRepository
+        //                        gosysOppgaveGateway = gosysOppgaveGateway
+        , config = configuration
+    )
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
         kafkaConfig = configuration.getKafkaConfig(),
-        oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository,
-        configuration = configuration
+        configuration = configuration,
+        k9sakEventHandler = k9sakEventHandler
 //        gosysOppgaveGateway = gosysOppgaveGateway
     )
 //    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
@@ -146,7 +146,7 @@ fun Application.k9Los() {
             frequency = Duration.ofMinutes(1)
         )
         route("mock") {
-            MockGrensesnitt()
+            MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
         route("api") {
            
@@ -167,6 +167,12 @@ fun Application.k9Los() {
             route("konfig") { KonfigApis() }
             KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
         }
+        static("static") {
+            // When running under IDEA make sure that working directory is set to this sample's project folder
+            staticRootFolder = File("static")
+            files("css")
+            files("js")
+        }
     }
 
     install(MicrometerMetrics) {
@@ -182,14 +188,16 @@ fun Application.k9Los() {
         call.request.log()
     }
 
-    install(CallLogging) {
-        correlationIdAndRequestIdInMdc()
-        logRequests()
-//        mdc("id_token_jti") { call ->
-//            try { idTokenProvider.getIdToken(call).getId() }
-//            catch (cause: Throwable) { null }
-//        }
-    }
+//    install(CallLogging) {
+//        correlationIdAndRequestIdInMdc()
+//        logRequests()
+////        mdc("id_token_jti") { call ->
+////            try { idTokenProvider.getIdToken(call).getId() }
+////            catch (cause: Throwable) { null }
+////        }
+//    }
+
+
 }
 
 private fun Map<Issuer, Set<ClaimRule>>.healthCheckMap(

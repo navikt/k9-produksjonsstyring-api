@@ -11,7 +11,7 @@ import javax.sql.DataSource
 
 
 class BehandlingProsessEventRepository(private val dataSource: DataSource) {
-    private fun hent(uuid: UUID): Modell {
+    fun hent(uuid: UUID): Modell {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -23,7 +23,10 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
                     }.asSingle
             )
         }
-        return objectMapper().readValue(json!!, Modell::class.java)
+        if (json.isNullOrEmpty()) {
+            return Modell(emptyList())
+        }
+        return objectMapper().readValue(json, Modell::class.java)
     }
 
     fun lagre(

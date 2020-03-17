@@ -150,7 +150,7 @@ data class Modell(
             forsteStonadsdag = LocalDate.now(),
             utfortFraAdmin = false,
             behandlingsfrist = LocalDateTime.now().plusDays(1),
-            behandlingStatus = BehandlingStatus.fraKode(event.behandlinStatus),
+            behandlingStatus = BehandlingStatus.fraKode(event.behandlingStatus),
             eksternId = event.eksternId ?: UUID.randomUUID(),
             behandlingOpprettet = event.opprettetBehandling,
             oppgaveAvsluttet = oppgaveAvsluttet,
@@ -168,6 +168,10 @@ data class Modell(
 
     fun starterSak(): Boolean {
         return this.eventer.size == 1
+    }
+
+    fun erTom(): Boolean {
+        return this.eventer.isEmpty()
     }
 
     fun avslutterSak(): Boolean {
