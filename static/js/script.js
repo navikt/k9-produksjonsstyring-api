@@ -8,5 +8,11 @@ function toggle(kode) {
             // Request finished. Do processing here.
         }
     }
-    xhr.send(JSON.stringify({"kode": kode, "toggle": document.getElementById(elementId).checked}));
+    xhr.send(JSON.stringify(
+        {
+            "kode": kode,
+            "toggle": document.getElementById(elementId).checked,
+            "eksternid": document.getElementById("uuid").value,
+            "aktørid": document.getElementById("aktørid").value
+        }));
 }

@@ -37,7 +37,23 @@ fun Route.MockGrensesnitt(
             }
             body {
                 p {
-                    +"Aksjonspunkter toggles av og på som hendelser. En behandling regnes som "
+                    +"Aksjonspunkter toggles av og på som hendelser. En behandling regnes som avsluttet dersom den er opprettet og ikke lengre har noen aksjonspunkter som operative"
+                }
+
+                p {
+                    +"EksternId: "
+                    textInput {
+                        id = "uuid"
+                        value = UUID.randomUUID().toString()
+                    }
+                }
+
+                p {
+                    +"aktørid: "
+                    textInput {
+                        id = "aktørid"
+                        value = "aktørid"
+                    }
                 }
 
                 ul {
@@ -47,7 +63,7 @@ fun Route.MockGrensesnitt(
                             div { +"Navn: ${aksjonspunkt.navn}" }
                             div { +"Behandlingsstegtype: ${aksjonspunkt.behandlingsstegtype}" }
                             div { +"Plassering: ${aksjonspunkt.plassering}" }
-                            div { +"Totrinnsbehandling: ${aksjonspunkt.totrinn.toString()}" }
+                            div { +"Totrinnsbehandling: ${aksjonspunkt.totrinn}" }
                             checkBoxInput {
                                 id = "Checkbox${aksjonspunkt.kode}"
                                 onClick = "toggle('${aksjonspunkt.kode}')"
@@ -69,16 +85,14 @@ fun Route.MockGrensesnitt(
         val aksjonspunkt =
             Aksjonspunkter().aksjonspunkter().find { aksjonspunkt -> aksjonspunkt.kode == aksjonspunktToggle.kode }!!
 
-
-        val uuid = UUID.fromString("d86ffe71-0137-4fe6-97bc-237f504935ab")
-        val modell = behandlingProsessEventRepository.hent(uuid)
+        val modell = behandlingProsessEventRepository.hent(UUID.fromString(aksjonspunktToggle.eksternid))
 
         val event = if (modell.erTom()) {
             BehandlingProsessEventDto(
-                uuid,
+                UUID.fromString(aksjonspunktToggle.eksternid),
                 Fagsystem.K9SAK,
                 "Saksnummer",
-                "",
+                aksjonspunktToggle.aktørid,
                 1234L,
                 LocalDateTime.now(),
                 EventHendelse.AKSJONSPUNKT_OPPRETTET,
