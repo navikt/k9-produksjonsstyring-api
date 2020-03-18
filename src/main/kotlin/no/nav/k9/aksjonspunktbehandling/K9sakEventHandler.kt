@@ -45,6 +45,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
         val oppgave = modell.oppgave()
         oppgaveRepository.lagre(oppgave)
+        log.info(objectMapper().writeValueAsString(modell))
+        log.info(objectMapper().writeValueAsString(oppgave))
     }
 
     private fun behandlingOpprettet(modell: Modell) {

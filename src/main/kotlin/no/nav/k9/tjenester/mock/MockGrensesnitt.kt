@@ -79,28 +79,22 @@ fun Route.MockGrensesnitt(
                         }
                     }
 
-                    ul {
-                        classes = setOf("list-group")
-                        for (aksjonspunkt in Aksjonspunkter().aksjonspunkter()) {
-                            li {
-                                classes = setOf("list-group-item")
-                                div { +"Kode: ${aksjonspunkt.kode}" }
-                                div { +"Navn: ${aksjonspunkt.navn}" }
-                                div { +"Behandlingsstegtype: ${aksjonspunkt.behandlingsstegtype}" }
-                                div { +"Plassering: ${aksjonspunkt.plassering}" }
-                                div { +"Totrinnsbehandling: ${aksjonspunkt.totrinn}" }
+                    for (aksjonspunkt in Aksjonspunkter().aksjonspunkter()) {
+                        div {
+                            classes = setOf("input-group")
+                            div {
+                                classes = setOf("input-group-prepend")
                                 div {
-                                    classes = setOf("form-check")
-                                    checkBoxInput {
-                                        classes = setOf("form-check-input")
+                                    classes = setOf("input-group-text")
+                                    input(InputType.checkBox) {
                                         id = "Checkbox${aksjonspunkt.kode}"
                                         onClick = "toggle('${aksjonspunkt.kode}')"
                                     }
-                                    label {
-                                        classes = setOf("form-check-label")
-                                        +"Toggle"
-                                    }
                                 }
+                            }
+                            div {
+                                classes = setOf("input-group-text display-4")
+                                +"${aksjonspunkt.kode} ${aksjonspunkt.navn} T  ype: ${aksjonspunkt.behandlingsstegtype} Plassering: ${aksjonspunkt.plassering} Totrinn: ${aksjonspunkt.totrinn}"
                             }
                         }
                     }
