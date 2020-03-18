@@ -10,6 +10,7 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.files
+import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.http.content.staticRootFolder
 import io.ktor.jackson.jackson
@@ -51,6 +52,8 @@ import no.nav.k9.tjenester.mock.MockGrensesnitt
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjenesteImpl
 import java.io.File
 import java.net.URI
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Duration
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -149,7 +152,7 @@ fun Application.k9Los() {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
         route("api") {
-           
+
             AdminApis()
             AvdelingslederApis()
             AvdelingslederOppgaveApis()
@@ -168,10 +171,8 @@ fun Application.k9Los() {
             KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
         }
         static("static") {
-            // When running under IDEA make sure that working directory is set to this sample's project folder
-            staticRootFolder = File("static")
-            files("css")
-            files("js")
+            resources("static/css")
+            resources("static/js")
         }
     }
 
