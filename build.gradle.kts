@@ -119,6 +119,7 @@ tasks.withType<KotlinCompile> {
 tasks.withType<ShadowJar> {
     archiveBaseName.set("app")
     archiveClassifier.set("")
+    isZip64 = true
     manifest {
         attributes(
             mapOf(
