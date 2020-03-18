@@ -31,42 +31,76 @@ fun Route.MockGrensesnitt(
 
     get { _: main ->
         call.respondHtml {
+
             head {
                 title { +"Test app for k9-los" }
+                styleLink("/static/bootstrap.css")
                 script(src = "/static/script.js") {}
             }
             body {
-                p {
-                    +"Aksjonspunkter toggles av og på som hendelser. En behandling regnes som avsluttet dersom den er opprettet og ikke lengre har noen aksjonspunkter som operative"
-                }
+                div {
+                    classes = setOf("container ")
 
-                p {
-                    +"EksternId: "
-                    textInput {
-                        id = "uuid"
-                        value = UUID.randomUUID().toString()
+                    h1 { +"Testside for k9-los" }
+                    p {
+                        +"Aksjonspunkter toggles av og på som hendelser. En behandling regnes som avsluttet dersom den er opprettet og ikke lengre har noen aksjonspunkter som operative"
                     }
-                }
 
-                p {
-                    +"aktørid: "
-                    textInput {
-                        id = "aktørid"
-                        value = "aktørid"
+
+                    div {
+                        classes = setOf("input-group", "mb-3")
+                        div {
+                            classes = setOf("input-group-prepend")
+                            span {
+                                classes = setOf("input-group-text")
+                                +"EksternId"
+                            }
+                        }
+                        textInput {
+                            classes = setOf("form-control")
+                            id = "uuid"
+                            value = UUID.randomUUID().toString()
+                        }
                     }
-                }
 
-                ul {
-                    for (aksjonspunkt in Aksjonspunkter().aksjonspunkter()) {
-                        li {
-                            div { +"Kode: ${aksjonspunkt.kode}" }
-                            div { +"Navn: ${aksjonspunkt.navn}" }
-                            div { +"Behandlingsstegtype: ${aksjonspunkt.behandlingsstegtype}" }
-                            div { +"Plassering: ${aksjonspunkt.plassering}" }
-                            div { +"Totrinnsbehandling: ${aksjonspunkt.totrinn}" }
-                            checkBoxInput {
-                                id = "Checkbox${aksjonspunkt.kode}"
-                                onClick = "toggle('${aksjonspunkt.kode}')"
+                    div {
+                        classes = setOf("input-group", "mb-3")
+                        div {
+                            classes = setOf("input-group-prepend")
+                            span {
+                                classes = setOf("input-group-text")
+                                +"Aktørid"
+                            }
+                        }
+                        textInput {
+                            classes = setOf("form-control")
+                            id = "aktørid"
+                            value = "aktørid"
+                        }
+                    }
+
+                    ul {
+                        classes = setOf("list-group")
+                        for (aksjonspunkt in Aksjonspunkter().aksjonspunkter()) {
+                            li {
+                                classes = setOf("list-group-item")
+                                div { +"Kode: ${aksjonspunkt.kode}" }
+                                div { +"Navn: ${aksjonspunkt.navn}" }
+                                div { +"Behandlingsstegtype: ${aksjonspunkt.behandlingsstegtype}" }
+                                div { +"Plassering: ${aksjonspunkt.plassering}" }
+                                div { +"Totrinnsbehandling: ${aksjonspunkt.totrinn}" }
+                                div {
+                                    classes = setOf("form-check")
+                                    checkBoxInput {
+                                        classes = setOf("form-check-input")
+                                        id = "Checkbox${aksjonspunkt.kode}"
+                                        onClick = "toggle('${aksjonspunkt.kode}')"
+                                    }
+                                    label {
+                                        classes = setOf("form-check-label")
+                                        +"Toggle"
+                                    }
+                                }
                             }
                         }
                     }
