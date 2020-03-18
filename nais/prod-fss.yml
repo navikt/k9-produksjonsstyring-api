@@ -66,4 +66,4 @@ spec:
     - name: MQGATEWAY02_HOSTNAME
       value: a01apvl063.adeo.no
     - name: MQGATEWAY02_PORT
-      value: 1414
+      value: '1414'

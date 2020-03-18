@@ -77,4 +77,4 @@ spec:
     - name: MQGATEWAY02_HOSTNAME
       value: b27apvl176.preprod.local
     - name: MQGATEWAY02_PORT
-      value: 1413
+      value: '1413'
