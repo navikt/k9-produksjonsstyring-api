@@ -3,6 +3,8 @@ package no.nav.k9.integrasjon.sakogbehandling
 import com.ibm.mq.MQC
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
+import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.Configuration
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.BehandlingAvsluttet
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.BehandlingOpprettet
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.ObjectFactory
@@ -30,16 +32,16 @@ fun connectionFactory(
 
 fun Session.producerForQueue(queueName: String): MessageProducer = createProducer(createQueue(queueName))
 
-fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet) {
+fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet,config: Configuration) {
     val marshaller = JAXBContext.newInstance(BehandlingAvsluttet::class.java).createMarshaller()
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
     val writer = StringWriter()
     marshaller.marshal(ObjectFactory().createBehandlingAvsluttet(behandlingAvsluttet), writer)
     val xml = writer.toString()
-    sendTilKø(xml)
+    sendTilKø(xml,config)
 }
 
-fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet) {
+fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet,config: Configuration) {
     val marshaller = JAXBContext.newInstance(BehandlingOpprettet::class.java).createMarshaller()
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
     val writer = StringWriter()
@@ -49,11 +51,12 @@ fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet) {
     //sendTilKø(xml)
 }
 
-private fun sendTilKø(xml: String) {
+@KtorExperimentalAPI
+private fun sendTilKø(xml: String, config: Configuration) {
     val connection = connectionFactory(
-        hostName = "e26apvl121.test.local",
-        port = 1411,
-        gatewayName = "MUXLSC01",
+        hostName = config.getSakOgBehandlingMqGatewayHostname(),
+        port = Integer.valueOf(config.getSakOgBehandlingMqGatewayPort()),
+        gatewayName = config.getSakOgBehandlingMqGateway(),
         channelName = "QA.U_SAKOGBEHANDLING.SAKSBEHANDLING"
     ).createConnection("", "")
     val session = connection.createSession()

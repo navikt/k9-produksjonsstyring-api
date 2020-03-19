@@ -1,8 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val ktorVersion = ext.get("ktorVersion").toString()
-val dusseldorfKtorVersion = "1.3.1.4a7d6cd"
+val dusseldorfKtorVersion = "1.3.2.e71617b"
+val ktorVersion = "1.3.2"
 val pdfBoxVersion = "2.0.16"
 val mainClass = "no.nav.k9.K9LosKt"
 val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
@@ -14,7 +14,7 @@ val cxf = "3.3.1"
 val jaxwsTools = "2.3.1"
 
 plugins {
-    kotlin("jvm") version "1.3.50"
+    kotlin("jvm") version "1.3.70"
     id("com.github.johnrengelman.shadow") version "5.1.0"
 }
 
@@ -35,7 +35,8 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("no.nav:vault-jdbc:$vaultJdbcVersion")
 
-    implementation ("io.ktor:ktor-locations:$ktorVersion")
+    implementation("io.ktor:ktor-locations:$ktorVersion")
+    implementation("io.ktor:ktor-html-builder:$ktorVersion")
 
     // Client
     implementation("no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
@@ -118,6 +119,7 @@ tasks.withType<KotlinCompile> {
 tasks.withType<ShadowJar> {
     archiveBaseName.set("app")
     archiveClassifier.set("")
+    isZip64 = true
     manifest {
         attributes(
             mapOf(

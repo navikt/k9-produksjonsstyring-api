@@ -19,7 +19,7 @@ internal class BehandlingProsessEventDtoTest {
   "eventTid": "2020-02-20T07:38:49",
   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
   "behandlinStatus": "UTRED",
-  "behandlingStatus": null,
+  "behandlingStatus": "UTRED",
   "behandlingSteg": "INREG",
   "behandlendeEnhet": "0300",
   "ytelseTypeKode": "PSB",

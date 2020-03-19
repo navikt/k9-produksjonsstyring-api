@@ -9,6 +9,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
+import no.nav.k9.Configuration
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -38,8 +39,9 @@ class K9sakEventHandlerTest {
 
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource)
+            BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
+            config = mockk<Configuration>()
         )
 
         val json =
@@ -52,7 +54,7 @@ class K9sakEventHandlerTest {
                   "eventTid": "2020-02-20T07:38:49",
                   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
                   "behandlinStatus": "UTRED",
-                  "behandlingStatus": null,
+                  "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG",
                   "behandlendeEnhet": "0300",
                   "ytelseTypeKode": "PSB",
@@ -83,8 +85,9 @@ class K9sakEventHandlerTest {
 
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource),
-            BehandlingProsessEventRepository(dataSource = dataSource)
+            BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
+                    config = mockk<Configuration>()
         )
 
         @Language("JSON") val json =
@@ -97,7 +100,7 @@ class K9sakEventHandlerTest {
   "eventTid": "2020-02-20T07:38:49",
   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
   "behandlinStatus": "UTRED",
-  "behandlingStatus": null,
+  "behandlingStatus": "UTRED",
   "behandlingSteg": "INREG_AVSL",
   "behandlendeEnhet": "0300",
   "ytelseTypeKode": "SVP",
@@ -129,8 +132,9 @@ class K9sakEventHandlerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource)
+            BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
+            config = mockk<Configuration>()
         )
 
         @Language("JSON") val json =
@@ -143,7 +147,7 @@ class K9sakEventHandlerTest {
                   "eventTid": "2020-02-20T07:38:49",
                   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
                   "behandlinStatus": "UTRED",
-                  "behandlingStatus": null,
+                  "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
                   "ytelseTypeKode": "SVP",
@@ -177,7 +181,8 @@ class K9sakEventHandlerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource)
+            BehandlingProsessEventRepository(dataSource = dataSource),
+            config = mockk<Configuration>()
 //            gosysOppgaveGateway = gosysOppgaveGateway
         )
 
@@ -191,7 +196,7 @@ class K9sakEventHandlerTest {
                   "eventTid": "2020-02-20T07:38:49",
                   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
                   "behandlinStatus": "UTRED",
-                  "behandlingStatus": null,
+                  "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
                   "ytelseTypeKode": "SVP",
