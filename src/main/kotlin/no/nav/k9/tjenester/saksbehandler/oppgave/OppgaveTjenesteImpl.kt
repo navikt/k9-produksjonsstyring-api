@@ -5,6 +5,7 @@ import no.nav.k9.domene.lager.oppgave.*
 import no.nav.k9.domene.modell.Aksjonspunkter
 import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.organisasjon.Avdeling
 import no.nav.k9.domene.organisasjon.Saksbehandler
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -114,12 +115,13 @@ class OppgaveTjenesteImpl(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentSisteReserverteOppgaver(): List<Oppgave> {
-        return listOf(Oppgave(23, "784759f", "", "ENhet", LocalDateTime.now(),
-             LocalDateTime.now(), LocalDate.now(), BehandlingStatus.OPPRETTET, BehandlingType.FORSTEGANGSSOKNAD,
-            FagsakYtelseType.PLEIEPENGER_SYKT_BARN, true, "", null, false, UUID.randomUUID(),
-            null, listOf(OppgaveEgenskap(12, AndreKriterierType.PAPIRSØKNAD, "", true)), false,
-            Aksjonspunkter(mapOf())))
+    override fun hentSisteReserverteOppgaver(): List<OppgaveDto> {
+        return listOf(OppgaveDto(
+            OppgaveStatusDto(true, LocalDateTime.of(2020, 3, 25, 12, 45),
+                true, "45373y4ti", "Klara Saksbehandler", null),
+            21314, 6546765, "Walter Lemon", "VL", "453555245", BehandlingType.SOKNAD,
+            FagsakYtelseType.PLEIEPENGER_SYKT_BARN, BehandlingStatus.OPPRETTET, true, LocalDateTime.now(), LocalDateTime.of(2020, 7, 13, 12,34),
+            UUID.randomUUID()))
     }
 
     override fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {

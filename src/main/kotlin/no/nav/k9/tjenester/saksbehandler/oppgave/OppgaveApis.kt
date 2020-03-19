@@ -15,6 +15,7 @@ import no.nav.k9.domene.lager.oppgave.*
 import no.nav.k9.domene.modell.Aksjonspunkter
 import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -30,12 +31,17 @@ fun Route.OppgaveApis(
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["sakslisteId"]
 
-        call.respond(listOf(Oppgave(736, "789453", "98437", "Enhet", LocalDateTime.now(),
+ /*       call.respond(listOf(Oppgave(736, "789453", "98437", "Enhet", LocalDateTime.now(),
             LocalDateTime.now(), LocalDate.now(), BehandlingStatus.OPPRETTET, BehandlingType.FORSTEGANGSSOKNAD, FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
             true, "ewk", null, false, UUID.randomUUID(), null,
             listOf(OppgaveEgenskap(6476, AndreKriterierType.PAPIRSØKNAD, "BLALSL", true)), false,
-            Aksjonspunkter(mapOf()))))
+            Aksjonspunkter(mapOf())))) */
 
+        call.respond(listOf(OppgaveDto(
+            OppgaveStatusDto(false,  null, false, null, null, null),
+        578645, 789578, "Walter Lemon", "VL", "453555245", BehandlingType.FORSTEGANGSSOKNAD,
+        FagsakYtelseType.PLEIEPENGER_SYKT_BARN, BehandlingStatus.OPPRETTET, true, LocalDateTime.now(), LocalDateTime.of(2020, 7, 13, 12,34),
+        UUID.randomUUID())))
 
 //        oppgaveTjeneste.oprettOppgave(
 //            Oppgave(

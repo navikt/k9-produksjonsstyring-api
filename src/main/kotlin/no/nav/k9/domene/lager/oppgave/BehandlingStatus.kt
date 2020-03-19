@@ -1,5 +1,8 @@
 package no.nav.k9.domene.lager.oppgave
 
+import com.fasterxml.jackson.annotation.JsonFormat
+
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class BehandlingStatus (val kode: String) {
     AVSLUTTET("AVSLU"),
     FATTER_VEDTAK("FVED"),

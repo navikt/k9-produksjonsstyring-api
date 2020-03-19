@@ -3,6 +3,7 @@ package no.nav.k9.domene.modell
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
+import no.nav.k9.tjenester.saksbehandler.saksliste.AndreKriterierDto
 import java.time.LocalDate
 
 data class Enhet(
@@ -18,7 +19,7 @@ data class OppgaveFiltrering(
     val sortering: KøSortering,
     val filtreringBehandlingTyper: List<BehandlingType>,
     val filtreringYtelseTyper: List<FagsakYtelseType>,
-    val filtreringAndreKriterierTyper: List<AndreKriterierType>,
+    val filtreringAndreKriterierTyper: List<AndreKriterierDto>,
     val enhet: Enhet,
     val avdelingId: Long,
     val erDynamiskPeriode: Boolean,
@@ -36,6 +37,7 @@ data class Saksbehandler(
     val oppgavefiltreringer: List<OppgaveFiltrering>
 )
 
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class KøSortering(override val kode: String, val verdi: String, val felttype: String, val feltkategori: String) :
     Kodeverdi {
     BEHANDLINGSFRIST("BEHFRIST", "Dato for behandlingsfrist", "", ""),
@@ -48,6 +50,7 @@ enum class KøSortering(override val kode: String, val verdi: String, val feltty
     override val kodeverk = "KO_SORTERING"
 }
 
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class AndreKriterierType(override val kode: String, override val navn: String) : Kodeverdi {
     TIL_BESLUTTER("TIL_BESLUTTER", "Til beslutter"),
     PAPIRSØKNAD("PAPIRSOKNAD", "Registrer papirsøknad"),
@@ -62,11 +65,6 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-@JsonAutoDetect(
-    getterVisibility = JsonAutoDetect.Visibility.NONE,
-    setterVisibility = JsonAutoDetect.Visibility.NONE,
-    fieldVisibility = JsonAutoDetect.Visibility.ANY
-)
 enum class FagsakYtelseType private constructor(override val kode: String, override val navn: String) : Kodeverdi {
     ENGANGSTØNAD("ES", "Engangsstønad"),
     FORELDREPENGER("FP", "Foreldrepenger"),
@@ -80,6 +78,7 @@ enum class FagsakYtelseType private constructor(override val kode: String, overr
     }
 }
 
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class BehandlingType(override val kode: String, override val navn: String) : Kodeverdi {
     FORSTEGANGSSOKNAD("BT-002", "Førstegangsbehandling"),
     KLAGE("BT-003", "Klage"),
@@ -95,3 +94,14 @@ enum class BehandlingType(override val kode: String, override val navn: String) 
 
     }
 }
+
+/*@JsonFormat(shape = JsonFormat.Shape.OBJECT)
+@JsonAutoDetect(
+    getterVisibility = JsonAutoDetect.Visibility.NONE,
+    setterVisibility = JsonAutoDetect.Visibility.NONE,
+    fieldVisibility = JsonAutoDetect.Visibility.ANY
+)*/
+
+
+
+

@@ -30,7 +30,7 @@ interface OppgaveTjeneste {
     fun hentAntallOppgaverForAvdeling(avdelingEnhet: String): Int
     fun harForandretOppgaver(oppgaveIder: List<Long>): Boolean
     fun hentSakslistensSaksbehandlere(sakslisteId: Long): List<SaksbehandlerinformasjonDto>
-    fun hentSisteReserverteOppgaver(): List<Oppgave>
+    fun hentSisteReserverteOppgaver(): List<OppgaveDto>
     fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto
     fun hentNavnHvisReservertAvAnnenSaksbehandler(reservasjon: Reservasjon): String
     fun hentNavnHvisFlyttetAvSaksbehandler(flyttetAv: String): String
