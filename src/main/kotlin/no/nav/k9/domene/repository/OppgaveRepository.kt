@@ -64,4 +64,8 @@ class OppgaveRepository(private val dataSource: DataSource) {
             )
         }
     }
+
+    fun hentReserverteOppgaver(reservatør: String): List<OppgaveModell> {
+        return hent().filter { oppgaveModell -> oppgaveModell.sisteOppgave().reservasjon?.reservertAv == reservatør }
+    }
 }

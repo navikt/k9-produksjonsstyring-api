@@ -2,10 +2,7 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 //import no.nav.k9.integrasjon.K9SakRestKlient
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
-import no.nav.k9.domene.lager.oppgave.BehandlingStatus
-import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.lager.oppgave.OppgaveKø
-import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.domene.lager.oppgave.*
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.repository.OppgaveRepository
 import org.slf4j.Logger
@@ -101,24 +98,28 @@ class OppgaveTjenesteImpl(
     }
 
     override fun hentSisteReserverteOppgaver(): List<OppgaveDto> {
-        return listOf(OppgaveDto(
-            OppgaveStatusDto(
-                true, LocalDateTime.of(2020, 3, 25, 12, 45),
-                true, "45373y4ti", "Klara Saksbehandler", null
-            ),
-            21314,
-            "6546765",
-            "Walter Lemon",
-            "VL",
-            "453555245",
-            BehandlingType.SOKNAD,
-            no.nav.k9.domene.lager.oppgave.FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-            BehandlingStatus.OPPRETTET,
-            true,
-            LocalDateTime.now(),
-            LocalDateTime.of(2020, 7, 13, 12, 34),
-            UUID.randomUUID()
-        ))
+        val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver("alexaban")
+
+        return reserverteOppgave.stream().map { t ->
+            OppgaveDto(
+                OppgaveStatusDto(
+                    true, LocalDateTime.of(2020, 3, 25, 12, 45),
+                    true, "alexaban", "Klara Saksbehandler", null
+                ),
+                21314,
+                "6546765",
+                "Walter Lemon",
+                "VL",
+                "453555245",
+                BehandlingType.SOKNAD,
+                FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
+                BehandlingStatus.OPPRETTET,
+                true,
+                LocalDateTime.now(),
+                LocalDateTime.of(2020, 7, 13, 12, 34),
+                UUID.randomUUID()
+            )
+        }.toList()
     }
 
     override fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {
