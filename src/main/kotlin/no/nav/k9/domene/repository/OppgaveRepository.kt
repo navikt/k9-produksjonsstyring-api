@@ -12,6 +12,26 @@ import javax.sql.DataSource
 
 class OppgaveRepository(private val dataSource: DataSource) {
 
+    fun hent(): MutableList<OppgaveModell> {
+        val json: List<String> = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select data from oppgave",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        val mutableList = mutableListOf<OppgaveModell>()
+        for (s in json) {
+            val oppgaveModell = objectMapper().readValue(s, OppgaveModell::class.java)
+            mutableList.add(oppgaveModell)
+        }
+        return mutableList
+    }
+
     fun hent(uuid: UUID): OppgaveModell {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(

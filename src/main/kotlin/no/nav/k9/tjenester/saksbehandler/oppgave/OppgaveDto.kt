@@ -1,15 +1,15 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import no.nav.k9.domene.lager.oppgave.BehandlingStatus
+import no.nav.k9.domene.lager.oppgave.FagsakYtelseType
 import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.FagsakYtelseType
 import java.time.LocalDateTime
 import java.util.*
 
 class OppgaveDto(
     val status: OppgaveStatusDto,
     val behandlingId: Long,
-    val saksnummer: Long,
+    val saksnummer: String,
     val navn: String,
     val system: String,
     val personnummer: String,
@@ -19,4 +19,5 @@ class OppgaveDto(
     val erTilSaksbehandling: Boolean,
     val opprettetTidspunkt: LocalDateTime,
     val behandlingsfrist: LocalDateTime,
-    val eksternId: UUID)
+    val eksternId: UUID
+)

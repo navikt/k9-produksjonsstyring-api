@@ -1,20 +1,18 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
-import no.nav.k9.domene.lager.aktør.TpsPersonDto
-import no.nav.k9.domene.lager.oppgave.*
-import no.nav.k9.domene.modell.Aksjonspunkter
-import no.nav.k9.domene.modell.AndreKriterierType
-import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.FagsakYtelseType
-import no.nav.k9.domene.organisasjon.Avdeling
-import no.nav.k9.domene.organisasjon.Saksbehandler
-import no.nav.k9.domene.repository.OppgaveRepository
 //import no.nav.k9.integrasjon.K9SakRestKlient
+import no.nav.k9.domene.lager.aktør.TpsPersonDto
+import no.nav.k9.domene.lager.oppgave.BehandlingStatus
+import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.lager.oppgave.OppgaveKø
+import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.repository.OppgaveRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.streams.toList
 
 
 private val LOGGER: Logger =
@@ -27,25 +25,12 @@ class OppgaveTjenesteImpl(
 
     override fun hentOppgaver(sakslisteId: Long): List<Oppgave> {
         return try {
-//            val oppgaveListe: OppgaveFiltrering = oppgaveRepository.hentListe(sakslisteId) ?: return emptyList()
-//            val oppgaver: List<Oppgave> = oppgaveRepository.hentOppgaver(OppgavespørringDto(oppgaveListe))
-//            LOGGER.info("Antall oppgaver hentet: " + oppgaver.size)
-//            oppgaver
-            emptyList()
+            oppgaveRepository.hent().stream().map { t -> t.sisteOppgave() }.toList()
         } catch (e: Exception) {
             LOGGER.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
         }
     }
-
-//    fun hentAlleOppgaver(): List<Oppgave> {
-//        return oppgaveRepository.hentAlleOppgaver()
-//    }
-//
-//    fun oprettOppgave(oppgave: Oppgave) {
-//        oppgaveRepository.opprettEllerEndreOppgave(oppgave)
-//    }
-
 
     override fun hentNesteOppgaver(sakslisteId: Long): List<Oppgave> {
         return hentOppgaver(sakslisteId)
@@ -117,11 +102,23 @@ class OppgaveTjenesteImpl(
 
     override fun hentSisteReserverteOppgaver(): List<OppgaveDto> {
         return listOf(OppgaveDto(
-            OppgaveStatusDto(true, LocalDateTime.of(2020, 3, 25, 12, 45),
-                true, "45373y4ti", "Klara Saksbehandler", null),
-            21314, 6546765, "Walter Lemon", "VL", "453555245", BehandlingType.SOKNAD,
-            FagsakYtelseType.PLEIEPENGER_SYKT_BARN, BehandlingStatus.OPPRETTET, true, LocalDateTime.now(), LocalDateTime.of(2020, 7, 13, 12,34),
-            UUID.randomUUID()))
+            OppgaveStatusDto(
+                true, LocalDateTime.of(2020, 3, 25, 12, 45),
+                true, "45373y4ti", "Klara Saksbehandler", null
+            ),
+            21314,
+            "6546765",
+            "Walter Lemon",
+            "VL",
+            "453555245",
+            BehandlingType.SOKNAD,
+            no.nav.k9.domene.lager.oppgave.FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
+            BehandlingStatus.OPPRETTET,
+            true,
+            LocalDateTime.now(),
+            LocalDateTime.of(2020, 7, 13, 12, 34),
+            UUID.randomUUID()
+        ))
     }
 
     override fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {

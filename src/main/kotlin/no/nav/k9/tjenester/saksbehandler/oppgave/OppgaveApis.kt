@@ -1,8 +1,8 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
 //import no.nav.k9.integrasjon.dto.SakslisteIdDto
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
@@ -10,15 +10,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.k9.domene.lager.aktør.TpsPersonDto
-import no.nav.k9.domene.lager.oppgave.*
-import no.nav.k9.domene.modell.Aksjonspunkter
-import no.nav.k9.domene.modell.AndreKriterierType
-import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.FagsakYtelseType
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.*
+import kotlin.streams.toList
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -31,17 +23,36 @@ fun Route.OppgaveApis(
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["sakslisteId"]
 
- /*       call.respond(listOf(Oppgave(736, "789453", "98437", "Enhet", LocalDateTime.now(),
-            LocalDateTime.now(), LocalDate.now(), BehandlingStatus.OPPRETTET, BehandlingType.FORSTEGANGSSOKNAD, FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-            true, "ewk", null, false, UUID.randomUUID(), null,
-            listOf(OppgaveEgenskap(6476, AndreKriterierType.PAPIRSØKNAD, "BLALSL", true)), false,
-            Aksjonspunkter(mapOf())))) */
+        /*       call.respond(listOf(Oppgave(736, "789453", "98437", "Enhet", LocalDateTime.now(),
+                   LocalDateTime.now(), LocalDate.now(), BehandlingStatus.OPPRETTET, BehandlingType.FORSTEGANGSSOKNAD, FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
+                   true, "ewk", null, false, UUID.randomUUID(), null,
+                   listOf(OppgaveEgenskap(6476, AndreKriterierType.PAPIRSØKNAD, "BLALSL", true)), false,
+                   Aksjonspunkter(mapOf())))) */
 
-        call.respond(listOf(OppgaveDto(
-            OppgaveStatusDto(false,  null, false, null, null, null),
-        578645, 789578, "Walter Lemon", "VL", "453555245", BehandlingType.FORSTEGANGSSOKNAD,
-        FagsakYtelseType.PLEIEPENGER_SYKT_BARN, BehandlingStatus.OPPRETTET, true, LocalDateTime.now(), LocalDateTime.of(2020, 7, 13, 12,34),
-        UUID.randomUUID())))
+        val oppgaveliste = oppgaveTjeneste.hentOppgaver(1L).stream().map { t ->
+
+            OppgaveDto(
+                OppgaveStatusDto(false, null, false, null, null, null),
+                t.behandlingId,
+                t.fagsakSaksnummer,
+                "Walter Lemon",
+                t.system,
+                t.aktorId,
+                t.behandlingType,
+                t.fagsakYtelseType,
+                t.behandlingStatus,
+                true,
+                t.behandlingOpprettet,
+                t.behandlingsfrist,
+                t.eksternId
+            )
+
+        }.toList()
+
+
+        call.respond(
+            HttpStatusCode.Accepted, oppgaveliste
+        )
 
 //        oppgaveTjeneste.oprettOppgave(
 //            Oppgave(
