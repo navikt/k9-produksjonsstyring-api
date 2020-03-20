@@ -12,7 +12,7 @@ interface OppgaveTjeneste {
     fun hentOppgaverForSaksnummer(fagsakSaksnummer: Long): List<Oppgave>
     fun hentAktiveOppgaverForSaksnummer(fagsakSaksnummerListe: Collection<Long>): List<Oppgave>
     fun hentReservasjonerTilknyttetAktiveOppgaver(): List<Reservasjon>
-    fun reserverOppgave(oppgaveId: Long): Reservasjon
+    fun reserverOppgave(uuid: UUID): Reservasjon
     fun hentReservasjon(oppgaveId: Long): Reservasjon
     fun frigiOppgave(oppgaveId: Long, begrunnelse: String): Reservasjon
     fun forlengReservasjonPåOppgave(oppgaveId: Long): Reservasjon

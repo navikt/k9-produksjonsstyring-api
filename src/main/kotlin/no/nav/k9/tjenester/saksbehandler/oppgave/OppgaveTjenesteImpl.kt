@@ -2,8 +2,9 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 //import no.nav.k9.integrasjon.K9SakRestKlient
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
-import no.nav.k9.domene.lager.oppgave.*
-import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.lager.oppgave.OppgaveKø
+import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.repository.OppgaveRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -45,8 +46,10 @@ class OppgaveTjenesteImpl(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun reserverOppgave(oppgaveId: Long): Reservasjon {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun reserverOppgave(uuid: UUID): Reservasjon {
+        val sisteOppgave = oppgaveRepository.hent(uuid).sisteOppgave()
+        sisteOppgave.reservasjon = Reservasjon(LocalDateTime.now(), "", "", LocalDateTime.now(), "")
+        return sisteOppgave.reservasjon!!
     }
 
     override fun hentReservasjon(oppgaveId: Long): Reservasjon {
@@ -106,18 +109,18 @@ class OppgaveTjenesteImpl(
                     true, LocalDateTime.of(2020, 3, 25, 12, 45),
                     true, "alexaban", "Klara Saksbehandler", null
                 ),
-                21314,
-                "6546765",
+                t.sisteOppgave().behandlingId,
+                t.sisteOppgave().fagsakSaksnummer,
                 "Walter Lemon",
-                "VL",
+                t.sisteOppgave().system,
                 "453555245",
-                BehandlingType.SOKNAD,
-                FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-                BehandlingStatus.OPPRETTET,
+                t.sisteOppgave().behandlingType,
+                t.sisteOppgave().fagsakYtelseType,
+                t.sisteOppgave().behandlingStatus,
                 true,
-                LocalDateTime.now(),
-                LocalDateTime.of(2020, 7, 13, 12, 34),
-                UUID.randomUUID()
+                t.sisteOppgave().behandlingOpprettet,
+                t.sisteOppgave().behandlingsfrist,
+                t.sisteOppgave().eksternId
             )
         }.toList()
     }
