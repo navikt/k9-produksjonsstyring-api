@@ -1,5 +1,6 @@
 package no.nav.k9.domene.lager.oppgave
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
@@ -11,6 +12,8 @@ enum class BehandlingStatus (val kode: String) {
     UTREDES("UTRED");
 
     companion object {
+        @JsonCreator
+        @JvmStatic
         fun fraKode(kode: String): BehandlingStatus = values().find { it.kode == kode }!!
     }
 }

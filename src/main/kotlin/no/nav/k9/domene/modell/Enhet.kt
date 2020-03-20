@@ -1,6 +1,6 @@
 package no.nav.k9.domene.modell
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.tjenester.saksbehandler.saksliste.AndreKriterierDto
@@ -90,9 +90,11 @@ enum class BehandlingType(override val kode: String, override val navn: String) 
     override val kodeverk = "BEHANDLING_TYPE"
 
     companion object {
+        @JsonCreator
+        @JvmStatic
         fun fraKode(kode: String): BehandlingType = values().find { it.kode == kode }!!
-
     }
+    
 }
 
 /*@JsonFormat(shape = JsonFormat.Shape.OBJECT)
