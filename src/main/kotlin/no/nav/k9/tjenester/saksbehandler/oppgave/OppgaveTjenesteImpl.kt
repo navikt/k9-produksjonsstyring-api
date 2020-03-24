@@ -2,10 +2,11 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 //import no.nav.k9.integrasjon.K9SakRestKlient
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
-import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.lager.oppgave.OppgaveKø
-import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.domene.lager.oppgave.*
+import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.OppgaveRepository
+import org.apache.tools.ant.taskdefs.Local
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -19,9 +20,9 @@ private val LOGGER: Logger =
 
 class OppgaveTjenesteImpl(
     private val oppgaveRepository: OppgaveRepository
-) : OppgaveTjeneste {
+) {
 
-    override fun hentOppgaver(sakslisteId: Long): List<Oppgave> {
+    fun hentOppgaver(sakslisteId: Long): List<Oppgave> {
         return try {
             oppgaveRepository.hent().stream().map { t -> t.sisteOppgave() }.toList()
         } catch (e: Exception) {
@@ -30,80 +31,92 @@ class OppgaveTjenesteImpl(
         }
     }
 
-    override fun hentNesteOppgaver(sakslisteId: Long): List<Oppgave> {
+    fun hentNesteOppgaver(sakslisteId: Long): List<Oppgave> {
         return hentOppgaver(sakslisteId)
     }
 
-    override fun hentOppgaverForSaksnummer(fagsakSaksnummer: Long): List<Oppgave> {
+    fun hentOppgaverForSaksnummer(fagsakSaksnummer: Long): List<Oppgave> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentAktiveOppgaverForSaksnummer(fagsakSaksnummerListe: Collection<Long>): List<Oppgave> {
+    fun hentAktiveOppgaverForSaksnummer(fagsakSaksnummerListe: Collection<Long>): List<Oppgave> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentReservasjonerTilknyttetAktiveOppgaver(): List<Reservasjon> {
+    fun hentReservasjonerTilknyttetAktiveOppgaver(): List<Reservasjon> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun reserverOppgave(uuid: UUID): Reservasjon {
+    fun reserverOppgave(uuid: UUID): Reservasjon {
         val sisteOppgave = oppgaveRepository.hent(uuid).sisteOppgave()
-        sisteOppgave.reservasjon = Reservasjon(LocalDateTime.now(), "", "", LocalDateTime.now(), "")
+        sisteOppgave.reservasjon = Reservasjon(LocalDateTime.now().plusHours(24),
+            "Sara Saksbehandler", null, null, null)
         return sisteOppgave.reservasjon!!
     }
 
-    override fun hentReservasjon(oppgaveId: Long): Reservasjon {
+    fun hentReservasjon(oppgaveId: Long): Reservasjon {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun frigiOppgave(oppgaveId: Long, begrunnelse: String): Reservasjon {
+    fun frigiOppgave(oppgaveId: UUID, begrunnelse: String): Reservasjon {
+        val sisteOppgave = oppgaveRepository.hent(oppgaveId).sisteOppgave()
+        sisteOppgave.reservasjon = Reservasjon(LocalDateTime.now().minusSeconds(1),
+            "Sara Saksbehandler", null, null, begrunnelse)
+        return sisteOppgave.reservasjon!!
+    }
+
+    fun forlengReservasjonPåOppgave(oppgaveId: UUID): Reservasjon {
+        val sisteOppgave = oppgaveRepository.hent(oppgaveId).sisteOppgave()
+        val gammelReservasjon = sisteOppgave.reservasjon!!
+        sisteOppgave.reservasjon = Reservasjon(gammelReservasjon.reservertTil.plusHours(24),
+            "Sara Saksbehandler", null, null, null)
+        return sisteOppgave.reservasjon!!
+    }
+
+    fun flyttReservasjon(oppgaveId: UUID, brukernavn: String, begrunnelse: String): Reservasjon {
+        val sisteOppgave = oppgaveRepository.hent(oppgaveId).sisteOppgave()
+        val gammelReservasjon = sisteOppgave.reservasjon!!
+        sisteOppgave.reservasjon = Reservasjon(gammelReservasjon.reservertTil.plusHours(24),
+            brukernavn, "Sara Saksbehandler", LocalDateTime.now(), begrunnelse)
+        return sisteOppgave.reservasjon!!
+    }
+
+    fun hentAlleOppgaveFiltrering(brukerIdent: String): List<OppgaveKø> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun forlengReservasjonPåOppgave(oppgaveId: Long): Reservasjon {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun flyttReservasjon(oppgaveId: Long, brukernavn: String, begrunnelse: String): Reservasjon {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun hentAlleOppgaveFiltrering(brukerIdent: String): List<OppgaveKø> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun hentOppgaveFiltreringerForPåloggetBruker(): List<OppgaveKø> {
+    fun hentOppgaveFiltreringerForPåloggetBruker(): List<OppgaveKø> {
         return hentAlleOppgaveFiltrering("K9LOS")
     }
 
-    override fun hentPersonInfo(aktørId: Long): TpsPersonDto {
+    fun hentPersonInfo(aktørId: Long): TpsPersonDto {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentPersonInfoOptional(aktørId: Long): Optional<TpsPersonDto> {
+    fun hentPersonInfoOptional(aktørId: Long): Optional<TpsPersonDto> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentAntallOppgaver(behandlingsKø: Long, forAvdelingsleder: Boolean): Int {
+    fun hentAntallOppgaver(behandlingsKø: Long, forAvdelingsleder: Boolean): Int {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentAntallOppgaverForAvdeling(avdelingEnhet: String): Int {
+    fun hentAntallOppgaverForAvdeling(avdelingEnhet: String): Int {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun harForandretOppgaver(oppgaveIder: List<Long>): Boolean {
+    fun harForandretOppgaver(oppgaveIder: List<Long>): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentSakslistensSaksbehandlere(sakslisteId: Long): List<SaksbehandlerinformasjonDto> {
+    fun hentSakslistensSaksbehandlere(sakslisteId: Long): List<SaksbehandlerinformasjonDto> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentSisteReserverteOppgaver(): List<OppgaveDto> {
+    fun hentSisteReserverteOppgaver(): List<OppgaveDto> {
         val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver("alexaban")
 
-        return reserverteOppgave.stream().map { t ->
+  /*      return reserverteOppgave.stream().map { t ->
             OppgaveDto(
                 OppgaveStatusDto(
                     true, LocalDateTime.of(2020, 3, 25, 12, 45),
@@ -122,18 +135,23 @@ class OppgaveTjenesteImpl(
                 t.sisteOppgave().behandlingsfrist,
                 t.sisteOppgave().eksternId
             )
-        }.toList()
+        }.toList() */
+        return listOf(OppgaveDto(OppgaveStatusDto(true, LocalDateTime.of(2020, 4, 1, 12, 13), true,
+        "4fe", "Sara", null), 45323, "9080800900", "Lemo Water", "ee09",
+        "23090382974", BehandlingType.SOKNAD, FagsakYtelseType.PLEIEPENGER_SYKT_BARN, BehandlingStatus.OPPRETTET, true,
+        LocalDateTime.of(2020, 3, 15, 13, 15), LocalDateTime.of(2020, 9, 23,12, 0),
+        UUID.randomUUID()))
     }
 
-    override fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {
+    fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentNavnHvisReservertAvAnnenSaksbehandler(reservasjon: Reservasjon): String {
+    fun hentNavnHvisReservertAvAnnenSaksbehandler(reservasjon: Reservasjon): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hentNavnHvisFlyttetAvSaksbehandler(flyttetAv: String): String {
+    fun hentNavnHvisFlyttetAvSaksbehandler(flyttetAv: String): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

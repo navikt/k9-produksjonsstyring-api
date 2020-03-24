@@ -4,23 +4,31 @@ import io.ktor.application.call
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
+import io.ktor.locations.post
+import io.ktor.request.receive
+import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.*
 import no.nav.k9.domene.oppslag.Attributt
 import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 
-@KtorExperimentalAPI
+private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
+
 @KtorExperimentalLocationsAPI
 internal fun Route.OppgaveApis(
     requestContextService: RequestContextService,
     oppgaveTjeneste: OppgaveTjenesteImpl,
     tpsProxyV1Gateway: TpsProxyV1Gateway
 ) {
-    @Location("/oppgaver")
+
+    @Location("/")
     class hentOppgaver
 
     get { _: hentOppgaver ->
@@ -55,7 +63,7 @@ internal fun Route.OppgaveApis(
         )
     }
 
-    @Location("/oppgaver/resultat")
+    @Location("/resultat")
     class getOppgaverTilBehandling
 
     get { _: getOppgaverTilBehandling ->
@@ -66,21 +74,21 @@ internal fun Route.OppgaveApis(
 
     }
 
-    @Location("/oppgaver/behandlede")
+    @Location("/behandlede")
     class getBehandledeOppgaver
 
     get { _: getBehandledeOppgaver ->
         call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver())
     }
 
-    @Location("/oppgaver/reserverte")
+    @Location("/reserverte")
     class getReserverteOppgaver
 
     get { _: getReserverteOppgaver ->
         call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver())
     }
 
-    @Location("/oppgaver/antall")
+    @Location("/antall")
     class hentAntallOppgaverForSaksliste
 
     get { _: hentAntallOppgaverForSaksliste ->
@@ -88,12 +96,35 @@ internal fun Route.OppgaveApis(
         call.respond(8)
     }
 
-    @Location("/oppgaver/reserver")
+    @Location("/reserver")
     class reserverOppgave
 
-    post { _: Unit ->
-
-
+    post { _: reserverOppgave ->
+        val oppgaveId = call.receive<OppgaveId>()
+        call.respond(oppgaveTjeneste.reserverOppgave(UUID.fromString(oppgaveId.oppgaveId)))
     }
 
+    @Location("/opphev")
+    class opphevReservasjon
+
+    post { _: opphevReservasjon ->
+        val params = call.receive<OpphevReservasjonId>()
+        call.respond(oppgaveTjeneste.frigiOppgave(UUID.fromString(params.oppgaveId), params.begrunnelse))
+    }
+
+    @Location("/forleng")
+    class forlengReservasjon
+
+    post { _: forlengReservasjon ->
+        val oppgaveId = call.receive<OppgaveId>()
+        call.respond(oppgaveTjeneste.forlengReservasjonPåOppgave(UUID.fromString(oppgaveId.oppgaveId)))
+    }
+
+    @Location("/flytt")
+    class flyttReservasjon
+
+    post { _: flyttReservasjon ->
+        val params = call.receive<FlyttReservasjonId>()
+        call.respond(oppgaveTjeneste.flyttReservasjon(UUID.fromString(params.oppgaveId), params.brukernavn, params.begrunnelse))
+    }
 }

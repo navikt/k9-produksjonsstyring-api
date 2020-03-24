@@ -159,7 +159,7 @@ fun Application.k9Los() {
                 AvdelingslederSakslisteApis()
                 NøkkeltallApis()
                 route("saksbehandler") {
-                    OppgaveApis(
+                    route("oppgaver") {OppgaveApis(
                         requestContextService,
                         oppgaveTjeneste, tpsProxyV1Gateway = TpsProxyV1Gateway(
                             tpsProxyV1 = TpsProxyV1(
@@ -167,7 +167,7 @@ fun Application.k9Los() {
                                 accessTokenClient = accessTokenClientResolver.naisSts()
                             )
                         )
-                    )
+                    )}
                     SaksbehandlerSakslisteApis()
                     SaksbehandlerNøkkeltallApis()
                 }

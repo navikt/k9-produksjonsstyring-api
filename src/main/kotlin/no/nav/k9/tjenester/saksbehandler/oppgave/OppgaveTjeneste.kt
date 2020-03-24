@@ -14,7 +14,7 @@ interface OppgaveTjeneste {
     fun hentReservasjonerTilknyttetAktiveOppgaver(): List<Reservasjon>
     fun reserverOppgave(uuid: UUID): Reservasjon
     fun hentReservasjon(oppgaveId: Long): Reservasjon
-    fun frigiOppgave(oppgaveId: Long, begrunnelse: String): Reservasjon
+    fun frigiOppgave(oppgaveId: UUID, begrunnelse: String): Reservasjon
     fun forlengReservasjonPåOppgave(oppgaveId: Long): Reservasjon
     fun flyttReservasjon(
         oppgaveId: Long,

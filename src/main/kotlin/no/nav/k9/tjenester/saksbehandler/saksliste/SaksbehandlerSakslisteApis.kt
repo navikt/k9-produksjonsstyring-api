@@ -19,18 +19,15 @@ fun Route.SaksbehandlerSakslisteApis(
 
         val of = OppgaveFiltrering("Filtrering 1", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
             listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), listOf(AndreKriterierDto(AndreKriterierType.UTBETALING_TIL_BRUKER, true)), Enhet("Enhet", "Enhetsnavn", emptyList(), false),
-            12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(Saksbehandler("gkqwreilw", 546, emptyList(), emptyList())))
+            12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(SaksbehandlerDto("435twg", "Saksbehandler Klara", listOf("Avd"))))
 
         val of2 = OppgaveFiltrering("Filtrering 2", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
             listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), listOf(AndreKriterierDto(AndreKriterierType.UTBETALING_TIL_BRUKER, true)), Enhet("Enhet", "Enhetsnavn", emptyList(), false),
-            12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(Saksbehandler("gkqwreilw", 546, emptyList(), emptyList())))
+            12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(SaksbehandlerDto("3e2r43t","Saksbehandler Gro", listOf("Avdelign"))))
 
         call.respond(listOf(SakslisteDto(OppgaveFiltrering("Behandlingskø 1", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
             listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), listOf(AndreKriterierDto(AndreKriterierType.UTBETALING_TIL_BRUKER, true)), Enhet("Enhet", "Enhetsnavn", listOf(of), false),
-            12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(Saksbehandler("gkqwreilw", 546, emptyList(), emptyList()))), 13),
-            SakslisteDto(OppgaveFiltrering("Behandlingskø 2", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
-                listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), listOf(AndreKriterierDto(AndreKriterierType.UTBETALING_TIL_BRUKER, true)), Enhet("Enhet", "Enhetsnavn", listOf(of2), false),
-                12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(Saksbehandler("gkqwreilw", 546, emptyList(), emptyList()))), 13)))
+            12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(SaksbehandlerDto("645fgd","Saksbehandler Klara", listOf("Avdelign")))), 14)))
     }
 
     @Location("/saksliste/saksbehandlere")
@@ -38,10 +35,10 @@ fun Route.SaksbehandlerSakslisteApis(
 
     val of = OppgaveFiltrering("navn", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
         listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), listOf(AndreKriterierDto(AndreKriterierType.UTBETALING_TIL_BRUKER, true)), Enhet("Enhet", "Enhetsnavn", emptyList(), false),
-        12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(Saksbehandler("gkqwreilw", 546, emptyList(), emptyList())))
+        12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(SaksbehandlerDto("435twg", "Saksbehandler Sara", listOf("Avd"))))
 
     get { _: hentSakslistensSaksbehandlere ->
-        call.respond(listOf(Saksbehandler("Klara Saksbehandler", 13, listOf(Enhet("wegqh", "wieuegru", listOf(of), false)),
-            emptyList())))
+        call.respond(listOf(SaksbehandlerDto("8ewer89uf","SaksbehandlerEllen", listOf("Avdelign")))
+          )
     }
 }

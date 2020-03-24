@@ -3,6 +3,7 @@ package no.nav.k9.domene.repository
 import no.nav.k9.domene.lager.oppgave.*
 import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 
 import java.time.LocalDate
 

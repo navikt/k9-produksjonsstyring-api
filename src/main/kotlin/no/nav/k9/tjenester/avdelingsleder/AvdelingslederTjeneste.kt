@@ -3,6 +3,7 @@ package no.nav.k9.tjenester.avdelingsleder
 import no.nav.k9.domene.lager.oppgave.*
 import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import java.time.LocalDate
 
 interface AvdelingslederTjeneste {

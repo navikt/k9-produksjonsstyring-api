@@ -1,8 +1,8 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import no.nav.k9.domene.lager.oppgave.BehandlingStatus
-import no.nav.k9.domene.lager.oppgave.FagsakYtelseType
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import java.time.LocalDateTime
 import java.util.*
 

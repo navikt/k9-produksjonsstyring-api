@@ -1,12 +1,11 @@
 package no.nav.k9.tjenester.kodeverk
 
 import no.nav.k9.domene.lager.oppgave.FagsakStatus
-import no.nav.k9.domene.lager.oppgave.FagsakYtelseType
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.lager.oppgave.KøSortering
 import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.BehandlingType
-import java.util.Arrays.asList
+import no.nav.k9.domene.modell.FagsakYtelseType
 
 class HentKodeverkTjeneste  {
      fun hentGruppertKodeliste(): MutableMap<String, Collection<out Kodeverdi>> {

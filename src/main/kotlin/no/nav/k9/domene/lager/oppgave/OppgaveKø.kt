@@ -2,6 +2,7 @@ package no.nav.k9.domene.lager.oppgave
 
 import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.organisasjon.Avdeling
 import no.nav.k9.domene.organisasjon.Saksbehandler
 import java.time.LocalDate

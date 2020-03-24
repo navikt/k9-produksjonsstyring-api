@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.tjenester.saksbehandler.saksliste.AndreKriterierDto
+import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerDto
 import java.time.LocalDate
 
 data class Enhet(
@@ -27,7 +28,7 @@ data class OppgaveFiltrering(
     val tomDato: LocalDate,
     val fra: Long,
     val til: Long,
-    val saksbehandlere: List<Saksbehandler>
+    val saksbehandlere: List<SaksbehandlerDto>
 )
 
 data class Saksbehandler(
