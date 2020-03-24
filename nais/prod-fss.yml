@@ -60,6 +60,9 @@ spec:
     - name: DB_VAULT_MOUNTPATH
       value: postgresql/prod-fss/
 
+    - name: TPS_PROXY_V1_URL
+      value: https://tps-proxy.nais.adeo.no/api/v1
+
     #Mq sak og behandling
     - name: MQGATEWAY02_NAME
       value: MPLSC02

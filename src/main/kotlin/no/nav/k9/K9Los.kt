@@ -9,10 +9,8 @@ import io.ktor.features.CallId
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.content.files
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
-import io.ktor.http.content.staticRootFolder
 import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
@@ -34,26 +32,25 @@ import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.tps.TpsProxyV1
+import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
-import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
 import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgave.AvdelingslederOppgaveApis
 import no.nav.k9.tjenester.avdelingsleder.saksbehandler.AvdelingslederSaksbehandlerApis
 import no.nav.k9.tjenester.avdelingsleder.saksliste.AvdelingslederSakslisteApis
-import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
-import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
-import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
 import no.nav.k9.tjenester.kodeverk.KodeverkApis
 import no.nav.k9.tjenester.konfig.KonfigApis
 import no.nav.k9.tjenester.mock.MockGrensesnitt
+import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
+import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjenesteImpl
-import java.io.File
+import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import java.net.URI
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.Duration
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -86,9 +83,9 @@ fun Application.k9Los() {
         AuthStatusPages()
     }
 
-//    val accessTokenClientResolver = AccessTokenClientResolver(
-//        clients = configuration.clients()
-//    )
+    val accessTokenClientResolver = AccessTokenClientResolver(
+        clients = configuration.clients()
+    )
 
 //    val gosysOppgaveGateway =
 //        GosysOppgaveGateway(
@@ -160,7 +157,14 @@ fun Application.k9Los() {
             AvdelingslederSakslisteApis()
             NøkkeltallApis()
             route("saksbehandler") {
-                OppgaveApis(oppgaveTjeneste)
+                OppgaveApis(
+                    oppgaveTjeneste, tpsProxyV1Gateway = TpsProxyV1Gateway(
+                        tpsProxyV1 = TpsProxyV1(
+                            baseUrl = configuration.tpsProxyV1Url(),
+                            accessTokenClient = accessTokenClientResolver.naisSts()
+                        )
+                    )
+                )
                 SaksbehandlerSakslisteApis()
                 SaksbehandlerNøkkeltallApis()
             }

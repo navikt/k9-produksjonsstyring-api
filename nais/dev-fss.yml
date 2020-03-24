@@ -65,6 +65,9 @@ spec:
     - name: COOKIE_NAME
       value: selvbetjening-idtoken
 
+    - name: TPS_PROXY_V1_URL
+      value: https://tps-proxy-q1.nais.preprod.local/api/v1
+
       # Kafka 
     - name: BOOTSTRAP_SERVERS
       value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443

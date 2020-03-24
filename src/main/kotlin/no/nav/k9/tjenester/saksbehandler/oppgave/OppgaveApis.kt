@@ -2,7 +2,6 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 //import no.nav.k9.integrasjon.dto.SakslisteIdDto
 import io.ktor.application.call
-import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
@@ -10,12 +9,14 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import kotlin.streams.toList
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 fun Route.OppgaveApis(
-    oppgaveTjeneste: OppgaveTjenesteImpl
+    oppgaveTjeneste: OppgaveTjenesteImpl,
+    tpsProxyV1Gateway: TpsProxyV1Gateway
 ) {
     @Location("/oppgaver")
     class hentOppgaver
@@ -48,39 +49,9 @@ fun Route.OppgaveApis(
             )
 
         }.toList()
-
-
         call.respond(
-            HttpStatusCode.Accepted, oppgaveliste
+            oppgaveliste
         )
-
-//        oppgaveTjeneste.oprettOppgave(
-//            Oppgave(
-//                9878,
-//                "666",
-//                "089870",
-//                "Enhet",
-//                LocalDateTime.now(),
-//                LocalDateTime.now(),
-//                LocalDate.now(),
-//                BehandlingStatus.OPPRETTET,
-//                BehandlingType.FØRSTEGANGSSØKNAD,
-//                FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-//                true,
-//                "VL",
-//                LocalDateTime.now(),
-//                false,
-//                UUID.randomUUID(),
-//                null,
-//                listOf(
-//                    OppgaveEgenskap(6476, AndreKriterierType.PAPIRSØKNAD, "BLALSL", true)
-//                ),
-//                false,
-//                Aksjonspunkter(mapOf())
-//            )
-//        )
-
-//        call.respond(oppgaveTjeneste.hentAlleOppgaver())
     }
 
     @Location("/oppgaver/resultat")

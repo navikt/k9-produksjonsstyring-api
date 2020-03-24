@@ -20,11 +20,13 @@ data class Configuration(private val config: ApplicationConfig) {
         internal const val AZURE_V2_ALIAS = "azure-v2"
     }
 
-    //private val clients = config.clients()
+    private val clients = config.clients()
 
     internal fun issuers() = config.issuers().withoutAdditionalClaimRules()
 
-    // internal fun clients() = clients
+    internal fun clients() = clients
+
+    internal fun tpsProxyV1Url() = URI(config.getRequiredString("nav.register_urls.tps_proxy_v1", secret = false))
 
     // private fun azureClientConfigured() = clients().containsKey(AZURE_V2_ALIAS)
 

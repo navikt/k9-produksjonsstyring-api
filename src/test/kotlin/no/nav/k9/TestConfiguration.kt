@@ -4,8 +4,7 @@ import com.github.kittinunf.fuel.httpGet
 import com.github.tomakehurst.wiremock.WireMockServer
 import no.nav.common.KafkaEnvironment
 import no.nav.helse.dusseldorf.testsupport.jws.ClientCredentials
-import no.nav.helse.dusseldorf.testsupport.wiremock.getAzureV2WellKnownUrl
-import no.nav.helse.dusseldorf.testsupport.wiremock.getNaisStsWellKnownUrl
+import no.nav.k9.wiremocks.getTpsProxyUrl
 import org.json.JSONObject
 
 object TestConfiguration {
@@ -13,10 +12,12 @@ object TestConfiguration {
     fun asMap(
         wireMockServer: WireMockServer? = null,
         kafkaEnvironment: KafkaEnvironment? = null,
-        port: Int = 8020
+        port: Int = 8020,
+        tpsProxyBaseUrl: String? = wireMockServer?.getTpsProxyUrl()
     ): Map<String, String> {
         val map = mutableMapOf(
-            Pair("ktor.deployment.port", "$port")
+            Pair("ktor.deployment.port", "$port"),
+            Pair("nav.register_urls.tps_proxy_v1", "$tpsProxyBaseUrl")
         )
 
         map["nav.auth.trustore.path"] = "vtp"
