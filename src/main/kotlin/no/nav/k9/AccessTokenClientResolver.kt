@@ -20,7 +20,6 @@ class AccessTokenClientResolver(
     }
 
     private val naisSts : AccessTokenClient
-//    private val accessTokenClient : AccessTokenClient
 
     init {
         val naisStsClient = naisStsClient()
