@@ -19,6 +19,7 @@ import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 
 class TpsProxyV1(
@@ -49,7 +50,7 @@ class TpsProxyV1(
     ).toString()
 
     internal suspend fun person(ident: Ident): TpsPerson {
-        val authorizationHeader = "Bearer "
+        val authorizationHeader = "Bearer  ${coroutineContext.idToken().value}"
 
         val httpRequest = personUrl
             .httpGet()
@@ -101,7 +102,7 @@ class TpsProxyV1(
     }
 
     internal suspend fun barn(ident: Ident): Set<TpsBarn> {
-        val authorizationHeader = "Bearer "
+        val authorizationHeader = "Bearer ${coroutineContext.idToken().value}"
 
         val httpRequest = barnUrl
             .httpGet()
