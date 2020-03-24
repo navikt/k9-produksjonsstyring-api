@@ -32,6 +32,7 @@ import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
@@ -118,7 +119,7 @@ fun Application.k9Los() {
         asynkronProsesseringV1Service.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
     }
-
+    val requestContextService = RequestContextService()
     install(CallIdRequired)
 
     install(Locations)
@@ -148,31 +149,34 @@ fun Application.k9Los() {
         route("mock") {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
-        route("api") {
+        authenticate {
+            route("api") {
 
-            AdminApis()
-            AvdelingslederApis()
-            AvdelingslederOppgaveApis()
-            AvdelingslederSaksbehandlerApis()
-            AvdelingslederSakslisteApis()
-            NøkkeltallApis()
-            route("saksbehandler") {
-                OppgaveApis(
-                    oppgaveTjeneste, tpsProxyV1Gateway = TpsProxyV1Gateway(
-                        tpsProxyV1 = TpsProxyV1(
-                            baseUrl = configuration.tpsProxyV1Url(),
-                            accessTokenClient = accessTokenClientResolver.naisSts()
+                AdminApis()
+                AvdelingslederApis()
+                AvdelingslederOppgaveApis()
+                AvdelingslederSaksbehandlerApis()
+                AvdelingslederSakslisteApis()
+                NøkkeltallApis()
+                route("saksbehandler") {
+                    OppgaveApis(
+                        requestContextService,
+                        oppgaveTjeneste, tpsProxyV1Gateway = TpsProxyV1Gateway(
+                            tpsProxyV1 = TpsProxyV1(
+                                baseUrl = configuration.tpsProxyV1Url(),
+                                accessTokenClient = accessTokenClientResolver.naisSts()
+                            )
                         )
                     )
-                )
-                SaksbehandlerSakslisteApis()
-                SaksbehandlerNøkkeltallApis()
-            }
-            NavAnsattApis()
+                    SaksbehandlerSakslisteApis()
+                    SaksbehandlerNøkkeltallApis()
+                }
+                NavAnsattApis()
 
-            SaksbehandlerNøkkeltallApis()
-            route("konfig") { KonfigApis() }
-            KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
+                SaksbehandlerNøkkeltallApis()
+                route("konfig") { KonfigApis() }
+                KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
+            }
         }
         static("static") {
             resources("static/css")

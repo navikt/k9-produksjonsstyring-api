@@ -1,7 +1,6 @@
 package no.nav.k9.integrasjon.rest
 
 import kotlinx.coroutines.asContextElement
-import no.nav.k9.CorrelationId
 import no.nav.k9.auth.IdToken
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext

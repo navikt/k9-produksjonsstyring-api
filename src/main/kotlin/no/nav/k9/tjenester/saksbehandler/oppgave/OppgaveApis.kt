@@ -1,6 +1,5 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
-//import no.nav.k9.integrasjon.dto.SakslisteIdDto
 import io.ktor.application.call
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
@@ -9,12 +8,15 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.domene.oppslag.Attributt
+import no.nav.k9.domene.oppslag.Ident
+import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
-import kotlin.streams.toList
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-fun Route.OppgaveApis(
+internal fun Route.OppgaveApis(
+    requestContextService: RequestContextService,
     oppgaveTjeneste: OppgaveTjenesteImpl,
     tpsProxyV1Gateway: TpsProxyV1Gateway
 ) {
@@ -23,34 +25,33 @@ fun Route.OppgaveApis(
 
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["sakslisteId"]
-
-        /*       call.respond(listOf(Oppgave(736, "789453", "98437", "Enhet", LocalDateTime.now(),
-                   LocalDateTime.now(), LocalDate.now(), BehandlingStatus.OPPRETTET, BehandlingType.FORSTEGANGSSOKNAD, FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-                   true, "ewk", null, false, UUID.randomUUID(), null,
-                   listOf(OppgaveEgenskap(6476, AndreKriterierType.PAPIRSØKNAD, "BLALSL", true)), false,
-                   Aksjonspunkter(mapOf())))) */
-
-        val oppgaveliste = oppgaveTjeneste.hentOppgaver(1L).stream().map { t ->
-
-            OppgaveDto(
-                OppgaveStatusDto(false, null, false, null, null, null),
-                t.behandlingId,
-                t.fagsakSaksnummer,
-                "Walter Lemon",
-                t.system,
-                t.aktorId,
-                t.behandlingType,
-                t.fagsakYtelseType,
-                t.behandlingStatus,
-                true,
-                t.behandlingOpprettet,
-                t.behandlingsfrist,
-                t.eksternId
+        val list = mutableListOf<OppgaveDto>()
+        val oppgaver = oppgaveTjeneste.hentOppgaver(1L)
+        for (oppgave in oppgaver) {
+            val tpsPerson = tpsProxyV1Gateway.person(
+                ident = Ident(oppgave.aktorId),
+                attributter = setOf(Attributt.fornavn, Attributt.mellomnavn, Attributt.etternavn)
             )
-
-        }.toList()
+            list.add(
+                OppgaveDto(
+                    OppgaveStatusDto(false, null, false, null, null, null),
+                    oppgave.behandlingId,
+                    oppgave.fagsakSaksnummer,
+                    "${tpsPerson?.fornavn ?: ""} ${tpsPerson?.etternavn ?: ""}",
+                    oppgave.system,
+                    oppgave.aktorId,
+                    oppgave.behandlingType,
+                    oppgave.fagsakYtelseType,
+                    oppgave.behandlingStatus,
+                    true,
+                    oppgave.behandlingOpprettet,
+                    oppgave.behandlingsfrist,
+                    oppgave.eksternId
+                )
+            )
+        }
         call.respond(
-            oppgaveliste
+            list
         )
     }
 
