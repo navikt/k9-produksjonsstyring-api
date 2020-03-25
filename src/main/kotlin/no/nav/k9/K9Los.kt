@@ -78,6 +78,8 @@ fun Application.k9Los() {
         }
     }
 
+
+
     install(StatusPages) {
         DefaultStatusPages()
         JacksonStatusPages()
@@ -149,7 +151,7 @@ fun Application.k9Los() {
         route("mock") {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
-       // authenticate {
+        authenticate {
             route("api") {
 
                 AdminApis()
@@ -179,7 +181,7 @@ fun Application.k9Los() {
                 route("konfig") { KonfigApis() }
                 KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
             }
-        // }
+        }
         static("static") {
             resources("static/css")
             resources("static/js")
