@@ -149,7 +149,7 @@ fun Application.k9Los() {
         route("mock") {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
-   //     authenticate {
+        authenticate {
             route("api") {
 
                 AdminApis()
@@ -159,15 +159,17 @@ fun Application.k9Los() {
                 AvdelingslederSakslisteApis()
                 NøkkeltallApis()
                 route("saksbehandler") {
-                    route("oppgaver") {OppgaveApis(
-                        requestContextService,
-                        oppgaveTjeneste, tpsProxyV1Gateway = TpsProxyV1Gateway(
-                            tpsProxyV1 = TpsProxyV1(
-                                baseUrl = configuration.tpsProxyV1Url(),
-                                accessTokenClient = accessTokenClientResolver.naisSts()
+                    route("oppgaver") {
+                        OppgaveApis(
+                            requestContextService,
+                            oppgaveTjeneste, tpsProxyV1Gateway = TpsProxyV1Gateway(
+                                tpsProxyV1 = TpsProxyV1(
+                                    baseUrl = configuration.tpsProxyV1Url(),
+                                    accessTokenClient = accessTokenClientResolver.naisSts()
+                                )
                             )
                         )
-                    )}
+                    }
                     SaksbehandlerSakslisteApis()
                     SaksbehandlerNøkkeltallApis()
                 }
@@ -177,7 +179,7 @@ fun Application.k9Los() {
                 route("konfig") { KonfigApis() }
                 KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
             }
-        //  }
+        }
         static("static") {
             resources("static/css")
             resources("static/js")

@@ -75,6 +75,8 @@ enum class FagsakYtelseType private constructor(override val kode: String, overr
     override val kodeverk = "FAGSAK_YTELSE_TYPE"
 
     companion object {
+        @JsonCreator
+        @JvmStatic
         fun fraKode(kode: String): FagsakYtelseType = values().find { it.kode == kode }!!
     }
 }
