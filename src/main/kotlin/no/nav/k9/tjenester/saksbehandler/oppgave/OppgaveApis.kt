@@ -6,18 +6,15 @@ import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.locations.post
 import io.ktor.request.receive
-import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import io.ktor.routing.post
-import io.ktor.util.KtorExperimentalAPI
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.util.*
 import no.nav.k9.domene.oppslag.Attributt
 import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.*
 
 private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
@@ -38,7 +35,13 @@ internal fun Route.OppgaveApis(
         for (oppgave in oppgaver) {
             val tpsPerson = tpsProxyV1Gateway.person(
                 ident = Ident(oppgave.aktorId),
-                attributter = setOf(Attributt.fornavn, Attributt.mellomnavn, Attributt.etternavn)
+                attributter = setOf(
+                    Attributt.fornavn,
+                    Attributt.mellomnavn,
+                    Attributt.etternavn,
+                    Attributt.diskresjonskode,
+                    Attributt.egenansatt
+                )
             )
             list.add(
                 OppgaveDto(

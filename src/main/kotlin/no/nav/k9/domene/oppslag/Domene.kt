@@ -8,7 +8,8 @@ internal enum class Attributt(internal val api: String) {
     mellomnavn("mellomnavn"),
     etternavn("etternavn"),
     fødselsdato("fødselsdato"),
-
+    diskresjonskode("diskresjonskode"),
+    egenansatt("egenansatt"),
     barnAktørId("barn[].aktør_id"),
     barnFornavn("barn[].fornavn"),
     barnMellomnavn("barn[].mellomnavn"),
