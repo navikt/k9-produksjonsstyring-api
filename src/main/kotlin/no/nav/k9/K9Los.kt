@@ -151,7 +151,7 @@ fun Application.k9Los() {
         route("mock") {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
-        authenticate {
+        authenticate(*issuers.allIssuers()) {
             route("api") {
                 AdminApis()
                 AvdelingslederApis()
