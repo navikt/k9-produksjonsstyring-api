@@ -75,7 +75,7 @@ fun Route.MockGrensesnitt(
                         textInput {
                             classes = setOf("form-control")
                             id = "aktørid"
-                            value = "aktørid"
+                            value = "26104500284"
                         }
                     }
 
