@@ -153,7 +153,6 @@ fun Application.k9Los() {
         }
         authenticate {
             route("api") {
-
                 AdminApis()
                 AvdelingslederApis()
                 AvdelingslederOppgaveApis()
