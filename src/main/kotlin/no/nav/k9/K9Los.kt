@@ -130,11 +130,6 @@ fun Application.k9Los() {
 
         val kodeverkTjeneste = HentKodeverkTjeneste()
 
-        authenticate(*issuers.allIssuers()) {
-            requiresCallId {
-
-            }
-        }
         MetricsRoute()
         DefaultProbeRoutes()
 
