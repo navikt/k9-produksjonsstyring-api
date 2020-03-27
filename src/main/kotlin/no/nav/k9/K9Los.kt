@@ -146,7 +146,7 @@ fun Application.k9Los() {
         route("mock") {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
-        authenticate(*issuers.allIssuers()) {
+       // authenticate(*issuers.allIssuers()) {
             route("api") {
                 AdminApis()
                 AvdelingslederApis()
@@ -175,7 +175,7 @@ fun Application.k9Los() {
                 route("konfig") { KonfigApis() }
                 KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
             }
-        }
+        //}
         static("static") {
             resources("static/css")
             resources("static/js")
