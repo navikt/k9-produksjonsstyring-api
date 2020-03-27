@@ -97,10 +97,15 @@ fun Application.k9Los() {
 //            accessTokenClientResolver = accessTokenClientResolver
 //        )
 
-
+    val tpsProxyV1Gateway = TpsProxyV1Gateway(
+        tpsProxyV1 = TpsProxyV1(
+            baseUrl = configuration.tpsProxyV1Url(),
+            accessTokenClient = accessTokenClientResolver.naisSts()
+        )
+    )
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
-    val oppgaveTjeneste = OppgaveTjenesteImpl(oppgaveRepository)
+    val oppgaveTjeneste = OppgaveTjenesteImpl(oppgaveRepository, tpsProxyV1Gateway = tpsProxyV1Gateway)
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
     val k9sakEventHandler = K9sakEventHandler(
         oppgaveRepository = oppgaveRepository,
@@ -146,7 +151,8 @@ fun Application.k9Los() {
         route("mock") {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
-       // authenticate(*issuers.allIssuers()) {
+        authenticate(*issuers.allIssuers()) {
+
             route("api") {
                 AdminApis()
                 AvdelingslederApis()
@@ -158,12 +164,8 @@ fun Application.k9Los() {
                     route("oppgaver") {
                         OppgaveApis(
                             requestContextService,
-                            oppgaveTjeneste, tpsProxyV1Gateway = TpsProxyV1Gateway(
-                                tpsProxyV1 = TpsProxyV1(
-                                    baseUrl = configuration.tpsProxyV1Url(),
-                                    accessTokenClient = accessTokenClientResolver.naisSts()
-                                )
-                            )
+                            oppgaveTjeneste,
+                            tpsProxyV1Gateway = tpsProxyV1Gateway
                         )
                     }
                     SaksbehandlerSakslisteApis()
@@ -175,7 +177,7 @@ fun Application.k9Los() {
                 route("konfig") { KonfigApis() }
                 KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
             }
-        //}
+        }
         static("static") {
             resources("static/css")
             resources("static/js")
