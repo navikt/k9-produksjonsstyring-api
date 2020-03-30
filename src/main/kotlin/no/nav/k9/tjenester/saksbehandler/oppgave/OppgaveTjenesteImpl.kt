@@ -56,12 +56,20 @@ class OppgaveTjenesteImpl(
     }
 
     fun reserverOppgave(uuid: UUID): Reservasjon {
-        val sisteOppgave = oppgaveRepository.hent(uuid).sisteOppgave()
-        sisteOppgave.reservasjon = Reservasjon(
+
+        val reservasjon = Reservasjon(
             LocalDateTime.now().plusHours(24),
             "Sara Saksbehandler", null, null, null
         )
-        return sisteOppgave.reservasjon!!
+
+        oppgaveRepository.lagre(uuid) { forrigeOppgave ->
+
+            forrigeOppgave?.reservasjon = reservasjon
+            
+            forrigeOppgave!!
+        }
+
+        return reservasjon
     }
 
     fun hentReservasjon(oppgaveId: Long): Reservasjon {
