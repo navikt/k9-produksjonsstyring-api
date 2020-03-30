@@ -11,6 +11,7 @@ import io.mockk.mockk
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.db.runMigration
+import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.gosys.GosysOppgave
@@ -18,6 +19,7 @@ import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import org.intellij.lang.annotations.Language
 import org.junit.Test
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -34,7 +36,7 @@ class K9sakEventHandlerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
 
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1,1))
+        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
 
         val k9sakEventHandler = K9sakEventHandler(
@@ -80,14 +82,14 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1,1))
+        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
 
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource),
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-                    config = mockk<Configuration>()
+            config = mockk<Configuration>()
         )
 
         @Language("JSON") val json =
@@ -126,7 +128,7 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1,1))
+        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
@@ -175,8 +177,8 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1,2))
-        every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1,3)
+        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
+        every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val k9sakEventHandler = K9sakEventHandler(
@@ -218,6 +220,100 @@ class K9sakEventHandlerTest {
             oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
         assertTrue { oppgave.aktiv }
         assertTrue(oppgave.aksjonspunkter.lengde() == 3)
+    }
+
+    @KtorExperimentalAPI
+    @Test
+    fun `Skal ta vare på eksisterende reservasjoner`() {
+        val pg = EmbeddedPostgres.start()
+        val dataSource = pg.postgresDatabase
+        runMigration(dataSource)
+        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
+        every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
+
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val k9sakEventHandler = K9sakEventHandler(
+            oppgaveRepository,
+            BehandlingProsessEventRepository(dataSource = dataSource),
+            config = mockk<Configuration>()
+//            gosysOppgaveGateway = gosysOppgaveGateway
+        )
+
+        @Language("JSON") val json =
+            """{
+                  "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+                  "fagsystem": "FPSAK",
+                  "saksnummer": "5YC4K",
+                  "aktørId": "9906098522415",
+                  "behandlingId": 1000001,
+                  "eventTid": "2020-02-20T07:38:49",
+                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+                  "behandlinStatus": "UTRED",
+                  "behandlingStatus": "UTRED",
+                  "behandlingSteg": "INREG_AVSL",
+                  "behandlendeEnhet": "0300",
+                  "ytelseTypeKode": "SVP",
+                  "behandlingTypeKode": "BT-002",
+                  "opprettetBehandling": "2020-02-20T07:38:49",
+                  "aksjonspunktKoderMedStatusListe": {
+                    "5009": "OPPR"
+                  }
+                }"""
+        val objectMapper = jacksonObjectMapper()
+            .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+
+        val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
+
+        k9sakEventHandler.prosesser(event)
+
+        var oppgave =
+            oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
+        assertTrue { oppgave.aktiv }
+        assertTrue(oppgave.aksjonspunkter.lengde() == 1)
+        assertTrue(oppgave.reservasjon == null)
+
+        oppgaveRepository.lagre(
+            oppgave.eksternId
+        ) {
+            oppgave.reservasjon = Reservasjon(LocalDateTime.now(), "", "", LocalDateTime.now(), "")
+            oppgave
+        }
+
+        oppgave =
+            oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
+        assertTrue(oppgave.reservasjon != null)
+
+        k9sakEventHandler.prosesser(
+            objectMapper.readValue(
+                """{
+                  "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+                  "fagsystem": "FPSAK",
+                  "saksnummer": "5YC4K",
+                  "aktørId": "9906098522415",
+                  "behandlingId": 1000001,
+                  "eventTid": "2020-02-20T07:38:49",
+                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+                  "behandlinStatus": "UTRED",
+                  "behandlingStatus": "UTRED",
+                  "behandlingSteg": "INREG_AVSL",
+                  "behandlendeEnhet": "0300",
+                  "ytelseTypeKode": "SVP",
+                  "behandlingTypeKode": "BT-002",
+                  "opprettetBehandling": "2020-02-20T07:38:49",
+                  "aksjonspunktKoderMedStatusListe": {
+                    "5009": "OPPR",
+                    "5084": "OPPR"
+                  }
+                }""", BehandlingProsessEventDto::class.java
+            )
+        )
+
+        oppgave =
+            oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb")).sisteOppgave()
+        assertTrue { oppgave.aktiv }
+        assertTrue(oppgave.aksjonspunkter.lengde() == 2)
+        assertTrue(oppgave.reservasjon != null)
     }
 
 }

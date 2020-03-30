@@ -2,6 +2,7 @@ package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
@@ -43,7 +44,11 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
 
         val oppgave = modell.oppgave()
-        oppgaveRepository.lagre(oppgave)
+        oppgaveRepository.lagre(oppgave.eksternId) { forrigeOppgave: Oppgave? ->
+            oppgave.reservasjon = forrigeOppgave?.reservasjon
+            oppgave
+        }
+
         log.info(objectMapper().writeValueAsString(modell))
         log.info(objectMapper().writeValueAsString(oppgave))
     }
