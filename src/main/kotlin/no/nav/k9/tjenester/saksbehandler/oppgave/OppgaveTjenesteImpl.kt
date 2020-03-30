@@ -65,7 +65,7 @@ class OppgaveTjenesteImpl(
         oppgaveRepository.lagre(uuid) { forrigeOppgave ->
 
             forrigeOppgave?.reservasjon = reservasjon
-            
+
             forrigeOppgave!!
         }
 
@@ -76,33 +76,39 @@ class OppgaveTjenesteImpl(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun frigiOppgave(oppgaveId: UUID, begrunnelse: String): Reservasjon {
-        val sisteOppgave = oppgaveRepository.hent(oppgaveId).sisteOppgave()
-        sisteOppgave.reservasjon = Reservasjon(
-            LocalDateTime.now().minusSeconds(1),
-            "Sara Saksbehandler", null, null, begrunnelse
-        )
-        return sisteOppgave.reservasjon!!
+    fun frigiOppgave(uuid: UUID, begrunnelse: String): Reservasjon {
+        var reservasjon: Reservasjon? = null
+        oppgaveRepository.lagre(uuid) { forrigeOppgave ->
+            forrigeOppgave?.reservasjon?.reservertAv = ""
+            forrigeOppgave?.reservasjon?.begrunnelse = begrunnelse
+            reservasjon = forrigeOppgave?.reservasjon!!
+            forrigeOppgave
+        }
+
+        return reservasjon!!
     }
 
-    fun forlengReservasjonPåOppgave(oppgaveId: UUID): Reservasjon {
-        val sisteOppgave = oppgaveRepository.hent(oppgaveId).sisteOppgave()
-        val gammelReservasjon = sisteOppgave.reservasjon!!
-        sisteOppgave.reservasjon = Reservasjon(
-            gammelReservasjon.reservertTil.plusHours(24),
-            "Sara Saksbehandler", null, null, null
-        )
-        return sisteOppgave.reservasjon!!
+    fun forlengReservasjonPåOppgave(uuid: UUID): Reservasjon {
+        val reservasjon: Reservasjon? = null
+        oppgaveRepository.lagre(uuid) { forrigeOppgave ->
+            forrigeOppgave?.reservasjon?.reservertTil = forrigeOppgave?.reservasjon?.reservertTil?.plusHours(24)
+            forrigeOppgave!!
+        }
+
+        return reservasjon!!
     }
 
-    fun flyttReservasjon(oppgaveId: UUID, brukernavn: String, begrunnelse: String): Reservasjon {
-        val sisteOppgave = oppgaveRepository.hent(oppgaveId).sisteOppgave()
-        val gammelReservasjon = sisteOppgave.reservasjon!!
-        sisteOppgave.reservasjon = Reservasjon(
-            gammelReservasjon.reservertTil.plusHours(24),
-            brukernavn, "Sara Saksbehandler", LocalDateTime.now(), begrunnelse
-        )
-        return sisteOppgave.reservasjon!!
+    fun flyttReservasjon(uuid: UUID, brukernavn: String, begrunnelse: String): Reservasjon {
+        val reservasjon: Reservasjon? = null
+        oppgaveRepository.lagre(uuid) { forrigeOppgave ->
+            forrigeOppgave?.reservasjon?.reservertTil = forrigeOppgave?.reservasjon?.reservertTil?.plusHours(24)
+            forrigeOppgave?.reservasjon?.flyttetTidspunkt = LocalDateTime.now()
+            forrigeOppgave?.reservasjon?.reservertAv = brukernavn
+            forrigeOppgave?.reservasjon?.begrunnelse = begrunnelse
+            forrigeOppgave!!
+        }
+
+        return reservasjon!!
     }
 
     fun hentAlleOppgaveFiltrering(brukerIdent: String): List<OppgaveKø> {
@@ -143,6 +149,7 @@ class OppgaveTjenesteImpl(
     }
 
     fun hentAntallOppgaver(behandlingsKø: Long, forAvdelingsleder: Boolean): Int {
+
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
