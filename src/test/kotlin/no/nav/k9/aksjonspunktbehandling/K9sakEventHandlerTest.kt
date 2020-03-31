@@ -46,24 +46,44 @@ class K9sakEventHandlerTest {
             config = mockk<Configuration>()
         )
 
-        val json =
+        @Language("JSON") val json =
             """{
-                  "eksternId": "e84300c6-8976-46fa-8a68-9c7ac27ee636",
-                  "fagsystem": "FPSAK",
-                  "saksnummer": "5YC7C",
-                  "aktørId": "9916108039470",
-                  "behandlingId": 1000001,
-                  "eventTid": "2020-02-20T07:38:49",
-                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
-                  "behandlinStatus": "UTRED",
-                  "behandlingStatus": "UTRED",
-                  "behandlingSteg": "INREG",
-                  "behandlendeEnhet": "0300",
-                  "ytelseTypeKode": "PSB",
-                  "behandlingTypeKode": "BT-002",
-                  "opprettetBehandling": "2020-02-19T08:31:56",
-                  "aksjonspunktKoderMedStatusListe": {}
-                }"""
+  "eksternId": "70c7a780-08ad-4ccf-8cef-c341d4913d65",
+  "fagsystem": {
+    "kode": "K9SAK",
+    "kodeverk": "FAGSYSTEM"
+  },
+  "behandlingstidFrist": {
+    "year": 2020,
+    "month": "MAY",
+    "monthValue": 5,
+    "dayOfMonth": 12,
+    "dayOfWeek": "TUESDAY",
+    "era": "CE",
+    "leapYear": true,
+    "dayOfYear": 133,
+    "chronology": {
+      "calendarType": "iso8601",
+      "id": "ISO"
+    }
+  },
+  "saksnummer": "5YC1S",
+  "aktørId": "9916107629061",
+  "behandlingId": 999951,
+  "eventTid": "2020-03-31T06:33:59.460931",
+  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+  "behandlinStatus": "UTRED",
+  "behandlingStatus": null,
+  "behandlingSteg": "INREG",
+  "behandlendeEnhet": null,
+  "ansvarligBeslutterForTotrinn": null,
+  "ansvarligSaksbehandlerForTotrinn": null,
+  "ytelseTypeKode": "PSB",
+  "behandlingTypeKode": "BT-002",
+  "opprettetBehandling": "2020-03-31T06:33:48",
+  "aksjonspunktKoderMedStatusListe": {}
+}
+            """.trimIndent()
         val objectMapper = jacksonObjectMapper()
             .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
 

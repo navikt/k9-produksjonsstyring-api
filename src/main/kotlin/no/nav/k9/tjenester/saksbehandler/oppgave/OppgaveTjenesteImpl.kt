@@ -72,8 +72,8 @@ class OppgaveTjenesteImpl(
         return reservasjon
     }
 
-    fun hentReservasjon(oppgaveId: Long): Reservasjon {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun hentReservasjon(uuid: UUID): Reservasjon {
+        return oppgaveRepository.hent(uuid).sisteOppgave().reservasjon!!
     }
 
     fun frigiOppgave(uuid: UUID, begrunnelse: String): Reservasjon {
@@ -112,7 +112,7 @@ class OppgaveTjenesteImpl(
     }
 
     fun hentAlleOppgaveFiltrering(brukerIdent: String): List<OppgaveKø> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     fun hentOppgaveFiltreringerForPåloggetBruker(): List<OppgaveKø> {
@@ -149,8 +149,7 @@ class OppgaveTjenesteImpl(
     }
 
     fun hentAntallOppgaver(behandlingsKø: Long, forAvdelingsleder: Boolean): Int {
-
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return oppgaveRepository.hent().size
     }
 
     fun hentAntallOppgaverForAvdeling(avdelingEnhet: String): Int {

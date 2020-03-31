@@ -84,7 +84,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 )
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer().withKodeRef("k9 kode"))
-                .withAnsvarligEnhetREF(modell.sisteEvent().behandlendeEnhet),
+                .withAnsvarligEnhetREF("modell.sisteEvent().behandlendeEnhet"),
             config
         )
 
