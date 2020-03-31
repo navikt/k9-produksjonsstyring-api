@@ -51,7 +51,6 @@ internal abstract class SerDes<V> : Serializer<V>, Deserializer<V> {
 
 internal class AksjonspunktLaget : SerDes<BehandlingProsessEventDto>() {
     override fun deserialize(topic: String?, data: ByteArray?): BehandlingProsessEventDto? {
-        println(data!!)
         return data?.let {
             objectMapper.readValue(it)
         }
