@@ -141,7 +141,6 @@
     "behandlendEnhetKode": {
       "type": "string",
       "description": "Kode som angir hvilken enhet som faktisk utfører behandlingen på det gjeldende tidspunktet.",
-      "
     },
     "behandlendeEnhetType": {
       "type": "string",
