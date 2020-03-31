@@ -53,23 +53,10 @@ class K9sakEventHandlerTest {
     "kode": "K9SAK",
     "kodeverk": "FAGSYSTEM"
   },
-  "behandlingstidFrist": {
-    "year": 2020,
-    "month": "MAY",
-    "monthValue": 5,
-    "dayOfMonth": 12,
-    "dayOfWeek": "TUESDAY",
-    "era": "CE",
-    "leapYear": true,
-    "dayOfYear": 133,
-    "chronology": {
-      "calendarType": "iso8601",
-      "id": "ISO"
-    }
-  },
   "saksnummer": "5YC1S",
   "aktørId": "9916107629061",
   "behandlingId": 999951,
+   "behandlingstidFrist": "2020-03-31",
   "eventTid": "2020-03-31T06:33:59.460931",
   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
   "behandlinStatus": "UTRED",
@@ -90,7 +77,7 @@ class K9sakEventHandlerTest {
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
 
         k9sakEventHandler.prosesser(event)
-        val oppgaveModell = oppgaveRepository.hent(UUID.fromString("e84300c6-8976-46fa-8a68-9c7ac27ee636"))
+        val oppgaveModell = oppgaveRepository.hent(UUID.fromString(event.eksternId.toString()))
         val oppgave = oppgaveModell.sisteOppgave()
         assertFalse { oppgave.aktiv }
     }
@@ -115,13 +102,17 @@ class K9sakEventHandlerTest {
         @Language("JSON") val json =
             """{
   "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
-  "fagsystem": "FPSAK",
+  "fagsystem": {
+    "kode": "K9SAK",
+    "kodeverk": "FAGSYSTEM"
+  },
   "saksnummer": "5YC4K",
   "aktørId": "9906098522415",
   "behandlingId": 1000001,
   "eventTid": "2020-02-20T07:38:49",
   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
   "behandlinStatus": "UTRED",
+   "behandlingstidFrist": "2020-03-31",
   "behandlingStatus": "UTRED",
   "behandlingSteg": "INREG_AVSL",
   "behandlendeEnhet": "0300",
@@ -162,13 +153,17 @@ class K9sakEventHandlerTest {
         @Language("JSON") val json =
             """{
                   "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
-                  "fagsystem": "FPSAK",
+                  "fagsystem": {
+    "kode": "K9SAK",
+    "kodeverk": "FAGSYSTEM"
+  },
                   "saksnummer": "5YC4K",
                   "aktørId": "9906098522415",
                   "behandlingId": 1000001,
                   "eventTid": "2020-02-20T07:38:49",
                   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
                   "behandlinStatus": "UTRED",
+                   "behandlingstidFrist": "2020-03-31",
                   "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
@@ -211,13 +206,17 @@ class K9sakEventHandlerTest {
         @Language("JSON") val json =
             """{
                   "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
-                  "fagsystem": "FPSAK",
+                  "fagsystem": {
+    "kode": "K9SAK",
+    "kodeverk": "FAGSYSTEM"
+  },
                   "saksnummer": "5YC4K",
                   "aktørId": "9906098522415",
                   "behandlingId": 1000001,
                   "eventTid": "2020-02-20T07:38:49",
                   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
                   "behandlinStatus": "UTRED",
+                   "behandlingstidFrist": "2020-03-31",
                   "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
@@ -263,7 +262,10 @@ class K9sakEventHandlerTest {
         @Language("JSON") val json =
             """{
                   "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
-                  "fagsystem": "FPSAK",
+                  "fagsystem": {
+    "kode": "K9SAK",
+    "kodeverk": "FAGSYSTEM"
+  },
                   "saksnummer": "5YC4K",
                   "aktørId": "9906098522415",
                   "behandlingId": 1000001,
@@ -272,6 +274,7 @@ class K9sakEventHandlerTest {
                   "behandlinStatus": "UTRED",
                   "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG_AVSL",
+                   "behandlingstidFrist": "2020-03-31",
                   "behandlendeEnhet": "0300",
                   "ytelseTypeKode": "SVP",
                   "behandlingTypeKode": "BT-002",
@@ -308,13 +311,17 @@ class K9sakEventHandlerTest {
             objectMapper.readValue(
                 """{
                   "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
-                  "fagsystem": "FPSAK",
+                  "fagsystem": {
+    "kode": "K9SAK",
+    "kodeverk": "FAGSYSTEM"
+  },
                   "saksnummer": "5YC4K",
                   "aktørId": "9906098522415",
                   "behandlingId": 1000001,
                   "eventTid": "2020-02-20T07:38:49",
                   "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
                   "behandlinStatus": "UTRED",
+                   "behandlingstidFrist": "2020-03-31",
                   "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
