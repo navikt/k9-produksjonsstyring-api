@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import org.apache.kafka.common.serialization.Deserializer
@@ -51,8 +52,7 @@ internal abstract class SerDes<V> : Serializer<V>, Deserializer<V> {
 internal class AksjonspunktLaget : SerDes<BehandlingProsessEventDto>() {
     override fun deserialize(topic: String?, data: ByteArray?): BehandlingProsessEventDto? {
         return data?.let {
-            //objectMapper.readValue(it)
-            null
+            objectMapper.readValue(it)
         }
     }
 }
