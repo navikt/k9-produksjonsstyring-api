@@ -140,7 +140,7 @@
     },
     "behandlendEnhetKode": {
       "type": "string",
-      "description": "Kode som angir hvilken enhet som faktisk utfører behandlingen på det gjeldende tidspunktet.",
+      "description": "Kode som angir hvilken enhet som faktisk utfører behandlingen på det gjeldende tidspunktet."
     },
     "behandlendeEnhetType": {
       "type": "string",
@@ -165,7 +165,7 @@
       "description": "Behandling opprettet manuelt av saksbehandler."
     },
     "avsender": {
-      "type": "boolean",
+      "type": "string",
       "description": "Felte angir hvem som er avsender av dataene, så navnet på kildesystemet."
     },
     "versjon": {

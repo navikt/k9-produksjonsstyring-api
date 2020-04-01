@@ -55,51 +55,51 @@
           "type": "string",
           "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
         }
-      },
-      "saksnummer": {
-        "type": "string",
-        "description": "Saksnummeret tilknyttet saken. Dette kan være det samme som sakId, om dette også gjelder kildesystemet."
-      },
-      "ytelseType": {
-        "type": "string",
-        "description": "Stønaden eller ytelsen det er saken omhandler. Hva gjelder saken?"
-      },
-      "underType": {
-        "type": "string",
-        "description": "Noen kildesystemer vil ha en under type som gir finnere oppløsning på saken omhandler. For eksempel vil foreldrepenger være en ytelseType, i FPSAK, mens underType vil da angi hvilken type foreldrepnger sak det er snakk, altså Adopsjon, Fødsel o.l. Dette er sakens underType. Hvis dette ikke finnes eller allerede er bakt inn i ytelseType kan denne være tom."
-      },
-      "status": {
-        "type": "string",
-        "description": "Kode som angir sakens status, slik som påbegynt, under utbetaling, avsluttet o.l."
-      },
-      "resultat": {
-        "type": "string",
-        "description": "Kode som angir resultet av behandling på innværende tidspunkt. For eksempel, ikke fastsatt, innvilget, avslått."
-      },
-      "ytelseTypeBeskrivelse": {
-        "type": "string",
-        "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
-      },
-      "underTypeBeskrivelse": {
-        "type": "string",
-        "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
-      },
-      "statusBeskrivelse": {
-        "type": "string",
-        "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
-      },
-      "resultatBeskrivelse": {
-        "type": "string",
-        "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
-      },
-      "avsender": {
-        "type": "boolean",
-        "description": "Felte angir hvem som er avsender av dataene, så navnet på kildesystemet."
-      },
-      "versjon": {
-        "type": "number",
-        "description": "Angir på hvilken versjon av kilde koden objektet er JSON stringer er generert med bakgrunn på. "
       }
+    },
+    "saksnummer": {
+      "type": "string",
+      "description": "Saksnummeret tilknyttet saken. Dette kan være det samme som sakId, om dette også gjelder kildesystemet."
+    },
+    "ytelseType": {
+      "type": "string",
+      "description": "Stønaden eller ytelsen det er saken omhandler. Hva gjelder saken?"
+    },
+    "underType": {
+      "type": "string",
+      "description": "Noen kildesystemer vil ha en under type som gir finnere oppløsning på saken omhandler. For eksempel vil foreldrepenger være en ytelseType, i FPSAK, mens underType vil da angi hvilken type foreldrepnger sak det er snakk, altså Adopsjon, Fødsel o.l. Dette er sakens underType. Hvis dette ikke finnes eller allerede er bakt inn i ytelseType kan denne være tom."
+    },
+    "status": {
+      "type": "string",
+      "description": "Kode som angir sakens status, slik som påbegynt, under utbetaling, avsluttet o.l."
+    },
+    "resultat": {
+      "type": "string",
+      "description": "Kode som angir resultet av behandling på innværende tidspunkt. For eksempel, ikke fastsatt, innvilget, avslått."
+    },
+    "ytelseTypeBeskrivelse": {
+      "type": "string",
+      "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
+    },
+    "underTypeBeskrivelse": {
+      "type": "string",
+      "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
+    },
+    "statusBeskrivelse": {
+      "type": "string",
+      "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
+    },
+    "resultatBeskrivelse": {
+      "type": "string",
+      "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
+    },
+    "avsender": {
+      "type": "boolean",
+      "description": "Felte angir hvem som er avsender av dataene, så navnet på kildesystemet."
+    },
+    "versjon": {
+      "type": "number",
+      "description": "Angir på hvilken versjon av kilde koden objektet er JSON stringer er generert med bakgrunn på. "
     }
   }
 }
