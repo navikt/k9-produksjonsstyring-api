@@ -9,6 +9,7 @@ import no.nav.helse.dusseldorf.ktor.core.getOptionalString
 import no.nav.helse.dusseldorf.ktor.core.getRequiredString
 import no.nav.k9.db.createHikariConfig
 import no.nav.k9.kafka.KafkaConfig
+import no.nav.k9.tilgangskontroll.abac.AbacClientConfig
 import java.net.URI
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -29,6 +30,11 @@ data class Configuration(private val config: ApplicationConfig) {
     internal fun tpsProxyV1Url() = URI(config.getRequiredString("nav.register_urls.tps_proxy_v1", secret = false))
 
     // private fun azureClientConfigured() = clients().containsKey(AZURE_V2_ALIAS)
+
+    internal fun abacClient() = AbacClientConfig(
+        username = config.getRequiredString("nav.abac.system_user", secret = false),
+        password = config.getRequiredString("nav.abac.system_user_password", secret = true),
+        endpointUrl = config.getRequiredString("nav.abac.pdp_url", secret = false))
 
     internal fun hikariConfig() = createHikariConfig(
         jdbcUrl = config.getRequiredString("nav.db.url", secret = false),

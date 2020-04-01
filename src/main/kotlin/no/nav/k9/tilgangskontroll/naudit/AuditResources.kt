@@ -1,4 +1,4 @@
-package no.nav.sbl.dialogarena.naudit
+package no.nav.k9.tilgangskontroll.naudit
 
 import no.nav.k9.tilgangskontroll.naudit.Audit.AuditResource
 

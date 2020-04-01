@@ -80,3 +80,7 @@ spec:
       value: b27apvl176.preprod.local
     - name: MQGATEWAY02_PORT
       value: '1413'
+
+      # ABAC
+    - name: ABAC_PDP_ENDPOINT_URL
+      value: https://wasapp-q1.adeo.no/asm-pdp/authorize

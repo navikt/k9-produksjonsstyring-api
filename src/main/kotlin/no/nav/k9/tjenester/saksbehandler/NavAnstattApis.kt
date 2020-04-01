@@ -26,7 +26,7 @@ fun Route.NavAnsattApis(
 
 
     get { _: getInnloggetBruker ->
-        //        val ident = SubjectHandler.getSubjectHandler().uid
+//        val ident = SubjectHandler.getSubjectHandler().uid
 //        val ldapBruker = LdapBrukeroppslag().hentBrukerinformasjon(ident)
 //        val grupper = LdapUtil().filtrerGrupper(ldapBruker.groups)
 //        val innloggetAnsatt = InnloggetNavAnsattDto(

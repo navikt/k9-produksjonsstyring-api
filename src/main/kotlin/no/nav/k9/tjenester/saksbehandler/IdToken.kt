@@ -5,7 +5,7 @@ import io.ktor.application.ApplicationCall
 import io.ktor.auth.parseAuthorizationHeader
 import no.nav.k9.domene.oppslag.Ident
 
-internal data class IdToken(
+data class IdToken(
     internal val value: String,
     internal val ident: Ident = Ident(
         JWT.decode(value).subject ?: throw IllegalStateException("Token mangler 'sub' claim.")
