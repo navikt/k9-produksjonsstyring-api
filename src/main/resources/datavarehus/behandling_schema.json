@@ -138,7 +138,7 @@
       "type": "string",
       "description": "Kode som angir hvilken type enhetskode det er snakk om, som oftest NORG."
     },
-    "behandlendEnhetKode": {
+    "behandlendeEnhetKode": {
       "type": "string",
       "description": "Kode som angir hvilken enhet som faktisk utfører behandlingen på det gjeldende tidspunktet."
     },

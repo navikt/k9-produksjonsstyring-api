@@ -6,7 +6,7 @@
   "required": [
     "funksjonellTid",
     "tekniskTid",
-    "motttattDato",
+    "mottattDato",
     "sakId",
     "aktorId",
     "saksnummer",
@@ -35,6 +35,11 @@
     "sakId": {
       "type": "number",
       "description": "Nøkkelen til saken i kildesystemet. Noen kildesystem har valgt å kalle dette objektet fagsak. Denne identifiserer samlingen av behandlinger som vil kunne oppstå i forbindelse med saken. Skal kunne spores i kilden."
+    },
+    "mottattDato": {
+      "type": "string",
+      "formate": "date",
+      "description": "Denne datoen forteller fra hvilken dato behandlingen først ble initiert. Datoen brukes i beregning av saksbehandlingstid og skal samsvare med brukerens opplevelse av at saksbehandlingen har startet."
     },
     "aktorId": {
       "type": "number",
