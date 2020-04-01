@@ -6,18 +6,13 @@ import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.locations.post
 import io.ktor.request.receive
-import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import io.ktor.routing.post
-import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.integrasjon.rest.RequestContextService
+import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import no.nav.k9.domene.oppslag.Attributt
-import no.nav.k9.domene.oppslag.Ident
-import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 
 private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
@@ -36,16 +31,22 @@ internal fun Route.OppgaveApis(
         val list = mutableListOf<OppgaveDto>()
         val oppgaver = oppgaveTjeneste.hentOppgaver(1L)
         for (oppgave in oppgaver) {
-            val tpsPerson = tpsProxyV1Gateway.person(
-                ident = Ident(oppgave.aktorId),
-                attributter = setOf(Attributt.fornavn, Attributt.mellomnavn, Attributt.etternavn)
-            )
+//            val tpsPerson = tpsProxyV1Gateway.person(
+//                ident = Ident(oppgave.aktorId),
+//                attributter = setOf(
+//                    Attributt.fornavn,
+//                    Attributt.mellomnavn,
+//                    Attributt.etternavn,
+//                    Attributt.diskresjonskode,
+//                    Attributt.egenansatt
+//                )
+//            )
             list.add(
                 OppgaveDto(
                     OppgaveStatusDto(false, null, false, null, null, null),
                     oppgave.behandlingId,
                     oppgave.fagsakSaksnummer,
-                    "${tpsPerson?.fornavn ?: ""} ${tpsPerson?.etternavn ?: ""}",
+                    "Walter Sitron",//   "${tpsPerson?.fornavn ?: ""} ${tpsPerson?.etternavn ?: ""}",
                     oppgave.system,
                     oppgave.aktorId,
                     oppgave.behandlingType,

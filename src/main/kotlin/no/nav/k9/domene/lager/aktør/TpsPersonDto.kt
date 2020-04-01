@@ -10,6 +10,6 @@ data class TpsPersonDto(
     var fnr: PersonIdent,
     var fødselsdato: LocalDate,
     var kjønn: String,
-    var dødsdato: LocalDate,
+    var dødsdato: LocalDate?,
     var diskresjonskode: String
 )

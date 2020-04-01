@@ -8,7 +8,10 @@ internal enum class Attributt(internal val api: String) {
     mellomnavn("mellomnavn"),
     etternavn("etternavn"),
     fødselsdato("fødselsdato"),
-
+    diskresjonskode("diskresjonskode"),
+    egenansatt("egenansatt"),
+    kjønn("kjoenn"),
+    ident("ident"),
     barnAktørId("barn[].aktør_id"),
     barnFornavn("barn[].fornavn"),
     barnMellomnavn("barn[].mellomnavn"),
@@ -17,9 +20,7 @@ internal enum class Attributt(internal val api: String) {
     barnHarSammeAdresse("barn[].har_samme_adresse"),
 
     arbeidsgivereOrganisasjonerNavn("arbeidsgivere[].organisasjoner[].navn"),
-    arbeidsgivereOrganisasjonerOrganisasjonsnummer("arbeidsgivere[].organisasjoner[].organisasjonsnummer")
-
-    ;
+    arbeidsgivereOrganisasjonerOrganisasjonsnummer("arbeidsgivere[].organisasjoner[].organisasjonsnummer");
 
     internal companion object {
         internal fun fraApi(api: String): Attributt {

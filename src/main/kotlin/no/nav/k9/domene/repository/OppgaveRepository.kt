@@ -48,20 +48,38 @@ class OppgaveRepository(private val dataSource: DataSource) {
 
     }
 
-    fun lagre(oppgave: Oppgave) {
-        val json = objectMapper().writeValueAsString(oppgave)
-        val id = oppgave.eksternId.toString()
+    fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
         using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    """
+            it.transaction { tx ->
+
+                val run = tx.run(
+                    queryOf(
+                        "select data from oppgave where id = :id for update",
+                        mapOf("id" to uuid.toString())
+                    )
+                        .map { row ->
+                            row.string("data")
+                        }.asSingle
+                )
+
+                val oppgave = if (!run.isNullOrEmpty()) {
+                    f(objectMapper().readValue(run, OppgaveModell::class.java).sisteOppgave())
+                } else {
+                    f(null)
+                }
+                val json = objectMapper().writeValueAsString(oppgave)
+                tx.run(
+                    queryOf(
+                        """
                     insert into oppgave as k (id, data)
                     values (:id, :dataInitial :: jsonb)
                     on conflict (id) do update
                     set data = jsonb_set(k.data, '{oppgaver,999999}', :data :: jsonb, true)
-                 """, mapOf("id" to id, "dataInitial" to "{\"oppgaver\": [$json]}", "data" to json)
-                ).asUpdate
-            )
+                 """, mapOf("id" to uuid.toString(), "dataInitial" to "{\"oppgaver\": [$json]}", "data" to json)
+                    ).asUpdate
+                )
+
+            }
         }
     }
 

@@ -5,8 +5,6 @@ import no.nav.helse.kafka.ManagedKafkaStreams
 import no.nav.helse.kafka.ManagedStreamHealthy
 import no.nav.helse.kafka.ManagedStreamReady
 import no.nav.k9.Configuration
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.kafka.KafkaConfig
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
@@ -55,8 +53,9 @@ internal class AksjonspunktStream(
                     Consumed.with(fromTopic.keySerde, fromTopic.valueSerde)
                 )
                 .foreach { _, entry ->
-                    val event = entry
-                    k9sakEventHandler.prosesser(event)
+                    if (entry != null) {
+                        k9sakEventHandler.prosesser(entry)
+                    }
                 }
             return builder.build()
         }

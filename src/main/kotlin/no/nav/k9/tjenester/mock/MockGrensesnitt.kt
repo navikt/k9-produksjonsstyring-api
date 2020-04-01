@@ -17,6 +17,7 @@ import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.kafka.dto.EventHendelse
 import no.nav.k9.kafka.dto.Fagsystem
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -75,7 +76,7 @@ fun Route.MockGrensesnitt(
                         textInput {
                             classes = setOf("form-control")
                             id = "aktørid"
-                            value = "aktørid"
+                            value = "26104500284"
                         }
                     }
 
@@ -122,11 +123,11 @@ fun Route.MockGrensesnitt(
                 "Saksnummer",
                 aksjonspunktToggle.aktørid,
                 1234L,
+                LocalDate.now(),
                 LocalDateTime.now(),
                 EventHendelse.AKSJONSPUNKT_OPPRETTET,
                 behandlingStatus = "UTRED",
                 aksjonspunktKoderMedStatusListe = mutableMapOf(aksjonspunktToggle.kode to "OPPR"),
-                behandlendeEnhet = "2020",
                 behandlingSteg = "",
                 opprettetBehandling = LocalDateTime.now(),
                 behandlingTypeKode = "BT-005",
@@ -142,11 +143,11 @@ fun Route.MockGrensesnitt(
                 sisteEvent.saksnummer,
                 sisteEvent.aktørId,
                 sisteEvent.behandlingId,
+                LocalDate.now(),
                 LocalDateTime.now(),
                 EventHendelse.AKSJONSPUNKT_OPPRETTET,
                 behandlingStatus = sisteEvent.behandlingStatus,
                 aksjonspunktKoderMedStatusListe = sisteEvent.aksjonspunktKoderMedStatusListe,
-                behandlendeEnhet = sisteEvent.behandlendeEnhet,
                 behandlingSteg = "",
                 opprettetBehandling = LocalDateTime.now(),
                 behandlingTypeKode = "BT-005",

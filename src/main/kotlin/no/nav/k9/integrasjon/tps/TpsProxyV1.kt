@@ -97,7 +97,12 @@ class TpsProxyV1(
             fornavn = navn.getString("fornavn"),
             mellomnavn = navn.getStringOrNull("mellomnavn"),
             etternavn = navn.getString("slektsnavn"),
-            fødselsdato = LocalDate.parse(json.getString("foedselsdato"))
+            fødselsdato = LocalDate.parse(json.getString("foedselsdato")),
+            diskresjonskode = json.getString("diskresjonskode"),
+            kjønn = json.getString("kjoenn"),
+            dødsdato = LocalDate.parse(json.getString("doedsdato")),
+            navn = """${navn.getString("fornavn")} ${navn.getString("slektsnavn")}""",
+            ident = json.getString("ident")
         )
     }
 
@@ -231,7 +236,12 @@ internal data class TpsPerson(
     internal val fornavn: String,
     internal val mellomnavn: String?,
     internal val etternavn: String,
-    internal val fødselsdato: LocalDate
+    internal val fødselsdato: LocalDate,
+    internal val ident: String,
+    internal val dødsdato: LocalDate,
+    internal val diskresjonskode: String,
+    internal val kjønn: String,
+    internal val navn: String
 )
 
 internal data class TpsBarn(

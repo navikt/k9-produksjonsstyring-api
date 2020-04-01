@@ -138,18 +138,20 @@ data class Modell(
             }
         }
 
+        var behandlingStatus = event.behandlingStatus
+        behandlingStatus = behandlingStatus ?: BehandlingStatus.OPPRETTET.kode
         return Oppgave(
             behandlingId = event.behandlingId,
             fagsakSaksnummer = event.saksnummer,
             aktorId = event.aktørId,
-            behandlendeEnhet = event.behandlendeEnhet,
+            behandlendeEnhet = "event.behandlendeEnhet",
             behandlingType = BehandlingType.fraKode(event.behandlingTypeKode),
             fagsakYtelseType = FagsakYtelseType.fraKode(event.ytelseTypeKode),
             aktiv = aktiv,
             forsteStonadsdag = LocalDate.now(),
             utfortFraAdmin = false,
             behandlingsfrist = LocalDateTime.now().plusDays(1),
-            behandlingStatus = BehandlingStatus.fraKode(event.behandlingStatus),
+            behandlingStatus = BehandlingStatus.fraKode(behandlingStatus),
             eksternId = event.eksternId ?: UUID.randomUUID(),
             behandlingOpprettet = event.opprettetBehandling,
             oppgaveAvsluttet = oppgaveAvsluttet,
