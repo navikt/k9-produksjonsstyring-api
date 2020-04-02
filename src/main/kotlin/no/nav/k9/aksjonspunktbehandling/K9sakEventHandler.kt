@@ -51,6 +51,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
         log.info(objectMapper().writeValueAsString(modell))
         log.info(objectMapper().writeValueAsString(oppgave))
+
+        log.info(oppgave.datavarehusSak())
+        log.info(oppgave.datavarehusBehandling())
+
     }
 
     private fun behandlingOpprettet(modell: Modell) {

@@ -33,7 +33,7 @@ data class Sak(
     /**
      * Nøkkelen til saken i kildesystemet. Noen kildesystem har valgt å kalle dette objektet fagsak. Denne identifiserer samlingen av behandlinger som vil kunne oppstå i forbindelse med saken. Skal kunne spores i kilden.
      */
-    val sakId: Double,
+    val sakId: Long,
     /**
      * Saksnummeret tilknyttet saken. Dette kan være det samme som sakId, om dette også gjelder kildesystemet.
      */
@@ -79,7 +79,7 @@ data class Sak(
         /**
          * Aktør iden til aktuelt person.
          */
-        val aktorId: Double,
+        val aktorId: Long,
         /**
          * Kode som beskriver personens rolle i forbindelse med saken. Eksempelvis medmed, far samboer, barn o.l.
          */
