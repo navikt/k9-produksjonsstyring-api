@@ -37,23 +37,21 @@ data class Oppgave(
     fun datavarehusSak(): String {
         val sak = Sak(
             aktorId = 0.0,
-            aktorer = Sak.Aktorer(aktorId = aktorId.toLong(), rolle = "Søken", rolleBeskrivelse = ""),
-            avsender = false,
+            aktorer = listOf(Sak.Aktorer(aktorId = aktorId.toLong(), rolle = "Søken", rolleBeskrivelse = "")),
+            avsender = "false",
             funksjonellTid = this.behandlingOpprettet.format(DateTimeFormatter.ISO_DATE_TIME),
             opprettetDato = "",
-            resultat = "",
             resultatBeskrivelse = "",
-            sakId = 0L,
+            sakId = "",
             saksnummer = fagsakSaksnummer,
-            status = behandlingStatus.toString(),
-            statusBeskrivelse = "",
             tekniskTid = "",
             underType = "",
             underTypeBeskrivelse = "",
             versjon = 0.0,
             ytelseType = fagsakYtelseType.navn,
             ytelseTypeBeskrivelse = "",
-            mottattDato = ""
+            sakStatus = "",
+            sakStatusBeskrivelse = ""
         )
         return objectMapper().writeValueAsString(sak)!!
     }
@@ -73,7 +71,6 @@ data class Oppgave(
             behandlendeEnhetKode = behandlendeEnhet,
             behandlendeEnhetType = "NORG",
             behandlingId = behandlingId.toString(),
-            behandlingManueltOpprettet = false,
             behandlingOpprettetAv = "system",
             behandlingOpprettetType = "automatisk",
             behandlingOpprettetTypeBeskrivelse = "Opprettet automatisk av systemet",
@@ -93,15 +90,13 @@ data class Oppgave(
             sakId = "",
             saksbehandler = "",
             saksnummer = fagsakSaksnummer,
-            status = behandlingStatus.name,
-            statusBeskrivelse = "",
             tekniskTid = "",
             totrinnsbehandling = beslutterOppgave,
             utenlandstilsnitt = "",
             utenlandstilsnittBeskrivelse = "",
-            vedtakId = 0.0,
+            vedtakId = "s",
             vedtaksDato = "",
-            versjon = 0.0
+            versjon = 0.0, behandlingStatus = "", behandlingStatusBeskrivelse = ""
         )
 
         return objectMapper().writeValueAsString(behandling)!!
