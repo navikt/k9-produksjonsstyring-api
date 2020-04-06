@@ -1,17 +1,16 @@
 {
-  "$id": "kommer",
-  "$schema": "kommer",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "sak",
-  "description": "Det overordnede behandlingsforløp knyttet til én bruker, referert til det samme rettighetsforholdet. Saken henviser til den overordnede «mappen» av behandlinger.",
+  "description": "Det overordnede behandlingsforløp knyttet til én bruker, referert til det samme rettighetsforholdet. Saken henviser til den overordnede mappen av behandlinger.",
   "required": [
     "funksjonellTid",
     "tekniskTid",
-    "mottattDato",
+    "opprettetDato",
     "sakId",
     "aktorId",
     "saksnummer",
     "ytelseType",
-    "status",
+    "sakStatus",
     "avsender",
     "versjon"
   ],
@@ -19,42 +18,37 @@
   "properties": {
     "funksjonellTid": {
       "type": "string",
-      "formate": "date-time",
-      "description": "Tidspunktet da hendelsen faktisk ble gjennomført eller registrert i kildesystemet. (format:yyyy-mm-ddThh24:mn:ss.FF6) Dette er det tidspunkt der hendelsen faktisk er gjeldende fra. Ved for eksempel patching av data eller oppdatering tilbake i tid, skal teksniskTid være lik endrings tidspunktet, mens funksjonellTid angir tidspunktet da endringen offesielt gjelder fra."
+      "format": "date-time",
+      "description": "Tidspunktet da hendelsen faktisk ble gjennomført eller registrert i kildesystemet. (format:yyyy-mm-ddThh24:mn:ss.FF6) Dette er det tidspunkt der hendelsen faktisk er gjeldende fra. Ved for eksempel patching av data eller oppdatering tilbake i tid, skal tekniskTid være lik endringstidspunktet, mens funksjonellTid angir tidspunktet da endringen offisielt gjelder fra."
     },
     "tekniskTid": {
       "type": "string",
-      "formate": "date-time",
-      "description": "Tidspunktet da kildesystemet ble klar over hendelsen. (format:yyyy-mm-ddThh24:mn:ss.FF6). Dette er tidspunkt hendelsen ble endret i dato systemet. Sammen med funksjonellTid, vil vi kunne holde rede på hva som er blitt rapportert tidligere og når det skjer endrigner tilbake i tid."
+      "format": "date-time",
+      "description": "Tidspunktet da kildesystemet ble klar over hendelsen. (format:yyyy-mm-ddThh24:mn:ss.FF6). Dette er tidspunkt hendelsen ble endret i dato systemet. Sammen med funksjonellTid, vil vi kunne holde rede på hva som er blitt rapportert tidligere og når det skjer endringer tilbake i tid."
     },
     "opprettetDato": {
       "type": "string",
-      "formate": "date",
+      "format": "date",
       "description": "Tidspunkt da saken først blir opprettet. Denne datoen forteller noe om når saken først oppstod hos oss. Dette kan være dato for mottatt brev, sakens første opprettelse ved digital søknad o.l."
     },
     "sakId": {
-      "type": "number",
-      "description": "Nøkkelen til saken i kildesystemet. Noen kildesystem har valgt å kalle dette objektet fagsak. Denne identifiserer samlingen av behandlinger som vil kunne oppstå i forbindelse med saken. Skal kunne spores i kilden."
-    },
-    "mottattDato": {
       "type": "string",
-      "formate": "date",
-      "description": "Denne datoen forteller fra hvilken dato saken først ble initiert. Datoen brukes i beregning av saksbehandlingstid og skal samsvare med brukerens opplevelse av at saksbehandlingen har startet."
+      "description": "Nøkkelen til saken i kildesystemet. Noen kildesystem har valgt å kalle dette objektet fagsak. Denne identifiserer samlingen av behandlinger som vil kunne oppstå i forbindelse med saken. Skal kunne spores i kilden."
     },
     "aktorId": {
       "type": "number",
-      "description": "Aktør iden til primær mottag av ytelsen om denne blir godkjent. Altså, den som saken omhandler."
+      "description": "Aktør IDen til primær mottager av ytelsen om denne blir godkjent. Altså, den som saken omhandler."
     },
     "aktorer": {
-      "type": "object",
+      "type": "array",
       "properties": {
         "aktorId": {
           "type": "number",
-          "description": "Aktør iden til aktuelt person."
+          "description": "Aktør IDen til aktuell person."
         },
         "rolle": {
           "type": "string",
-          "description": "Kode som beskriver personens rolle i forbindelse med saken. Eksempelvis medmed, far samboer, barn o.l. "
+          "description": "Kode som beskriver personens rolle i forbindelse med saken. Eksempelvis medmor, medfar, far samboer, barn o.l. "
         },
         "rolleBeskrivelse": {
           "type": "string",
@@ -72,15 +66,11 @@
     },
     "underType": {
       "type": "string",
-      "description": "Noen kildesystemer vil ha en under type som gir finnere oppløsning på saken omhandler. For eksempel vil foreldrepenger være en ytelseType, i FPSAK, mens underType vil da angi hvilken type foreldrepnger sak det er snakk, altså Adopsjon, Fødsel o.l. Dette er sakens underType. Hvis dette ikke finnes eller allerede er bakt inn i ytelseType kan denne være tom."
+      "description": "Noen kildesystemer vil ha en under-type som gir finere oppløsning på hva saken omhandler. For eksempel vil foreldrepenger være en ytelseType, i FPSAK, mens underType vil da angi hva slags type foreldrepenge-sak det er snakk, som Adopsjon, Fødsel o.l. Dette er sakens underType. Hvis dette ikke finnes eller allerede er bakt inn i ytelseType kan denne være tom."
     },
-    "status": {
+    "sakStatus": {
       "type": "string",
       "description": "Kode som angir sakens status, slik som påbegynt, under utbetaling, avsluttet o.l."
-    },
-    "resultat": {
-      "type": "string",
-      "description": "Kode som angir resultet av behandling på innværende tidspunkt. For eksempel, ikke fastsatt, innvilget, avslått."
     },
     "ytelseTypeBeskrivelse": {
       "type": "string",
@@ -90,7 +80,7 @@
       "type": "string",
       "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
     },
-    "statusBeskrivelse": {
+    "sakStatusBeskrivelse": {
       "type": "string",
       "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
     },
@@ -99,12 +89,12 @@
       "description": "Beskriver den funksjonelle verdien av koden. Finnes ikke den enda, regner vi med å få den senere."
     },
     "avsender": {
-      "type": "boolean",
-      "description": "Felte angir hvem som er avsender av dataene, så navnet på kildesystemet."
+      "type": "string",
+      "description": "Feltet angir hvem som er avsender av dataene, så navnet på kildesystemet."
     },
     "versjon": {
       "type": "number",
-      "description": "Angir på hvilken versjon av kilde koden objektet er JSON stringer er generert med bakgrunn på. "
+      "description": "Angir på hvilken versjon av kildekoden JSON stringen er generert på bakgrunn av. "
     }
   }
 }
