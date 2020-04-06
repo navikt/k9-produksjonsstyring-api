@@ -1,4 +1,4 @@
-package no.nav.k9.aksjonspunktbehandling.eventresultat
+package no.nav.k9.domene.modell
 
 enum class EventResultat {
     LUKK_OPPGAVE,

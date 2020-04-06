@@ -24,13 +24,6 @@ internal data class Topic<V>(
     val valueSerde = Serdes.serdeFrom(serDes, serDes)
 }
 
-internal object Topics {
-    val AKSJONSPUNKT_LAGET = Topic(
-        name = "privat-k9-aksjonspunkthendelse",
-        serDes = AksjonspunktLaget()
-    )
-}
-
 fun objectMapper(): ObjectMapper {
     return jacksonObjectMapper()
         .dusseldorfConfigured()
