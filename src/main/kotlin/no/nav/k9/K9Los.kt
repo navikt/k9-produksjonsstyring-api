@@ -15,6 +15,7 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
+import io.ktor.routing.Route
 import io.ktor.routing.Routing
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
@@ -151,33 +152,14 @@ fun Application.k9Los() {
         route("mock") {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
-        authenticate(*issuers.allIssuers()) {
-
-            route("api") {
-                AdminApis()
-                AvdelingslederApis()
-                AvdelingslederOppgaveApis()
-                AvdelingslederSaksbehandlerApis()
-                AvdelingslederSakslisteApis()
-                NøkkeltallApis()
-                route("saksbehandler") {
-                    route("oppgaver") {
-                        OppgaveApis(
-                            requestContextService,
-                            oppgaveTjeneste,
-                            tpsProxyV1Gateway = tpsProxyV1Gateway
-                        )
-                    }
-                    SaksbehandlerSakslisteApis()
-                    SaksbehandlerNøkkeltallApis()
-                }
-                NavAnsattApis()
-
-                SaksbehandlerNøkkeltallApis()
-                route("konfig") { KonfigApis() }
-                KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
+        if (configuration.isVaultEnabled()) {
+            authenticate(*issuers.allIssuers()) {
+                api(requestContextService, oppgaveTjeneste, tpsProxyV1Gateway, kodeverkTjeneste)
             }
+        } else {
+            api(requestContextService, oppgaveTjeneste, tpsProxyV1Gateway, kodeverkTjeneste)
         }
+
         static("static") {
             resources("static/css")
             resources("static/js")
@@ -207,6 +189,38 @@ fun Application.k9Los() {
 //    }
 
 
+}
+
+private fun Route.api(
+    requestContextService: RequestContextService,
+    oppgaveTjeneste: OppgaveTjenesteImpl,
+    tpsProxyV1Gateway: TpsProxyV1Gateway,
+    kodeverkTjeneste: HentKodeverkTjeneste
+) {
+    route("api") {
+        AdminApis()
+        AvdelingslederApis()
+        AvdelingslederOppgaveApis()
+        AvdelingslederSaksbehandlerApis()
+        AvdelingslederSakslisteApis()
+        NøkkeltallApis()
+        route("saksbehandler") {
+            route("oppgaver") {
+                OppgaveApis(
+                    requestContextService,
+                    oppgaveTjeneste,
+                    tpsProxyV1Gateway = tpsProxyV1Gateway
+                )
+            }
+            SaksbehandlerSakslisteApis()
+            SaksbehandlerNøkkeltallApis()
+        }
+        NavAnsattApis()
+
+        SaksbehandlerNøkkeltallApis()
+        route("konfig") { KonfigApis() }
+        KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
+    }
 }
 
 private fun Map<Issuer, Set<ClaimRule>>.healthCheckMap(
