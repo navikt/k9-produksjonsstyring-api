@@ -39,8 +39,8 @@ internal fun Route.TestApis(requestContextService: RequestContextService) {
                 idToken = idtoken
             )
         ) {
-            log.info("id" + idtoken.ident)
-            log.info("subject1" + idtoken.value)
+            log.info("id " + idtoken.ident.value)
+            log.info("token " + idtoken.value)
         }
 
 
