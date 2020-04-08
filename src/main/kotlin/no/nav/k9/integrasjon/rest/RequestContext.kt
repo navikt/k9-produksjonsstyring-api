@@ -1,7 +1,9 @@
 package no.nav.k9.integrasjon.rest
 
 import kotlinx.coroutines.asContextElement
-import no.nav.k9.auth.IdToken
+import no.nav.k9.tjenester.saksbehandler.IdToken
+
+
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 

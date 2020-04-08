@@ -48,6 +48,7 @@ import no.nav.k9.tjenester.kodeverk.KodeverkApis
 import no.nav.k9.tjenester.konfig.KonfigApis
 import no.nav.k9.tjenester.mock.MockGrensesnitt
 import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
+import no.nav.k9.tjenester.saksbehandler.TestApis
 import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjenesteImpl
@@ -216,7 +217,7 @@ private fun Route.api(
             SaksbehandlerNøkkeltallApis()
         }
         NavAnsattApis(requestContextService)
-
+        TestApis(requestContextService)
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
