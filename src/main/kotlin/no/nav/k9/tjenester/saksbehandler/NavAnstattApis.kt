@@ -7,15 +7,17 @@ import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
+import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-fun Route.NavAnsattApis(
-) {
+internal fun Route.NavAnsattApis(requestContextService: RequestContextService) {
     @Location("/saksbehandler")
     class getInnloggetBruker
 
+    val log = LoggerFactory.getLogger("Route.NavAnsattApis")
     val gruppenavnSaksbehandler = "0000-GA-k9sak-saksbehandler"
     val gruppenavnVeileder = "0000-GA-k9sak-veileder"
     val gruppenavnBeslutter = "0000-GA-k9sak-beslutter"
@@ -26,6 +28,10 @@ fun Route.NavAnsattApis(
 
 
     get { _: getInnloggetBruker ->
+        val id = requestContextService.getIdToken().getId()
+        val subject1 = requestContextService.getIdToken().getSubject()
+        log.info("id" + id)
+        log.info("subject1" + id)
 //        val ident = SubjectHandler.getSubjectHandler().uid
 //        val ldapBruker = LdapBrukeroppslag().hentBrukerinformasjon(ident)
 //        val grupper = LdapUtil().filtrerGrupper(ldapBruker.groups)
@@ -40,9 +46,19 @@ fun Route.NavAnsattApis(
 //            grupper.contains(gruppenavnKode7),
 //            grupper.contains(gruppenavnOppgavestyrer)
 //        )
-        call.respond(InnloggetNavAnsattDto("alexaban",
-            "Saksbehandler Sara", kanSaksbehandle = true, kanVeilede = true, kanBeslutte = true,
-            kanBehandleKodeEgenAnsatt = true, kanBehandleKode6 = true, kanBehandleKode7 = true, kanOppgavestyre = true
-        ))}
-//    }
+        call.respond(
+            InnloggetNavAnsattDto(
+                "alexaban",
+                "Saksbehandler Sara",
+                kanSaksbehandle = true,
+                kanVeilede = true,
+                kanBeslutte = true,
+                kanBehandleKodeEgenAnsatt = true,
+                kanBehandleKode6 = true,
+                kanBehandleKode7 = true,
+                kanOppgavestyre = true
+            )
+        )
     }
+//    }
+}

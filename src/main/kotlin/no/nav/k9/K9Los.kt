@@ -215,7 +215,7 @@ private fun Route.api(
             SaksbehandlerSakslisteApis()
             SaksbehandlerNøkkeltallApis()
         }
-        NavAnsattApis()
+        NavAnsattApis(requestContextService)
 
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
