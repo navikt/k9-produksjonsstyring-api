@@ -8,10 +8,11 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
+import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.integrasjon.rest.correlationId
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
 import org.slf4j.LoggerFactory
+import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -34,7 +35,7 @@ internal fun Route.TestApis(requestContextService: RequestContextService) {
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                correlationId = call.correlationId(),
+                correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
                 idToken = idtoken
             )
         ) {
