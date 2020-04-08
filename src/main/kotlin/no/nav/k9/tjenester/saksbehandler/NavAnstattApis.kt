@@ -28,10 +28,10 @@ internal fun Route.NavAnsattApis(requestContextService: RequestContextService) {
 
 
     get { _: getInnloggetBruker ->
-        val id = requestContextService.getIdToken().getId()
-        val subject1 = requestContextService.getIdToken().getSubject()
-        log.info("id" + id)
-        log.info("subject1" + id)
+//        val id = requestContextService.getIdToken().getId()
+//        val subject1 = requestContextService.getIdToken().getSubject()
+//        log.info("id" + id)
+//        log.info("subject1" + id)
 //        val ident = SubjectHandler.getSubjectHandler().uid
 //        val ldapBruker = LdapBrukeroppslag().hentBrukerinformasjon(ident)
 //        val grupper = LdapUtil().filtrerGrupper(ldapBruker.groups)
