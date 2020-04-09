@@ -1,6 +1,5 @@
 package no.nav.k9.domene.organisasjon
 
-import no.nav.k9.domene.lager.oppgave.OppgaveKø
 import java.util.*
 
 class Saksbehandler(val saksbehandlerIdent: String) {

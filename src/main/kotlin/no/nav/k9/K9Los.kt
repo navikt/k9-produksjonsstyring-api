@@ -162,6 +162,7 @@ fun Application.k9Los() {
         } else {
             install(CORS) {
                 method(HttpMethod.Options)
+                anyHost()
                 allowCredentials = true
             }
             api(requestContextService, oppgaveTjeneste, tpsProxyV1Gateway, kodeverkTjeneste)

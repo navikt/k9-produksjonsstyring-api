@@ -4,10 +4,8 @@ import no.nav.k9.domene.lager.oppgave.KøSortering
 import no.nav.k9.domene.modell.*
 import java.time.LocalDate
 import java.util.*
-import java.util.stream.Collectors
-import kotlin.collections.ArrayList
 
-class SakslisteDto(o: OppgaveFiltrering, antallBehandlinger: Int) {
+class SakslisteDto(o: OppgaveKø, antallBehandlinger: Int) {
     val sakslisteId: Int = Random().nextInt(56)
     val navn: String
     var behandlingTyper: List<BehandlingType> = o.filtreringBehandlingTyper
