@@ -94,7 +94,7 @@ internal fun Route.OppgaveApis(
 
     get { _: hentAntallOppgaverForSaksliste ->
         val queryParameter = call.request.queryParameters["sakslisteId"]
-        call.respond(8)
+        call.respond(oppgaveTjeneste.hentOppgaver(queryParameter!!.toLong()).size)
     }
 
     @Location("/reserver")
