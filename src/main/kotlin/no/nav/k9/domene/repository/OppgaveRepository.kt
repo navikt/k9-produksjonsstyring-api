@@ -6,12 +6,14 @@ import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.OppgaveModell
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.*
 import javax.sql.DataSource
 
 
 class OppgaveRepository(private val dataSource: DataSource) {
-
+    private val log: Logger = LoggerFactory.getLogger(OppgaveRepository::class.java)
     fun hent(): MutableList<OppgaveModell> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
@@ -29,6 +31,7 @@ class OppgaveRepository(private val dataSource: DataSource) {
             val oppgaveModell = objectMapper().readValue(s, OppgaveModell::class.java)
             mutableList.add(oppgaveModell)
         }
+        log.info("Henter: " + mutableList.size + " oppgaver")
         return mutableList
     }
 

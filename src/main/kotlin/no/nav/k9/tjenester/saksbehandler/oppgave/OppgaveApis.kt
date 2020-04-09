@@ -46,7 +46,7 @@ internal fun Route.OppgaveApis(
                     OppgaveStatusDto(false, null, false, null, null, null),
                     oppgave.behandlingId,
                     oppgave.fagsakSaksnummer,
-                    "Walter Sitron",//   "${tpsPerson?.fornavn ?: ""} ${tpsPerson?.etternavn ?: ""}",
+                    UUID.randomUUID().toString(),//   "${tpsPerson?.fornavn ?: ""} ${tpsPerson?.etternavn ?: ""}",
                     oppgave.system,
                     oppgave.aktorId,
                     oppgave.behandlingType,
