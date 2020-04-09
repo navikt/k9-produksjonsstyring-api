@@ -217,7 +217,7 @@ private fun Route.api(
             SaksbehandlerNøkkeltallApis()
         }
         NavAnsattApis(requestContextService)
-        TestApis(requestContextService)
+        TestApis(requestContextService, tpsProxyV1Gateway)
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
