@@ -3,40 +3,29 @@ package no.nav.k9.domene.modell
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
-import no.nav.k9.tjenester.saksbehandler.saksliste.AndreKriterierDto
-import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerDto
 import java.time.LocalDate
 
-data class Enhet(
-    val avdelingEnhet: String,
-    val navn: String,
-    val oppgaveFiltrering: List<OppgaveFiltrering>,
-    val kreverKode6: Boolean
-) {
-}
-
-data class OppgaveFiltrering(
+data class OppgaveKø(
     val navn: String,
     val sortering: KøSortering,
     val filtreringBehandlingTyper: List<BehandlingType>,
     val filtreringYtelseTyper: List<FagsakYtelseType>,
-    val filtreringAndreKriterierTyper: List<AndreKriterierDto>,
     val enhet: Enhet,
-    val avdelingId: Long,
     val erDynamiskPeriode: Boolean,
     val fomDato: LocalDate,
     val tomDato: LocalDate,
-    val fra: Long,
-    val til: Long,
-    val saksbehandlere: List<SaksbehandlerDto>
+    val saksbehandlere: List<Saksbehandler>
 )
 
-data class Saksbehandler(
-    val saksbehandlerIdent: String,
-    val id: Long,
-    val avdelinger: List<Enhet>,
-    val oppgavefiltreringer: List<OppgaveFiltrering>
+class Saksbehandler(
+    val brukerIdent: String,
+    val navn: String
 )
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
+enum class Enhet(val navn: String) {
+    VIKAFOSSEN("VIKAFOSSEN"),
+    NASJONAL("NASJONAL")
+}
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class KøSortering(override val kode: String, val verdi: String, val felttype: String, val feltkategori: String) :
@@ -98,15 +87,8 @@ enum class BehandlingType(override val kode: String, override val navn: String) 
         @JvmStatic
         fun fraKode(kode: String): BehandlingType = values().find { it.kode == kode }!!
     }
-    
-}
 
-/*@JsonFormat(shape = JsonFormat.Shape.OBJECT)
-@JsonAutoDetect(
-    getterVisibility = JsonAutoDetect.Visibility.NONE,
-    setterVisibility = JsonAutoDetect.Visibility.NONE,
-    fieldVisibility = JsonAutoDetect.Visibility.ANY
-)*/
+}
 
 
 
