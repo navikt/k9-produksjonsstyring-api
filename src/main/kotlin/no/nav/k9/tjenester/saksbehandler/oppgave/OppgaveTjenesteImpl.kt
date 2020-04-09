@@ -190,7 +190,7 @@ class OppgaveTjenesteImpl(
         return listOf(
             OppgaveDto(
                 OppgaveStatusDto(
-                    true, LocalDateTime.of(2020, 4, 1, 12, 13), true,
+                    true, LocalDateTime.of(2020, 10, 1, 12, 13), true,
                     "4fe", "Sara", null
                 ),
                 45323,
