@@ -7,6 +7,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.oppslag.Attributt
 import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.domene.repository.OppgaveRepository

@@ -18,27 +18,25 @@ fun Route.SaksbehandlerSakslisteApis(
     get { _: getSakslister ->
 
         val of = OppgaveKø("Filtrering 1", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
-            listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), listOf(AndreKriterierDto(AndreKriterierType.UTBETALING_TIL_BRUKER, true)), Enhet("Enhet", "Enhetsnavn", emptyList(), false),
-            12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(SaksbehandlerDto("435twg", "Saksbehandler Klara", listOf("Avd"))))
+            listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), Enhet.NASJONAL,
+            true, LocalDate.now(), LocalDate.now(), listOf(Saksbehandler("435twg", "Saksbehandler Klara")))
 
         val of2 = OppgaveKø("Filtrering 2", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
-            listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), listOf(AndreKriterierDto(AndreKriterierType.UTBETALING_TIL_BRUKER, true)), Enhet("Enhet", "Enhetsnavn", emptyList(), false),
-            12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(SaksbehandlerDto("3e2r43t","Saksbehandler Gro", listOf("Avdelign"))))
+            listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), Enhet.NASJONAL,
+            true, LocalDate.now(), LocalDate.now(), listOf(Saksbehandler("3e2r43t","Saksbehandler Gro")))
 
         call.respond(listOf(SakslisteDto(OppgaveKø("Behandlingskø 1", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
-            listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), listOf(AndreKriterierDto(AndreKriterierType.UTBETALING_TIL_BRUKER, true)), Enhet("Enhet", "Enhetsnavn", listOf(of), false),
-            12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(SaksbehandlerDto("645fgd","Saksbehandler Klara", listOf("Avdelign")))), 14)))
+            listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),  Enhet.NASJONAL, false, LocalDate.now(), LocalDate.now(),  listOf(Saksbehandler("645fgd","Saksbehandler Klara"))), 14)))
     }
 
     @Location("/saksliste/saksbehandlere")
     class hentSakslistensSaksbehandlere
 
     val of = OppgaveKø("navn", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
-        listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), listOf(AndreKriterierDto(AndreKriterierType.UTBETALING_TIL_BRUKER, true)), Enhet("Enhet", "Enhetsnavn", emptyList(), false),
-        12, true, LocalDate.now(), LocalDate.now(), 32, 65, listOf(SaksbehandlerDto("435twg", "Saksbehandler Sara", listOf("Avd"))))
+        listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), Enhet.NASJONAL, false,  LocalDate.now(), LocalDate.now(), listOf(Saksbehandler("435twg", "Saksbehandler Sara")))
 
     get { _: hentSakslistensSaksbehandlere ->
-        call.respond(listOf(SaksbehandlerDto("8ewer89uf","SaksbehandlerEllen", listOf("Avdelign")))
+        call.respond(listOf(Saksbehandler("8ewer89uf","SaksbehandlerEllen"))
           )
     }
 }

@@ -1,5 +1,6 @@
 package no.nav.k9.domene.organisasjon
 
+import no.nav.k9.domene.modell.OppgaveKø
 import java.util.Collections
 
 data class Avdeling(

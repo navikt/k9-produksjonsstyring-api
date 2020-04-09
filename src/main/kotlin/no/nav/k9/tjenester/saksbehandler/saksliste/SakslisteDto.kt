@@ -12,7 +12,7 @@ class SakslisteDto(o: OppgaveKø, antallBehandlinger: Int) {
     val sistEndret: LocalDate
     var sortering: SorteringDto = SorteringDto(KøSortering.OPPRETT_BEHANDLING, 8976, 97, LocalDate.now(), LocalDate.now(), true)
     var fagsakYtelseTyper: List<FagsakYtelseType> = o.filtreringYtelseTyper
-    var andreKriterier: List<AndreKriterierDto>  = o.filtreringAndreKriterierTyper
+    var andreKriterier: List<AndreKriterierDto>  = emptyList()
     var antallBehandlinger = 78
 
 
