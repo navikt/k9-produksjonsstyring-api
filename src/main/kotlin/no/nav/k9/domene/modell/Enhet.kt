@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import java.time.LocalDate
+import java.util.*
 
 data class OppgaveKø(
+    val id: UUID,
     val navn: String,
     val sortering: KøSortering,
     val filtreringBehandlingTyper: List<BehandlingType>,

@@ -10,6 +10,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
+import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -29,7 +30,7 @@ internal fun Route.OppgaveApis(
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["sakslisteId"]
         val list = mutableListOf<OppgaveDto>()
-        val oppgaver = oppgaveTjeneste.hentOppgaver(1L)
+        val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
         for (oppgave in oppgaver) {
 //            val tpsPerson = tpsProxyV1Gateway.person(
 //                ident = Ident(oppgave.aktorId),
@@ -90,11 +91,11 @@ internal fun Route.OppgaveApis(
     }
 
     @Location("/antall")
-    class hentAntallOppgaverForSaksliste
+    class hentAntallOppgaverForOppgavekø
 
-    get { _: hentAntallOppgaverForSaksliste ->
-        val queryParameter = call.request.queryParameters["sakslisteId"]
-        call.respond(oppgaveTjeneste.hentOppgaver(queryParameter!!.toLong()).size)
+    get { _: hentAntallOppgaverForOppgavekø ->
+        val uuid = call.request.queryParameters["oppgavekoId"]
+        call.respond(oppgaveTjeneste.hentOppgaver(UUID.fromString(uuid)!!).size)
     }
 
     @Location("/reserver")
@@ -102,7 +103,13 @@ internal fun Route.OppgaveApis(
 
     post { _: reserverOppgave ->
         val oppgaveId = call.receive<OppgaveId>()
-        call.respond(oppgaveTjeneste.reserverOppgave(UUID.fromString(oppgaveId.oppgaveId)))
+
+        val idtoken = call.idToken()
+
+
+
+
+        call.respond(oppgaveTjeneste.reserverOppgave(idtoken.ident.value, UUID.fromString(oppgaveId.oppgaveId)))
     }
 
     @Location("/opphev")

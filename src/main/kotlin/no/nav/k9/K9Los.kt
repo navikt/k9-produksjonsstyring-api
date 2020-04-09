@@ -34,6 +34,7 @@ import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
+import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1
@@ -109,7 +110,12 @@ fun Application.k9Los() {
     )
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
-    val oppgaveTjeneste = OppgaveTjenesteImpl(oppgaveRepository, tpsProxyV1Gateway = tpsProxyV1Gateway)
+    val oppgaveKøRepository = OppgaveKøRepository(dataSource)
+    val oppgaveTjeneste = OppgaveTjenesteImpl(
+        oppgaveRepository,
+        tpsProxyV1Gateway = tpsProxyV1Gateway,
+        oppgaveKøRepository = oppgaveKøRepository
+    )
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
     val k9sakEventHandler = K9sakEventHandler(
         oppgaveRepository = oppgaveRepository,

@@ -10,6 +10,7 @@ import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.oppslag.Attributt
 import no.nav.k9.domene.oppslag.Ident
+import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.typer.AktørId
 import no.nav.k9.domene.typer.PersonIdent
@@ -27,20 +28,17 @@ private val LOGGER: Logger =
 
 class OppgaveTjenesteImpl(
     private val oppgaveRepository: OppgaveRepository,
+    private val oppgaveKøRepository: OppgaveKøRepository,
     private val tpsProxyV1Gateway: TpsProxyV1Gateway
 ) {
 
-    fun hentOppgaver(sakslisteId: Long): List<Oppgave> {
+    fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             oppgaveRepository.hent().stream().map { t -> t.sisteOppgave() }.toList()
         } catch (e: Exception) {
             LOGGER.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
         }
-    }
-
-    fun hentNesteOppgaver(sakslisteId: Long): List<Oppgave> {
-        return hentOppgaver(sakslisteId)
     }
 
     fun hentOppgaverForSaksnummer(fagsakSaksnummer: Long): List<Oppgave> {
@@ -55,17 +53,15 @@ class OppgaveTjenesteImpl(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun reserverOppgave(uuid: UUID): Reservasjon {
+    fun reserverOppgave(ident: String, uuid: UUID): Reservasjon {
 
         val reservasjon = Reservasjon(
             LocalDateTime.now().plusHours(24),
-            "Sara Saksbehandler", null, null, null
+            ident, null, null, null
         )
 
         oppgaveRepository.lagre(uuid) { forrigeOppgave ->
-
             forrigeOppgave?.reservasjon = reservasjon
-
             forrigeOppgave!!
         }
 
@@ -98,12 +94,12 @@ class OppgaveTjenesteImpl(
         return reservasjon!!
     }
 
-    fun flyttReservasjon(uuid: UUID, brukernavn: String, begrunnelse: String): Reservasjon {
+    fun flyttReservasjon(uuid: UUID, ident: String, begrunnelse: String): Reservasjon {
         val reservasjon: Reservasjon? = null
         oppgaveRepository.lagre(uuid) { forrigeOppgave ->
             forrigeOppgave?.reservasjon?.reservertTil = forrigeOppgave?.reservasjon?.reservertTil?.plusHours(24)
             forrigeOppgave?.reservasjon?.flyttetTidspunkt = LocalDateTime.now()
-            forrigeOppgave?.reservasjon?.reservertAv = brukernavn
+            forrigeOppgave?.reservasjon?.reservertAv = ident
             forrigeOppgave?.reservasjon?.begrunnelse = begrunnelse
             forrigeOppgave!!
         }
@@ -111,12 +107,10 @@ class OppgaveTjenesteImpl(
         return reservasjon!!
     }
 
-    fun hentAlleOppgaveFiltrering(brukerIdent: String): List<OppgaveKø> {
-        TODO("not implemented")
-    }
-
-    fun hentOppgaveFiltreringerForPåloggetBruker(): List<OppgaveKø> {
-        return hentAlleOppgaveFiltrering("K9LOS")
+    fun hentAlleOppgaveKøer(ident: String): List<OppgaveKø> {
+        return oppgaveKøRepository.hent().filter { oppgaveKø ->
+            oppgaveKø.saksbehandlere.any { saksbehandler -> saksbehandler.brukerIdent == ident }
+        }
     }
 
     suspend fun hentPersonInfo(aktørId: Long): TpsPersonDto {
@@ -148,19 +142,11 @@ class OppgaveTjenesteImpl(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun hentAntallOppgaver(behandlingsKø: Long, forAvdelingsleder: Boolean): Int {
-        return oppgaveRepository.hent().size
+    fun hentAntallOppgaver(oppgavekøId: UUID, forAvdelingsleder: Boolean): Int {
+        return hentOppgaver(oppgavekøId).size
     }
 
     fun hentAntallOppgaverForAvdeling(avdelingEnhet: String): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    fun harForandretOppgaver(oppgaveIder: List<Long>): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    fun hentSakslistensSaksbehandlere(sakslisteId: Long): List<SaksbehandlerinformasjonDto> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
