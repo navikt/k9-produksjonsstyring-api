@@ -54,7 +54,6 @@ class OppgaveRepository(private val dataSource: DataSource) {
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
-
                 val run = tx.run(
                     queryOf(
                         "select data from oppgave where id = :id for update",
