@@ -2,11 +2,8 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 //import no.nav.k9.integrasjon.K9SakRestKlient
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
-import no.nav.k9.domene.lager.oppgave.BehandlingStatus
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
-import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.oppslag.Attributt
 import no.nav.k9.domene.oppslag.Ident
@@ -153,11 +150,11 @@ class OppgaveTjenesteImpl(
     fun hentSisteReserverteOppgaver(): List<OppgaveDto> {
         val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver("alexaban")
 
-        /*      return reserverteOppgave.stream().map { t ->
+              return reserverteOppgave.stream().map { t ->
                   OppgaveDto(
                       OppgaveStatusDto(
-                          true, LocalDateTime.of(2020, 3, 25, 12, 45),
-                          true, "alexaban", "Klara Saksbehandler", null
+                          true, t.sisteOppgave().reservasjon?.reservertTil,
+                          true, t.sisteOppgave().reservasjon?.reservertAv, "Klara Saksbehandler", null
                       ),
                       t.sisteOppgave().behandlingId,
                       t.sisteOppgave().fagsakSaksnummer,
@@ -172,27 +169,27 @@ class OppgaveTjenesteImpl(
                       t.sisteOppgave().behandlingsfrist,
                       t.sisteOppgave().eksternId
                   )
-              }.toList() */
-        return listOf(
-            OppgaveDto(
-                OppgaveStatusDto(
-                    true, LocalDateTime.of(2020, 10, 1, 12, 13), true,
-                    "4fe", "Sara", null
-                ),
-                45323,
-                "9080800900",
-                "Lemo Water",
-                "ee09",
-                "23090382974",
-                BehandlingType.SOKNAD,
-                FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-                BehandlingStatus.OPPRETTET,
-                true,
-                LocalDateTime.of(2020, 3, 15, 13, 15),
-                LocalDateTime.of(2020, 9, 23, 12, 0),
-                UUID.randomUUID()
-            )
-        )
+              }.toList()
+//        return listOf(
+//            OppgaveDto(
+//                OppgaveStatusDto(
+//                    true, LocalDateTime.of(2020, 10, 1, 12, 13), true,
+//                    "4fe", "Sara", null
+//                ),
+//                45323,
+//                "9080800900",
+//                "Lemo Water",
+//                "ee09",
+//                "23090382974",
+//                BehandlingType.SOKNAD,
+//                FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
+//                BehandlingStatus.OPPRETTET,
+//                true,
+//                LocalDateTime.of(2020, 3, 15, 13, 15),
+//                LocalDateTime.of(2020, 9, 23, 12, 0),
+//                UUID.randomUUID()
+//            )
+//        )
     }
 
     fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {

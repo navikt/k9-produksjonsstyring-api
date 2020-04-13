@@ -163,7 +163,13 @@ fun Application.k9Los() {
         }
         if (configuration.isVaultEnabled()) {
             authenticate(*issuers.allIssuers()) {
-                api(requestContextService, oppgaveTjeneste, tpsProxyV1Gateway, kodeverkTjeneste)
+                api(
+                    requestContextService,
+                    oppgaveTjeneste,
+                    tpsProxyV1Gateway,
+                    kodeverkTjeneste,
+                    configuration = configuration
+                )
             }
         } else {
             install(CORS) {
@@ -171,7 +177,13 @@ fun Application.k9Los() {
                 anyHost()
                 allowCredentials = true
             }
-            api(requestContextService, oppgaveTjeneste, tpsProxyV1Gateway, kodeverkTjeneste)
+            api(
+                requestContextService,
+                oppgaveTjeneste,
+                tpsProxyV1Gateway,
+                kodeverkTjeneste,
+                configuration = configuration
+            )
         }
 
         static("static") {
@@ -209,7 +221,8 @@ private fun Route.api(
     requestContextService: RequestContextService,
     oppgaveTjeneste: OppgaveTjenesteImpl,
     tpsProxyV1Gateway: TpsProxyV1Gateway,
-    kodeverkTjeneste: HentKodeverkTjeneste
+    kodeverkTjeneste: HentKodeverkTjeneste,
+    configuration: Configuration
 ) {
     route("api") {
         AdminApis()
@@ -221,6 +234,7 @@ private fun Route.api(
         route("saksbehandler") {
             route("oppgaver") {
                 OppgaveApis(
+                    configuration,
                     requestContextService,
                     oppgaveTjeneste,
                     tpsProxyV1Gateway = tpsProxyV1Gateway

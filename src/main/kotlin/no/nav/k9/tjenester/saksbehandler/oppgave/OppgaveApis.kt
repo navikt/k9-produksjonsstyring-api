@@ -8,8 +8,13 @@ import io.ktor.locations.post
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import kotlinx.coroutines.withContext
+import no.nav.k9.Configuration
+import no.nav.k9.domene.oppslag.Ident
+import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
+import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -19,6 +24,7 @@ private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
 @KtorExperimentalLocationsAPI
 internal fun Route.OppgaveApis(
+    configuration: Configuration,
     requestContextService: RequestContextService,
     oppgaveTjeneste: OppgaveTjenesteImpl,
     tpsProxyV1Gateway: TpsProxyV1Gateway
@@ -106,9 +112,21 @@ internal fun Route.OppgaveApis(
 
     post { _: reserverOppgave ->
         val oppgaveId = call.receive<OppgaveId>()
-        val idtoken = call.idToken()
 
-        call.respond(oppgaveTjeneste.reserverOppgave(idtoken.ident.value, UUID.fromString(oppgaveId.oppgaveId)))
+        val idtoken = if (configuration.isVaultEnabled()) {
+            call.idToken()
+        } else {
+            IdToken("", Ident("alexaban"))
+        }
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
+                idToken = idtoken
+            )
+        ) {
+            call.respond(oppgaveTjeneste.reserverOppgave(idtoken.ident.value, UUID.fromString(oppgaveId.oppgaveId)))
+        }
     }
 
     @Location("/opphev")
@@ -132,6 +150,12 @@ internal fun Route.OppgaveApis(
 
     post { _: flyttReservasjon ->
         val params = call.receive<FlyttReservasjonId>()
-        call.respond(oppgaveTjeneste.flyttReservasjon(UUID.fromString(params.oppgaveId), params.brukernavn, params.begrunnelse))
+        call.respond(
+            oppgaveTjeneste.flyttReservasjon(
+                UUID.fromString(params.oppgaveId),
+                params.brukernavn,
+                params.begrunnelse
+            )
+        )
     }
 }
