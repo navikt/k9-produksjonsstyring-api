@@ -89,7 +89,7 @@ class PdlService(
             )
 
         logger.restKall(personUrl)
-        logger.info(httpRequest)
+        logger.info(httpRequest.toString())
         val json = Retry.retry(
             operation = "hente-person",
             initialDelay = Duration.ofMillis(200),
