@@ -37,14 +37,14 @@ data class Oppgave(
     fun datavarehusSak(): String {
         val sak = Sak(
             aktorId = 0.0,
-            aktorer = listOf(Sak.Aktorer(aktorId = aktorId.toLong(), rolle = "Søken", rolleBeskrivelse = "")),
+            aktorer = listOf(Sak.Aktorer(aktorId = aktorId.toLong(), rolle = "Søker", rolleBeskrivelse = "")),
             avsender = "false",
             funksjonellTid = this.behandlingOpprettet.format(DateTimeFormatter.ISO_DATE_TIME),
-            opprettetDato = "",
+            opprettetDato = this.behandlingOpprettet.format(DateTimeFormatter.ISO_DATE_TIME),
             resultatBeskrivelse = "",
             sakId = "",
             saksnummer = fagsakSaksnummer,
-            tekniskTid = "",
+            tekniskTid = this.behandlingOpprettet.format(DateTimeFormatter.ISO_DATE_TIME),
             underType = "",
             underTypeBeskrivelse = "",
             versjon = 0.0,
