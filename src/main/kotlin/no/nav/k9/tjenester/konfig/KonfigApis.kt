@@ -10,7 +10,7 @@ import io.ktor.routing.Route
 @KtorExperimentalLocationsAPI
 fun Route.KonfigApis(
 ) {
-    val k9sakUrl = "https://localhost:8020"
+    val k9sakUrl = "http://k9-sak"
 
     @Location("/k9-sak-url")
     class hentK9SakUrl
