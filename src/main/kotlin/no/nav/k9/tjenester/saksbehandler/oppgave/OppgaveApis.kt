@@ -28,7 +28,7 @@ internal fun Route.OppgaveApis(
     class hentOppgaver
 
     get { _: hentOppgaver ->
-        val queryParameter = call.request.queryParameters["sakslisteId"]
+        val queryParameter = call.request.queryParameters["oppgavekoId"]
         val list = mutableListOf<OppgaveDto>()
         val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
         for (oppgave in oppgaver) {
