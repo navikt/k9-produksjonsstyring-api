@@ -36,7 +36,7 @@ class PdlService(
 
     private val personUrl = Url.buildURL(
         baseUrl = baseUrl,
-        pathParts = listOf("innsyn", "person")
+        pathParts = listOf()
     ).toString()
 
     internal suspend fun person(ident: Ident): TpsPerson {
