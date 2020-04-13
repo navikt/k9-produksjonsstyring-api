@@ -32,7 +32,7 @@ fun Route.SaksbehandlerSakslisteApis(
 
         call.respond(
             listOf(
-                SakslisteDto(
+                OppgavekøDto(
                     OppgaveKø(
                         UUID.randomUUID(),
                         "Behandlingskø 1",

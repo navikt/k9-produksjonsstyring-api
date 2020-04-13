@@ -94,7 +94,10 @@ internal fun Route.OppgaveApis(
     class hentAntallOppgaverForOppgavekø
 
     get { _: hentAntallOppgaverForOppgavekø ->
-        val uuid = call.request.queryParameters["oppgavekoId"]
+        var uuid = call.request.queryParameters["oppgavekoId"]
+        if (uuid.isNullOrBlank()) {
+            uuid = UUID.randomUUID().toString()
+        }
         call.respond(oppgaveTjeneste.hentOppgaver(UUID.fromString(uuid)!!).size)
     }
 
@@ -103,11 +106,7 @@ internal fun Route.OppgaveApis(
 
     post { _: reserverOppgave ->
         val oppgaveId = call.receive<OppgaveId>()
-
         val idtoken = call.idToken()
-
-
-
 
         call.respond(oppgaveTjeneste.reserverOppgave(idtoken.ident.value, UUID.fromString(oppgaveId.oppgaveId)))
     }
