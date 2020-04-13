@@ -81,7 +81,7 @@ class PdlService(
             )
             .header(
                 HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
-                NavHeaders.ConsumerToken to "Bearer " + cachedAccessTokenClient.getAccessToken(henteNavnScopes)
+                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(henteNavnScopes)
                     .asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 NavHeaders.Tema to "OMS",
