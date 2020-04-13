@@ -31,7 +31,8 @@ class OppgaveTjenesteImpl(
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
-            oppgaveRepository.hent().stream().map { t -> t.sisteOppgave() }.toList()
+            oppgaveRepository.hent().stream().filter { t -> t.sisteOppgave().reservasjon?.reservertAv.isNullOrEmpty() }
+                .map { t -> t.sisteOppgave() }.toList()
         } catch (e: Exception) {
             LOGGER.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
