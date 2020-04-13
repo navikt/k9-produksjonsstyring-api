@@ -71,7 +71,7 @@ class TpsProxyV1(
             logger = logger
         ) {
             val (request, _, result) = Operation.monitored(
-                app = "k9-selvbetjening-oppslag",
+                app = "k9-los-api",
                 operation = "hente-person",
                 resultResolver = { 200 == it.second.statusCode }
             ) { httpRequest.awaitStringResponseResult() }

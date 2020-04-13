@@ -63,6 +63,9 @@ spec:
     - name: TPS_PROXY_V1_URL
       value: https://tps-proxy.nais.adeo.no/api/v1
 
+    - name: PDL_URL
+      value: https://pdl-api.nais.adeo.no/graphql
+
     #Mq sak og behandling
     - name: MQGATEWAY02_NAME
       value: MPLSC02
