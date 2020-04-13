@@ -8,7 +8,7 @@ import java.time.LocalDate
 import java.util.*
 
 class OppgavekøDto(o: OppgaveKø, antallBehandlinger: Int) {
-    val sakslisteId: UUID = o.id
+    val oppgavekoId: UUID = o.id
     val navn: String
     var behandlingTyper: List<BehandlingType> = o.filtreringBehandlingTyper
     val sistEndret: LocalDate
@@ -17,6 +17,7 @@ class OppgavekøDto(o: OppgaveKø, antallBehandlinger: Int) {
     var fagsakYtelseTyper: List<FagsakYtelseType> = o.filtreringYtelseTyper
     var andreKriterier: List<AndreKriterierDto> = emptyList()
     var antallBehandlinger = 78
+
 
 
     init {
