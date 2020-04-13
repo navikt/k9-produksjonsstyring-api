@@ -8,8 +8,8 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
-import no.nav.k9.domene.oppslag.Attributt
 import no.nav.k9.domene.oppslag.Ident
+import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
@@ -21,7 +21,8 @@ import java.util.*
 @KtorExperimentalLocationsAPI
 internal fun Route.TestApis(
     requestContextService: RequestContextService,
-    tpsProxyV1Gateway: TpsProxyV1Gateway
+    tpsProxyV1Gateway: TpsProxyV1Gateway,
+    pdlService: PdlService
 ) {
     @Location("/test")
     class getInnloggetBruker
@@ -47,22 +48,7 @@ internal fun Route.TestApis(
         ) {
             log.info("id " + idtoken.ident.value)
             log.info("token " + idtoken.value)
-            val person = tpsProxyV1Gateway.person(
-                ident = Ident("1686373599998"),
-                attributter = setOf(
-                    Attributt.fornavn,
-                    Attributt.mellomnavn,
-                    Attributt.etternavn,
-                    Attributt.diskresjonskode
-                )
-            )
-            log.run {
-                info(person!!.fornavn)
-                info(person.mellomnavn)
-                info(person.etternavn)
-                info(person.diskresjonskode)
-            }
-
+            pdlService.person(Ident("1686373599998"))
         }
 
 

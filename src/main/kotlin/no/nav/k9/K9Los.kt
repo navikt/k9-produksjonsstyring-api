@@ -36,6 +36,7 @@ import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
@@ -108,6 +109,8 @@ fun Application.k9Los() {
             accessTokenClient = accessTokenClientResolver.naisSts()
         )
     )
+
+    val pdlService = PdlService(configuration.pdlUrl(), accessTokenClient = accessTokenClientResolver.naisSts())
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
     val oppgaveKøRepository = OppgaveKøRepository(dataSource)
@@ -168,6 +171,7 @@ fun Application.k9Los() {
                     oppgaveTjeneste,
                     tpsProxyV1Gateway,
                     kodeverkTjeneste,
+                    pdlService = pdlService,
                     configuration = configuration
                 )
             }
@@ -182,6 +186,7 @@ fun Application.k9Los() {
                 oppgaveTjeneste,
                 tpsProxyV1Gateway,
                 kodeverkTjeneste,
+                pdlService = pdlService,
                 configuration = configuration
             )
         }
@@ -222,6 +227,7 @@ private fun Route.api(
     oppgaveTjeneste: OppgaveTjenesteImpl,
     tpsProxyV1Gateway: TpsProxyV1Gateway,
     kodeverkTjeneste: HentKodeverkTjeneste,
+    pdlService: PdlService,
     configuration: Configuration
 ) {
     route("api") {
@@ -244,7 +250,7 @@ private fun Route.api(
             SaksbehandlerNøkkeltallApis()
         }
         NavAnsattApis(requestContextService)
-        TestApis(requestContextService, tpsProxyV1Gateway)
+        TestApis(requestContextService, tpsProxyV1Gateway, pdlService)
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
