@@ -14,13 +14,14 @@ import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.rest.*
 import no.nav.k9.integrasjon.tps.TpsPerson
 import no.nav.k9.integrasjon.tps.TpsProxyV1
+import no.nav.log.MDCConstants
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
-import java.util.*
 import kotlin.coroutines.coroutineContext
 
 class PdlService(
@@ -85,7 +86,7 @@ class PdlService(
                     .asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 NavHeaders.Tema to "OMS",
-                NavHeaders.CallId to UUID.randomUUID().toString()
+                NavHeaders.CallId to MDC.get(MDCConstants.MDC_CALL_ID)
             )
 
         logger.restKall(personUrl)
