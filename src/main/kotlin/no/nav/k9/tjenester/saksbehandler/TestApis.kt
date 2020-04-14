@@ -49,10 +49,10 @@ internal fun Route.TestApis(
             )
         ) {
             call.respond(
-                "id: " + idtoken.ident.value + " "
+                "id: " + idtoken.ident.value + "</br></br>"
                         + "token: " + idtoken.value
                         + "naistoken: " + accessTokenClientResolver.naisSts()
-                    .getAccessToken(setOf("openid")).accessToken + " "
+                    .getAccessToken(setOf("openid")).accessToken + "</br></br>"
                         + " azuretoken: " + accessTokenClientResolver.accessTokenClient()
                     .getAccessToken(setOf("api://${accessTokenClientResolver.azureClientId()}/.default")).accessToken
             )
