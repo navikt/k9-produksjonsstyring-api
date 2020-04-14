@@ -39,6 +39,7 @@ class AccessTokenClientResolver(
             naisSts
         } else {
             logger.info("Bruker Client[$AZURE_V2_ALIAS] ved kommunikasjon med k9-los-api")
+            logger.info("Thumbprint " + azureV2Client.certificateHexThumbprint)
             SignedJwtAccessTokenClient(
                 clientId = azureV2Client.clientId(),
                 tokenEndpoint = azureV2Client.tokenEndpoint(),
