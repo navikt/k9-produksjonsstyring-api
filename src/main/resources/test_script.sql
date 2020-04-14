@@ -57,7 +57,7 @@ values (1,
         null,
         default)
 
-
+as
 
 select data from oppgave where data -> 'behandlingType' = ANY('{"kljhgrerghtre}') and  data -> 'fagsakYtelseType' = ANY('{"kjlhkl"}')
                            and 'fgljr' = ANY(data -> 'oppgaveEgenskap' ->> 'andreKriterierTyper')
