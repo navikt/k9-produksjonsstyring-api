@@ -24,6 +24,7 @@ class AccessTokenClientResolver(
 
     private val naisSts: AccessTokenClient
     private val accessTokenClient: AccessTokenClient
+    private val azureClientId: String
 
     init {
         val naisStsClient = naisStsClient()
@@ -36,9 +37,11 @@ class AccessTokenClientResolver(
         val azureV2Client = azureV2Client()
         accessTokenClient = if (azureV2Client == null) {
             logger.info("Bruker Client[$NAIS_STS_ALIAS] ved kommunikasjon med k9-los-api")
+            azureClientId = ""
             naisSts
         } else {
             logger.info("Bruker Client[$AZURE_V2_ALIAS] ved kommunikasjon med k9-los-api")
+            azureClientId = azureV2Client.clientId()
             SignedJwtAccessTokenClient(
                 clientId = azureV2Client.clientId(),
                 tokenEndpoint = azureV2Client.tokenEndpoint(),
@@ -65,4 +68,5 @@ class AccessTokenClientResolver(
 
     internal fun naisSts() = naisSts
     internal fun accessTokenClient() = accessTokenClient
+    internal fun azureClientId() = azureClientId
 }

@@ -54,7 +54,7 @@ internal fun Route.TestApis(
                         + "naistoken: " + accessTokenClientResolver.naisSts()
                     .getAccessToken(setOf("openid")).accessToken + " "
                         + " azuretoken: " + accessTokenClientResolver.accessTokenClient()
-                    .getAccessToken(setOf("openid")).accessToken
+                    .getAccessToken(setOf("api://${accessTokenClientResolver.azureClientId()}/.default")).accessToken
             )
         }
     }
