@@ -39,6 +39,8 @@ spec:
     paths:
       - mountPath: /var/run/secrets/nais.io/serviceuser
         kvPath: /serviceuser/data/dev/srvk9los
+      - mountPath: /var/run/secrets/nais.io/azuread
+        kvPath: /azuread/data/dev/creds/k9-los-api
       - mountPath: /var/run/secrets/nais.io/application
         kvPath: /kv/preprod/fss/k9-los-api/default
   sidecar: true
