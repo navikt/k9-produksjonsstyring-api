@@ -69,7 +69,7 @@ data class Configuration(private val config: ApplicationConfig) {
         }
 
     internal fun getCookieName() : String {
-        return config.getRequiredString("nav.authorization.cookie_name", secret = false)
+        return config.getRequiredString("nav.auth.cookie_name", secret = false)
     }
 
     private fun unreadyAfterStreamStoppedIn() = Duration.of(

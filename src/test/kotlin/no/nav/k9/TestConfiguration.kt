@@ -23,6 +23,7 @@ object TestConfiguration {
 
         map["nav.auth.trustore.path"] = "vtp"
         map["nav.auth.trustore.password"] = "vtp"
+        map["nav.auth.cookie_name"] = "selvbetjening-idtoken"
 
         map["nav.auth.clients.0.alias"] = "nais-sts"
         map["nav.auth.clients.0.client_id"] = "srvpps-k9-los-api"
