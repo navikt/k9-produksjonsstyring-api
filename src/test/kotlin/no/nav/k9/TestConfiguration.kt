@@ -17,7 +17,8 @@ object TestConfiguration {
     ): Map<String, String> {
         val map = mutableMapOf(
             Pair("ktor.deployment.port", "$port"),
-            Pair("nav.register_urls.tps_proxy_v1", "$tpsProxyBaseUrl")
+            Pair("nav.register_urls.tps_proxy_v1", "$tpsProxyBaseUrl"),
+            Pair("nav.register_urls.pdl_url", "fdgshnhgjfhk")
         )
 
         map["nav.auth.trustore.path"] = "vtp"

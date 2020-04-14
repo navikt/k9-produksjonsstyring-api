@@ -83,9 +83,10 @@ class OppgaveTjenesteImpl(
     }
 
     fun forlengReservasjonPåOppgave(uuid: UUID): Reservasjon {
-        val reservasjon: Reservasjon? = null
+        var reservasjon: Reservasjon? = null
         oppgaveRepository.lagre(uuid) { forrigeOppgave ->
             forrigeOppgave?.reservasjon?.reservertTil = forrigeOppgave?.reservasjon?.reservertTil?.plusHours(24)
+            reservasjon = forrigeOppgave?.reservasjon
             forrigeOppgave!!
         }
 
