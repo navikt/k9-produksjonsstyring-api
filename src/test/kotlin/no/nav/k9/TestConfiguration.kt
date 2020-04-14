@@ -18,11 +18,12 @@ object TestConfiguration {
         val map = mutableMapOf(
             Pair("ktor.deployment.port", "$port"),
             Pair("nav.register_urls.tps_proxy_v1", "$tpsProxyBaseUrl"),
-            Pair("nav.register_urls.pdl_url", "fdgshnhgjfhk")
+            Pair("nav.register_urls.pdl_url", "$tpsProxyBaseUrl")
         )
 
         map["nav.auth.trustore.path"] = "vtp"
         map["nav.auth.trustore.password"] = "vtp"
+        map["nav.auth.cookie_name"] = "selvbetjening-idtoken"
 
         map["nav.auth.clients.0.alias"] = "nais-sts"
         map["nav.auth.clients.0.client_id"] = "srvpps-k9-los-api"

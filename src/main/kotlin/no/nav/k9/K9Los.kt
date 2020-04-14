@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.features.CORS
-import io.ktor.features.CallId
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
+import io.ktor.features.*
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.resources
@@ -32,6 +29,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
+import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -132,7 +130,7 @@ fun Application.k9Los() {
         k9sakEventHandler = k9sakEventHandler
 //        gosysOppgaveGateway = gosysOppgaveGateway
     )
-//    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
+    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
 
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
@@ -172,6 +170,7 @@ fun Application.k9Los() {
                     tpsProxyV1Gateway,
                     kodeverkTjeneste,
                     pdlService = pdlService,
+                    accessTokenClientResolver = accessTokenClientResolver,
                     configuration = configuration
                 )
             }
@@ -187,6 +186,7 @@ fun Application.k9Los() {
                 tpsProxyV1Gateway,
                 kodeverkTjeneste,
                 pdlService = pdlService,
+                accessTokenClientResolver = accessTokenClientResolver,
                 configuration = configuration
             )
         }
@@ -210,14 +210,17 @@ fun Application.k9Los() {
         call.request.log()
     }
 
-//    install(CallLogging) {
-//        correlationIdAndRequestIdInMdc()
-//        logRequests()
-////        mdc("id_token_jti") { call ->
-////            try { idTokenProvider.getIdToken(call).getId() }
-////            catch (cause: Throwable) { null }
-////        }
-//    }
+    install(CallLogging) {
+        correlationIdAndRequestIdInMdc()
+        logRequests()
+        mdc("id_token_jti") { call ->
+            try {
+                idTokenProvider.getIdToken(call).getId()
+            } catch (cause: Throwable) {
+                null
+            }
+        }
+    }
 
 
 }
@@ -228,6 +231,7 @@ private fun Route.api(
     tpsProxyV1Gateway: TpsProxyV1Gateway,
     kodeverkTjeneste: HentKodeverkTjeneste,
     pdlService: PdlService,
+    accessTokenClientResolver: AccessTokenClientResolver,
     configuration: Configuration
 ) {
     route("api") {
@@ -250,7 +254,7 @@ private fun Route.api(
             SaksbehandlerNøkkeltallApis()
         }
         NavAnsattApis(requestContextService)
-        TestApis(requestContextService, tpsProxyV1Gateway, pdlService)
+        TestApis(requestContextService, tpsProxyV1Gateway, pdlService, accessTokenClientResolver)
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)

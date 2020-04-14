@@ -8,6 +8,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
+import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
@@ -22,10 +23,9 @@ import java.util.*
 internal fun Route.TestApis(
     requestContextService: RequestContextService,
     tpsProxyV1Gateway: TpsProxyV1Gateway,
-    pdlService: PdlService
+    pdlService: PdlService,
+    accessTokenClientResolver: AccessTokenClientResolver
 ) {
-    @Location("/test")
-    class getInnloggetBruker
 
     val log = LoggerFactory.getLogger("Route.TestApis")
     val gruppenavnSaksbehandler = "0000-GA-k9sak-saksbehandler"
@@ -37,6 +37,31 @@ internal fun Route.TestApis(
     val gruppenavnOppgavestyrer = "0000-GA-k9sak-Oppgavestyrer"
 
 
+    @Location("/testToken")
+    class getInnloggetBrukerToken
+    get { _: getInnloggetBrukerToken ->
+        val idtoken = call.idToken()
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
+                idToken = idtoken
+            )
+        ) {
+            call.respond(
+                "id: " + idtoken.ident.value + " "
+                        + "token: " + idtoken.value
+                        + "naistoken: " + accessTokenClientResolver.naisSts()
+                    .getAccessToken(setOf("openid")).accessToken + " "
+                        + " azuretoken: " + accessTokenClientResolver.accessTokenClient()
+                    .getAccessToken(setOf("openid")).accessToken
+            )
+        }
+    }
+
+    @Location("/test")
+    class getInnloggetBruker
+
     get { _: getInnloggetBruker ->
         val idtoken = call.idToken()
         withContext(
@@ -46,8 +71,9 @@ internal fun Route.TestApis(
                 idToken = idtoken
             )
         ) {
-            log.info("id " + idtoken.ident.value)
-            log.info("token " + idtoken.value)
+            log.info("id: " + idtoken.ident.value)
+            log.info("token: " + idtoken.value)
+            log.info("naistoken: " + pdlService)
             pdlService.person(Ident("1686373599998"))
         }
 

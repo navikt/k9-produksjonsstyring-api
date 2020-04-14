@@ -53,7 +53,7 @@ internal fun Route.OppgaveApis(
                     OppgaveStatusDto(false, null, false, null, null, null),
                     oppgave.behandlingId,
                     oppgave.fagsakSaksnummer,
-                    UUID.randomUUID().toString(),//   "${tpsPerson?.fornavn ?: ""} ${tpsPerson?.etternavn ?: ""}",
+                    "Navn på søker " + oppgave.behandlingOpprettet.toString(),//   "${tpsPerson?.fornavn ?: ""} ${tpsPerson?.etternavn ?: ""}",
                     oppgave.system,
                     oppgave.aktorId,
                     oppgave.behandlingType,
