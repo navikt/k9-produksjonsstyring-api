@@ -5,7 +5,7 @@ import no.nav.helse.dusseldorf.ktor.auth.Client
 import no.nav.helse.dusseldorf.ktor.auth.ClientSecretClient
 import no.nav.helse.dusseldorf.ktor.auth.PrivateKeyClient
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
-import no.nav.helse.dusseldorf.oauth2.client.FromCertificateHexThumbprint
+import no.nav.helse.dusseldorf.oauth2.client.DirectKeyId
 import no.nav.helse.dusseldorf.oauth2.client.FromJwk
 import no.nav.helse.dusseldorf.oauth2.client.SignedJwtAccessTokenClient
 import no.nav.k9.Configuration.Companion.AZURE_V2_ALIAS
@@ -39,12 +39,11 @@ class AccessTokenClientResolver(
             naisSts
         } else {
             logger.info("Bruker Client[$AZURE_V2_ALIAS] ved kommunikasjon med k9-los-api")
-            logger.info("Thumbprint " + azureV2Client.certificateHexThumbprint)
             SignedJwtAccessTokenClient(
                 clientId = azureV2Client.clientId(),
                 tokenEndpoint = azureV2Client.tokenEndpoint(),
                 privateKeyProvider = FromJwk(azureV2Client.privateKeyJwk),
-                keyIdProvider = FromCertificateHexThumbprint(azureV2Client.certificateHexThumbprint)
+                keyIdProvider = DirectKeyId(azureV2Client.certificateHexThumbprint)
             )
         }
     }
