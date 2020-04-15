@@ -253,7 +253,7 @@ private fun Route.api(
             SaksbehandlerSakslisteApis()
             SaksbehandlerNøkkeltallApis()
         }
-        NavAnsattApis(requestContextService)
+        NavAnsattApis(requestContextService, configuration)
         TestApis(requestContextService, tpsProxyV1Gateway, pdlService, accessTokenClientResolver)
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }

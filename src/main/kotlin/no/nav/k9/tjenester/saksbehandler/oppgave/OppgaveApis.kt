@@ -10,11 +10,9 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
-import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -113,20 +111,22 @@ internal fun Route.OppgaveApis(
     post { _: reserverOppgave ->
         val oppgaveId = call.receive<OppgaveId>()
 
-        val idtoken = if (configuration.isVaultEnabled()) {
-            call.idToken()
+        if (configuration.isVaultEnabled()) {
+            val idToken = call.idToken()
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
+                    idToken = idToken
+                )
+            ) {
+                call.respond(oppgaveTjeneste.reserverOppgave(idToken.ident.value, UUID.fromString(oppgaveId.oppgaveId)))
+            }
         } else {
-            IdToken("", Ident("alexaban"))
+            call.respond(oppgaveTjeneste.reserverOppgave("alexaban", UUID.fromString(oppgaveId.oppgaveId)))
         }
-        withContext(
-            requestContextService.getCoroutineContext(
-                context = coroutineContext,
-                correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
-                idToken = idtoken
-            )
-        ) {
-            call.respond(oppgaveTjeneste.reserverOppgave(idtoken.ident.value, UUID.fromString(oppgaveId.oppgaveId)))
-        }
+
+
     }
 
     @Location("/opphev")

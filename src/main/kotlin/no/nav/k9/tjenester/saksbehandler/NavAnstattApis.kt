@@ -6,14 +6,19 @@ import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.util.InternalAPI
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.withContext
+import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
 import org.slf4j.LoggerFactory
+import no.nav.k9.Configuration
+import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.NavAnsattApis(requestContextService: RequestContextService) {
+internal fun Route.NavAnsattApis(requestContextService: RequestContextService, configuration: Configuration) {
     @Location("/saksbehandler")
     class getInnloggetBruker
 
@@ -27,38 +32,47 @@ internal fun Route.NavAnsattApis(requestContextService: RequestContextService) {
     val gruppenavnOppgavestyrer = "0000-GA-k9sak-Oppgavestyrer"
 
 
+
     get { _: getInnloggetBruker ->
-//        val id = requestContextService.getIdToken().getId()
-//        val subject1 = requestContextService.getIdToken().getSubject()
-//        log.info("id" + id)
-//        log.info("subject1" + id)
-//        val ident = SubjectHandler.getSubjectHandler().uid
-//        val ldapBruker = LdapBrukeroppslag().hentBrukerinformasjon(ident)
-//        val grupper = LdapUtil().filtrerGrupper(ldapBruker.groups)
-//        val innloggetAnsatt = InnloggetNavAnsattDto(
-//            ident,
-//            ldapBruker.displayName,
-//            grupper.contains(gruppenavnSaksbehandler),
-//            grupper.contains(gruppenavnVeileder),
-//            grupper.contains(gruppenavnBeslutter),
-//            grupper.contains(gruppenavnEgenAnsatt),
-//            grupper.contains(gruppenavnKode6),
-//            grupper.contains(gruppenavnKode7),
-//            grupper.contains(gruppenavnOppgavestyrer)
-//        )
-        call.respond(
-            InnloggetNavAnsattDto(
-                "alexaban",
-                "Saksbehandler Sara",
-                kanSaksbehandle = true,
-                kanVeilede = true,
-                kanBeslutte = true,
-                kanBehandleKodeEgenAnsatt = true,
-                kanBehandleKode6 = true,
-                kanBehandleKode7 = true,
-                kanOppgavestyre = true
+        if (configuration.isVaultEnabled()) {
+            val idtoken = call.idToken()
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
+                    idToken = idtoken
+                )
+            ) {
+
+                val token = IdToken(idtoken.value)
+                call.respond(
+                    InnloggetNavAnsattDto(
+                        token.getUsername(),
+                        token.getName(),
+                        kanSaksbehandle = true,
+                        kanVeilede = true,
+                        kanBeslutte = true,
+                        kanBehandleKodeEgenAnsatt = true,
+                        kanBehandleKode6 = true,
+                        kanBehandleKode7 = true,
+                        kanOppgavestyre = true
+                    )
+                )
+            }
+        } else {
+            call.respond(
+                InnloggetNavAnsattDto(
+                    "alexaban",
+                    "Saksbehandler Sara",
+                    kanSaksbehandle = true,
+                    kanVeilede = true,
+                    kanBeslutte = true,
+                    kanBehandleKodeEgenAnsatt = true,
+                    kanBehandleKode6 = true,
+                    kanBehandleKode7 = true,
+                    kanOppgavestyre = true
+                )
             )
-        )
+        }
     }
-//    }
 }
