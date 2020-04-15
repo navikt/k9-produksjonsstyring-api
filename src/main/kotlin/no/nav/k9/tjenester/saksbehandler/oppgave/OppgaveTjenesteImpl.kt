@@ -149,18 +149,18 @@ class OppgaveTjenesteImpl(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun hentSisteReserverteOppgaver(): List<OppgaveDto> {
-        val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver("alexaban")
+    fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
+        val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver(ident)
 
-              return reserverteOppgave.stream().map { t ->
-                  OppgaveDto(
-                      OppgaveStatusDto(
-                          true, t.sisteOppgave().reservasjon?.reservertTil,
-                          true, t.sisteOppgave().reservasjon?.reservertAv, "Klara Saksbehandler", null
-                      ),
-                      t.sisteOppgave().behandlingId,
-                      t.sisteOppgave().fagsakSaksnummer,
-                      "Walter Lemon",
+        return reserverteOppgave.stream().map { t ->
+            OppgaveDto(
+                OppgaveStatusDto(
+                    true, t.sisteOppgave().reservasjon?.reservertTil,
+                    true, t.sisteOppgave().reservasjon?.reservertAv, "Klara Saksbehandler", null
+                ),
+                t.sisteOppgave().behandlingId,
+                t.sisteOppgave().fagsakSaksnummer,
+                "Walter Lemon",
                       t.sisteOppgave().system,
                       "453555245",
                       t.sisteOppgave().behandlingType,

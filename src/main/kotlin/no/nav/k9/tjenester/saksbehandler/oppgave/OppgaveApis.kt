@@ -84,14 +84,46 @@ internal fun Route.OppgaveApis(
     class getBehandledeOppgaver
 
     get { _: getBehandledeOppgaver ->
-        call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver())
+        val oppgaveId = call.receive<OppgaveId>()
+
+        if (configuration.isVaultEnabled()) {
+            val idToken = call.idToken()
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
+                    idToken = idToken
+                )
+            ) {
+                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.ident.value))
+            }
+        } else {
+            call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
+        }
+
+
     }
 
     @Location("/reserverte")
     class getReserverteOppgaver
 
     get { _: getReserverteOppgaver ->
-        call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver())
+        if (configuration.isVaultEnabled()) {
+            val idToken = call.idToken()
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
+                    idToken = idToken
+                )
+            ) {
+                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.ident.value))
+            }
+        } else {
+            call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
+        }
+
+
     }
 
     @Location("/antall")
