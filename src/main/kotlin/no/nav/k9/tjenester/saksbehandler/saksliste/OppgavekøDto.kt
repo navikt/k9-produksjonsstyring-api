@@ -13,7 +13,7 @@ class OppgavekøDto(o: OppgaveKø, antallBehandlinger: Int) {
     var behandlingTyper: List<BehandlingType> = o.filtreringBehandlingTyper
     val sistEndret: LocalDate
     var sortering: SorteringDto =
-        SorteringDto(KøSortering.OPPRETT_BEHANDLING, 8976, 97, LocalDate.now(), LocalDate.now(), true)
+        SorteringDto(KøSortering.OPPRETT_BEHANDLING, null, null, LocalDate.now(), LocalDate.now(), true)
     var fagsakYtelseTyper: List<FagsakYtelseType> = o.filtreringYtelseTyper
     var andreKriterier: List<AndreKriterierDto> = emptyList()
     var antallBehandlinger = 78

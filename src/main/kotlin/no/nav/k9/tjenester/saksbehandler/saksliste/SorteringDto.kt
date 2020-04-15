@@ -5,8 +5,8 @@ import java.time.LocalDate
 
 class SorteringDto(
     val sorteringType: KøSortering,
-    val fra: Long,
-    val til: Long,
+    val fra: Long?,
+    val til: Long?,
     val fomDato: LocalDate,
     val tomDato: LocalDate,
     val erDynamiskPeriode: Boolean

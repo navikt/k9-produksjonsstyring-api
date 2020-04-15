@@ -84,7 +84,6 @@ internal fun Route.OppgaveApis(
     class getBehandledeOppgaver
 
     get { _: getBehandledeOppgaver ->
-        val oppgaveId = call.receive<OppgaveId>()
 
         if (configuration.isVaultEnabled()) {
             val idToken = call.idToken()

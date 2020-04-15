@@ -18,31 +18,19 @@ fun Route.SaksbehandlerSakslisteApis(
 
     get { _: getSakslister ->
 
-        val of = OppgaveKø(
-            UUID.randomUUID(), "Filtrering 1", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
-            listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), Enhet.NASJONAL,
-            true, LocalDate.now(), LocalDate.now(), listOf(Saksbehandler("435twg", "Saksbehandler Klara"))
-        )
-
-        val of2 = OppgaveKø(
-            UUID.randomUUID(), "Filtrering 2", KøSortering.OPPRETT_BEHANDLING, listOf(BehandlingType.FORSTEGANGSSOKNAD),
-            listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN), Enhet.NASJONAL,
-            true, LocalDate.now(), LocalDate.now(), listOf(Saksbehandler("3e2r43t", "Saksbehandler Gro"))
-        )
-
         call.respond(
             listOf(
                 OppgavekøDto(
                     OppgaveKø(
                         UUID.randomUUID(),
-                        "Behandlingskø 1",
+                        "Omsorgspenger",
                         KøSortering.OPPRETT_BEHANDLING,
                         listOf(BehandlingType.FORSTEGANGSSOKNAD),
                         listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
                         Enhet.NASJONAL,
                         false,
-                        LocalDate.now(),
-                        LocalDate.now(),
+                        LocalDate.of(2020,1,1),
+                        LocalDate.of(2020, 8, 1),
                         listOf(Saksbehandler("645fgd", "Saksbehandler Klara"))
                     ), 14
                 )
@@ -61,8 +49,8 @@ fun Route.SaksbehandlerSakslisteApis(
         listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
         Enhet.NASJONAL,
         false,
-        LocalDate.now(),
-        LocalDate.now(),
+        LocalDate.of(2020,1,1),
+        LocalDate.of(2020, 8, 1),
         listOf(Saksbehandler("435twg", "Saksbehandler Sara"))
     )
 
