@@ -60,6 +60,7 @@ class PdlService(
                 NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(henteNavnScopes)
                     .asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
+                HttpHeaders.ContentType to "application/json",
                 NavHeaders.Tema to "OMS",
                 NavHeaders.CallId to UUID.randomUUID().toString()
             )
