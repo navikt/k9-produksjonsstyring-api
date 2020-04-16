@@ -8,6 +8,7 @@ import io.ktor.locations.post
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.rest.CorrelationId
@@ -20,6 +21,7 @@ import java.util.*
 
 private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
+@KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.OppgaveApis(
     configuration: Configuration,

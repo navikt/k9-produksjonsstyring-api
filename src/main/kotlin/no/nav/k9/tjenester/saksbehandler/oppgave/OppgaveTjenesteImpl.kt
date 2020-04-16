@@ -94,12 +94,13 @@ class OppgaveTjenesteImpl(
     }
 
     fun flyttReservasjon(uuid: UUID, ident: String, begrunnelse: String): Reservasjon {
-        val reservasjon: Reservasjon? = null
+        var reservasjon: Reservasjon? = null
         oppgaveRepository.lagre(uuid) { forrigeOppgave ->
             forrigeOppgave?.reservasjon?.reservertTil = forrigeOppgave?.reservasjon?.reservertTil?.plusHours(24)
             forrigeOppgave?.reservasjon?.flyttetTidspunkt = LocalDateTime.now()
             forrigeOppgave?.reservasjon?.reservertAv = ident
             forrigeOppgave?.reservasjon?.begrunnelse = begrunnelse
+            reservasjon = forrigeOppgave?.reservasjon
             forrigeOppgave!!
         }
 
@@ -172,26 +173,6 @@ class OppgaveTjenesteImpl(
                       t.sisteOppgave().eksternId
                   )
               }.toList()
-//        return listOf(
-//            OppgaveDto(
-//                OppgaveStatusDto(
-//                    true, LocalDateTime.of(2020, 10, 1, 12, 13), true,
-//                    "4fe", "Sara", null
-//                ),
-//                45323,
-//                "9080800900",
-//                "Lemo Water",
-//                "ee09",
-//                "23090382974",
-//                BehandlingType.SOKNAD,
-//                FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-//                BehandlingStatus.OPPRETTET,
-//                true,
-//                LocalDateTime.of(2020, 3, 15, 13, 15),
-//                LocalDateTime.of(2020, 9, 23, 12, 0),
-//                UUID.randomUUID()
-//            )
-//        )
     }
 
     fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {

@@ -13,7 +13,6 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.rest.*
 import no.nav.k9.integrasjon.tps.TpsPerson
-import no.nav.k9.integrasjon.tps.TpsProxyV1
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -31,7 +30,7 @@ class PdlService(
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
 
     private companion object {
-        private val logger: Logger = LoggerFactory.getLogger(TpsProxyV1::class.java)
+        private val log: Logger = LoggerFactory.getLogger(PdlService::class.java)
     }
 
     private val personUrl = Url.buildURL(
@@ -40,43 +39,19 @@ class PdlService(
     ).toString()
 
     internal suspend fun person(ident: Ident): TpsPerson {
+        val queryRequest = QueryRequest(
+            getStringFromResource("/pdl/hentPerson.graphql"),
+            mapOf("ident" to ident.value)
+        )
+
+        log.info(objectMapper().writeValueAsString(queryRequest))
+
 
         val httpRequest = personUrl
             .httpPost()
             .body(
                 objectMapper().writeValueAsString(
-                    QueryRequest(
-                        """query(\$ident: ID!) {
-    hentIdenter(ident: \$ident, historikk: false, grupper: [FOLKEREGISTERIDENT,AKTORID]){
-        identer{
-            ident
-            gruppe
-        }
-    }
-    hentPerson(ident: \$ident) {
-        doedsfall { doedsdato }
-        adressebeskyttelse(historikk: false) {
-            gradering
-        }
-        bostedsadresse(historikk: false) {
-            vegadresse {kommunenummer}
-            matrikkeladresse{kommunenummer}
-            ukjentBosted{bostedskommune}
-        }
-        sikkerhetstiltak {
-            beskrivelse
-        }
-        navn(historikk: false) {
-            fornavn
-            mellomnavn
-            etternavn
-            metadata {
-                master
-            }
-        }
-    }
-}""", mapOf("ident" to ident.value)
-                    )
+                    queryRequest
                 )
             )
             .header(
@@ -88,13 +63,13 @@ class PdlService(
                 NavHeaders.CallId to UUID.randomUUID().toString()
             )
 
-        logger.restKall(personUrl)
-        logger.info(httpRequest.toString())
+        log.restKall(personUrl)
+        log.info(httpRequest.toString())
         val json = Retry.retry(
             operation = "hente-person",
             initialDelay = Duration.ofMillis(200),
             factor = 2.0,
-            logger = logger
+            logger = log
         ) {
             val (request, _, result) = Operation.monitored(
                 app = "k9-los-api",
@@ -105,16 +80,16 @@ class PdlService(
             result.fold(
                 { success -> JSONObject(success) },
                 { error ->
-                    logger.error(
+                    log.error(
                         "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
                     )
-                    logger.error(error.toString())
+                    log.error(error.toString())
                     throw IllegalStateException("Feil ved henting av person.")
                 }
             )
         }
 
-        logger.logResponse(json)
+        log.logResponse(json)
 
         val navn = json.getJSONObject("navn")
 
@@ -141,4 +116,11 @@ class PdlService(
             val variables: Map<String, Any>
         )
     }
+
+    private fun getStringFromResource(path: String) =
+        PdlService::class.java.getResourceAsStream(path).bufferedReader().use { it.readText() }
+
 }
+
+
+

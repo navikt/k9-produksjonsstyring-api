@@ -9,6 +9,7 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.AccessTokenClientResolver
+import no.nav.k9.Configuration
 import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
@@ -24,7 +25,8 @@ internal fun Route.TestApis(
     requestContextService: RequestContextService,
     tpsProxyV1Gateway: TpsProxyV1Gateway,
     pdlService: PdlService,
-    accessTokenClientResolver: AccessTokenClientResolver
+    accessTokenClientResolver: AccessTokenClientResolver,
+    configuration: Configuration
 ) {
 
     val log = LoggerFactory.getLogger("Route.TestApis")
@@ -51,9 +53,9 @@ internal fun Route.TestApis(
             call.respond(
                 "id: " + idtoken.ident.value + "\n"
                         + "token: " + idtoken.value
-                        + "\n naistoken: " + accessTokenClientResolver.naisSts()
+                        + "\nnaistoken: " + accessTokenClientResolver.naisSts()
                     .getAccessToken(setOf("openid")).accessToken + "\n"
-                        + " azuretoken: " + accessTokenClientResolver.accessTokenClient()
+                        + "azuretoken: " + accessTokenClientResolver.accessTokenClient()
                     .getAccessToken(setOf("api://${accessTokenClientResolver.azureClientId()}/.default")).accessToken
             )
         }
@@ -75,6 +77,9 @@ internal fun Route.TestApis(
             log.info("token: " + idtoken.value)
             log.info("naistoken: " + pdlService)
             pdlService.person(Ident("1686373599998"))
+            // val client = AbacClient(configuration.abacClient())
+            // client.evaluate(AbacRequest(mapOf(Category.AccessSubject to )))
+
         }
 
 

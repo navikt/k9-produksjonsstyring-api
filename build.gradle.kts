@@ -67,6 +67,8 @@ dependencies {
     }
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.1.0.4")
+    //Graphql
+    implementation("com.taskworld.kraph:kraph:0.4.1")
 
     // Test
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")

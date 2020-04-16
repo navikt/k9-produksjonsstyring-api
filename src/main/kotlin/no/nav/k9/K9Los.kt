@@ -254,7 +254,7 @@ private fun Route.api(
             SaksbehandlerNøkkeltallApis()
         }
         NavAnsattApis(requestContextService, configuration)
-        TestApis(requestContextService, tpsProxyV1Gateway, pdlService, accessTokenClientResolver)
+        TestApis(requestContextService, tpsProxyV1Gateway, pdlService, accessTokenClientResolver, configuration)
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
