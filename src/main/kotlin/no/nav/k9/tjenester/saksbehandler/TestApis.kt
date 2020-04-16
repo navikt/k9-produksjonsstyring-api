@@ -15,7 +15,6 @@ import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
-import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -76,44 +75,11 @@ internal fun Route.TestApis(
             log.info("id: " + idtoken.ident.value)
             log.info("token: " + idtoken.value)
             log.info("naistoken: " + pdlService)
-            pdlService.person(Ident("14128521632"))
             // val client = AbacClient(configuration.abacClient())
             // client.evaluate(AbacRequest(mapOf(Category.AccessSubject to )))
-
-        }
-
-
-//        val id = requestContextService.getIdToken().getId()
-//        val subject1 = requestContextService.getIdToken().getSubject()
-//        log.info("id" + id)
-//        log.info("subject1" + id)
-//        val ident = SubjectHandler.getSubjectHandler().uid
-//        val ldapBruker = LdapBrukeroppslag().hentBrukerinformasjon(ident)
-//        val grupper = LdapUtil().filtrerGrupper(ldapBruker.groups)
-//        val innloggetAnsatt = InnloggetNavAnsattDto(
-//            ident,
-//            ldapBruker.displayName,
-//            grupper.contains(gruppenavnSaksbehandler),
-//            grupper.contains(gruppenavnVeileder),
-//            grupper.contains(gruppenavnBeslutter),
-//            grupper.contains(gruppenavnEgenAnsatt),
-//            grupper.contains(gruppenavnKode6),
-//            grupper.contains(gruppenavnKode7),
-//            grupper.contains(gruppenavnOppgavestyrer)
-//        )
-        call.respond(
-            InnloggetNavAnsattDto(
-                "alexaban",
-                "Saksbehandler Sara",
-                kanSaksbehandle = true,
-                kanVeilede = true,
-                kanBeslutte = true,
-                kanBehandleKodeEgenAnsatt = true,
-                kanBehandleKode6 = true,
-                kanBehandleKode7 = true,
-                kanOppgavestyre = true
+            call.respond(
+                pdlService.person(Ident("14128521632"))
             )
-        )
+        }
     }
-//    }
 }

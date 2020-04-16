@@ -1,5 +1,6 @@
 package no.nav.k9.integrasjon.pdl
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
 import io.ktor.http.HttpHeaders
@@ -11,14 +12,14 @@ import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.oppslag.Ident
-import no.nav.k9.integrasjon.rest.*
-import no.nav.k9.integrasjon.tps.TpsPerson
-import org.json.JSONObject
+import no.nav.k9.integrasjon.rest.NavHeaders
+import no.nav.k9.integrasjon.rest.idToken
+import no.nav.k9.integrasjon.rest.logResponse
+import no.nav.k9.integrasjon.rest.restKall
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.Duration
-import java.time.LocalDate
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
@@ -38,7 +39,7 @@ class PdlService(
         pathParts = listOf()
     ).toString()
 
-    internal suspend fun person(ident: Ident): TpsPerson {
+    internal suspend fun person(ident: Ident): PersonPdl {
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
             mapOf("ident" to ident.value)
@@ -78,7 +79,7 @@ class PdlService(
             ) { httpRequest.awaitStringResponseResult() }
 
             result.fold(
-                { success -> JSONObject(success) },
+                { success -> success },
                 { error ->
                     log.error(
                         "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
@@ -91,20 +92,7 @@ class PdlService(
 
         log.logResponse(json)
 
-        val navn = json.getJSONObject("navn")
-
-
-        return TpsPerson(
-            fornavn = navn.getString("fornavn"),
-            mellomnavn = navn.getStringOrNull("mellomnavn"),
-            etternavn = navn.getString("slektsnavn"),
-            fødselsdato = LocalDate.parse(json.getString("foedselsdato")),
-            diskresjonskode = json.getString("diskresjonskode"),
-            kjønn = json.getString("kjoenn"),
-            dødsdato = LocalDate.parse(json.getString("doedsdato")),
-            navn = """${navn.getString("fornavn")} ${navn.getString("slektsnavn")}""",
-            ident = json.getString("ident")
-        )
+        return objectMapper().readValue(json)
     }
 
     data class QueryRequest(
