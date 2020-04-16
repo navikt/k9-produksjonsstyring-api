@@ -41,7 +41,8 @@ class PdlService(
     internal suspend fun person(ident: Ident): TpsPerson {
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
-            mapOf("ident" to ident.value)
+            mapOf("ident" to ident.value, "historikk": false
+        )
         )
 
         log.info(objectMapper().writeValueAsString(queryRequest))
