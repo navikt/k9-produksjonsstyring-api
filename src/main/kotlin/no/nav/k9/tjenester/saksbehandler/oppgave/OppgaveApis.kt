@@ -1,5 +1,6 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
+import info.debatty.java.stringsimilarity.Cosine
 import io.ktor.application.call
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
@@ -11,6 +12,8 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.domene.oppslag.Ident
+import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
@@ -27,7 +30,8 @@ internal fun Route.OppgaveApis(
     configuration: Configuration,
     requestContextService: RequestContextService,
     oppgaveTjeneste: OppgaveTjenesteImpl,
-    tpsProxyV1Gateway: TpsProxyV1Gateway
+    tpsProxyV1Gateway: TpsProxyV1Gateway,
+    pdlService: PdlService
 ) {
 
     @Location("/")
@@ -35,40 +39,43 @@ internal fun Route.OppgaveApis(
 
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["oppgavekoId"]
-        val list = mutableListOf<OppgaveDto>()
-        val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
-        for (oppgave in oppgaver) {
-//            val tpsPerson = tpsProxyV1Gateway.person(
-//                ident = Ident(oppgave.aktorId),
-//                attributter = setOf(
-//                    Attributt.fornavn,
-//                    Attributt.mellomnavn,
-//                    Attributt.etternavn,
-//                    Attributt.diskresjonskode,
-//                    Attributt.egenansatt
-//                )
-//            )
-            list.add(
-                OppgaveDto(
-                    OppgaveStatusDto(false, null, false, null, null, null),
-                    oppgave.behandlingId,
-                    oppgave.fagsakSaksnummer,
-                    "Navn på søker " + oppgave.behandlingOpprettet.toString(),//   "${tpsPerson?.fornavn ?: ""} ${tpsPerson?.etternavn ?: ""}",
-                    oppgave.system,
-                    oppgave.aktorId,
-                    oppgave.behandlingType,
-                    oppgave.fagsakYtelseType,
-                    oppgave.behandlingStatus,
-                    true,
-                    oppgave.behandlingOpprettet,
-                    oppgave.behandlingsfrist,
-                    oppgave.eksternId
+
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
+                idToken = call.idToken()
+            )
+        ) {
+            val list = mutableListOf<OppgaveDto>()
+            val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
+            for (oppgave in oppgaver) {
+
+
+                val person = pdlService.person(Ident("14128521632"))
+
+                list.add(
+                    OppgaveDto(
+                        OppgaveStatusDto(false, null, false, null, null, null),
+                        oppgave.behandlingId,
+                        oppgave.fagsakSaksnummer,
+                        person.data.hentPerson.navn[0].forkortetNavn,
+                        oppgave.system,
+                        oppgave.aktorId,
+                        oppgave.behandlingType,
+                        oppgave.fagsakYtelseType,
+                        oppgave.behandlingStatus,
+                        true,
+                        oppgave.behandlingOpprettet,
+                        oppgave.behandlingsfrist,
+                        oppgave.eksternId
+                    )
                 )
+            }
+            call.respond(
+                list
             )
         }
-        call.respond(
-            list
-        )
     }
 
     @Location("/resultat")

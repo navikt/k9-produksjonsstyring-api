@@ -3,6 +3,7 @@ package no.nav.k9.integrasjon.pdl
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
+import info.debatty.java.stringsimilarity.Cosine
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
 import no.nav.helse.dusseldorf.ktor.client.buildURL
@@ -14,7 +15,6 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.integrasjon.rest.logResponse
 import no.nav.k9.integrasjon.rest.restKall
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -40,13 +40,11 @@ class PdlService(
     ).toString()
 
     internal suspend fun person(ident: Ident): PersonPdl {
+
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
-            mapOf("ident" to ident.value)
+            mapOf("ident" to getQ2Ident(ident))
         )
-
-        log.info(objectMapper().writeValueAsString(queryRequest))
-
 
         val httpRequest = personUrl
             .httpPost()
@@ -66,7 +64,6 @@ class PdlService(
             )
 
         log.restKall(personUrl)
-        log.info(httpRequest.toString())
         val json = Retry.retry(
             operation = "hente-person",
             initialDelay = Duration.ofMillis(200),
@@ -91,9 +88,32 @@ class PdlService(
             )
         }
 
-        log.logResponse(json)
-
         return objectMapper().readValue(json)
+    }
+
+    private fun getQ2Ident(ident: Ident): String {
+        val q2 = listOf<String>(
+            "14128521632",
+            "14088521472",
+            "25078522014",
+            "27078523633",
+            "16018623009",
+            "27078522688",
+            "19128521618",
+            "21078525115"
+        )
+        val cosine = Cosine()
+        var dist = 0.0;
+        var newIdent = ident.value
+
+        q2.forEach { i ->
+            val distance = cosine.distance(i, ident.value)
+            if (distance > dist) {
+                dist = distance
+                newIdent = i
+            }
+        }
+        return newIdent
     }
 
     data class QueryRequest(

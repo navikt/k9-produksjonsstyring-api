@@ -67,7 +67,7 @@ dependencies {
     }
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.1.0.4")
-
+    implementation("info.debatty:java-string-similarity:1.2.1")
     // Test
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")

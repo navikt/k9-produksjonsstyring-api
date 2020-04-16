@@ -64,17 +64,13 @@ internal fun Route.TestApis(
     class getInnloggetBruker
 
     get { _: getInnloggetBruker ->
-        val idtoken = call.idToken()
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
                 correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
-                idToken = idtoken
+                idToken = call.idToken()
             )
         ) {
-            log.info("id: " + idtoken.ident.value)
-            log.info("token: " + idtoken.value)
-            log.info("naistoken: " + pdlService)
             // val client = AbacClient(configuration.abacClient())
             // client.evaluate(AbacRequest(mapOf(Category.AccessSubject to )))
             call.respond(
