@@ -76,7 +76,7 @@ internal fun Route.TestApis(
             log.info("id: " + idtoken.ident.value)
             log.info("token: " + idtoken.value)
             log.info("naistoken: " + pdlService)
-            pdlService.person(Ident("1686373599998"))
+            pdlService.person(Ident("14128521632"))
             // val client = AbacClient(configuration.abacClient())
             // client.evaluate(AbacRequest(mapOf(Category.AccessSubject to )))
 
