@@ -247,7 +247,8 @@ private fun Route.api(
                     configuration,
                     requestContextService,
                     oppgaveTjeneste,
-                    tpsProxyV1Gateway = tpsProxyV1Gateway
+                    tpsProxyV1Gateway = tpsProxyV1Gateway,
+                    pdlService = pdlService
                 )
             }
             SaksbehandlerSakslisteApis()
