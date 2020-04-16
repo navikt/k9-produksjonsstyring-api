@@ -59,7 +59,6 @@ internal fun Route.TestApis(
             )
         }
     }
-
     
     @Location("/test")
     class getInnloggetBruker
