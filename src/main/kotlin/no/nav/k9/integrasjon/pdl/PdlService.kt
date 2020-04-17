@@ -115,7 +115,7 @@ class PdlService @KtorExperimentalAPI constructor(
                 }
             )
         }
-
+        log.info("Person fra pdl: " + json)
         return objectMapper().readValue(json)
     }
 
