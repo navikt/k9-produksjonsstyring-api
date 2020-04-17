@@ -23,6 +23,7 @@ class BehandlingDto(
     var erAktivPapirsoknad: Boolean = false,
     var behandlingsfristTid: LocalDate
 ) {
+    
     private val links: List<ResourceLink> = ArrayList<ResourceLink>()
 
     open fun getLinks(): List<ResourceLink> {
