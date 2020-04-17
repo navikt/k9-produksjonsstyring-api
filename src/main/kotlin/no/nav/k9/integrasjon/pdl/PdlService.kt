@@ -116,9 +116,15 @@ class PdlService @KtorExperimentalAPI constructor(
             )
         }
         log.info("Person fra pdl: " + json)
-        val value = objectMapper().readValue<String>(json)
-        
-        return value
+        var navn: String
+        try {
+            navn = objectMapper().readValue<String>(json)
+
+        } catch (e: Exception) {
+            return ""
+        }
+
+        return navn
     }
 
     @KtorExperimentalAPI

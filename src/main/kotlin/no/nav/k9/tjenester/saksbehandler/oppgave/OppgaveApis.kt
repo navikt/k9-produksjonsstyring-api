@@ -14,7 +14,6 @@ import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -50,13 +49,16 @@ internal fun Route.OppgaveApis(
                 for (oppgave in oppgaver) {
 
                     val person = pdlService.person(oppgave.aktorId)
-
+                    if (person.isEmpty()) {
+                        // Flytt oppgave til vikafossen
+                        continue
+                    }
                     list.add(
                         OppgaveDto(
                             OppgaveStatusDto(false, null, false, null, null, null),
                             oppgave.behandlingId,
                             oppgave.fagsakSaksnummer,
-                            person.data.hentPerson.navn[0].forkortetNavn,
+                            person,
                             oppgave.system,
                             oppgave.aktorId,
                             oppgave.behandlingType,
