@@ -33,7 +33,7 @@ data class BehandlingProsessEventDto(
     val eventTid: LocalDateTime,
     val eventHendelse: EventHendelse,
     val behandlingStatus: String?,
-    val behandlingSteg: String,
+    val behandlingSteg: String?,
 
     /**
      * Ytelsestype i kodeform. Eksempel: FP
