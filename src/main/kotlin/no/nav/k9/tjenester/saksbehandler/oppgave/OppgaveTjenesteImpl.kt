@@ -130,23 +130,25 @@ class OppgaveTjenesteImpl(
                 // Flytt oppgave til vikafossen
                 continue
             }
-            OppgaveDto(
-                OppgaveStatusDto(
-                    true, oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
-                    true, oppgavemodell.sisteOppgave().reservasjon?.reservertAv, "Klara Saksbehandler", null
-                ),
-                oppgavemodell.sisteOppgave().behandlingId,
-                oppgavemodell.sisteOppgave().fagsakSaksnummer,
-                person,
-                oppgavemodell.sisteOppgave().system,
-                oppgavemodell.sisteOppgave().aktorId,
-                oppgavemodell.sisteOppgave().behandlingType,
-                oppgavemodell.sisteOppgave().fagsakYtelseType,
-                oppgavemodell.sisteOppgave().behandlingStatus,
-                true,
-                oppgavemodell.sisteOppgave().behandlingOpprettet,
-                oppgavemodell.sisteOppgave().behandlingsfrist,
-                oppgavemodell.sisteOppgave().eksternId
+            list.add(
+                OppgaveDto(
+                    OppgaveStatusDto(
+                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
+                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertAv, "Klara Saksbehandler", null
+                    ),
+                    oppgavemodell.sisteOppgave().behandlingId,
+                    oppgavemodell.sisteOppgave().fagsakSaksnummer,
+                    person,
+                    oppgavemodell.sisteOppgave().system,
+                    oppgavemodell.sisteOppgave().aktorId,
+                    oppgavemodell.sisteOppgave().behandlingType,
+                    oppgavemodell.sisteOppgave().fagsakYtelseType,
+                    oppgavemodell.sisteOppgave().behandlingStatus,
+                    true,
+                    oppgavemodell.sisteOppgave().behandlingOpprettet,
+                    oppgavemodell.sisteOppgave().behandlingsfrist,
+                    oppgavemodell.sisteOppgave().eksternId
+                )
             )
         }
         return list
