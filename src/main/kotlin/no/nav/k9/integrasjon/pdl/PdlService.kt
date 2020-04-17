@@ -3,7 +3,7 @@ package no.nav.k9.integrasjon.pdl
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
-import info.debatty.java.stringsimilarity.Cosine
+import info.debatty.java.stringsimilarity.Levenshtein
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
 import io.ktor.util.KtorExperimentalAPI
@@ -25,7 +25,7 @@ import java.time.Duration
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
-class PdlService(
+class PdlService @KtorExperimentalAPI constructor(
     baseUrl: URI,
     accessTokenClient: AccessTokenClient,
     val configuration: Configuration,
@@ -33,7 +33,33 @@ class PdlService(
 ) {
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
 
-    private companion object {
+    companion object {
+        fun getQ2Ident(ident: Ident): String {
+            val q2 = listOf(
+                "14128521632",
+                "14088521472",
+                "25078522014",
+                "27078523633",
+                "16018623009",
+                "27078522688",
+                "19128521618",
+                "21078525115"
+            )
+            val levenshtein = Levenshtein()
+            var dist = Integer.MAX_VALUE.toDouble();
+            var newIdent = "14128521632"
+
+            q2.forEach { i ->
+                val distance = levenshtein.distance(i, ident.value)
+                if (distance < dist) {
+                    dist = distance
+                    print(distance)
+                    newIdent = i
+                }
+            }
+            return newIdent
+        }
+
         private val log: Logger = LoggerFactory.getLogger(PdlService::class.java)
     }
 
@@ -99,29 +125,9 @@ class PdlService(
         if (!configuration.erIDevFss()) {
             return ident.value
         }
-        val q2 = listOf(
-            "14128521632",
-            "14088521472",
-            "25078522014",
-            "27078523633",
-            "16018623009",
-            "27078522688",
-            "19128521618",
-            "21078525115"
-        )
-        val cosine = Cosine()
-        var dist = 0.0;
-        var newIdent = ident.value
-
-        q2.forEach { i ->
-            val distance = cosine.distance(i, ident.value)
-            if (distance > dist) {
-                dist = distance
-                newIdent = i
-            }
-        }
-        return newIdent
+        return getQ2Ident(ident)
     }
+
 
     data class QueryRequest(
         val query: String,
