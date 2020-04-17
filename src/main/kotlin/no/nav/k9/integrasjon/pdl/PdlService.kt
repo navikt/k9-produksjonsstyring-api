@@ -14,7 +14,6 @@ import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.integrasjon.rest.restKall
@@ -34,8 +33,8 @@ class PdlService @KtorExperimentalAPI constructor(
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
 
     companion object {
-        fun getQ2Ident(ident: Ident): String {
-            log.info("ident: " + ident.value)
+        fun getQ2Ident(aktorId: String): String {
+            log.info("ident: " + aktorId)
             val q2 = listOf(
                 "14128521632",
                 "14088521472",
@@ -51,7 +50,7 @@ class PdlService @KtorExperimentalAPI constructor(
             var newIdent = "14128521632"
 
             q2.forEach { i ->
-                val distance = levenshtein.distance(i, ident.value)
+                val distance = levenshtein.distance(i, aktorId)
                 if (distance < dist) {
                     dist = distance
                     newIdent = i
@@ -68,11 +67,11 @@ class PdlService @KtorExperimentalAPI constructor(
         pathParts = listOf()
     ).toString()
 
-    internal suspend fun person(ident: Ident): PersonPdl {
+    internal suspend fun person(aktorId: String): PersonPdl {
 
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
-            mapOf("ident" to getQ2Ident(ident, configuration = configuration))
+            mapOf("ident" to getQ2Ident(aktorId, configuration = configuration))
         )
 
         val httpRequest = personUrl
@@ -121,11 +120,11 @@ class PdlService @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    private fun getQ2Ident(ident: Ident, configuration: Configuration): String {
+    private fun getQ2Ident(aktorId: String, configuration: Configuration): String {
         if (!configuration.erIDevFss()) {
-            return ident.value
+            return aktorId
         }
-        return getQ2Ident(ident)
+        return getQ2Ident(aktorId)
     }
 
 

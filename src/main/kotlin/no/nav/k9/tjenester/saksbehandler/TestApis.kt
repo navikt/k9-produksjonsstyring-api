@@ -10,7 +10,6 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.Configuration
-import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
@@ -74,7 +73,7 @@ internal fun Route.TestApis(
             // val client = AbacClient(configuration.abacClient())
             // client.evaluate(AbacRequest(mapOf(Category.AccessSubject to )))
             call.respond(
-                pdlService.person(Ident("14128521632"))
+                pdlService.person("14128521632")
             )
         }
     }

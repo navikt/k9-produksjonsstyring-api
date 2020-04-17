@@ -11,10 +11,10 @@ data class PersonPdl(
             val navn: List<Navn>
         ) {
             data class Navn(
-                val etternavn: String, // MIDTPUNKT
-                val forkortetNavn: String, // MIDTPUNKT NOBEL
-                val fornavn: String, // NOBEL
-                val mellomnavn: Any? // null
+                val etternavn: String,
+                val forkortetNavn: String,
+                val fornavn: String,
+                val mellomnavn: Any?
             )
         }
     }

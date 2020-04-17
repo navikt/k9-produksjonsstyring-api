@@ -11,7 +11,6 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
@@ -51,7 +50,7 @@ internal fun Route.OppgaveApis(
             for (oppgave in oppgaver) {
 
 
-                val person = pdlService.person(Ident(oppgave.aktorId))
+                val person = pdlService.person(oppgave.aktorId)
 
                 list.add(
                     OppgaveDto(

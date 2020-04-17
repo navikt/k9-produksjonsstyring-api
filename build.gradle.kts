@@ -52,6 +52,7 @@ dependencies {
     implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
     implementation("no.nav.common:rest:1.2020.02.18-16.01-aba1e77ea3f9")
     implementation("com.google.code.gson:gson:2.7")
+    implementation("com.microsoft.graph:microsoft-graph:1.7.1")
 
     // SakOgBehandling
     //<sakogbehandling-tjenestespesifikasjon.version>1.2018.11.06-01.45-c7f37fed0647</sakogbehandling-tjenestespesifikasjon.version>
@@ -67,7 +68,10 @@ dependencies {
     }
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.1.0.4")
+
+    // Divhor
     implementation("info.debatty:java-string-similarity:1.2.1")
+
     // Test
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
