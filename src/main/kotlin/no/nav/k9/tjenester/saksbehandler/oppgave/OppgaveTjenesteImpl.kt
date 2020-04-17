@@ -8,10 +8,14 @@ import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.pdl.PdlService
+import no.nav.k9.integrasjon.rest.idToken
+import no.nav.k9.tilgangskontroll.log
+import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 import kotlin.streams.toList
 
 
@@ -124,17 +128,19 @@ class OppgaveTjenesteImpl(
     suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
         val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver(ident)
         val list = mutableListOf<OppgaveDto>()
+        val token = IdToken(coroutineContext.idToken().value)
         for (oppgavemodell in reserverteOppgave) {
             val person = pdlService.person(oppgavemodell.sisteOppgave().aktorId)
             if (person.isEmpty()) {
                 // Flytt oppgave til vikafossen
+                log.info("Ikke tilgang til bruker: " + ident)
                 continue
             }
             list.add(
                 OppgaveDto(
                     OppgaveStatusDto(
                         true, oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
-                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertAv, "Klara Saksbehandler", null
+                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertAv, token.getName(), null
                     ),
                     oppgavemodell.sisteOppgave().behandlingId,
                     oppgavemodell.sisteOppgave().fagsakSaksnummer,
