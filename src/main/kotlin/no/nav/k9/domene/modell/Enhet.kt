@@ -16,7 +16,14 @@ data class OppgaveKø(
     val erDynamiskPeriode: Boolean,
     val fomDato: LocalDate,
     val tomDato: LocalDate,
-    val saksbehandlere: List<Saksbehandler>
+    var sistEndret: LocalDate,
+    val saksbehandlere: List<Saksbehandler>,
+    val tilBeslutter: Boolean,
+    val utbetalingTilBruker: Boolean,
+    val selvstendigFrilans: Boolean,
+    val kombinert: Boolean,
+    val søktGradering: Boolean,
+    val registrerPapir: Boolean
 )
 
 class Saksbehandler(
