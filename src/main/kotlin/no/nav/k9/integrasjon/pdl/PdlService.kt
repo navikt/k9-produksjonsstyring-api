@@ -92,6 +92,7 @@ class PdlService @KtorExperimentalAPI constructor(
             )
 
         log.restKall(personUrl)
+        log.info(httpRequest.toString())
         val json = Retry.retry(
             operation = "hente-person",
             initialDelay = Duration.ofMillis(200),
@@ -115,7 +116,7 @@ class PdlService @KtorExperimentalAPI constructor(
                 }
             )
         }
-        log.info("Person fra pdl: " + json)
+        log.info("Person fra pdl: $json")
         return try {
             objectMapper().readValue<PersonPdl>(json).data.hentPerson.navn[0].forkortetNavn
         } catch (e: Exception) {
