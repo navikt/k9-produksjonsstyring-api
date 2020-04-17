@@ -41,6 +41,7 @@
 //        pathParts = listOf()
 //    ).toString()
 //
+
 //    internal suspend fun person(ident: Ident): String {
 //        val graphClient = GraphServiceClient.builder().authenticationProvider { request ->
 //            request.addHeader(

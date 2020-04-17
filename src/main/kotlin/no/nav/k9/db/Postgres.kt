@@ -2,7 +2,6 @@ package no.nav.k9.db
 
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.Application
-import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
@@ -17,7 +16,7 @@ enum class Role {
 
 @KtorExperimentalAPI
 fun Application.getDataSource(configuration: Configuration) =
-    if (configuration.isVaultEnabled()) {
+    if (configuration.erIkkeLokalt()) {
         dataSourceFromVault(configuration, Role.User)
     } else {
         HikariDataSource(configuration.hikariConfig())
@@ -33,7 +32,7 @@ fun Application.dataSourceFromVault(hikariConfig: Configuration, role: Role) =
 
 @KtorExperimentalAPI
 fun Application.migrate(configuration: Configuration) =
-    if (configuration.isVaultEnabled()) {
+    if (configuration.erIkkeLokalt()) {
         runMigration(
             dataSourceFromVault(configuration, Role.Admin), "SET ROLE \"${configuration.databaseName()}-${Role.Admin}\""
         )

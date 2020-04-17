@@ -166,7 +166,7 @@ fun Application.k9Los() {
         route("mock") {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
         }
-        if (configuration.isVaultEnabled()) {
+        if (configuration.erIkkeLokalt()) {
             authenticate(*issuers.allIssuers()) {
                 api(
                     requestContextService,

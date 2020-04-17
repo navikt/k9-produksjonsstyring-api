@@ -82,7 +82,7 @@ data class Configuration(private val config: ApplicationConfig) {
         return URI(config.getRequiredString("nav.gosys.baseuri", secret = false))
     }
 
-    fun isVaultEnabled(): Boolean {
+    fun erIkkeLokalt(): Boolean {
         return !config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
     }
 

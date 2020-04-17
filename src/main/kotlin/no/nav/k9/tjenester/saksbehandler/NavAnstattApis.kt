@@ -6,14 +6,13 @@ import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import io.ktor.util.InternalAPI
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
+import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
 import org.slf4j.LoggerFactory
-import no.nav.k9.Configuration
 import java.util.*
 
 @KtorExperimentalAPI
@@ -34,7 +33,7 @@ internal fun Route.NavAnsattApis(requestContextService: RequestContextService, c
 
 
     get { _: getInnloggetBruker ->
-        if (configuration.isVaultEnabled()) {
+        if (configuration.erIkkeLokalt()) {
             val idtoken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
@@ -49,12 +48,12 @@ internal fun Route.NavAnsattApis(requestContextService: RequestContextService, c
                     InnloggetNavAnsattDto(
                         token.getUsername(),
                         token.getName(),
-                        kanSaksbehandle = true,
+                        kanSaksbehandle = token.erOppgavebehandler(),
                         kanVeilede = true,
                         kanBeslutte = true,
-                        kanBehandleKodeEgenAnsatt = true,
-                        kanBehandleKode6 = true,
-                        kanBehandleKode7 = true,
+                        kanBehandleKodeEgenAnsatt = token.kanBehandleEgneAnsatte(),
+                        kanBehandleKode6 = token.kanBehandleKode6(),
+                        kanBehandleKode7 = token.kanBehandleKode7(),
                         kanOppgavestyre = true
                     )
                 )

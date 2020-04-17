@@ -38,26 +38,52 @@ internal fun Route.OppgaveApis(
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["oppgavekoId"]
 
-        withContext(
-            requestContextService.getCoroutineContext(
-                context = coroutineContext,
-                correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
-                idToken = call.idToken()
-            )
-        ) {
+        if (configuration.erIkkeLokalt()) {
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
+                    idToken = call.idToken()
+                )
+            ) {
+                val list = mutableListOf<OppgaveDto>()
+                val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
+                for (oppgave in oppgaver) {
+
+                    val person = pdlService.person(oppgave.aktorId)
+
+                    list.add(
+                        OppgaveDto(
+                            OppgaveStatusDto(false, null, false, null, null, null),
+                            oppgave.behandlingId,
+                            oppgave.fagsakSaksnummer,
+                            person.data.hentPerson.navn[0].forkortetNavn,
+                            oppgave.system,
+                            oppgave.aktorId,
+                            oppgave.behandlingType,
+                            oppgave.fagsakYtelseType,
+                            oppgave.behandlingStatus,
+                            true,
+                            oppgave.behandlingOpprettet,
+                            oppgave.behandlingsfrist,
+                            oppgave.eksternId
+                        )
+                    )
+                }
+                call.respond(
+                    list
+                )
+            }
+        } else {
             val list = mutableListOf<OppgaveDto>()
             val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
             for (oppgave in oppgaver) {
-
-
-                val person = pdlService.person(oppgave.aktorId)
-
                 list.add(
                     OppgaveDto(
                         OppgaveStatusDto(false, null, false, null, null, null),
                         oppgave.behandlingId,
                         oppgave.fagsakSaksnummer,
-                        person.data.hentPerson.navn[0].forkortetNavn,
+                        "Navn",
                         oppgave.system,
                         oppgave.aktorId,
                         oppgave.behandlingType,
@@ -92,7 +118,7 @@ internal fun Route.OppgaveApis(
 
     get { _: getBehandledeOppgaver ->
 
-        if (configuration.isVaultEnabled()) {
+        if (configuration.erIkkeLokalt()) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
@@ -114,7 +140,7 @@ internal fun Route.OppgaveApis(
     class getReserverteOppgaver
 
     get { _: getReserverteOppgaver ->
-        if (configuration.isVaultEnabled()) {
+        if (configuration.erIkkeLokalt()) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
@@ -149,7 +175,7 @@ internal fun Route.OppgaveApis(
     post { _: reserverOppgave ->
         val oppgaveId = call.receive<OppgaveId>()
 
-        if (configuration.isVaultEnabled()) {
+        if (configuration.erIkkeLokalt()) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
