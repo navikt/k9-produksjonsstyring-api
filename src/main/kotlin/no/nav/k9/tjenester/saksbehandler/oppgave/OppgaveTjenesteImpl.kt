@@ -7,6 +7,7 @@ import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.pdl.PdlService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -20,7 +21,8 @@ private val LOGGER: Logger =
 
 class OppgaveTjenesteImpl(
     private val oppgaveRepository: OppgaveRepository,
-    private val oppgaveKøRepository: OppgaveKøRepository
+    private val oppgaveKøRepository: OppgaveKøRepository,
+    private val pdlService: PdlService
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
@@ -119,29 +121,35 @@ class OppgaveTjenesteImpl(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
+    suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
         val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver(ident)
-
-        return reserverteOppgave.stream().map { t ->
+        val list = mutableListOf<OppgaveDto>()
+        for (oppgavemodell in reserverteOppgave) {
+            val person = pdlService.person(oppgavemodell.sisteOppgave().aktorId)
+            if (person.isEmpty()) {
+                // Flytt oppgave til vikafossen
+                continue
+            }
             OppgaveDto(
                 OppgaveStatusDto(
-                    true, t.sisteOppgave().reservasjon?.reservertTil,
-                    true, t.sisteOppgave().reservasjon?.reservertAv, "Klara Saksbehandler", null
+                    true, oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
+                    true, oppgavemodell.sisteOppgave().reservasjon?.reservertAv, "Klara Saksbehandler", null
                 ),
-                t.sisteOppgave().behandlingId,
-                t.sisteOppgave().fagsakSaksnummer,
-                "Walter Lemon",
-                      t.sisteOppgave().system,
-                      "453555245",
-                      t.sisteOppgave().behandlingType,
-                      t.sisteOppgave().fagsakYtelseType,
-                      t.sisteOppgave().behandlingStatus,
-                      true,
-                      t.sisteOppgave().behandlingOpprettet,
-                      t.sisteOppgave().behandlingsfrist,
-                      t.sisteOppgave().eksternId
-                  )
-              }.toList()
+                oppgavemodell.sisteOppgave().behandlingId,
+                oppgavemodell.sisteOppgave().fagsakSaksnummer,
+                person,
+                oppgavemodell.sisteOppgave().system,
+                oppgavemodell.sisteOppgave().aktorId,
+                oppgavemodell.sisteOppgave().behandlingType,
+                oppgavemodell.sisteOppgave().fagsakYtelseType,
+                oppgavemodell.sisteOppgave().behandlingStatus,
+                true,
+                oppgavemodell.sisteOppgave().behandlingOpprettet,
+                oppgavemodell.sisteOppgave().behandlingsfrist,
+                oppgavemodell.sisteOppgave().eksternId
+            )
+        }
+        return list
     }
 
     fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {
