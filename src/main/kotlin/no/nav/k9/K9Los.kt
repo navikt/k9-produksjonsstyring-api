@@ -108,7 +108,11 @@ fun Application.k9Los() {
         )
     )
 
-    val pdlService = PdlService(configuration.pdlUrl(), accessTokenClient = accessTokenClientResolver.naisSts())
+    val pdlService = PdlService(
+        configuration.pdlUrl(),
+        accessTokenClient = accessTokenClientResolver.naisSts(),
+        configuration = configuration
+    )
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
     val oppgaveKøRepository = OppgaveKøRepository(dataSource)

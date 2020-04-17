@@ -35,7 +35,8 @@ data class Configuration(private val config: ApplicationConfig) {
     internal fun abacClient() = AbacClientConfig(
         username = config.getRequiredString("nav.abac.system_user", secret = false),
         password = config.getRequiredString("nav.abac.system_user_password", secret = true),
-        endpointUrl = config.getRequiredString("nav.abac.pdp_url", secret = false))
+        endpointUrl = config.getRequiredString("nav.abac.pdp_url", secret = false)
+    )
 
     internal fun hikariConfig() = createHikariConfig(
         jdbcUrl = config.getRequiredString("nav.db.url", secret = false),
@@ -68,7 +69,7 @@ data class Configuration(private val config: ApplicationConfig) {
             )
         }
 
-    internal fun getCookieName() : String {
+    internal fun getCookieName(): String {
         return config.getRequiredString("nav.auth.cookie_name", secret = false)
     }
 
@@ -83,6 +84,16 @@ data class Configuration(private val config: ApplicationConfig) {
 
     fun isVaultEnabled(): Boolean {
         return !config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
+    }
+
+    fun erIDevFss(): Boolean {
+        val optionalString = config.getOptionalString("nav.clustername", secret = false)
+        if (optionalString.isNullOrBlank()) {
+            return false
+        } else if (optionalString == "dev-fss") {
+            return true
+        }
+        return false
     }
 
     fun getVaultDbPath(): String {
