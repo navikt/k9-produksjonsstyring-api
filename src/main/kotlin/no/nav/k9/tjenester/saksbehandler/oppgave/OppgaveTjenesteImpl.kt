@@ -5,13 +5,8 @@ import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.oppslag.Attributt
-import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.typer.AktørId
-import no.nav.k9.domene.typer.PersonIdent
-import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -25,8 +20,7 @@ private val LOGGER: Logger =
 
 class OppgaveTjenesteImpl(
     private val oppgaveRepository: OppgaveRepository,
-    private val oppgaveKøRepository: OppgaveKøRepository,
-    private val tpsProxyV1Gateway: TpsProxyV1Gateway
+    private val oppgaveKøRepository: OppgaveKøRepository
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
@@ -111,31 +105,6 @@ class OppgaveTjenesteImpl(
         return oppgaveKøRepository.hent().filter { oppgaveKø ->
             oppgaveKø.saksbehandlere.any { saksbehandler -> saksbehandler.brukerIdent == ident }
         }
-    }
-
-    suspend fun hentPersonInfo(aktørId: Long): TpsPersonDto {
-        val tpsPerson = tpsProxyV1Gateway.person(
-            ident = Ident(aktørId.toString()),
-            attributter = setOf(
-                Attributt.fornavn,
-                Attributt.mellomnavn,
-                Attributt.etternavn,
-                Attributt.diskresjonskode,
-                Attributt.egenansatt,
-                Attributt.kjønn,
-                Attributt.ident
-            )
-        )
-        val person = tpsPerson!!
-        return TpsPersonDto(
-            aktørId = AktørId(aktørId.toString()),
-            diskresjonskode = person.diskresjonskode,
-            fødselsdato = person.fødselsdato,
-            fnr = PersonIdent(person.ident),
-            kjønn = person.kjønn,
-            dødsdato = person.dødsdato,
-            navn = person.navn
-        )
     }
 
     fun hentPersonInfoOptional(aktørId: Long): Optional<TpsPersonDto> {

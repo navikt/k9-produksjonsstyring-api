@@ -27,7 +27,6 @@ data class Configuration(private val config: ApplicationConfig) {
 
     internal fun clients() = clients
 
-    internal fun tpsProxyV1Url() = URI(config.getRequiredString("nav.register_urls.tps_proxy_v1", secret = false))
     internal fun pdlUrl() = URI(config.getRequiredString("nav.register_urls.pdl_url", secret = false))
 
     // private fun azureClientConfigured() = clients().containsKey(AZURE_V2_ALIAS)

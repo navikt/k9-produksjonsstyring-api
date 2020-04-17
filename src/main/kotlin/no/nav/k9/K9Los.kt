@@ -36,8 +36,6 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.integrasjon.tps.TpsProxyV1
-import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
@@ -101,13 +99,6 @@ fun Application.k9Los() {
 //            accessTokenClientResolver = accessTokenClientResolver
 //        )
 
-    val tpsProxyV1Gateway = TpsProxyV1Gateway(
-        tpsProxyV1 = TpsProxyV1(
-            baseUrl = configuration.tpsProxyV1Url(),
-            accessTokenClient = accessTokenClientResolver.naisSts()
-        )
-    )
-
     val pdlService = PdlService(
         configuration.pdlUrl(),
         accessTokenClient = accessTokenClientResolver.naisSts(),
@@ -118,7 +109,6 @@ fun Application.k9Los() {
     val oppgaveKøRepository = OppgaveKøRepository(dataSource)
     val oppgaveTjeneste = OppgaveTjenesteImpl(
         oppgaveRepository,
-        tpsProxyV1Gateway = tpsProxyV1Gateway,
         oppgaveKøRepository = oppgaveKøRepository
     )
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
@@ -171,7 +161,6 @@ fun Application.k9Los() {
                 api(
                     requestContextService,
                     oppgaveTjeneste,
-                    tpsProxyV1Gateway,
                     kodeverkTjeneste,
                     pdlService = pdlService,
                     accessTokenClientResolver = accessTokenClientResolver,
@@ -187,7 +176,6 @@ fun Application.k9Los() {
             api(
                 requestContextService,
                 oppgaveTjeneste,
-                tpsProxyV1Gateway,
                 kodeverkTjeneste,
                 pdlService = pdlService,
                 accessTokenClientResolver = accessTokenClientResolver,
@@ -232,7 +220,6 @@ fun Application.k9Los() {
 private fun Route.api(
     requestContextService: RequestContextService,
     oppgaveTjeneste: OppgaveTjenesteImpl,
-    tpsProxyV1Gateway: TpsProxyV1Gateway,
     kodeverkTjeneste: HentKodeverkTjeneste,
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
@@ -251,7 +238,6 @@ private fun Route.api(
                     configuration,
                     requestContextService,
                     oppgaveTjeneste,
-                    tpsProxyV1Gateway = tpsProxyV1Gateway,
                     pdlService = pdlService
                 )
             }
@@ -259,7 +245,7 @@ private fun Route.api(
             SaksbehandlerNøkkeltallApis()
         }
         NavAnsattApis(requestContextService, configuration)
-        TestApis(requestContextService, tpsProxyV1Gateway, pdlService, accessTokenClientResolver, configuration)
+        TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration)
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)

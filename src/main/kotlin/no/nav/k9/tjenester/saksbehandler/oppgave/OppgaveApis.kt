@@ -28,7 +28,6 @@ internal fun Route.OppgaveApis(
     configuration: Configuration,
     requestContextService: RequestContextService,
     oppgaveTjeneste: OppgaveTjenesteImpl,
-    tpsProxyV1Gateway: TpsProxyV1Gateway,
     pdlService: PdlService
 ) {
 

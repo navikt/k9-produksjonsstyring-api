@@ -13,7 +13,6 @@ import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -21,7 +20,6 @@ import java.util.*
 @KtorExperimentalLocationsAPI
 internal fun Route.TestApis(
     requestContextService: RequestContextService,
-    tpsProxyV1Gateway: TpsProxyV1Gateway,
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
     configuration: Configuration
