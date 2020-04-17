@@ -35,6 +35,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     companion object {
         fun getQ2Ident(ident: Ident): String {
+            log.info("ident: " + ident.value)
             val q2 = listOf(
                 "14128521632",
                 "14088521472",
@@ -53,7 +54,6 @@ class PdlService @KtorExperimentalAPI constructor(
                 val distance = levenshtein.distance(i, ident.value)
                 if (distance < dist) {
                     dist = distance
-                    print(distance)
                     newIdent = i
                 }
             }
