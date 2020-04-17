@@ -1,6 +1,5 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
-import info.debatty.java.stringsimilarity.Cosine
 import io.ktor.application.call
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
@@ -52,7 +51,7 @@ internal fun Route.OppgaveApis(
             for (oppgave in oppgaver) {
 
 
-                val person = pdlService.person(Ident("14128521632"))
+                val person = pdlService.person(Ident(oppgave.aktorId))
 
                 list.add(
                     OppgaveDto(
