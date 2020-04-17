@@ -6,11 +6,13 @@ import com.github.kittinunf.fuel.httpPost
 import info.debatty.java.stringsimilarity.Cosine
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
+import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.integrasjon.rest.NavHeaders
@@ -26,6 +28,7 @@ import kotlin.coroutines.coroutineContext
 class PdlService(
     baseUrl: URI,
     accessTokenClient: AccessTokenClient,
+    val configuration: Configuration,
     private val henteNavnScopes: Set<String> = setOf("openid")
 ) {
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
@@ -43,7 +46,7 @@ class PdlService(
 
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
-            mapOf("ident" to getQ2Ident(ident))
+            mapOf("ident" to getQ2Ident(ident, configuration = configuration))
         )
 
         val httpRequest = personUrl
@@ -91,8 +94,12 @@ class PdlService(
         return objectMapper().readValue(json)
     }
 
-    private fun getQ2Ident(ident: Ident): String {
-        val q2 = listOf<String>(
+    @KtorExperimentalAPI
+    private fun getQ2Ident(ident: Ident, configuration: Configuration): String {
+        if (!configuration.erIDevFss()) {
+            return ident.value
+        }
+        val q2 = listOf(
             "14128521632",
             "14088521472",
             "25078522014",
