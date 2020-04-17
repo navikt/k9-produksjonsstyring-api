@@ -67,7 +67,7 @@ class PdlService @KtorExperimentalAPI constructor(
         pathParts = listOf()
     ).toString()
 
-    internal suspend fun person(aktorId: String): PersonPdl {
+    internal suspend fun person(aktorId: String): String {
 
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
@@ -116,7 +116,9 @@ class PdlService @KtorExperimentalAPI constructor(
             )
         }
         log.info("Person fra pdl: " + json)
-        return objectMapper().readValue(json)
+        val value = objectMapper().readValue<String>(json)
+        
+        return value
     }
 
     @KtorExperimentalAPI
