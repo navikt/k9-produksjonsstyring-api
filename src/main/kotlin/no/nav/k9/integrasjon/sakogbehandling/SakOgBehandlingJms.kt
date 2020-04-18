@@ -39,7 +39,7 @@ fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet, config: Co
     marshaller.marshal(ObjectFactory().createBehandlingOpprettet(behandlingOpprettet), writer)
     val xml = writer.toString()
     println("Sender behandling opprettet: " + xml)
-    sendTilKø(xml, config)
+   // sendTilKø(xml, config)
 }
 
 fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet, config: Configuration) {
@@ -49,7 +49,7 @@ fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet, config: Co
     marshaller.marshal(ObjectFactory().createBehandlingAvsluttet(behandlingAvsluttet), writer)
     val xml = writer.toString()
     println("Sender behandling avsluttet: " + xml)
-    sendTilKø(xml, config)
+    //  sendTilKø(xml, config)
 }
 
 @KtorExperimentalAPI
