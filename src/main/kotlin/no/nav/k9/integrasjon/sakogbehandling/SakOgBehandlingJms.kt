@@ -54,6 +54,9 @@ fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet, config: Co
 
 @KtorExperimentalAPI
 private fun sendTilKø(xml: String, config: Configuration) {
+    if (config.getSakOgBehandlingMqGatewayHostname() == "") {
+        return
+    }
     val connection = connectionFactory(
         hostName = config.getSakOgBehandlingMqGatewayHostname(),
         port = Integer.valueOf(config.getSakOgBehandlingMqGatewayPort()),
