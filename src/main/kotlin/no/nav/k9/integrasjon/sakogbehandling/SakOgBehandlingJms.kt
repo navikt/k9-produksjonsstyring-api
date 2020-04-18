@@ -32,23 +32,23 @@ fun connectionFactory(
 
 fun Session.producerForQueue(queueName: String): MessageProducer = createProducer(createQueue(queueName))
 
-fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet,config: Configuration) {
-    val marshaller = JAXBContext.newInstance(BehandlingAvsluttet::class.java).createMarshaller()
-    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
-    val writer = StringWriter()
-    marshaller.marshal(ObjectFactory().createBehandlingAvsluttet(behandlingAvsluttet), writer)
-    val xml = writer.toString()
-    sendTilKø(xml,config)
-}
-
-fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet,config: Configuration) {
+fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet, config: Configuration) {
     val marshaller = JAXBContext.newInstance(BehandlingOpprettet::class.java).createMarshaller()
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
     val writer = StringWriter()
     marshaller.marshal(ObjectFactory().createBehandlingOpprettet(behandlingOpprettet), writer)
     val xml = writer.toString()
     println("Sender behandling opprettet: " + xml)
-    //sendTilKø(xml)
+    sendTilKø(xml, config)
+}
+
+fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet, config: Configuration) {
+    val marshaller = JAXBContext.newInstance(BehandlingAvsluttet::class.java).createMarshaller()
+    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
+    val writer = StringWriter()
+    marshaller.marshal(ObjectFactory().createBehandlingAvsluttet(behandlingAvsluttet), writer)
+    val xml = writer.toString()
+    sendTilKø(xml, config)
 }
 
 @KtorExperimentalAPI

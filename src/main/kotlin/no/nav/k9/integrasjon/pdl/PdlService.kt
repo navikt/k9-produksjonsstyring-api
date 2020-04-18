@@ -34,7 +34,6 @@ class PdlService @KtorExperimentalAPI constructor(
 
     companion object {
         fun getQ2Ident(aktorId: String): String {
-            log.info("ident: " + aktorId)
             val q2 = listOf(
                 "14128521632",
                 "14088521472",
@@ -92,7 +91,6 @@ class PdlService @KtorExperimentalAPI constructor(
             )
 
         log.restKall(personUrl)
-        log.info(httpRequest.toString())
         val json = Retry.retry(
             operation = "hente-person",
             initialDelay = Duration.ofMillis(200),
