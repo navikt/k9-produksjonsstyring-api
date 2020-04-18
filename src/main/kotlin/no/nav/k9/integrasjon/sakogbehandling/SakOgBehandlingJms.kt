@@ -48,6 +48,7 @@ fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet, config: Co
     val writer = StringWriter()
     marshaller.marshal(ObjectFactory().createBehandlingAvsluttet(behandlingAvsluttet), writer)
     val xml = writer.toString()
+    println("Sender behandling avsluttet: " + xml)
     sendTilKø(xml, config)
 }
 
