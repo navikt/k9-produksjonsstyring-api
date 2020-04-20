@@ -39,7 +39,6 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         val config = mockk<Configuration>()
-        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -49,28 +48,28 @@ class K9sakEventHandlerTest {
 
         @Language("JSON") val json =
             """{
-  "eksternId": "70c7a780-08ad-4ccf-8cef-c341d4913d65",
-  "fagsystem": {
-    "kode": "K9SAK",
-    "kodeverk": "FAGSYSTEM"
-  },
-  "saksnummer": "5YC1S",
-  "aktørId": "9916107629061",
-  "behandlingId": 999951,
-   "behandlingstidFrist": "2020-03-31",
-  "eventTid": "2020-03-31T06:33:59.460931",
-  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
-  "behandlinStatus": "UTRED",
-  "behandlingStatus": null,
-  "behandlingSteg": "INREG",
-  "behandlendeEnhet": null,
-  "ansvarligBeslutterForTotrinn": null,
-  "ansvarligSaksbehandlerForTotrinn": null,
-  "ytelseTypeKode": "PSB",
-  "behandlingTypeKode": "BT-002",
-  "opprettetBehandling": "2020-03-31T06:33:48",
-  "aksjonspunktKoderMedStatusListe": {}
-}
+                  "eksternId": "70c7a780-08ad-4ccf-8cef-c341d4913d65",
+                  "fagsystem": {
+                    "kode": "K9SAK",
+                    "kodeverk": "FAGSYSTEM"
+                  },
+                  "saksnummer": "5YC1S",
+                  "aktørId": "9916107629061",
+                  "behandlingId": 999951,
+                   "behandlingstidFrist": "2020-03-31",
+                  "eventTid": "2020-03-31T06:33:59.460931",
+                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+                  "behandlinStatus": "UTRED",
+                  "behandlingStatus": null,
+                  "behandlingSteg": "INREG",
+                  "behandlendeEnhet": null,
+                  "ansvarligBeslutterForTotrinn": null,
+                  "ansvarligSaksbehandlerForTotrinn": null,
+                  "ytelseTypeKode": "PSB",
+                  "behandlingTypeKode": "BT-002",
+                  "opprettetBehandling": "2020-03-31T06:33:48",
+                  "aksjonspunktKoderMedStatusListe": {}
+                }
             """.trimIndent()
         val objectMapper = jacksonObjectMapper()
             .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
@@ -94,7 +93,6 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
 
         val config = mockk<Configuration>()
-        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource),
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -104,28 +102,28 @@ class K9sakEventHandlerTest {
 
         @Language("JSON") val json =
             """{
-  "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
-  "fagsystem": {
-    "kode": "K9SAK",
-    "kodeverk": "FAGSYSTEM"
-  },
-  "saksnummer": "5YC4K",
-  "aktørId": "9906098522415",
-  "behandlingId": 1000001,
-  "eventTid": "2020-02-20T07:38:49",
-  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
-  "behandlinStatus": "UTRED",
-   "behandlingstidFrist": "2020-03-31",
-  "behandlingStatus": "UTRED",
-  "behandlingSteg": "INREG_AVSL",
-  "behandlendeEnhet": "0300",
-  "ytelseTypeKode": "SVP",
-  "behandlingTypeKode": "BT-002",
-  "opprettetBehandling": "2020-02-20T07:38:49",
-  "aksjonspunktKoderMedStatusListe": {
-    "7030": "OPPR"
-  }
-}"""
+              "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+              "fagsystem": {
+                "kode": "K9SAK",
+                "kodeverk": "FAGSYSTEM"
+              },
+              "saksnummer": "5YC4K",
+              "aktørId": "9906098522415",
+              "behandlingId": 1000001,
+              "eventTid": "2020-02-20T07:38:49",
+              "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+              "behandlinStatus": "UTRED",
+               "behandlingstidFrist": "2020-03-31",
+              "behandlingStatus": "UTRED",
+              "behandlingSteg": "INREG_AVSL",
+              "behandlendeEnhet": "0300",
+              "ytelseTypeKode": "SVP",
+              "behandlingTypeKode": "BT-002",
+              "opprettetBehandling": "2020-02-20T07:38:49",
+              "aksjonspunktKoderMedStatusListe": {
+                "7030": "OPPR"
+              }
+            }"""
         val objectMapper = jacksonObjectMapper()
             .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
 
@@ -146,7 +144,6 @@ class K9sakEventHandlerTest {
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()
-        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -158,9 +155,9 @@ class K9sakEventHandlerTest {
             """{
                   "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
                   "fagsystem": {
-    "kode": "K9SAK",
-    "kodeverk": "FAGSYSTEM"
-  },
+                    "kode": "K9SAK",
+                    "kodeverk": "FAGSYSTEM"
+                  },
                   "saksnummer": "5YC4K",
                   "aktørId": "9906098522415",
                   "behandlingId": 1000001,
@@ -201,7 +198,6 @@ class K9sakEventHandlerTest {
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()
-        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -213,9 +209,9 @@ class K9sakEventHandlerTest {
             """{
                   "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
                   "fagsystem": {
-    "kode": "K9SAK",
-    "kodeverk": "FAGSYSTEM"
-  },
+                    "kode": "K9SAK",
+                    "kodeverk": "FAGSYSTEM"
+                  },
                   "saksnummer": "5YC4K",
                   "aktørId": "9906098522415",
                   "behandlingId": 1000001,
@@ -259,7 +255,6 @@ class K9sakEventHandlerTest {
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()
-        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -271,9 +266,9 @@ class K9sakEventHandlerTest {
             """{
                   "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
                   "fagsystem": {
-    "kode": "K9SAK",
-    "kodeverk": "FAGSYSTEM"
-  },
+                    "kode": "K9SAK",
+                    "kodeverk": "FAGSYSTEM"
+                  },
                   "saksnummer": "5YC4K",
                   "aktørId": "9906098522415",
                   "behandlingId": 1000001,
@@ -320,9 +315,9 @@ class K9sakEventHandlerTest {
                 """{
                   "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
                   "fagsystem": {
-    "kode": "K9SAK",
-    "kodeverk": "FAGSYSTEM"
-  },
+                    "kode": "K9SAK",
+                    "kodeverk": "FAGSYSTEM"
+                  },
                   "saksnummer": "5YC4K",
                   "aktørId": "9906098522415",
                   "behandlingId": 1000001,

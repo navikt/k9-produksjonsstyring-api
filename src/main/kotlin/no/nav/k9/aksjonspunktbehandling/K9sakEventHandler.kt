@@ -40,7 +40,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
 
         if (modell.avslutterSak()) {
-            behandlingAvsluttet(modell, config)
+            behandlingAvsluttet(modell)
         }
 
         val oppgave = modell.oppgave()
@@ -88,13 +88,12 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 )
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer().withKodeRef("k9 kode"))
-                .withAnsvarligEnhetREF("modell.sisteEvent().behandlendeEnhet"),
-            config
+                .withAnsvarligEnhetREF("modell.sisteEvent().behandlendeEnhet")
         )
 
     }
 
-    private fun behandlingAvsluttet(modell: Modell, config: Configuration) {
+    private fun behandlingAvsluttet(modell: Modell) {
         val applikasjoner =
             Applikasjoner()
         applikasjoner.value = "k9-sak"
@@ -114,8 +113,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 .withBehandlingstype(Behandlingstyper().withValue("aS"))
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer())
-                .withAnsvarligEnhetREF(""),
-            config
+                .withAnsvarligEnhetREF("")
         )
     }
 
