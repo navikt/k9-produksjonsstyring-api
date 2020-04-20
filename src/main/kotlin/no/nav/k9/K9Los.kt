@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.features.*
+import io.ktor.features.CORS
+import io.ktor.features.CallId
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.resources
@@ -37,6 +40,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
+import no.nav.k9.saogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
@@ -129,11 +133,18 @@ fun Application.k9Los() {
         k9sakEventHandler = k9sakEventHandler
 //        gosysOppgaveGateway = gosysOppgaveGateway
     )
+
+    val sakOgBehadlingProducer = SakOgBehadlingProducer(
+        kafkaConfig = configuration.getKafkaConfig()
+    )
+
+
     val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
 
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
         asynkronProsesseringV1Service.stop()
+        sakOgBehadlingProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
     }
     val requestContextService = RequestContextService()

@@ -3,8 +3,6 @@ package no.nav.k9.kafka
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.AksjonspunktStream
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveRepository
 import org.slf4j.LoggerFactory
 
 internal class AsynkronProsesseringV1Service(
@@ -20,6 +18,14 @@ internal class AsynkronProsesseringV1Service(
 
 
     private val aksjonspunktStream = AksjonspunktStream(
+        kafkaConfig = kafkaConfig,
+        configuration = configuration,
+        k9sakEventHandler1 = k9sakEventHandler
+//        gosysOppgaveGateway= gosysOppgaveGateway
+    )
+
+
+    private val sakOgBehandlingStream = AksjonspunktStream(
         kafkaConfig = kafkaConfig,
         configuration = configuration,
         k9sakEventHandler1 = k9sakEventHandler
