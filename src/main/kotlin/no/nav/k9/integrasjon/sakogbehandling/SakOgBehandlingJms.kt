@@ -53,7 +53,7 @@ fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet, config: Co
 }
 
 @KtorExperimentalAPI
-private fun sendTilKø(xml: String, config: Configuration) {
+fun sendTilKø(xml: String, config: Configuration) {
     if (config.getSakOgBehandlingMqGatewayHostname() == "") {
         return
     }
@@ -61,7 +61,7 @@ private fun sendTilKø(xml: String, config: Configuration) {
         hostName = config.getSakOgBehandlingMqGatewayHostname(),
         port = Integer.valueOf(config.getSakOgBehandlingMqGatewayPort()),
         gatewayName = config.getSakOgBehandlingMqGateway(),
-        channelName = "QA.U_SAKOGBEHANDLING.SAKSBEHANDLING"
+        channelName = "QA.Q1_SBEH.SAKSBEHANDLING"
     ).createConnection("", "")
     val session = connection.createSession()
     val producer = session.createProducer(session.createQueue("DEV.QUEUE.1"))
