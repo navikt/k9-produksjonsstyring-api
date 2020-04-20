@@ -19,5 +19,11 @@ class OppgaveDto(
     val erTilSaksbehandling: Boolean,
     val opprettetTidspunkt: LocalDateTime,
     val behandlingsfrist: LocalDateTime,
-    val eksternId: UUID
+    val eksternId: UUID,
+    val tilBeslutter: Boolean,
+    val utbetalingTilBruker: Boolean,
+    val selvstendigFrilans: Boolean,
+    val kombinert: Boolean,
+    val søktGradering: Boolean,
+    val registrerPapir: Boolean
 )

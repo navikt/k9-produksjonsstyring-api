@@ -41,4 +41,15 @@ class TpsProxyV1Gateway(
         return if (!attributter.any { it in personAttributter }) null
         else tpsProxyV1.person(ident)
     }
+
+    suspend fun hentFulltNavn(ident: Ident): String {
+        val person = person(ident, attributter = setOf(
+            Attributt.fornavn,
+            Attributt.mellomnavn,
+            Attributt.etternavn
+        ))
+        return if (person != null) {
+            ("${person.fornavn} ${person.mellomnavn} ${person.etternavn}")
+        } else ""
+    }
 }

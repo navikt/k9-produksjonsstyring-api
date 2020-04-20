@@ -26,7 +26,7 @@ private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 internal fun Route.OppgaveApis(
     configuration: Configuration,
     requestContextService: RequestContextService,
-    oppgaveTjeneste: OppgaveTjenesteImpl,
+    oppgaveTjeneste: OppgaveTjeneste,
     pdlService: PdlService
 ) {
 

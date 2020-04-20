@@ -9,6 +9,7 @@ import java.util.*
 data class OppgaveKø(
     val id: UUID,
     val navn: String,
+    var sistEndret: LocalDate,
     val sortering: KøSortering,
     val filtreringBehandlingTyper: List<BehandlingType>,
     val filtreringYtelseTyper: List<FagsakYtelseType>,
@@ -16,7 +17,6 @@ data class OppgaveKø(
     val erDynamiskPeriode: Boolean,
     val fomDato: LocalDate,
     val tomDato: LocalDate,
-    var sistEndret: LocalDate,
     val saksbehandlere: List<Saksbehandler>,
     val tilBeslutter: Boolean,
     val utbetalingTilBruker: Boolean,
@@ -33,7 +33,13 @@ class Saksbehandler(
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class Enhet(val navn: String) {
     VIKAFOSSEN("VIKAFOSSEN"),
-    NASJONAL("NASJONAL")
+    NASJONAL("NASJONAL");
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fraKode(navn: String): Enhet = values().find { it.navn == navn }!!
+    }
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
@@ -47,6 +53,12 @@ enum class KøSortering(override val kode: String, val verdi: String, val feltty
 
     override val navn = ""
     override val kodeverk = "KO_SORTERING"
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fraKode(navn: String): KøSortering = KøSortering.values().find { it.navn == navn }!!
+    }
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)

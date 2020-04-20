@@ -1,14 +1,18 @@
 package no.nav.k9.tjenester.avdelingsleder
 
 import no.nav.k9.domene.lager.oppgave.*
-import no.nav.k9.domene.modell.AndreKriterierType
-import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.FagsakYtelseType
-import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.domene.modell.*
+import no.nav.k9.domene.repository.OppgaveKøRepository
+import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import no.nav.k9.tjenester.saksbehandler.saksliste.OppgavekøDto
+import no.nav.k9.tjenester.saksbehandler.saksliste.SorteringDto
 import java.time.LocalDate
 
-interface AvdelingslederTjeneste {
-    fun hentOppgaveFiltreringer(avdelingsEnhet: String): List<OppgaveKø>
+class AvdelingslederTjeneste(
+    private val oppgaveKøRepository: OppgaveKøRepository,
+    private val oppgaveTjeneste: OppgaveTjeneste) {
+/*    fun hentOppgaveFiltreringer(avdelingsEnhet: String): List<OppgaveKø>
 
     fun hentOppgaveFiltering(oppgaveFiltrering: Long?): OppgaveKø
 
@@ -35,11 +39,39 @@ interface AvdelingslederTjeneste {
 
     fun fjernSaksbehandlerFraListe(oppgaveFiltreringId: Long?, saksbehandlerIdent: String)
 
-    fun hentAvdelinger(): List<Avdeling>
 
     fun settSorteringTidsintervallDato(oppgaveFiltreringId: Long?, fomDato: LocalDate, tomDato: LocalDate)
 
     fun settSorteringNumeriskIntervall(oppgaveFiltreringId: Long?, fra: Long?, til: Long?)
 
-    fun settSorteringTidsintervallValg(oppgaveFiltreringId: Long?, erDynamiskPeriode: Boolean)
+    fun settSorteringTidsintervallValg(oppgaveFiltreringId: Long?, erDynamiskPeriode: Boolean) */
+
+    fun hentOppgaveKøer(): List<OppgavekøDto> {
+        return oppgaveKøRepository.hent().map {
+            OppgavekøDto(
+                it.id,
+                it.navn,
+                SorteringDto(
+                    KøSortering.fraKode(it.sortering.navn),
+                    it.fomDato,
+                    it.tomDato,
+                    it.erDynamiskPeriode),
+                it.filtreringBehandlingTyper,
+                it.filtreringYtelseTyper,
+                it.sistEndret,
+                oppgaveTjeneste.hentAntallOppgaver(it.id),
+                it.tilBeslutter,
+                it.utbetalingTilBruker,
+                it.selvstendigFrilans,
+                it.kombinert,
+                it.søktGradering,
+                it.registrerPapir,
+                it.saksbehandlere
+            )
+        }
+    }
+    fun opprettOppgaveKø(oppgaveKø: OppgaveKø) {
+        oppgaveKø.sistEndret = LocalDate.now()
+        oppgaveKøRepository.lagre(oppgaveKø)
+    }
 }

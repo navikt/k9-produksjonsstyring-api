@@ -2,7 +2,6 @@ package no.nav.k9.tjenester.kodeverk
 
 import no.nav.k9.domene.lager.oppgave.FagsakStatus
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
-import no.nav.k9.domene.lager.oppgave.KøSortering
 import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType

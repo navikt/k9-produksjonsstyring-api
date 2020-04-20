@@ -5,8 +5,10 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.tjenester.saksbehandler.saksliste.OppgavekøDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.*
 import javax.sql.DataSource
 
 class OppgaveKøRepository(private val dataSource: DataSource) {
@@ -31,6 +33,21 @@ class OppgaveKøRepository(private val dataSource: DataSource) {
         return mutableList
     }
 
+    fun hentOppgavekø(id: UUID): OppgaveKø {
+        val json: String? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select data from oppgaveko where id = :id",
+                    mapOf("id" to id.toString())
+                ).map { row ->
+                    row.string("data")
+                }.asSingle
+            )
+        }
+        return objectMapper().readValue(json!!, OppgaveKø::class.java)
+
+    }
+
     fun lagre(oppgaveKø: OppgaveKø) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
@@ -41,7 +58,7 @@ class OppgaveKøRepository(private val dataSource: DataSource) {
                     insert into oppgaveko as k (id, data)
                     values (:id, :data  :: jsonb)
                     on conflict (id) do update
-                    set data = :data )
+                    set data = :data :: jsonb
                  """, mapOf("id" to oppgaveKø.id.toString(), "data" to json)
                     ).asUpdate
                 )

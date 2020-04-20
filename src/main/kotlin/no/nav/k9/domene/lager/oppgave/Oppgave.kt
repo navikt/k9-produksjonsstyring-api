@@ -29,9 +29,13 @@ data class Oppgave(
     val eksternId: UUID,
     var reservasjon: Reservasjon?,
     val oppgaveEgenskap: List<OppgaveEgenskap>,
-    val beslutterOppgave: Boolean,
-    val aksjonspunkter: Aksjonspunkter
-
+    val aksjonspunkter: Aksjonspunkter,
+    val tilBeslutter: Boolean,
+    val utbetalingTilBruker: Boolean,
+    val selvstendigFrilans: Boolean,
+    val kombinert: Boolean,
+    val søktGradering: Boolean,
+    val registrerPapir: Boolean
 
 ) {
     fun datavarehusSak(): String {

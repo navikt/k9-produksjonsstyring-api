@@ -39,8 +39,8 @@ import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
+import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
-import no.nav.k9.tjenester.avdelingsleder.oppgave.AvdelingslederOppgaveApis
 import no.nav.k9.tjenester.avdelingsleder.saksbehandler.AvdelingslederSaksbehandlerApis
 import no.nav.k9.tjenester.avdelingsleder.saksliste.AvdelingslederSakslisteApis
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
@@ -51,7 +51,7 @@ import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
 import no.nav.k9.tjenester.saksbehandler.TestApis
 import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
-import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjenesteImpl
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import java.net.URI
 import java.time.Duration
@@ -107,10 +107,14 @@ fun Application.k9Los() {
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
     val oppgaveKøRepository = OppgaveKøRepository(dataSource)
-    val oppgaveTjeneste = OppgaveTjenesteImpl(
+    val oppgaveTjeneste = OppgaveTjeneste(
         oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
         pdlService = pdlService
+    )
+    val avdelingslederTjeneste = AvdelingslederTjeneste(
+        oppgaveKøRepository,
+        oppgaveTjeneste
     )
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
     val k9sakEventHandler = K9sakEventHandler(
@@ -162,7 +166,8 @@ fun Application.k9Los() {
                 api(
                     requestContextService,
                     oppgaveTjeneste,
-                    kodeverkTjeneste,
+                    avdelingslederTjeneste = avdelingslederTjeneste,
+                    kodeverkTjeneste = kodeverkTjeneste,
                     pdlService = pdlService,
                     accessTokenClientResolver = accessTokenClientResolver,
                     configuration = configuration
@@ -178,6 +183,7 @@ fun Application.k9Los() {
                 requestContextService,
                 oppgaveTjeneste,
                 kodeverkTjeneste,
+                avdelingslederTjeneste,
                 pdlService = pdlService,
                 accessTokenClientResolver = accessTokenClientResolver,
                 configuration = configuration
@@ -220,16 +226,16 @@ fun Application.k9Los() {
 
 private fun Route.api(
     requestContextService: RequestContextService,
-    oppgaveTjeneste: OppgaveTjenesteImpl,
+    oppgaveTjeneste: OppgaveTjeneste,
     kodeverkTjeneste: HentKodeverkTjeneste,
+    avdelingslederTjeneste: AvdelingslederTjeneste,
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
     configuration: Configuration
 ) {
     route("api") {
         AdminApis()
-        AvdelingslederApis()
-        AvdelingslederOppgaveApis()
+
         AvdelingslederSaksbehandlerApis()
         AvdelingslederSakslisteApis()
         NøkkeltallApis()
@@ -244,6 +250,12 @@ private fun Route.api(
             }
             SaksbehandlerSakslisteApis()
             SaksbehandlerNøkkeltallApis()
+        }
+        route("avdelingsleder") {
+            AvdelingslederApis(
+                avdelingslederTjeneste = avdelingslederTjeneste,
+                oppgaveTjeneste = oppgaveTjeneste
+            )
         }
         NavAnsattApis(requestContextService, configuration)
         TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration)

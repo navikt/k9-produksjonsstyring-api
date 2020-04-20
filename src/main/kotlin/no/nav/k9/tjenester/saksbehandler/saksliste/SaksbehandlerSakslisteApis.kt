@@ -24,6 +24,7 @@ fun Route.SaksbehandlerSakslisteApis(
                     OppgaveKø(
                         UUID.randomUUID(),
                         "Omsorgspenger",
+                        LocalDate.now(),
                         KøSortering.OPPRETT_BEHANDLING,
                         listOf(BehandlingType.FORSTEGANGSSOKNAD),
                         listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
@@ -44,6 +45,7 @@ fun Route.SaksbehandlerSakslisteApis(
     val of = OppgaveKø(
         UUID.randomUUID(),
         "navn",
+        LocalDate.now(),
         KøSortering.OPPRETT_BEHANDLING,
         listOf(BehandlingType.FORSTEGANGSSOKNAD),
         listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
