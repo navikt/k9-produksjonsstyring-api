@@ -39,7 +39,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             behandlingOpprettet(modell)
         }
 
-        if (modell.avslutterSak() && false) {
+        if (modell.avslutterSak()) {
             behandlingAvsluttet(modell, config)
         }
 

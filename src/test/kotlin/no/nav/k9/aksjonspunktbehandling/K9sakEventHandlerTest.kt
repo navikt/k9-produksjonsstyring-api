@@ -38,12 +38,13 @@ class K9sakEventHandlerTest {
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
-
+        val config = mockk<Configuration>()
+        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-            config = mockk<Configuration>()
+            config = config
         )
 
         @Language("JSON") val json =
@@ -92,11 +93,13 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
 
+        val config = mockk<Configuration>()
+        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource),
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-            config = mockk<Configuration>()
+            config = config
         )
 
         @Language("JSON") val json =
@@ -129,7 +132,6 @@ class K9sakEventHandlerTest {
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
 
         k9sakEventHandler.prosesser(event)
-
     }
 
     @KtorExperimentalAPI
@@ -143,11 +145,13 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val config = mockk<Configuration>()
+        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-            config = mockk<Configuration>()
+            config = config
         )
 
         @Language("JSON") val json =
@@ -196,10 +200,12 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val config = mockk<Configuration>()
+        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
-            config = mockk<Configuration>()
+            config = config
 //            gosysOppgaveGateway = gosysOppgaveGateway
         )
 
@@ -252,10 +258,12 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val config = mockk<Configuration>()
+        every { config.getSakOgBehandlingMqGatewayHostname() } returns ""
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
-            config = mockk<Configuration>()
+            config = config
 //            gosysOppgaveGateway = gosysOppgaveGateway
         )
 

@@ -7,10 +7,15 @@ import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.pdl.PdlService
+import no.nav.k9.integrasjon.rest.idToken
+import no.nav.k9.tilgangskontroll.log
+import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 import kotlin.streams.toList
 
 
@@ -20,7 +25,8 @@ private val LOGGER: Logger =
 
 class OppgaveTjenesteImpl(
     private val oppgaveRepository: OppgaveRepository,
-    private val oppgaveKøRepository: OppgaveKøRepository
+    private val oppgaveKøRepository: OppgaveKøRepository,
+    private val pdlService: PdlService
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
@@ -119,29 +125,39 @@ class OppgaveTjenesteImpl(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
+    suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
         val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver(ident)
-
-        return reserverteOppgave.stream().map { t ->
-            OppgaveDto(
-                OppgaveStatusDto(
-                    true, t.sisteOppgave().reservasjon?.reservertTil,
-                    true, t.sisteOppgave().reservasjon?.reservertAv, "Klara Saksbehandler", null
-                ),
-                t.sisteOppgave().behandlingId,
-                t.sisteOppgave().fagsakSaksnummer,
-                "Walter Lemon",
-                      t.sisteOppgave().system,
-                      "453555245",
-                      t.sisteOppgave().behandlingType,
-                      t.sisteOppgave().fagsakYtelseType,
-                      t.sisteOppgave().behandlingStatus,
-                      true,
-                      t.sisteOppgave().behandlingOpprettet,
-                      t.sisteOppgave().behandlingsfrist,
-                      t.sisteOppgave().eksternId
-                  )
-              }.toList()
+        val list = mutableListOf<OppgaveDto>()
+        val token = IdToken(coroutineContext.idToken().value)
+        for (oppgavemodell in reserverteOppgave) {
+            val person = pdlService.person(oppgavemodell.sisteOppgave().aktorId)
+            if (person.isEmpty()) {
+                // Flytt oppgave til vikafossen
+                log.info("Ikke tilgang til bruker: " + ident)
+                continue
+            }
+            list.add(
+                OppgaveDto(
+                    OppgaveStatusDto(
+                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
+                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertAv, token.getName(), null
+                    ),
+                    oppgavemodell.sisteOppgave().behandlingId,
+                    oppgavemodell.sisteOppgave().fagsakSaksnummer,
+                    person,
+                    oppgavemodell.sisteOppgave().system,
+                    oppgavemodell.sisteOppgave().aktorId,
+                    oppgavemodell.sisteOppgave().behandlingType,
+                    oppgavemodell.sisteOppgave().fagsakYtelseType,
+                    oppgavemodell.sisteOppgave().behandlingStatus,
+                    true,
+                    oppgavemodell.sisteOppgave().behandlingOpprettet,
+                    oppgavemodell.sisteOppgave().behandlingsfrist,
+                    oppgavemodell.sisteOppgave().eksternId
+                )
+            )
+        }
+        return list
     }
 
     fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {

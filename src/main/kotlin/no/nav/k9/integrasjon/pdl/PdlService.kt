@@ -34,7 +34,6 @@ class PdlService @KtorExperimentalAPI constructor(
 
     companion object {
         fun getQ2Ident(aktorId: String): String {
-            log.info("ident: " + aktorId)
             val q2 = listOf(
                 "14128521632",
                 "14088521472",
@@ -67,7 +66,7 @@ class PdlService @KtorExperimentalAPI constructor(
         pathParts = listOf()
     ).toString()
 
-    internal suspend fun person(aktorId: String): PersonPdl {
+    internal suspend fun person(aktorId: String): String {
 
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
@@ -115,8 +114,12 @@ class PdlService @KtorExperimentalAPI constructor(
                 }
             )
         }
-        log.info("Person fra pdl: " + json)
-        return objectMapper().readValue(json)
+        log.info("Person fra pdl: $json")
+        return try {
+            objectMapper().readValue<PersonPdl>(json).data.hentPerson.navn[0].forkortetNavn
+        } catch (e: Exception) {
+            ""
+        }
     }
 
     @KtorExperimentalAPI

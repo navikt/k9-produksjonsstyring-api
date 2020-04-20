@@ -109,7 +109,8 @@ fun Application.k9Los() {
     val oppgaveKøRepository = OppgaveKøRepository(dataSource)
     val oppgaveTjeneste = OppgaveTjenesteImpl(
         oppgaveRepository,
-        oppgaveKøRepository = oppgaveKøRepository
+        oppgaveKøRepository = oppgaveKøRepository,
+        pdlService = pdlService
     )
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
     val k9sakEventHandler = K9sakEventHandler(
@@ -202,17 +203,17 @@ fun Application.k9Los() {
         call.request.log()
     }
 
-    install(CallLogging) {
-        correlationIdAndRequestIdInMdc()
-        logRequests()
-        mdc("id_token_jti") { call ->
-            try {
-                idTokenProvider.getIdToken(call).getId()
-            } catch (cause: Throwable) {
-                null
-            }
-        }
-    }
+//    install(CallLogging) {
+//        correlationIdAndRequestIdInMdc()
+//        logRequests()
+//        mdc("id_token_jti") { call ->
+//            try {
+//                idTokenProvider.getIdToken(call).getId()
+//            } catch (cause: Throwable) {
+//                null
+//            }
+//        }
+//    }
 
 
 }

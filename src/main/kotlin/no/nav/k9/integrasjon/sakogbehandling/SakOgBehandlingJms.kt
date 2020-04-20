@@ -32,32 +32,36 @@ fun connectionFactory(
 
 fun Session.producerForQueue(queueName: String): MessageProducer = createProducer(createQueue(queueName))
 
-fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet,config: Configuration) {
-    val marshaller = JAXBContext.newInstance(BehandlingAvsluttet::class.java).createMarshaller()
-    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
-    val writer = StringWriter()
-    marshaller.marshal(ObjectFactory().createBehandlingAvsluttet(behandlingAvsluttet), writer)
-    val xml = writer.toString()
-    sendTilKø(xml,config)
-}
-
-fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet,config: Configuration) {
+fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet, config: Configuration) {
     val marshaller = JAXBContext.newInstance(BehandlingOpprettet::class.java).createMarshaller()
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
     val writer = StringWriter()
     marshaller.marshal(ObjectFactory().createBehandlingOpprettet(behandlingOpprettet), writer)
     val xml = writer.toString()
     println("Sender behandling opprettet: " + xml)
-    //sendTilKø(xml)
+   // sendTilKø(xml, config)
+}
+
+fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet, config: Configuration) {
+    val marshaller = JAXBContext.newInstance(BehandlingAvsluttet::class.java).createMarshaller()
+    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
+    val writer = StringWriter()
+    marshaller.marshal(ObjectFactory().createBehandlingAvsluttet(behandlingAvsluttet), writer)
+    val xml = writer.toString()
+    println("Sender behandling avsluttet: " + xml)
+    //  sendTilKø(xml, config)
 }
 
 @KtorExperimentalAPI
-private fun sendTilKø(xml: String, config: Configuration) {
+fun sendTilKø(xml: String, config: Configuration) {
+    if (config.getSakOgBehandlingMqGatewayHostname() == "") {
+        return
+    }
     val connection = connectionFactory(
         hostName = config.getSakOgBehandlingMqGatewayHostname(),
         port = Integer.valueOf(config.getSakOgBehandlingMqGatewayPort()),
         gatewayName = config.getSakOgBehandlingMqGateway(),
-        channelName = "QA.U_SAKOGBEHANDLING.SAKSBEHANDLING"
+        channelName = "QA.Q1_SBEH.SAKSBEHANDLING"
     ).createConnection("", "")
     val session = connection.createSession()
     val producer = session.createProducer(session.createQueue("DEV.QUEUE.1"))
