@@ -134,7 +134,7 @@ class OppgaveTjeneste(
         return hentOppgaver(oppgavekøId).size
     }
 
-    fun hentAntallOppgaverForAvdeling(): Int {
+    fun hentAntallOppgaverTotalt(): Int {
         return oppgaveRepository.hent().size
     }
 

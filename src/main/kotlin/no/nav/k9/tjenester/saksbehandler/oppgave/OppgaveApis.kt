@@ -179,7 +179,7 @@ internal fun Route.OppgaveApis(
         if (uuid.isNullOrBlank()) {
             uuid = UUID.randomUUID().toString()
         }
-        call.respond(oppgaveTjeneste.hentOppgaver(UUID.fromString(uuid)!!).size)
+        call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid)!!))
     }
 
     @Location("/reserver")

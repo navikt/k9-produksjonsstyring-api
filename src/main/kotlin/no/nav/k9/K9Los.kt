@@ -46,7 +46,7 @@ import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.saksbehandler.AvdelingslederSaksbehandlerApis
-import no.nav.k9.tjenester.avdelingsleder.saksliste.AvdelingslederSakslisteApis
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
 import no.nav.k9.tjenester.kodeverk.KodeverkApis
 import no.nav.k9.tjenester.konfig.KonfigApis
@@ -248,7 +248,6 @@ private fun Route.api(
         AdminApis()
 
         AvdelingslederSaksbehandlerApis()
-        AvdelingslederSakslisteApis()
         NøkkeltallApis()
         route("saksbehandler") {
             route("oppgaver") {
@@ -267,6 +266,11 @@ private fun Route.api(
                 avdelingslederTjeneste = avdelingslederTjeneste,
                 oppgaveTjeneste = oppgaveTjeneste
             )
+            route("oppgavekoer") {
+                AvdelingslederOppgavekøApis(
+                    avdelingslederTjeneste
+                )
+            }
         }
         NavAnsattApis(requestContextService, configuration)
         TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration)

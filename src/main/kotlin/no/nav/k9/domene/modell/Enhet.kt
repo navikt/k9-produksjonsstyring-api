@@ -11,8 +11,8 @@ data class OppgaveKø(
     val navn: String,
     var sistEndret: LocalDate,
     val sortering: KøSortering,
-    val filtreringBehandlingTyper: List<BehandlingType>,
-    val filtreringYtelseTyper: List<FagsakYtelseType>,
+    var filtreringBehandlingTyper: MutableList<BehandlingType>,
+    var filtreringYtelseTyper: MutableList<FagsakYtelseType>,
     val enhet: Enhet,
     val erDynamiskPeriode: Boolean,
     val fomDato: LocalDate,
@@ -68,8 +68,8 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     UTBETALING_TIL_BRUKER("UTBETALING_TIL_BRUKER", "Utbetaling til bruker"),
     UTLANDSSAK("UTLANDSSAK", "Utland"),
     SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
-    VURDER_SYKDOM("VURDER_SYKDOM", "Vurder sykdom"),
-    VURDER_FARESIGNALER("VURDER_FARESIGNALER", "Vurder faresignaler");
+    SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næreingsdrivende/frilans"),
+    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans");
 
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 

@@ -65,4 +65,19 @@ class OppgaveKøRepository(private val dataSource: DataSource) {
             }
         }
     }
+
+    fun slett(id: UUID) {
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                tx.run(
+                    queryOf(
+                        """
+                    delete from oppgaveko
+                    where id = :id
+                 """, mapOf("id" to id.toString())
+                    ).asUpdate
+                )
+            }
+        }
+    }
 }

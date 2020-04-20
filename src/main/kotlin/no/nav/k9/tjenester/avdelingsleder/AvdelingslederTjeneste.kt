@@ -4,10 +4,14 @@ import no.nav.k9.domene.lager.oppgave.*
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.BehandlingsTypeDto
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.YtelsesTypeDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.OppgavekøDto
 import no.nav.k9.tjenester.saksbehandler.saksliste.SorteringDto
 import java.time.LocalDate
+import java.util.*
 
 class AvdelingslederTjeneste(
     private val oppgaveKøRepository: OppgaveKøRepository,
@@ -70,8 +74,49 @@ class AvdelingslederTjeneste(
             )
         }
     }
-    fun opprettOppgaveKø(oppgaveKø: OppgaveKø) {
-        oppgaveKø.sistEndret = LocalDate.now()
+    fun opprettOppgaveKø(): OppgavekøIdDto {
+        val uuid = UUID.randomUUID()
+        oppgaveKøRepository.lagre(
+            OppgaveKø(
+            uuid,
+            "",
+            LocalDate.now(),
+            KøSortering.OPPRETT_BEHANDLING,
+            mutableListOf(),
+            mutableListOf(),
+            Enhet.NASJONAL,
+            false,
+            LocalDate.now(),
+            LocalDate.now(),
+            emptyList(),
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+        )
+        )
+        return OppgavekøIdDto(uuid)
+    }
+
+    fun slettOppgavekø(uuid: UUID) {
+        oppgaveKøRepository.slett(uuid)
+    }
+
+    fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(behandling.oppgavekoId.id)
+        if (behandling.markert) oppgaveKø.filtreringBehandlingTyper.add(behandling.behandlingType)
+        else oppgaveKø.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
+            it != behandling.behandlingType }.toMutableList()
+        oppgaveKøRepository.lagre(oppgaveKø)
+    }
+
+    fun endreYtelsesType(ytelse: YtelsesTypeDto) {
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(ytelse.oppgavekoId.id)
+        if (ytelse.markert) oppgaveKø.filtreringYtelseTyper.add(ytelse.ytelseType)
+        else oppgaveKø.filtreringYtelseTyper = oppgaveKø.filtreringYtelseTyper.filter {
+            it != ytelse.ytelseType }.toMutableList()
         oppgaveKøRepository.lagre(oppgaveKø)
     }
 }
