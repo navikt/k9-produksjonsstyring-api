@@ -104,7 +104,7 @@ data class Configuration(private val config: ApplicationConfig) {
     }
 
     fun getSakOgBehandlingMqGatewayHostname(): String {
-        return config.getOptionalString("nav.sak_og_behandling.hostname", secret = false)!!
+        return config.getOptionalString("nav.sak_og_behandling.host", secret = false)!!
     }
 
     fun getSakOgBehandlingMqGatewayPort(): String {
