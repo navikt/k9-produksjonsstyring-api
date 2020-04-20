@@ -63,7 +63,7 @@ data class Oppgave(
     fun datavarehusBehandling(): String {
         // lag statistikk
 
-        val beslutter = if (beslutterOppgave) {
+        val beslutter = if (tilBeslutter) {
             reservasjon?.reservertAv ?: ""
         } else {
             ""
@@ -95,7 +95,7 @@ data class Oppgave(
             saksbehandler = "",
             saksnummer = fagsakSaksnummer,
             tekniskTid = "",
-            totrinnsbehandling = beslutterOppgave,
+            totrinnsbehandling = tilBeslutter,
             utenlandstilsnitt = "",
             utenlandstilsnittBeskrivelse = "",
             vedtakId = "s",

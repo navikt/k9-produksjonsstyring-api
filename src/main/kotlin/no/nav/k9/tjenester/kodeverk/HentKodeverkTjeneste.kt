@@ -5,6 +5,7 @@ import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.domene.modell.KøSortering
 
 class HentKodeverkTjeneste  {
      fun hentGruppertKodeliste(): MutableMap<String, Collection<out Kodeverdi>> {

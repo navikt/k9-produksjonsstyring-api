@@ -44,9 +44,15 @@ fun Route.AvdelingslederApis(
             listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
             Enhet.NASJONAL,
             false,
-            LocalDate.of(2020, 1,1),
+            LocalDate.of(2020, 1, 1),
             LocalDate.of(2020, 8, 23),
-            listOf(Saksbehandler("9302r84", "Saksbehandler Eva"), Saksbehandler("r98437t","Guro Saksbehandler"))
+            listOf(Saksbehandler("9302r84", "Saksbehandler Eva"), Saksbehandler("r98437t", "Guro Saksbehandler")),
+            utbetalingTilBruker = false,
+            søktGradering = false,
+            selvstendigFrilans = false,
+            registrerPapir = false,
+            kombinert = false,
+            tilBeslutter = false
         ))
         call.respond(avdelingslederTjeneste.hentOppgaveKøer())
     }

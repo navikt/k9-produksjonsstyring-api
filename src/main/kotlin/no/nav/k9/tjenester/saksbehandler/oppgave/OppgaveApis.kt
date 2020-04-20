@@ -67,7 +67,13 @@ internal fun Route.OppgaveApis(
                             true,
                             oppgave.behandlingOpprettet,
                             oppgave.behandlingsfrist,
-                            oppgave.eksternId
+                            oppgave.eksternId,
+                            tilBeslutter = false,
+                            utbetalingTilBruker = false,
+                            søktGradering = false,
+                            selvstendigFrilans = false,
+                            registrerPapir = false,
+                            kombinert = false
                         )
                     )
                 }
@@ -93,7 +99,13 @@ internal fun Route.OppgaveApis(
                         true,
                         oppgave.behandlingOpprettet,
                         oppgave.behandlingsfrist,
-                        oppgave.eksternId
+                        oppgave.eksternId,
+                        tilBeslutter = false,
+                        utbetalingTilBruker = false,
+                        søktGradering = false,
+                        selvstendigFrilans = false,
+                        registrerPapir = false,
+                        kombinert = false
                     )
                 )
             }

@@ -158,7 +158,12 @@ data class Modell(
             system = event.fagsystem.name,
             oppgaveEgenskap = emptyList(),
             aksjonspunkter = event.aktiveAksjonspunkt(),
-            beslutterOppgave = beslutterOppgave
+            tilBeslutter = beslutterOppgave,
+            kombinert = false,
+            registrerPapir = false,
+            selvstendigFrilans = false,
+            søktGradering = false,
+            utbetalingTilBruker = false
         )
     }
 

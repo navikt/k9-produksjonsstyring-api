@@ -6,9 +6,7 @@ import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import no.nav.k9.domene.modell.*
-import java.time.LocalDate
-import java.util.*
+import no.nav.k9.domene.modell.Saksbehandler
 
 @KtorExperimentalLocationsAPI
 fun Route.SaksbehandlerSakslisteApis(
@@ -19,42 +17,12 @@ fun Route.SaksbehandlerSakslisteApis(
     get { _: getSakslister ->
 
         call.respond(
-            listOf(
-                OppgavekøDto(
-                    OppgaveKø(
-                        UUID.randomUUID(),
-                        "Omsorgspenger",
-                        LocalDate.now(),
-                        KøSortering.OPPRETT_BEHANDLING,
-                        listOf(BehandlingType.FORSTEGANGSSOKNAD),
-                        listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
-                        Enhet.NASJONAL,
-                        false,
-                        LocalDate.of(2020,1,1),
-                        LocalDate.of(2020, 8, 1),
-                        listOf(Saksbehandler("645fgd", "Saksbehandler Klara"))
-                    ), 14
-                )
-            )
+            emptyList<OppgavekøDto>()
         )
     }
 
     @Location("/saksliste/saksbehandlere")
     class hentSakslistensSaksbehandlere
-
-    val of = OppgaveKø(
-        UUID.randomUUID(),
-        "navn",
-        LocalDate.now(),
-        KøSortering.OPPRETT_BEHANDLING,
-        listOf(BehandlingType.FORSTEGANGSSOKNAD),
-        listOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
-        Enhet.NASJONAL,
-        false,
-        LocalDate.of(2020,1,1),
-        LocalDate.of(2020, 8, 1),
-        listOf(Saksbehandler("435twg", "Saksbehandler Sara"))
-    )
 
     get { _: hentSakslistensSaksbehandlere ->
         call.respond(
