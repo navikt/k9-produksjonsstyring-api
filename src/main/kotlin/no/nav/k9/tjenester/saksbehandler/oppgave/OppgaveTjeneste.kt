@@ -5,15 +5,10 @@ import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.oppslag.Attributt
-import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.typer.AktørId
-import no.nav.k9.domene.typer.PersonIdent
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import no.nav.k9.tilgangskontroll.log
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
@@ -149,7 +144,7 @@ class OppgaveTjeneste(
         val token = IdToken(coroutineContext.idToken().value)
         for (oppgavemodell in reserverteOppgave) {
             val person = pdlService.person(oppgavemodell.sisteOppgave().aktorId)
-            if (person.isEmpty()) {
+            if (person == null) {
                 // Flytt oppgave til vikafossen
                 log.info("Ikke tilgang til bruker: " + ident)
                 continue
@@ -162,9 +157,9 @@ class OppgaveTjeneste(
                     ),
                     oppgavemodell.sisteOppgave().behandlingId,
                     oppgavemodell.sisteOppgave().fagsakSaksnummer,
-                    person,
+                    person.data.hentPerson.navn[0].forkortetNavn,
                     oppgavemodell.sisteOppgave().system,
-                    oppgavemodell.sisteOppgave().aktorId,
+                    person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                     oppgavemodell.sisteOppgave().behandlingType,
                     oppgavemodell.sisteOppgave().fagsakYtelseType,
                     oppgavemodell.sisteOppgave().behandlingStatus,
