@@ -1,9 +1,10 @@
 package no.nav.k9.tjenester.avdelingsleder
 
-import no.nav.k9.domene.lager.oppgave.*
-import no.nav.k9.domene.modell.*
+import no.nav.k9.domene.modell.Enhet
+import no.nav.k9.domene.modell.KøSortering
+import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.BehandlingsTypeDto
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.YtelsesTypeDto
@@ -53,49 +54,51 @@ class AvdelingslederTjeneste(
     fun hentOppgaveKøer(): List<OppgavekøDto> {
         return oppgaveKøRepository.hent().map {
             OppgavekøDto(
-                it.id,
-                it.navn,
-                SorteringDto(
-                    KøSortering.fraKode(it.sortering.navn),
-                    it.fomDato,
-                    it.tomDato,
-                    it.erDynamiskPeriode),
-                it.filtreringBehandlingTyper,
-                it.filtreringYtelseTyper,
-                it.sistEndret,
-                oppgaveTjeneste.hentAntallOppgaver(it.id),
-                it.tilBeslutter,
-                it.utbetalingTilBruker,
-                it.selvstendigFrilans,
-                it.kombinert,
-                it.søktGradering,
-                it.registrerPapir,
-                it.saksbehandlere
+                id = it.id,
+                navn = it.navn,
+                sortering = SorteringDto(
+                    sorteringType = KøSortering.fraKode(it.sortering.navn),
+                    fomDato = it.fomDato,
+                    tomDato = it.tomDato,
+                    erDynamiskPeriode = it.erDynamiskPeriode
+                ),
+                behandlingTyper = it.filtreringBehandlingTyper,
+                fagsakYtelseTyper = it.filtreringYtelseTyper,
+                andreKriterierType = listOf(),
+                sistEndret = it.sistEndret,
+                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id),
+                tilBeslutter = it.tilBeslutter,
+                utbetalingTilBruker = it.utbetalingTilBruker,
+                selvstendigFrilans = it.selvstendigFrilans,
+                kombinert = it.kombinert,
+                søktGradering = it.søktGradering,
+                registrerPapir = it.registrerPapir,
+                saksbehandlere = it.saksbehandlere
             )
         }
     }
     fun opprettOppgaveKø(): OppgavekøIdDto {
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(
-            OppgaveKø(
-            uuid,
-            "",
-            LocalDate.now(),
-            KøSortering.OPPRETT_BEHANDLING,
-            mutableListOf(),
-            mutableListOf(),
-            Enhet.NASJONAL,
-            false,
-            LocalDate.now(),
-            LocalDate.now(),
-            emptyList(),
-            false,
-            false,
-            false,
-            false,
-            false,
-            false
-        )
+            oppgaveKø = OppgaveKø(
+                id = uuid,
+                navn = "",
+                sistEndret = LocalDate.now(),
+                sortering = KøSortering.OPPRETT_BEHANDLING,
+                filtreringBehandlingTyper = mutableListOf(),
+                filtreringYtelseTyper = mutableListOf(),
+                enhet = Enhet.NASJONAL,
+                erDynamiskPeriode = false,
+                fomDato = LocalDate.now(),
+                tomDato = LocalDate.now(),
+                saksbehandlere = listOf(Saksbehandler("alexaban", "Sara Saksbehandler")),
+                tilBeslutter = false,
+                utbetalingTilBruker = false,
+                selvstendigFrilans = false,
+                kombinert = false,
+                søktGradering = false,
+                registrerPapir = false
+            )
         )
         return OppgavekøIdDto(uuid)
     }

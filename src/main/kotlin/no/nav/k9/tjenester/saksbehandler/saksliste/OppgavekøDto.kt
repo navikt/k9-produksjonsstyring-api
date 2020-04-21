@@ -1,5 +1,6 @@
 package no.nav.k9.tjenester.saksbehandler.saksliste
 
+import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.Saksbehandler
@@ -12,6 +13,7 @@ class OppgavekøDto(
     var sortering: SorteringDto,
     val behandlingTyper: List<BehandlingType>,
     val fagsakYtelseTyper: List<FagsakYtelseType>,
+    val andreKriterierType: List<AndreKriterierType>,
     val sistEndret: LocalDate,
     var antallBehandlinger: Int,
     val tilBeslutter: Boolean,
