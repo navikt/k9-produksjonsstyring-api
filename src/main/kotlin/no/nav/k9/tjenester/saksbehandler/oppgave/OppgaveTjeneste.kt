@@ -208,4 +208,8 @@ class OppgaveTjeneste(
     fun hentNavnHvisFlyttetAvSaksbehandler(flyttetAv: String): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    fun hentOppgaveKøer(): MutableList<OppgaveKø> {
+        return oppgaveKøRepository.hent()
+    }
 }
