@@ -32,7 +32,8 @@ class OppgaveTjeneste(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            val alleOppgaver = oppgaveRepository.hent().stream().filter { t -> t.sisteOppgave().reservasjon?.reservertAv.isNullOrEmpty() }
+            val alleOppgaver = oppgaveRepository.hentAktiveOppgaver().stream()
+                .filter { t -> t.sisteOppgave().reservasjon?.reservertAv.isNullOrEmpty() }
                 .map { t -> t.sisteOppgave() }.toList()
             alleOppgaver.filter {
                 it.behandlingType in oppgaveKø.filtreringBehandlingTyper &&
@@ -135,7 +136,7 @@ class OppgaveTjeneste(
     }
 
     fun hentAntallOppgaverTotalt(): Int {
-        return oppgaveRepository.hent().size
+        return oppgaveRepository.hentAktiveOppgaver().size
     }
 
     suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {

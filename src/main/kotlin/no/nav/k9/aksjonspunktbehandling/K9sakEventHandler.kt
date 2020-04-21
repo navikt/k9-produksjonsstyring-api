@@ -38,16 +38,17 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
         val modell = behandlingProsessEventRepository.lagre(event)
 
+
+        val oppgave = modell.oppgave()
         // Sjekk om behandlingen starter eller avsluttes, skal da sende en melding til behandlesak for å fortelle modia.
         if (modell.starterSak()) {
             behandlingOpprettet(modell, sakOgBehadlingProducer)
         }
 
-        if (modell.avslutterSak()) {
+        if (!oppgave.aktiv) {
             behandlingAvsluttet(modell, sakOgBehadlingProducer)
         }
 
-        val oppgave = modell.oppgave()
         oppgaveRepository.lagre(oppgave.eksternId) { forrigeOppgave: Oppgave? ->
             oppgave.reservasjon = forrigeOppgave?.reservasjon
             oppgave
