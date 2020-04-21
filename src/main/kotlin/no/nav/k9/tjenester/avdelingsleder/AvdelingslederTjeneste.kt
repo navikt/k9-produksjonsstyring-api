@@ -82,7 +82,7 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.lagre(
             oppgaveKø = OppgaveKø(
                 id = uuid,
-                navn = "",
+                navn = "Oppgavekø",
                 sistEndret = LocalDate.now(),
                 sortering = KøSortering.OPPRETT_BEHANDLING,
                 filtreringBehandlingTyper = mutableListOf(),
