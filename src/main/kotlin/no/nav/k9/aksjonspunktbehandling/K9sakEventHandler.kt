@@ -56,8 +56,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         log.info(objectMapper().writeValueAsString(modell))
         log.info(objectMapper().writeValueAsString(oppgave))
 
-        log.info(oppgave.datavarehusSak())
-        log.info(oppgave.datavarehusBehandling())
+        // log.info(oppgave.datavarehusSak())
+        // log.info(oppgave.datavarehusBehandling())
 
     }
 
@@ -95,7 +95,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 )
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer().withKodeRef("k9 kode"))
-                .withAnsvarligEnhetREF("modell.sisteEvent().behandlendeEnhet")
+                .withAnsvarligEnhetREF("NASJONAL")
         )
 
     }
@@ -123,7 +123,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 .withBehandlingstype(Behandlingstyper().withValue("aS"))
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer())
-                .withAnsvarligEnhetREF("")
+                .withAnsvarligEnhetREF("NASJONAL")
         )
     }
 
