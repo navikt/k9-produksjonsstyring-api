@@ -1,5 +1,6 @@
 package no.nav.k9.integrasjon.sakogbehandling
 
+import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.BehandlingAvsluttet
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.BehandlingOpprettet
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.ObjectFactory
@@ -15,7 +16,9 @@ fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet) {
     marshaller.marshal(ObjectFactory().createBehandlingOpprettet(behandlingOpprettet), writer)
     val xml = writer.toString()
     println("Sender behandling opprettet: " + xml)
-    // sendTilKø(xml, config)
+
+    println(objectMapper().writeValueAsString(behandlingOpprettet))   // sendTilKø(xml, config)
+
 }
 
 fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet) {
@@ -25,5 +28,6 @@ fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet) {
     marshaller.marshal(ObjectFactory().createBehandlingAvsluttet(behandlingAvsluttet), writer)
     val xml = writer.toString()
     println("Sender behandling avsluttet: " + xml)
+    println(objectMapper().writeValueAsString(behandlingAvsluttet))
     //  sendTilKø(xml, config)
 }

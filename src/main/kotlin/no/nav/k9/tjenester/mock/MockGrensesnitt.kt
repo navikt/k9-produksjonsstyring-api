@@ -95,7 +95,7 @@ fun Route.MockGrensesnitt(
                             }
                             div {
                                 classes = setOf("input-group-text display-4")
-                                +"${aksjonspunkt.kode} ${aksjonspunkt.navn} T  ype: ${aksjonspunkt.behandlingsstegtype} Plassering: ${aksjonspunkt.plassering} Totrinn: ${aksjonspunkt.totrinn}"
+                                +"${aksjonspunkt.kode} ${aksjonspunkt.navn} Type: ${aksjonspunkt.behandlingsstegtype} Plassering: ${aksjonspunkt.plassering} Totrinn: ${aksjonspunkt.totrinn}"
                             }
                         }
                     }

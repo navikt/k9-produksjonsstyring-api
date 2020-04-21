@@ -142,20 +142,37 @@ class OppgaveTjeneste(
     suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
         val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver(ident)
         val list = mutableListOf<OppgaveDto>()
-        val token = IdToken(coroutineContext.idToken().value)
+
         for (oppgavemodell in reserverteOppgave) {
             val person = pdlService.person(oppgavemodell.sisteOppgave().aktorId)
             if (person == null) {
                 // Flytt oppgave til vikafossen
-                log.info("Ikke tilgang til bruker: " + ident)
+                log.info("Ikke tilgang til bruker: ${oppgavemodell.sisteOppgave().aktorId}")
                 continue
             }
+            val status = if (ident == "alexaban") {
+                OppgaveStatusDto(
+                    true,
+                    oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
+                    true,
+                    oppgavemodell.sisteOppgave().reservasjon?.reservertAv,
+                    "Saksbehandle Sara",
+                    null
+                )
+            } else {
+                OppgaveStatusDto(
+                    true,
+                    oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
+                    true,
+                    oppgavemodell.sisteOppgave().reservasjon?.reservertAv,
+                    IdToken(coroutineContext.idToken().value).getName(),
+                    null
+                )
+            }
+
             list.add(
                 OppgaveDto(
-                    OppgaveStatusDto(
-                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
-                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertAv, token.getName(), null
-                    ),
+                    status,
                     oppgavemodell.sisteOppgave().behandlingId,
                     oppgavemodell.sisteOppgave().fagsakSaksnummer,
                     person.data.hentPerson.navn[0].forkortetNavn,
