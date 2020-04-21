@@ -68,7 +68,7 @@ class K9sakEventHandlerTest {
                   "behandlendeEnhet": null,
                   "ansvarligBeslutterForTotrinn": null,
                   "ansvarligSaksbehandlerForTotrinn": null,
-                  "ytelseTypeKode": "PSB",
+                  "ytelseTypeKode": "OMP",
                   "behandlingTypeKode": "BT-002",
                   "opprettetBehandling": "2020-03-31T06:33:48",
                   "aksjonspunktKoderMedStatusListe": {}
@@ -122,7 +122,7 @@ class K9sakEventHandlerTest {
               "behandlingStatus": "UTRED",
               "behandlingSteg": "INREG_AVSL",
               "behandlendeEnhet": "0300",
-              "ytelseTypeKode": "SVP",
+              "ytelseTypeKode": "PSB",
               "behandlingTypeKode": "BT-002",
               "opprettetBehandling": "2020-02-20T07:38:49",
               "aksjonspunktKoderMedStatusListe": {
@@ -175,7 +175,7 @@ class K9sakEventHandlerTest {
                   "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
-                  "ytelseTypeKode": "SVP",
+                  "ytelseTypeKode": "OMP",
                   "behandlingTypeKode": "BT-002",
                   "opprettetBehandling": "2020-02-20T07:38:49",
                   "aksjonspunktKoderMedStatusListe": {
@@ -230,7 +230,7 @@ class K9sakEventHandlerTest {
                   "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
-                  "ytelseTypeKode": "SVP",
+                  "ytelseTypeKode": "OMP",
                   "behandlingTypeKode": "BT-002",
                   "opprettetBehandling": "2020-02-20T07:38:49",
                   "aksjonspunktKoderMedStatusListe": {
@@ -289,7 +289,7 @@ class K9sakEventHandlerTest {
                   "behandlingSteg": "INREG_AVSL",
                    "behandlingstidFrist": "2020-03-31",
                   "behandlendeEnhet": "0300",
-                  "ytelseTypeKode": "SVP",
+                  "ytelseTypeKode": "PSB",
                   "behandlingTypeKode": "BT-002",
                   "opprettetBehandling": "2020-02-20T07:38:49",
                   "aksjonspunktKoderMedStatusListe": {
@@ -338,7 +338,7 @@ class K9sakEventHandlerTest {
                   "behandlingStatus": "UTRED",
                   "behandlingSteg": "INREG_AVSL",
                   "behandlendeEnhet": "0300",
-                  "ytelseTypeKode": "SVP",
+                  "ytelseTypeKode": "OMP",
                   "behandlingTypeKode": "BT-002",
                   "opprettetBehandling": "2020-02-20T07:38:49",
                   "aksjonspunktKoderMedStatusListe": {

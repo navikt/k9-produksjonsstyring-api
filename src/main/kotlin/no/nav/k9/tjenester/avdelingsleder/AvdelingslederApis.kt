@@ -8,12 +8,14 @@ import io.ktor.locations.post
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.modell.*
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import java.time.LocalDate
 import java.util.*
 
+@KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 fun Route.AvdelingslederApis(
     oppgaveTjeneste: OppgaveTjeneste,
@@ -28,5 +30,11 @@ fun Route.AvdelingslederApis(
         call.respond(antall)
     }
 
+    @Location("/oppgaver/antall")
+    class hentAntallOppgaver()
 
+    get { _: hentAntallOppgaver ->
+        val uuid = call.parameters["id"]
+        call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid)))
+    }
 }

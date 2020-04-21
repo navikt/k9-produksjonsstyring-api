@@ -8,22 +8,26 @@ import java.util.*
 
 data class OppgaveKø(
     val id: UUID,
-    val navn: String,
+    var navn: String,
     var sistEndret: LocalDate,
-    val sortering: KøSortering,
+    var sortering: KøSortering,
     var filtreringBehandlingTyper: MutableList<BehandlingType>,
     var filtreringYtelseTyper: MutableList<FagsakYtelseType>,
+    var filtreringAndreKriterierType: MutableList<AndreKriterierType>,
     val enhet: Enhet,
-    val erDynamiskPeriode: Boolean,
     val fomDato: LocalDate,
     val tomDato: LocalDate,
-    val saksbehandlere: List<Saksbehandler>,
-    val tilBeslutter: Boolean,
-    val utbetalingTilBruker: Boolean,
-    val selvstendigFrilans: Boolean,
-    val kombinert: Boolean,
-    val søktGradering: Boolean,
-    val registrerPapir: Boolean
+    val saksbehandlere: List<Saksbehandler>
+//    val tilBeslutter: Boolean,
+//    val utbetalingTilBruker: Boolean,
+//    val selvstendigFrilans: Boolean,
+//    val kombinert: Boolean,
+//    val søktGradering: Boolean,
+//    val registrerPapir: Boolean,
+//    val erPleiepenger: Boolean,
+//    val erOmsorgspenger: Boolean,
+//    val opprettBehandling: Boolean,
+//    val førsteStønadsdag: Boolean
 )
 
 class Saksbehandler(
@@ -43,15 +47,11 @@ enum class Enhet(val navn: String) {
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum class KøSortering(override val kode: String, val verdi: String, val felttype: String, val feltkategori: String) :
+enum class KøSortering(override val kode: String, override val navn: String, val felttype: String, val feltkategori: String) :
     Kodeverdi {
-    BEHANDLINGSFRIST("BEHFRIST", "Dato for behandlingsfrist", "", ""),
     OPPRETT_BEHANDLING("OPPRBEH", "Dato for opprettelse av behandling", "", ""),
-    FORSTE_STONADSDAG("FORSTONAD", "Dato for første stønadsdag", "", ""),
-    BELØP("BELOP", "Beløp", "HELTALL", "TILBAKEKREVING"),
-    FEILUTBETALINGSTART("FEILUTBETALINGSTART", "Dato for første feilutbetaling", "DATO", "TILBAKEKREVING");
+    FORSTE_STONADSDAG("FORSTONAD", "Dato for første stønadsdag", "", "");
 
-    override val navn = ""
     override val kodeverk = "KO_SORTERING"
 
     companion object {
@@ -68,7 +68,7 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     UTBETALING_TIL_BRUKER("UTBETALING_TIL_BRUKER", "Utbetaling til bruker"),
     UTLANDSSAK("UTLANDSSAK", "Utland"),
     SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
-    SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næreingsdrivende/frilans"),
+    SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
     KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans");
 
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
@@ -77,9 +77,6 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class FagsakYtelseType private constructor(override val kode: String, override val navn: String) : Kodeverdi {
-    ENGANGSTØNAD("ES", "Engangsstønad"),
-    FORELDREPENGER("FP", "Foreldrepenger"),
-    SVANGERSKAPSPENGER("SVP", "Svangerskapspenger"),
     PLEIEPENGER_SYKT_BARN("PSB", "Pleiepenger sykt barn"),
     OMSORGSPENGER("OMP", "Omsorgspenger");
 

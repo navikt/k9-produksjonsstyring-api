@@ -9,6 +9,8 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import java.util.*
 
 @KtorExperimentalLocationsAPI
 fun Route.AvdelingslederOppgavekøApis(
@@ -27,6 +29,14 @@ fun Route.AvdelingslederOppgavekøApis(
         call.respond(avdelingslederTjeneste.opprettOppgaveKø())
     }
 
+    @Location("/navn")
+    class endreOppgavekoNavn
+
+    post { _: endreOppgavekoNavn ->
+        val uuid = call.receive<OppgavekøNavnDto>()
+        call.respond(avdelingslederTjeneste.endreOppgavekøNavn(uuid))
+    }
+
     @Location("/slett")
     class slettOppgaveKø
 
@@ -43,11 +53,12 @@ fun Route.AvdelingslederOppgavekøApis(
         call.respond(avdelingslederTjeneste.endreBehandlingsType(behandling))
     }
 
-    @Location("/behandlingstype")
+    @Location("/ytelsestype")
     class lagreYtelsestype
 
     post { _: lagreYtelsestype ->
         val ytelse = call.receive<YtelsesTypeDto>()
         call.respond(avdelingslederTjeneste.endreYtelsesType(ytelse))
     }
+
 }

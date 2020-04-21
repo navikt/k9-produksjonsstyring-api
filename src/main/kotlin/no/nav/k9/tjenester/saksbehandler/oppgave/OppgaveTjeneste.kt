@@ -35,18 +35,7 @@ class OppgaveTjeneste(
             val alleOppgaver = oppgaveRepository.hentAktiveOppgaver().stream()
                 .filter { t -> t.sisteOppgave().reservasjon?.reservertAv.isNullOrEmpty() }
                 .map { t -> t.sisteOppgave() }.toList()
-            alleOppgaver.filter {
-                it.behandlingType in oppgaveKø.filtreringBehandlingTyper &&
-                        it.fagsakYtelseType in oppgaveKø.filtreringYtelseTyper &&
-                        it.behandlingOpprettet.toLocalDate() >= oppgaveKø.fomDato &&
-                        it.behandlingOpprettet.toLocalDate() <= oppgaveKø.tomDato &&
-                        it.tilBeslutter == oppgaveKø.tilBeslutter &&
-                        it.utbetalingTilBruker == oppgaveKø.utbetalingTilBruker &&
-                        it.selvstendigFrilans == oppgaveKø.selvstendigFrilans &&
-                        it.kombinert == oppgaveKø.kombinert &&
-                        it.søktGradering == oppgaveKø.søktGradering &&
-                        it.registrerPapir == oppgaveKø.registrerPapir
-            }
+            alleOppgaver
         } catch (e: Exception) {
             LOGGER.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
