@@ -19,31 +19,28 @@ fun Route.SaksbehandlerSakslisteApis(oppgaveTjeneste: OppgaveTjeneste) {
     get { _: getSakslister ->
 
         val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
-        val list = hentOppgaveKøer.map { oppgaveKø ->
-            {
+        val map = hentOppgaveKøer.map { oppgaveKø ->
 
-                val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato, false)
+            OppgavekøDto(
+                id = oppgaveKø.id,
+                navn = oppgaveKø.navn,
+                behandlingTyper = listOf(BehandlingType.FORSTEGANGSSOKNAD, BehandlingType.REVURDERING),
+                fagsakYtelseTyper = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
+                saksbehandlere = oppgaveKø.saksbehandlere,
+                kombinert = oppgaveKø.kombinert,
+                registrerPapir = oppgaveKø.registrerPapir,
+                selvstendigFrilans = oppgaveKø.selvstendigFrilans,
+                søktGradering = oppgaveKø.søktGradering,
+                utbetalingTilBruker = oppgaveKø.utbetalingTilBruker,
+                tilBeslutter = oppgaveKø.tilBeslutter,
+                antallBehandlinger = 1000,
+                sistEndret = oppgaveKø.sistEndret,
+                sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato, false),
+                andreKriterierType = listOf()
+            )
 
-                OppgavekøDto(
-                    id = oppgaveKø.id,
-                    navn = oppgaveKø.navn,
-                    behandlingTyper = listOf(BehandlingType.FORSTEGANGSSOKNAD, BehandlingType.REVURDERING),
-                    fagsakYtelseTyper = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
-                    saksbehandlere = oppgaveKø.saksbehandlere,
-                    kombinert = oppgaveKø.kombinert,
-                    registrerPapir = oppgaveKø.registrerPapir,
-                    selvstendigFrilans = oppgaveKø.selvstendigFrilans,
-                    søktGradering = oppgaveKø.søktGradering,
-                    utbetalingTilBruker = oppgaveKø.utbetalingTilBruker,
-                    tilBeslutter = oppgaveKø.tilBeslutter,
-                    antallBehandlinger = 1000,
-                    sistEndret = oppgaveKø.sistEndret,
-                    sortering = sortering,
-                    andreKriterierType = listOf()
-                )
-            }
         }
-        call.respond(list)
+        call.respond(map)
     }
 
     @Location("/saksliste/saksbehandlere")
