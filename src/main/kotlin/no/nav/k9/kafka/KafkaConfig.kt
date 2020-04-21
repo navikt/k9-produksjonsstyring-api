@@ -16,7 +16,7 @@ import java.util.*
 private val logger: Logger = LoggerFactory.getLogger(KafkaConfig::class.java)
 private const val ID_PREFIX = "srvpps-k9los-"
 
-internal class KafkaConfig(
+class KafkaConfig(
     bootstrapServers: String,
     credentials: Pair<String, String>,
     trustStore: Pair<String, String>?,

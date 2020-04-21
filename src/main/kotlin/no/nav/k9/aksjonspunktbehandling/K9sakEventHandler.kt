@@ -10,6 +10,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.sakogbehandling.sendBehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.sendBehandlingOpprettet
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.saogbehandling.SakOgBehadlingProducer
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.*
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -22,13 +23,16 @@ import javax.xml.datatype.XMLGregorianCalendar
 class K9sakEventHandler @KtorExperimentalAPI constructor(
     val oppgaveRepository: OppgaveRepository,
     val behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    val config: Configuration
+    val config: Configuration,
+    val sakOgBehadlingProducer: SakOgBehadlingProducer
 //    val gosysOppgaveGateway: GosysOppgaveGateway
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
     @KtorExperimentalAPI
-    fun prosesser(event: BehandlingProsessEventDto) {
+    fun prosesser(
+        event: BehandlingProsessEventDto
+    ) {
 
         log.info(objectMapper().writeValueAsString(event))
 
@@ -36,11 +40,11 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
         // Sjekk om behandlingen starter eller avsluttes, skal da sende en melding til behandlesak for å fortelle modia.
         if (modell.starterSak()) {
-            behandlingOpprettet(modell)
+            behandlingOpprettet(modell, sakOgBehadlingProducer)
         }
 
         if (modell.avslutterSak()) {
-            behandlingAvsluttet(modell)
+            behandlingAvsluttet(modell, sakOgBehadlingProducer)
         }
 
         val oppgave = modell.oppgave()
@@ -57,7 +61,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
     }
 
-    private fun behandlingOpprettet(modell: Modell) {
+    private fun behandlingOpprettet(
+        modell: Modell,
+        sakOgBehadlingProducer: SakOgBehadlingProducer
+    ) {
         val applikasjoner =
             Applikasjoner()
         applikasjoner.value = "k9-sak"
@@ -93,7 +100,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
     }
 
-    private fun behandlingAvsluttet(modell: Modell) {
+    private fun behandlingAvsluttet(
+        modell: Modell,
+        sakOgBehadlingProducer: SakOgBehadlingProducer
+    ) {
         val applikasjoner =
             Applikasjoner()
         applikasjoner.value = "k9-sak"

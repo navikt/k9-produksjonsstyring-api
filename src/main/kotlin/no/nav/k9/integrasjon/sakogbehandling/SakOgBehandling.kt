@@ -7,23 +7,6 @@ import java.io.StringWriter
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
 
-//fun connectionFactory(
-//    hostName: String,
-//    port: Int,
-//    gatewayName: String,
-//    channelName: String
-//) = MQConnectionFactory().apply {
-//    this.hostName = hostName
-//    this.port = port
-//    this.queueManager = gatewayName
-//    this.transportType = WMQConstants.WMQ_CM_CLIENT
-//    this.channel = channelName
-//    this.ccsid = 1208
-//    setIntProperty(WMQConstants.JMS_IBM_ENCODING, MQC.MQENC_NATIVE)
-//    setIntProperty(WMQConstants.JMS_IBM_CHARACTER_SET, 1208)
-//}
-
-//fun Session.producerForQueue(queueName: String): MessageProducer = createProducer(createQueue(queueName))
 
 fun sendBehandlingOpprettet(behandlingOpprettet: BehandlingOpprettet) {
     val marshaller = JAXBContext.newInstance(BehandlingOpprettet::class.java).createMarshaller()
@@ -44,22 +27,3 @@ fun sendBehandlingAvsluttet(behandlingAvsluttet: BehandlingAvsluttet) {
     println("Sender behandling avsluttet: " + xml)
     //  sendTilKø(xml, config)
 }
-
-//@KtorExperimentalAPI
-//fun sendTilKø(xml: String, config: Configuration) {
-//    if (config.getSakOgBehandlingMqGatewayHostname() == "") {
-//        return
-//    }
-//    val connection = connectionFactory(
-//        hostName = config.getSakOgBehandlingMqGatewayHostname(),
-//        port = Integer.valueOf(config.getSakOgBehandlingMqGatewayPort()),
-//        gatewayName = config.getSakOgBehandlingMqGateway(),
-//        channelName = "QA.Q1_SBEH.SAKSBEHANDLING"
-//    ).createConnection("", "")
-//    val session = connection.createSession()
-//    val producer = session.createProducer(session.createQueue("DEV.QUEUE.1"))
-//    connection.start()
-//    producer.send(session.createTextMessage(xml))
-//    connection.stop()
-//}
-

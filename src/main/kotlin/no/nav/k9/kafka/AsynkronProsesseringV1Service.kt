@@ -9,7 +9,6 @@ internal class AsynkronProsesseringV1Service(
     kafkaConfig: KafkaConfig,
     configuration: Configuration,
     k9sakEventHandler: K9sakEventHandler
-//    gosysOppgaveGateway: GosysOppgaveGateway
 ) {
 
     private companion object {
@@ -20,17 +19,9 @@ internal class AsynkronProsesseringV1Service(
     private val aksjonspunktStream = AksjonspunktStream(
         kafkaConfig = kafkaConfig,
         configuration = configuration,
-        k9sakEventHandler1 = k9sakEventHandler
-//        gosysOppgaveGateway= gosysOppgaveGateway
+        k9sakEventHandler = k9sakEventHandler
     )
 
-
-    private val sakOgBehandlingStream = AksjonspunktStream(
-        kafkaConfig = kafkaConfig,
-        configuration = configuration,
-        k9sakEventHandler1 = k9sakEventHandler
-//        gosysOppgaveGateway= gosysOppgaveGateway
-    )
 
 
     private val healthChecks = setOf(

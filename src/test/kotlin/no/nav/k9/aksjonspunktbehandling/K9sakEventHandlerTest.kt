@@ -17,6 +17,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.gosys.GosysOppgave
 import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.saogbehandling.SakOgBehadlingProducer
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 import java.time.LocalDateTime
@@ -36,6 +37,7 @@ class K9sakEventHandlerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
 
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         val config = mockk<Configuration>()
@@ -43,7 +45,8 @@ class K9sakEventHandlerTest {
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-            config = config
+            config = config,
+            sakOgBehadlingProducer = sakOgBehadlingProducer
         )
 
         @Language("JSON") val json =
@@ -89,6 +92,7 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
 
@@ -97,7 +101,8 @@ class K9sakEventHandlerTest {
             OppgaveRepository(dataSource = dataSource),
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-            config = config
+            config = config,
+            sakOgBehadlingProducer = sakOgBehadlingProducer
         )
 
         @Language("JSON") val json =
@@ -139,6 +144,7 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
 
@@ -148,7 +154,8 @@ class K9sakEventHandlerTest {
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-            config = config
+            config = config,
+            sakOgBehadlingProducer = sakOgBehadlingProducer
         )
 
         @Language("JSON") val json =
@@ -193,6 +200,7 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
 
@@ -201,8 +209,8 @@ class K9sakEventHandlerTest {
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
-            config = config
-//            gosysOppgaveGateway = gosysOppgaveGateway
+            config = config,
+            sakOgBehadlingProducer = sakOgBehadlingProducer
         )
 
         @Language("JSON") val json =
@@ -250,6 +258,7 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
 
@@ -258,7 +267,8 @@ class K9sakEventHandlerTest {
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
-            config = config
+            config = config,
+            sakOgBehadlingProducer = sakOgBehadlingProducer
 //            gosysOppgaveGateway = gosysOppgaveGateway
         )
 

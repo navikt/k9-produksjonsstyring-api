@@ -32,7 +32,6 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
-import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -121,25 +120,22 @@ fun Application.k9Los() {
         oppgaveTjeneste
     )
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
-    val k9sakEventHandler = K9sakEventHandler(
-        oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository
-        //                        gosysOppgaveGateway = gosysOppgaveGateway
-        , config = configuration
-    )
-    val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
-        kafkaConfig = configuration.getKafkaConfig(),
-        configuration = configuration,
-        k9sakEventHandler = k9sakEventHandler
-//        gosysOppgaveGateway = gosysOppgaveGateway
-    )
 
     val sakOgBehadlingProducer = SakOgBehadlingProducer(
         kafkaConfig = configuration.getKafkaConfig()
     )
+    val k9sakEventHandler = K9sakEventHandler(
+        oppgaveRepository = oppgaveRepository,
+        behandlingProsessEventRepository = behandlingProsessEventRepository
+        , config = configuration,
+        sakOgBehadlingProducer = sakOgBehadlingProducer
+    )
 
-
-    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
+    val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
+        kafkaConfig = configuration.getKafkaConfig(),
+        configuration = configuration,
+        k9sakEventHandler = k9sakEventHandler
+    )
 
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")

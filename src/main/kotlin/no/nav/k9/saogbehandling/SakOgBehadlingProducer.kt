@@ -11,7 +11,7 @@ import org.apache.kafka.common.serialization.Serializer
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 
-internal class SakOgBehadlingProducer(
+class SakOgBehadlingProducer(
     val kafkaConfig: KafkaConfig
 ) : HealthCheck {
 
@@ -23,13 +23,15 @@ internal class SakOgBehadlingProducer(
         )
         private val logger = LoggerFactory.getLogger(SakOgBehadlingProducer::class.java)
     }
-    
+
     private val producer = KafkaProducer<String, TopicEntry<JSONObject>>(
-        kafkaConfig.producer(NAME)
+        kafkaConfig.producer(NAME),
+        TOPIC_USE_SAK_OG_BEHANDLING.keySerializer(),
+        TOPIC_USE_SAK_OG_BEHANDLING.valueSerializer
     )
 
     internal fun produce(
-        soknad: Any,
+        melding: Any,
         metadata: Metadata
     ) {
 
