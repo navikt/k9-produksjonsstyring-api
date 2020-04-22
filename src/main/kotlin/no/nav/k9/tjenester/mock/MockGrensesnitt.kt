@@ -109,7 +109,6 @@ fun Route.MockGrensesnitt(
 
     post { _: aksjonspunkt ->
         val aksjonspunktToggle = call.receive<AksjonspunktToggle>()
-        println(aksjonspunktToggle)
 
         val aksjonspunkt =
             Aksjonspunkter().aksjonspunkter().find { aksjonspunkt -> aksjonspunkt.kode == aksjonspunktToggle.kode }!!
