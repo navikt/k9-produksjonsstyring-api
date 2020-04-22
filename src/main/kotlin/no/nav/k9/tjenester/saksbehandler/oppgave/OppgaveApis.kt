@@ -34,7 +34,7 @@ internal fun Route.OppgaveApis(
     class hentOppgaver
 
     get { _: hentOppgaver ->
-        val queryParameter = call.request.queryParameters["oppgavekoId"]
+        val queryParameter = call.request.queryParameters["id"]
 
         if (configuration.erIkkeLokalt()) {
             withContext(
@@ -175,7 +175,7 @@ internal fun Route.OppgaveApis(
     class hentAntallOppgaverForOppgavekø
 
     get { _: hentAntallOppgaverForOppgavekø ->
-        var uuid = call.request.queryParameters["oppgavekoId"]
+        var uuid = call.request.queryParameters["id"]
         if (uuid.isNullOrBlank()) {
             uuid = UUID.randomUUID().toString()
         }

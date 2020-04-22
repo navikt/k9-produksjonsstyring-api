@@ -53,7 +53,7 @@ fun Route.AvdelingslederOppgavekøApis(
         call.respond(avdelingslederTjeneste.endreBehandlingsType(behandling))
     }
 
-    @Location("/ytelsestype")
+    @Location("/ytelsetype")
     class lagreYtelsestype
 
     post { _: lagreYtelsestype ->
