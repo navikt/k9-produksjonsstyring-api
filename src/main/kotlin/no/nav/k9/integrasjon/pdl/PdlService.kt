@@ -16,6 +16,7 @@ import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
+import no.nav.k9.integrasjon.rest.restKall
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -65,28 +66,8 @@ class PdlService @KtorExperimentalAPI constructor(
         pathParts = listOf()
     ).toString()
 
-    @KtorExperimentalAPI
-    internal suspend fun person(aktorId: String): PersonPdl? {
-        if (configuration.erLokalt()) {
-            return PersonPdl(
-                data = PersonPdl.Data(
-                    hentPerson = PersonPdl.Data.HentPerson(
-                        listOf(
-                            element =
-                            PersonPdl.Data.HentPerson.Folkeregisteridentifikator("012345678901")
-                        ),
-                        navn = listOf(
-                            PersonPdl.Data.HentPerson.Navn(
-                                etternavn = "Etternavn",
-                                forkortetNavn = "ForkortetNavn",
-                                fornavn = "Fornavn",
-                                mellomnavn = null
-                            )
-                        )
-                    )
-                )
-            )
-        }
+    internal suspend fun person(aktorId: String): String {
+
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
             mapOf("ident" to getQ2Ident(aktorId, configuration = configuration))
@@ -109,6 +90,7 @@ class PdlService @KtorExperimentalAPI constructor(
                 NavHeaders.CallId to UUID.randomUUID().toString()
             )
 
+        log.restKall(personUrl)
         val json = Retry.retry(
             operation = "hente-person",
             initialDelay = Duration.ofMillis(200),
@@ -132,10 +114,11 @@ class PdlService @KtorExperimentalAPI constructor(
                 }
             )
         }
+        log.info("Person fra pdl: $json")
         return try {
-            return objectMapper().readValue<PersonPdl>(json)
+            objectMapper().readValue<PersonPdl>(json).data.hentPerson.navn[0].forkortetNavn
         } catch (e: Exception) {
-            null
+            ""
         }
     }
 

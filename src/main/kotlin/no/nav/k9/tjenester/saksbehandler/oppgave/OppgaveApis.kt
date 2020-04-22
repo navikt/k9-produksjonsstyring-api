@@ -49,7 +49,7 @@ internal fun Route.OppgaveApis(
                 for (oppgave in oppgaver) {
 
                     val person = pdlService.person(oppgave.aktorId)
-                    if (person == null) {
+                    if (person.isEmpty()) {
                         // Flytt oppgave til vikafossen
                         continue
                     }
@@ -58,9 +58,9 @@ internal fun Route.OppgaveApis(
                             OppgaveStatusDto(false, null, false, null, null, null),
                             oppgave.behandlingId,
                             oppgave.fagsakSaksnummer,
-                            person.data.hentPerson.navn[0].forkortetNavn,
+                            person,
                             oppgave.system,
-                            person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                            oppgave.aktorId,
                             oppgave.behandlingType,
                             oppgave.fagsakYtelseType,
                             oppgave.behandlingStatus,
@@ -179,7 +179,7 @@ internal fun Route.OppgaveApis(
         if (uuid.isNullOrBlank()) {
             uuid = UUID.randomUUID().toString()
         }
-        call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid)!!))
+        call.respond(oppgaveTjeneste.hentOppgaver(UUID.fromString(uuid)!!).size)
     }
 
     @Location("/reserver")

@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory
 internal class AksjonspunktStream(
     kafkaConfig: KafkaConfig,
     configuration: Configuration,
-    k9sakEventHandler: K9sakEventHandler
+    k9sakEventHandler1: K9sakEventHandler
+//    gosysOppgaveGateway: GosysOppgaveGateway
 ) {
 
     private val stream = ManagedKafkaStreams(
@@ -22,7 +23,8 @@ internal class AksjonspunktStream(
         properties = kafkaConfig.stream(NAME),
         topology = topology(
             configuration = configuration,
-            k9sakEventHandler = k9sakEventHandler
+            k9sakEventHandler = k9sakEventHandler1
+//            gosysOppgaveGateway = gosysOppgaveGateway
         ),
         unreadyAfterStreamStoppedIn = kafkaConfig.unreadyAfterStreamStoppedIn
     )
@@ -38,6 +40,7 @@ internal class AksjonspunktStream(
         private fun topology(
             configuration: Configuration,
             k9sakEventHandler: K9sakEventHandler
+//            gosysOppgaveGateway: GosysOppgaveGateway
         ): Topology {
             val builder = StreamsBuilder()
             val fromTopic = Topic(

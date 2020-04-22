@@ -6,8 +6,5 @@ query($ident: ID!){
             etternavn
             forkortetNavn
         }
-        folkeregisteridentifikator(historikk: false){
-            identifikasjonsnummer
-        }
     }
 }

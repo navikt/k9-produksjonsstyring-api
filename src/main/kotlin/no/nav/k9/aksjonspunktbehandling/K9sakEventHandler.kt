@@ -10,7 +10,6 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.sakogbehandling.sendBehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.sendBehandlingOpprettet
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto
-import no.nav.k9.saogbehandling.SakOgBehadlingProducer
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.*
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -23,32 +22,28 @@ import javax.xml.datatype.XMLGregorianCalendar
 class K9sakEventHandler @KtorExperimentalAPI constructor(
     val oppgaveRepository: OppgaveRepository,
     val behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    val config: Configuration,
-    val sakOgBehadlingProducer: SakOgBehadlingProducer
+    val config: Configuration
 //    val gosysOppgaveGateway: GosysOppgaveGateway
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
     @KtorExperimentalAPI
-    fun prosesser(
-        event: BehandlingProsessEventDto
-    ) {
+    fun prosesser(event: BehandlingProsessEventDto) {
 
         log.info(objectMapper().writeValueAsString(event))
 
         val modell = behandlingProsessEventRepository.lagre(event)
 
-
-        val oppgave = modell.oppgave()
         // Sjekk om behandlingen starter eller avsluttes, skal da sende en melding til behandlesak for å fortelle modia.
         if (modell.starterSak()) {
-            behandlingOpprettet(modell, sakOgBehadlingProducer)
+            behandlingOpprettet(modell)
         }
 
-        if (!oppgave.aktiv) {
-            behandlingAvsluttet(modell, sakOgBehadlingProducer)
+        if (modell.avslutterSak()) {
+            behandlingAvsluttet(modell, config)
         }
 
+        val oppgave = modell.oppgave()
         oppgaveRepository.lagre(oppgave.eksternId) { forrigeOppgave: Oppgave? ->
             oppgave.reservasjon = forrigeOppgave?.reservasjon
             oppgave
@@ -57,15 +52,12 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         log.info(objectMapper().writeValueAsString(modell))
         log.info(objectMapper().writeValueAsString(oppgave))
 
-        // log.info(oppgave.datavarehusSak())
-        // log.info(oppgave.datavarehusBehandling())
+        log.info(oppgave.datavarehusSak())
+        log.info(oppgave.datavarehusBehandling())
 
     }
 
-    private fun behandlingOpprettet(
-        modell: Modell,
-        sakOgBehadlingProducer: SakOgBehadlingProducer
-    ) {
+    private fun behandlingOpprettet(modell: Modell) {
         val applikasjoner =
             Applikasjoner()
         applikasjoner.value = "k9-sak"
@@ -96,15 +88,13 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 )
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer().withKodeRef("k9 kode"))
-                .withAnsvarligEnhetREF("NASJONAL")
+                .withAnsvarligEnhetREF("modell.sisteEvent().behandlendeEnhet"),
+            config
         )
 
     }
 
-    private fun behandlingAvsluttet(
-        modell: Modell,
-        sakOgBehadlingProducer: SakOgBehadlingProducer
-    ) {
+    private fun behandlingAvsluttet(modell: Modell, config: Configuration) {
         val applikasjoner =
             Applikasjoner()
         applikasjoner.value = "k9-sak"
@@ -124,7 +114,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 .withBehandlingstype(Behandlingstyper().withValue("aS"))
                 .withAktoerREF(aktoer)
                 .withSakstema(Sakstemaer())
-                .withAnsvarligEnhetREF("NASJONAL")
+                .withAnsvarligEnhetREF(""),
+            config
         )
     }
 

@@ -52,7 +52,6 @@ internal class AksjonspunktLaget : SerDes<BehandlingProsessEventDto>() {
                 objectMapper.readValue(it)
             } catch (e: Exception) {
                 log.warn("", e)
-                log.warn(String(it))
                 null
             }
         }

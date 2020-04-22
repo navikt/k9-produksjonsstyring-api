@@ -13,6 +13,7 @@ import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
+import no.nav.k9.integrasjon.sakogbehandling.sendTilKø
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -71,7 +72,11 @@ internal fun Route.TestApis(
             // val client = AbacClient(configuration.abacClient())
             // client.evaluate(AbacRequest(mapOf(Category.AccessSubject to )))
             call.respond(
-                ""
+                sendTilKø(
+                    "{\"behandlingId\":1006113,\"fagsakSaksnummer\":\"5YRWM\",\"aktorId\":\"1288870094724\",\"behandlendeEnhet\":\"event.behandlendeEnhet\",\"behandlingsfrist\":\"2020-04-20T21:52:43.372765\",\"behandlingOpprettet\":\"2020-04-19T21:52:30\",\"forsteStonadsdag\":\"2020-04-19\",\"behandlingStatus\":{\"kode\":\"OPPRE\"},\"behandlingType\":{\"kode\":\"BT\n" +
+                            "-002\",\"kodeverk\":\"BEHANDLING_TYPE\",\"navn\":\"Førstegangsbehandling\"},\"fagsakYtelseType\":{\"kode\":\"OMP\",\"kodeverk\":\"FAGSAK_YTELSE_TYPE\",\"navn\":\"Omsorgspenger\"},\"aktiv\":true,\"system\":\"K9SAK\",\"oppgaveAvsluttet\":null,\"utfortFraAdmin\":false,\"eksternId\":\"b045eb00-00bc-47c2-8b38-75bbed3b2328\",\"reservasjon\":null,\"oppgaveEgenskap\":[],\"beslutterOppgave\":true,\"aksjonspunkte\n" +
+                            "}}", configuration
+                )
             )
         }
     }

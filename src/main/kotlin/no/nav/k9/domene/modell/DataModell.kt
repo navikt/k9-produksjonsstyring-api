@@ -113,7 +113,6 @@ data class Modell(
         var aktiv = true
         var oppgaveAvsluttet: LocalDateTime? = null
         var beslutterOppgave = false
-        var registrerPapir = false
 
         when (eventResultat) {
             EventResultat.LUKK_OPPGAVE -> {
@@ -132,9 +131,7 @@ data class Modell(
             EventResultat.OPPRETT_BESLUTTER_OPPGAVE -> {
                 beslutterOppgave = true
             }
-            EventResultat.OPPRETT_PAPIRSØKNAD_OPPGAVE -> {
-                registrerPapir = true
-            }
+            EventResultat.OPPRETT_PAPIRSØKNAD_OPPGAVE -> TODO()
             EventResultat.OPPRETT_OPPGAVE -> {
                 aktiv = true
             }
@@ -163,7 +160,7 @@ data class Modell(
             aksjonspunkter = event.aktiveAksjonspunkt(),
             tilBeslutter = beslutterOppgave,
             kombinert = false,
-            registrerPapir = registrerPapir,
+            registrerPapir = false,
             selvstendigFrilans = false,
             søktGradering = false,
             utbetalingTilBruker = false

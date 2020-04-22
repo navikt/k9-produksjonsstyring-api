@@ -66,7 +66,9 @@ dependencies {
         exclude(group = "com.sun.xml.ws", module = "policy")
     }
 
-    // Div
+    implementation("com.ibm.mq:com.ibm.mq.allclient:9.1.0.4")
+
+    // Divhor
     implementation("info.debatty:java-string-similarity:1.2.1")
 
     // Test

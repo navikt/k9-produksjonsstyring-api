@@ -19,7 +19,7 @@ fun Route.SaksbehandlerNøkkeltallApis(
         val queryParameter = call.request.queryParameters["sakslisteId"]
 
         call.respond(listOf(NyeOgFerdigstilteOppgaverDto(BehandlingType.FORSTEGANGSSOKNAD, 65, 98, LocalDate.now()),
-            NyeOgFerdigstilteOppgaverDto(BehandlingType.FORSTEGANGSSOKNAD, 13, 9, LocalDate.now())))
+            NyeOgFerdigstilteOppgaverDto(BehandlingType.KLAGE, 13, 9, LocalDate.now())))
 
     }
 }
