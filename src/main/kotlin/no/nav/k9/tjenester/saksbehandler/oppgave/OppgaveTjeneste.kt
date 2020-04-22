@@ -5,15 +5,10 @@ import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.oppslag.Attributt
-import no.nav.k9.domene.oppslag.Ident
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.typer.AktørId
-import no.nav.k9.domene.typer.PersonIdent
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.integrasjon.tps.TpsProxyV1Gateway
 import no.nav.k9.tilgangskontroll.log
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
@@ -37,20 +32,10 @@ class OppgaveTjeneste(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            val alleOppgaver = oppgaveRepository.hent().stream().filter { t -> t.sisteOppgave().reservasjon?.reservertAv.isNullOrEmpty() }
+            val alleOppgaver = oppgaveRepository.hentAktiveOppgaver().stream()
+                .filter { t -> t.sisteOppgave().reservasjon?.reservertAv.isNullOrEmpty() }
                 .map { t -> t.sisteOppgave() }.toList()
-            alleOppgaver.filter {
-                it.behandlingType in oppgaveKø.filtreringBehandlingTyper &&
-                        it.fagsakYtelseType in oppgaveKø.filtreringYtelseTyper &&
-                        it.behandlingOpprettet.toLocalDate() >= oppgaveKø.fomDato &&
-                        it.behandlingOpprettet.toLocalDate() <= oppgaveKø.tomDato &&
-                        it.tilBeslutter == oppgaveKø.tilBeslutter &&
-                        it.utbetalingTilBruker == oppgaveKø.utbetalingTilBruker &&
-                        it.selvstendigFrilans == oppgaveKø.selvstendigFrilans &&
-                        it.kombinert == oppgaveKø.kombinert &&
-                        it.søktGradering == oppgaveKø.søktGradering &&
-                        it.registrerPapir == oppgaveKø.registrerPapir
-            }
+            alleOppgaver
         } catch (e: Exception) {
             LOGGER.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -139,32 +124,49 @@ class OppgaveTjeneste(
         return hentOppgaver(oppgavekøId).size
     }
 
-    fun hentAntallOppgaverForAvdeling(): Int {
-        return oppgaveRepository.hent().size
+    fun hentAntallOppgaverTotalt(): Int {
+        return oppgaveRepository.hentAktiveOppgaver().size
     }
 
     suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
         val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver(ident)
         val list = mutableListOf<OppgaveDto>()
-        val token = IdToken(coroutineContext.idToken().value)
+
         for (oppgavemodell in reserverteOppgave) {
             val person = pdlService.person(oppgavemodell.sisteOppgave().aktorId)
-            if (person.isEmpty()) {
+            if (person == null) {
                 // Flytt oppgave til vikafossen
-                log.info("Ikke tilgang til bruker: " + ident)
+                log.info("Ikke tilgang til bruker: ${oppgavemodell.sisteOppgave().aktorId}")
                 continue
             }
+            val status = if (ident == "alexaban") {
+                OppgaveStatusDto(
+                    true,
+                    oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
+                    true,
+                    oppgavemodell.sisteOppgave().reservasjon?.reservertAv,
+                    "Saksbehandle Sara",
+                    null
+                )
+            } else {
+                OppgaveStatusDto(
+                    true,
+                    oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
+                    true,
+                    oppgavemodell.sisteOppgave().reservasjon?.reservertAv,
+                    IdToken(coroutineContext.idToken().value).getName(),
+                    null
+                )
+            }
+
             list.add(
                 OppgaveDto(
-                    OppgaveStatusDto(
-                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
-                        true, oppgavemodell.sisteOppgave().reservasjon?.reservertAv, token.getName(), null
-                    ),
+                    status,
                     oppgavemodell.sisteOppgave().behandlingId,
                     oppgavemodell.sisteOppgave().fagsakSaksnummer,
-                    person,
+                    person.data.hentPerson.navn[0].forkortetNavn,
                     oppgavemodell.sisteOppgave().system,
-                    oppgavemodell.sisteOppgave().aktorId,
+                    person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                     oppgavemodell.sisteOppgave().behandlingType,
                     oppgavemodell.sisteOppgave().fagsakYtelseType,
                     oppgavemodell.sisteOppgave().behandlingStatus,
@@ -194,5 +196,9 @@ class OppgaveTjeneste(
 
     fun hentNavnHvisFlyttetAvSaksbehandler(flyttetAv: String): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    fun hentOppgaveKøer(): MutableList<OppgaveKø> {
+        return oppgaveKøRepository.hent()
     }
 }

@@ -27,6 +27,7 @@ spec:
       memory: 512Mi
   ingresses:
     - https://k9-los-api.nais.preprod.local
+    - https://k9-los-api.nais.io
   replicas:
     min: 1
     max: 1
@@ -75,14 +76,6 @@ spec:
       value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
     - name: KAFKA_AKSJONSPUNKTHENDELSE_TOPIC
       value: privat-k9-aksjonspunkthendelse
-
-      #Mq sak og behandling
-    - name: MQGATEWAY02_NAME
-      value: MQ1LSC02
-    - name: MQGATEWAY02_HOSTNAME
-      value: b27apvl176.preprod.local
-    - name: MQGATEWAY02_PORT
-      value: '1413'
 
       # ABAC
     - name: ABAC_PDP_ENDPOINT_URL

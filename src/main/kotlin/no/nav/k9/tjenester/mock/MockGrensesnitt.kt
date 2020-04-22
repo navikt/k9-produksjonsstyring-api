@@ -95,7 +95,7 @@ fun Route.MockGrensesnitt(
                             }
                             div {
                                 classes = setOf("input-group-text display-4")
-                                +"${aksjonspunkt.kode} ${aksjonspunkt.navn} T  ype: ${aksjonspunkt.behandlingsstegtype} Plassering: ${aksjonspunkt.plassering} Totrinn: ${aksjonspunkt.totrinn}"
+                                +"${aksjonspunkt.kode} ${aksjonspunkt.navn} Type: ${aksjonspunkt.behandlingsstegtype} Plassering: ${aksjonspunkt.plassering} Totrinn: ${aksjonspunkt.totrinn}"
                             }
                         }
                     }
@@ -109,7 +109,6 @@ fun Route.MockGrensesnitt(
 
     post { _: aksjonspunkt ->
         val aksjonspunktToggle = call.receive<AksjonspunktToggle>()
-        println(aksjonspunktToggle)
 
         val aksjonspunkt =
             Aksjonspunkter().aksjonspunkter().find { aksjonspunkt -> aksjonspunkt.kode == aksjonspunktToggle.kode }!!

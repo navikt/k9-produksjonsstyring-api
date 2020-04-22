@@ -8,13 +8,18 @@ data class PersonPdl(
         val hentPerson: HentPerson
     ) {
         data class HentPerson(
+            val folkeregisteridentifikator: List<Folkeregisteridentifikator>,
             val navn: List<Navn>
         ) {
+            data class Folkeregisteridentifikator(
+                val identifikasjonsnummer: String
+            )
+
             data class Navn(
                 val etternavn: String,
                 val forkortetNavn: String,
                 val fornavn: String,
-                val mellomnavn: Any?
+                val mellomnavn: String?
             )
         }
     }

@@ -1,13 +1,19 @@
 package no.nav.k9.tjenester.avdelingsleder
 
-import no.nav.k9.domene.lager.oppgave.*
-import no.nav.k9.domene.modell.*
+import no.nav.k9.domene.modell.Enhet
+import no.nav.k9.domene.modell.KøSortering
+import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.BehandlingsTypeDto
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøNavnDto
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.YtelsesTypeDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.OppgavekøDto
 import no.nav.k9.tjenester.saksbehandler.saksliste.SorteringDto
 import java.time.LocalDate
+import java.util.*
 
 class AvdelingslederTjeneste(
     private val oppgaveKøRepository: OppgaveKøRepository,
@@ -49,29 +55,66 @@ class AvdelingslederTjeneste(
     fun hentOppgaveKøer(): List<OppgavekøDto> {
         return oppgaveKøRepository.hent().map {
             OppgavekøDto(
-                it.id,
-                it.navn,
-                SorteringDto(
-                    KøSortering.fraKode(it.sortering.navn),
-                    it.fomDato,
-                    it.tomDato,
-                    it.erDynamiskPeriode),
-                it.filtreringBehandlingTyper,
-                it.filtreringYtelseTyper,
-                it.sistEndret,
-                oppgaveTjeneste.hentAntallOppgaver(it.id),
-                it.tilBeslutter,
-                it.utbetalingTilBruker,
-                it.selvstendigFrilans,
-                it.kombinert,
-                it.søktGradering,
-                it.registrerPapir,
-                it.saksbehandlere
+                id = it.id,
+                navn = it.navn,
+                sortering = SorteringDto(
+                    sorteringType = KøSortering.fraKode(it.sortering.navn),
+                    fomDato = it.fomDato,
+                    tomDato = it.tomDato
+                ),
+                behandlingTyper = it.filtreringBehandlingTyper,
+                fagsakYtelseTyper = it.filtreringYtelseTyper,
+                andreKriterier = listOf(),
+                sistEndret = it.sistEndret,
+                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id),
+                saksbehandlere = it.saksbehandlere
             )
         }
     }
-    fun opprettOppgaveKø(oppgaveKø: OppgaveKø) {
-        oppgaveKø.sistEndret = LocalDate.now()
+
+    fun opprettOppgaveKø(): OppgavekøIdDto {
+        val uuid = UUID.randomUUID()
+        oppgaveKøRepository.lagre(
+            OppgaveKø(
+                uuid,
+                "Ny kø",
+                LocalDate.now(),
+                KøSortering.OPPRETT_BEHANDLING,
+                mutableListOf(),
+                mutableListOf(),
+                mutableListOf(),
+                Enhet.NASJONAL,
+                LocalDate.now(),
+                LocalDate.now(),
+                emptyList()
+            )
+        )
+        return OppgavekøIdDto(uuid)
+    }
+
+    fun slettOppgavekø(uuid: UUID) {
+        oppgaveKøRepository.slett(uuid)
+    }
+
+    fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(behandling.id.id)
+        if (behandling.markert) oppgaveKø.filtreringBehandlingTyper.add(behandling.behandlingType)
+        else oppgaveKø.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
+            it != behandling.behandlingType }.toMutableList()
+        oppgaveKøRepository.lagre(oppgaveKø)
+    }
+
+    fun endreYtelsesType(ytelse: YtelsesTypeDto) {
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(ytelse.id.id)
+        if (ytelse.markert) oppgaveKø.filtreringYtelseTyper.add(ytelse.ytelseType)
+        else oppgaveKø.filtreringYtelseTyper = oppgaveKø.filtreringYtelseTyper.filter {
+            it != ytelse.ytelseType }.toMutableList()
+        oppgaveKøRepository.lagre(oppgaveKø)
+    }
+
+    fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(køNavn.id)
+        oppgaveKø.navn = køNavn.navn
         oppgaveKøRepository.lagre(oppgaveKø)
     }
 }
