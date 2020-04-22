@@ -85,6 +85,10 @@ data class Configuration(private val config: ApplicationConfig) {
         return !config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
     }
 
+    fun erLokalt(): Boolean {
+        return config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
+    }
+
     fun erIDevFss(): Boolean {
         val optionalString = config.getOptionalString("nav.clustername", secret = false)
         if (optionalString.isNullOrBlank()) {
