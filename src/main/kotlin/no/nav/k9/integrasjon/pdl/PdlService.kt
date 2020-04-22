@@ -16,7 +16,6 @@ import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.integrasjon.rest.restKall
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -66,8 +65,9 @@ class PdlService @KtorExperimentalAPI constructor(
         pathParts = listOf()
     ).toString()
 
+    @KtorExperimentalAPI
     internal suspend fun person(aktorId: String): PersonPdl? {
-        if (!configuration.erIkkeLokalt()) {
+        if (configuration.erLokalt()) {
             return PersonPdl(
                 data = PersonPdl.Data(
                     hentPerson = PersonPdl.Data.HentPerson(
@@ -109,7 +109,6 @@ class PdlService @KtorExperimentalAPI constructor(
                 NavHeaders.CallId to UUID.randomUUID().toString()
             )
 
-        log.restKall(personUrl)
         val json = Retry.retry(
             operation = "hente-person",
             initialDelay = Duration.ofMillis(200),
@@ -133,7 +132,6 @@ class PdlService @KtorExperimentalAPI constructor(
                 }
             )
         }
-        log.info("Person fra pdl: $json")
         return try {
             return objectMapper().readValue<PersonPdl>(json)
         } catch (e: Exception) {
