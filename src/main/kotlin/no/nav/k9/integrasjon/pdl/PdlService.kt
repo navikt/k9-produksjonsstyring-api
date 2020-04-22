@@ -67,7 +67,26 @@ class PdlService @KtorExperimentalAPI constructor(
     ).toString()
 
     internal suspend fun person(aktorId: String): PersonPdl? {
-
+        if (!configuration.erIkkeLokalt()) {
+            return PersonPdl(
+                data = PersonPdl.Data(
+                    hentPerson = PersonPdl.Data.HentPerson(
+                        listOf(
+                            element =
+                            PersonPdl.Data.HentPerson.Folkeregisteridentifikator("012345678901")
+                        ),
+                        navn = listOf(
+                            PersonPdl.Data.HentPerson.Navn(
+                                etternavn = "Etternavn",
+                                forkortetNavn = "ForkortetNavn",
+                                fornavn = "Fornavn",
+                                mellomnavn = null
+                            )
+                        )
+                    )
+                )
+            )
+        }
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
             mapOf("ident" to getQ2Ident(aktorId, configuration = configuration))
