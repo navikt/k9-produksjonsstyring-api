@@ -49,10 +49,10 @@ internal class AksjonspunktLaget : SerDes<BehandlingProsessEventDto>() {
     override fun deserialize(topic: String?, data: ByteArray?): BehandlingProsessEventDto? {
         return data?.let {
             return try {
-                log.info(String(it))
                 objectMapper.readValue(it)
             } catch (e: Exception) {
                 log.warn("", e)
+                log.warn(String(it))
                 null
             }
         }
