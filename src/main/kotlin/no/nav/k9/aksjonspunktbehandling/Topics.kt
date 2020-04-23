@@ -28,6 +28,7 @@ fun objectMapper(): ObjectMapper {
     return jacksonObjectMapper()
         .dusseldorfConfigured()
         .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
+        .enable(SerializationFeature.INDENT_OUTPUT)
         .setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
 }
 
