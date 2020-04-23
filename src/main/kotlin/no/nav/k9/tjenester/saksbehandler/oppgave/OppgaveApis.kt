@@ -9,15 +9,18 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
+import joptsimple.internal.Strings
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
+import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
+import kotlin.streams.toList
 
 private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
@@ -58,9 +61,15 @@ internal fun Route.OppgaveApis(
                             OppgaveStatusDto(false, null, false, null, null, null),
                             oppgave.behandlingId,
                             oppgave.fagsakSaksnummer,
-                            person.data.hentPerson.navn[0].forkortetNavn,
+                            Strings.join(
+                                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                                    Aksjonspunkter().aksjonspunkter()
+                                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }?.navn
+                                }.toList(),//person.data.hentPerson.navn[0].forkortetNavn,
+                                ", "
+                            ),
                             oppgave.system,
-                            person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                           "",// person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                             oppgave.behandlingType,
                             oppgave.fagsakYtelseType,
                             oppgave.behandlingStatus,
