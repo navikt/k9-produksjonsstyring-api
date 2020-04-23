@@ -12,7 +12,7 @@ class OppgavekøDto(
     var behandlingTyper: List<BehandlingType>,
     var fagsakYtelseTyper: List<FagsakYtelseType>,
     var andreKriterier: List<AndreKriterierType>,
-    val sistEndret: LocalDate,
+    var sistEndret: LocalDate,
     var antallBehandlinger: Int,
     val saksbehandlere: List<Saksbehandler>
 )

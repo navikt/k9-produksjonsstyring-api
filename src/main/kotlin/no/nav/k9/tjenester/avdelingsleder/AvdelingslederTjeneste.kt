@@ -60,7 +60,7 @@ class AvdelingslederTjeneste(
                 ),
                 behandlingTyper = it.filtreringBehandlingTyper,
                 fagsakYtelseTyper = it.filtreringYtelseTyper,
-                andreKriterier = listOf(),
+                andreKriterier = it.filtreringAndreKriterierType,
                 sistEndret = it.sistEndret,
                 antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id),
                 saksbehandlere = it.saksbehandlere
@@ -102,9 +102,10 @@ class AvdelingslederTjeneste(
 
     fun endreYtelsesType(ytelse: YtelsesTypeDto) {
         val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(ytelse.id))
-        if (ytelse.checked) oppgaveKø.filtreringYtelseTyper.add(ytelse.fagsakYtelseType)
-        else oppgaveKø.filtreringYtelseTyper = oppgaveKø.filtreringYtelseTyper.filter {
-            it != ytelse.fagsakYtelseType }.toMutableList()
+        oppgaveKø.filtreringYtelseTyper = mutableListOf()
+        if (ytelse.fagsakYtelseType !== null) {
+            oppgaveKø.filtreringYtelseTyper.add(ytelse.fagsakYtelseType)
+        }
         oppgaveKøRepository.lagre(oppgaveKø)
     }
 
