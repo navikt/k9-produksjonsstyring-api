@@ -166,7 +166,8 @@ data class Modell(
             registrerPapir = registrerPapir,
             selvstendigFrilans = false,
             søktGradering = false,
-            utbetalingTilBruker = false
+            utbetalingTilBruker = false,
+            skjermet = false
         )
     }
 
