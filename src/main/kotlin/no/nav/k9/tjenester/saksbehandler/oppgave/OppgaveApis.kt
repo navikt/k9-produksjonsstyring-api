@@ -57,11 +57,11 @@ internal fun Route.OppgaveApis(
                         continue
                     }
                     val navn = if (configuration.erIDevFss()) {
-                        Strings.join(
+                        "${oppgave.fagsakSaksnummer} " +  Strings.join(
                             oppgave.aksjonspunkter.liste.entries.stream().map { t ->
                                 val a = Aksjonspunkter().aksjonspunkter()
                                     .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                                "${oppgave.fagsakSaksnummer} ${a?.kode} ${a?.navn}"
+                                "${a?.kode} ${a?.navn}"
                             }.toList(),//person.data.hentPerson.navn[0].forkortetNavn,
                             ", "
                         )
