@@ -56,20 +56,28 @@ internal fun Route.OppgaveApis(
                         oppgaveTjeneste.flyttOppgaveTilVikafossen(oppgave)
                         continue
                     }
+                    val navn = if (configuration.erIDevFss()) {
+                        Strings.join(
+                            oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                                val a = Aksjonspunkter().aksjonspunkter()
+                                    .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                                "${oppgave.fagsakSaksnummer} ${a?.kode} ${a?.navn}"
+                            }.toList(),//person.data.hentPerson.navn[0].forkortetNavn,
+                            ", "
+                        )
+                    } else {
+                        person.data.hentPerson.navn[0].forkortetNavn
+                    }
+
+
                     list.add(
                         OppgaveDto(
                             OppgaveStatusDto(false, null, false, null, null, null),
                             oppgave.behandlingId,
                             oppgave.fagsakSaksnummer,
-                            Strings.join(
-                                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                                    Aksjonspunkter().aksjonspunkter()
-                                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }?.navn
-                                }.toList(),//person.data.hentPerson.navn[0].forkortetNavn,
-                                ", "
-                            ),
+                            navn,
                             oppgave.system,
-                           "",// person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                            person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                             oppgave.behandlingType,
                             oppgave.fagsakYtelseType,
                             oppgave.behandlingStatus,
