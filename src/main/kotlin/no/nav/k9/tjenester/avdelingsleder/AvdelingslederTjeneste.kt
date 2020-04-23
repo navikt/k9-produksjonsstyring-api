@@ -3,12 +3,8 @@ package no.nav.k9.tjenester.avdelingsleder
 import no.nav.k9.domene.modell.Enhet
 import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.tjenester.avdelingsleder.oppgaveko.BehandlingsTypeDto
-import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
-import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøNavnDto
-import no.nav.k9.tjenester.avdelingsleder.oppgaveko.YtelsesTypeDto
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.*
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.OppgavekøDto
 import no.nav.k9.tjenester.saksbehandler.saksliste.SorteringDto
@@ -58,7 +54,7 @@ class AvdelingslederTjeneste(
                 id = it.id,
                 navn = it.navn,
                 sortering = SorteringDto(
-                    sorteringType = KøSortering.fraKode(it.sortering.navn),
+                    sorteringType = KøSortering.fraKode(it.sortering.kode),
                     fomDato = it.fomDato,
                     tomDato = it.tomDato
                 ),
@@ -89,7 +85,7 @@ class AvdelingslederTjeneste(
                 emptyList()
             )
         )
-        return OppgavekøIdDto(uuid)
+        return OppgavekøIdDto(uuid.toString())
     }
 
     fun slettOppgavekø(uuid: UUID) {
@@ -97,24 +93,45 @@ class AvdelingslederTjeneste(
     }
 
     fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
-        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(behandling.id.id)
-        if (behandling.markert) oppgaveKø.filtreringBehandlingTyper.add(behandling.behandlingType)
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(behandling.id))
+        if (behandling.checked) oppgaveKø.filtreringBehandlingTyper.add(behandling.behandlingType)
         else oppgaveKø.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
             it != behandling.behandlingType }.toMutableList()
         oppgaveKøRepository.lagre(oppgaveKø)
     }
 
     fun endreYtelsesType(ytelse: YtelsesTypeDto) {
-        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(ytelse.id.id)
-        if (ytelse.markert) oppgaveKø.filtreringYtelseTyper.add(ytelse.ytelseType)
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(ytelse.id))
+        if (ytelse.checked) oppgaveKø.filtreringYtelseTyper.add(ytelse.fagsakYtelseType)
         else oppgaveKø.filtreringYtelseTyper = oppgaveKø.filtreringYtelseTyper.filter {
-            it != ytelse.ytelseType }.toMutableList()
+            it != ytelse.fagsakYtelseType }.toMutableList()
+        oppgaveKøRepository.lagre(oppgaveKø)
+    }
+
+    fun endreKriterium(kriteriumDto: AndreKriterierDto) {
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(kriteriumDto.id))
+        if (kriteriumDto.checked) oppgaveKø.filtreringAndreKriterierType.add(kriteriumDto.andreKriterierType)
+        else oppgaveKø.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
+            it != kriteriumDto.andreKriterierType }.toMutableList()
         oppgaveKøRepository.lagre(oppgaveKø)
     }
 
     fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
-        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(køNavn.id)
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(køNavn.id))
         oppgaveKø.navn = køNavn.navn
+        oppgaveKøRepository.lagre(oppgaveKø)
+    }
+
+    fun endreKøSortering(køSortering: KøSorteringDto) {
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(køSortering.id))
+        oppgaveKø.sortering = køSortering.oppgavekoSorteringValg
+        oppgaveKøRepository.lagre(oppgaveKø)
+    }
+
+    fun endreKøSorteringDato(datoSortering: SorteringDatoDto) {
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(datoSortering.id))
+        oppgaveKø.fomDato = datoSortering.fomDato
+        oppgaveKø.fomDato = datoSortering.fomDato
         oppgaveKøRepository.lagre(oppgaveKø)
     }
 }

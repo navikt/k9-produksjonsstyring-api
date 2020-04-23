@@ -42,7 +42,7 @@ fun Route.AvdelingslederOppgavekøApis(
 
     post { _: slettOppgaveKø ->
         val uuid = call.receive<OppgavekøIdDto>()
-        call.respond(avdelingslederTjeneste.slettOppgavekø(uuid.id))
+        call.respond(avdelingslederTjeneste.slettOppgavekø(UUID.fromString(uuid.id)))
     }
 
     @Location("/behandlingstype")
@@ -61,4 +61,27 @@ fun Route.AvdelingslederOppgavekøApis(
         call.respond(avdelingslederTjeneste.endreYtelsesType(ytelse))
     }
 
+    @Location("/andre-kriterier")
+    class endreKriterier
+
+    post { _: endreKriterier ->
+        val kriterium = call.receive<AndreKriterierDto>()
+        call.respond(avdelingslederTjeneste.endreKriterium(kriterium))
+    }
+
+    @Location("/sortering")
+    class lagreSortering
+
+    post { _: lagreSortering ->
+        val sortering = call.receive<KøSorteringDto>()
+        call.respond(avdelingslederTjeneste.endreKøSortering(sortering))
+    }
+
+    @Location("/sortering-tidsintervall-dato")
+    class lagreSorteringType
+
+    post { _: lagreSorteringType ->
+        val sortering = call.receive<SorteringDatoDto>()
+        call.respond(avdelingslederTjeneste.endreKøSorteringDato(sortering))
+    }
 }

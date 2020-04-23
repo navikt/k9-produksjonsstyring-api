@@ -15,9 +15,9 @@ data class OppgaveKø(
     var filtreringYtelseTyper: MutableList<FagsakYtelseType>,
     var filtreringAndreKriterierType: MutableList<AndreKriterierType>,
     val enhet: Enhet,
-    val fomDato: LocalDate,
-    val tomDato: LocalDate,
-    val saksbehandlere: List<Saksbehandler>
+    var fomDato: LocalDate,
+    var tomDato: LocalDate,
+    var saksbehandlere: List<Saksbehandler>
 //    val tilBeslutter: Boolean,
 //    val utbetalingTilBruker: Boolean,
 //    val selvstendigFrilans: Boolean,
@@ -49,15 +49,15 @@ enum class Enhet(val navn: String) {
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class KøSortering(override val kode: String, override val navn: String, val felttype: String, val feltkategori: String) :
     Kodeverdi {
-    OPPRETT_BEHANDLING("OPPRBEH", "Dato for opprettelse av behandling", "", ""),
-    FORSTE_STONADSDAG("FORSTONAD", "Dato for første stønadsdag", "", "");
+    OPPRETT_BEHANDLING("OPPRBEH", "Dato for opprettelse av behandling", "DATO", ""),
+    FORSTE_STONADSDAG("FORSTONAD", "Dato for første stønadsdag", "DATO", "");
 
     override val kodeverk = "KO_SORTERING"
 
     companion object {
         @JsonCreator
         @JvmStatic
-        fun fraKode(navn: String): KøSortering = KøSortering.values().find { it.navn == navn }!!
+        fun fraKode(kode: String): KøSortering = values().find { it.kode == kode }!!
     }
 }
 
@@ -73,6 +73,11 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fraKode(kode: String): AndreKriterierType = values().find { it.kode == kode }!!
+    }
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
