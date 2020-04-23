@@ -42,7 +42,6 @@ internal fun Route.NavAnsattApis(requestContextService: RequestContextService, c
                     idToken = idtoken
                 )
             ) {
-
                 val token = IdToken(idtoken.value)
                 call.respond(
                     InnloggetNavAnsattDto(
