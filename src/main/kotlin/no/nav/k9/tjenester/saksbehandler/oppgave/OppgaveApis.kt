@@ -50,7 +50,7 @@ internal fun Route.OppgaveApis(
 
                     val person = pdlService.person(oppgave.aktorId)
                     if (person == null) {
-                        // Flytt oppgave til vikafossen
+                        oppgaveTjeneste.flyttOppgaveTilVikafossen(oppgave)
                         continue
                     }
                     list.add(

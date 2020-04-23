@@ -135,7 +135,7 @@ class OppgaveTjeneste(
         for (oppgavemodell in reserverteOppgave) {
             val person = pdlService.person(oppgavemodell.sisteOppgave().aktorId)
             if (person == null) {
-                // Flytt oppgave til vikafossen
+                flyttOppgaveTilVikafossen(oppgave = oppgavemodell.sisteOppgave())
                 log.info("Ikke tilgang til bruker: ${oppgavemodell.sisteOppgave().aktorId}")
                 continue
             }
@@ -200,5 +200,13 @@ class OppgaveTjeneste(
 
     fun hentOppgaveKøer(): MutableList<OppgaveKø> {
         return oppgaveKøRepository.hent()
+    }
+
+    fun flyttOppgaveTilVikafossen(oppgave: Oppgave) {
+        oppgaveRepository.lagre(oppgave.eksternId, f = { forrigeOppgave ->
+            forrigeOppgave?.skjermet = true
+            log.info("setter ${forrigeOppgave.toString()} til skjermet")
+            forrigeOppgave!!
+        })
     }
 }

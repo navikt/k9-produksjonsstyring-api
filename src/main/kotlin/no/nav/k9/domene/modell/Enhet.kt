@@ -78,7 +78,8 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class FagsakYtelseType private constructor(override val kode: String, override val navn: String) : Kodeverdi {
     PLEIEPENGER_SYKT_BARN("PSB", "Pleiepenger sykt barn"),
-    OMSORGSPENGER("OMP", "Omsorgspenger");
+    OMSORGSPENGER("OMP", "Omsorgspenger"),
+    FRISINN("FRISINN", "Frisinn");
 
     override val kodeverk = "FAGSAK_YTELSE_TYPE"
 

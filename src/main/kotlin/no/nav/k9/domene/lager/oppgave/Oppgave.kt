@@ -35,7 +35,8 @@ data class Oppgave(
     val selvstendigFrilans: Boolean,
     val kombinert: Boolean,
     val søktGradering: Boolean,
-    val registrerPapir: Boolean
+    val registrerPapir: Boolean,
+    var skjermet: Boolean
 
 ) {
     fun datavarehusSak(): String {
