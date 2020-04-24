@@ -38,7 +38,6 @@ internal fun Route.NavAnsattApis(requestContextService: RequestContextService, c
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
-                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
                     idToken = idtoken
                 )
             ) {

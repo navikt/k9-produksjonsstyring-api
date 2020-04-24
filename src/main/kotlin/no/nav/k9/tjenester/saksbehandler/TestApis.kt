@@ -11,10 +11,8 @@ import kotlinx.coroutines.withContext
 import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.pdl.PdlService
-import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import org.slf4j.LoggerFactory
-import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -42,7 +40,6 @@ internal fun Route.TestApis(
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
                 idToken = idtoken
             )
         ) {
@@ -64,7 +61,6 @@ internal fun Route.TestApis(
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
                 idToken = call.idToken()
             )
         ) {

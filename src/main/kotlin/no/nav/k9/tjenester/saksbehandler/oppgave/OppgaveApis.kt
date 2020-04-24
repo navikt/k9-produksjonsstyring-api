@@ -13,7 +13,6 @@ import joptsimple.internal.Strings
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.pdl.PdlService
-import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.idToken
@@ -43,7 +42,6 @@ internal fun Route.OppgaveApis(
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
-                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
                     idToken = call.idToken()
                 )
             ) {
@@ -153,7 +151,6 @@ internal fun Route.OppgaveApis(
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
-                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
                     idToken = idToken
                 )
             ) {
@@ -175,7 +172,6 @@ internal fun Route.OppgaveApis(
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
-                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
                     idToken = idToken
                 )
             ) {
@@ -210,7 +206,6 @@ internal fun Route.OppgaveApis(
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
-                    correlationId = CorrelationId(UUID.randomUUID().toString()),//call.correlationId(),
                     idToken = idToken
                 )
             ) {

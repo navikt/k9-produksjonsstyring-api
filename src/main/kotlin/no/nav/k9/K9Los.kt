@@ -5,12 +5,8 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.features.CORS
-import io.ktor.features.CallId
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
+import io.ktor.features.*
 import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.jackson.jackson
@@ -22,8 +18,9 @@ import io.ktor.routing.Routing
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
-import no.nav.helse.dusseldorf.ktor.auth.*
-import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
+import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
+import no.nav.helse.dusseldorf.ktor.auth.allIssuers
+import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
 import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthReporter
 import no.nav.helse.dusseldorf.ktor.health.HealthService
@@ -32,6 +29,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
+import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -56,7 +54,6 @@ import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApi
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
-import java.net.URI
 import java.time.Duration
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -83,7 +80,7 @@ fun Application.k9Los() {
         }
     }
 
-
+    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
 
     install(StatusPages) {
         DefaultStatusPages()
@@ -206,31 +203,27 @@ fun Application.k9Los() {
     install(MicrometerMetrics) {
         init(appId)
     }
-
-
-    install(CallId) {
-        fromXCorrelationIdHeader()
-    }
-
+    
     intercept(ApplicationCallPipeline.Monitoring) {
         call.request.log()
     }
-
-//    install(CallLogging) {
-//        correlationIdAndRequestIdInMdc()
-//        logRequests()
-//        mdc("id_token_jti") { call ->
-//            try {
-//                idTokenProvider.getIdToken(call).getId()
-//            } catch (cause: Throwable) {
-//                null
-//            }
-//        }
-//    }
-
-
+    
+    install(CallId) {
+        generated()
+    }
+   
+    install(CallLogging) {
+        correlationIdAndRequestIdInMdc()
+        logRequests()
+        mdc("id_token_jti") { call ->
+            try { idTokenProvider.getIdToken(call).getId() }
+            catch (cause: Throwable) { null }
+        }
+    }
 }
 
+@KtorExperimentalAPI
+@KtorExperimentalLocationsAPI
 private fun Route.api(
     requestContextService: RequestContextService,
     oppgaveTjeneste: OppgaveTjeneste,
@@ -274,14 +267,4 @@ private fun Route.api(
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
     }
-}
-
-private fun Map<Issuer, Set<ClaimRule>>.healthCheckMap(
-    initial: MutableMap<URI, HttpRequestHealthConfig>
-): Map<URI, HttpRequestHealthConfig> {
-    forEach { issuer, _ ->
-        initial[issuer.jwksUri()] =
-            HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, includeExpectedStatusEntity = false)
-    }
-    return initial.toMap()
 }
