@@ -62,7 +62,7 @@ internal fun Route.OppgaveApis(
                                 val a = Aksjonspunkter().aksjonspunkter()
                                     .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
                                 "${a?.kode} ${a?.navn}"
-                            }.toList(),//person.data.hentPerson.navn[0].forkortetNavn,
+                            }.toList(),
                             ", "
                         )
                     } else {

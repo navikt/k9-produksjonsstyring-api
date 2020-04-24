@@ -7,7 +7,7 @@ metadata:
     team: k9saksbehandling
 spec:
   image: {{ image }}
-  port: 8080
+  port: 8020
   liveness:
     path: isalive
     initialDelay: 20
@@ -40,8 +40,11 @@ spec:
     paths:
       - mountPath: /var/run/secrets/nais.io/serviceuser
         kvPath: /serviceuser/data/prod/srvk9los
+      - mountPath: /var/run/secrets/nais.io/azuread
+        kvPath: /azuread/data/prod/creds/k9-los-api
       - mountPath: /var/run/secrets/nais.io/application
         kvPath: /kv/prod/fss/k9-los-api/default
+  sidecar: true
   webproxy: true
   env:
     - name: NAIS_STS_DISCOVERY_ENDPOINT
@@ -54,12 +57,26 @@ spec:
       value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/.well-known/openid-configuration
     - name: AZURE_V2_DISCOVERY_ENDPOINT
       value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration
-    - name: HENTE_DOKUMENT_SCOPES
-      value: 0c5a6709-ba2a-42b7-bbfc-9b9f844e2ee2/.default
+    - name: AZURE_TOKEN_ENDPOINT
+      value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token
     - name: OPPGAVE_BASE_URI
       value: https://oppgave.nais.adeo.no
+    - name: DB_URL
+      value: jdbc:postgresql://b27dbvl014.prod.local:5432/k9-los
     - name: DB_VAULT_MOUNTPATH
       value: postgresql/prod-fss/
+    - name: COOKIE_NAME
+      value: selvbetjening-idtoken
 
     - name: PDL_URL
       value: https://pdl-api.nais.adeo.no/graphql
+
+      # Kafka 
+    - name: BOOTSTRAP_SERVERS
+      value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.adeo.no:8443
+    - name: KAFKA_AKSJONSPUNKTHENDELSE_TOPIC
+      value: privat-k9-aksjonspunkthendelse
+
+      # ABAC
+    - name: ABAC_PDP_ENDPOINT_URL
+      value: https://wasapp.adeo.no/asm-pdp/authorize
