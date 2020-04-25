@@ -34,7 +34,7 @@ fun Route.InnsiktGrensesnitt(
 
                     h1 { +"Innsikt i k9-los" }
                     p {
-                        +"Antall åpne oppgaver fordelt på aksjonspunkt"
+                        +"Antall åpne oppgaver fordelt på aksjonspunkt."
                     }
 
                     val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
@@ -42,7 +42,7 @@ fun Route.InnsiktGrensesnitt(
 
                     val aksjonspunkter = Aksjonspunkter().aksjonspunkter()
                     p {
-                        +"Det er nå ${aktiveOppgaver.size} åpne aksjonskunkter."
+                        +"Det er nå ${aktiveOppgaver.size} åpne oppgaver."
                     }
 
                     val ukjenteAksjonspunkter =
