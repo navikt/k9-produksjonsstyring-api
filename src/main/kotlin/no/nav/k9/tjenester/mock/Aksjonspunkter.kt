@@ -392,6 +392,15 @@ class Aksjonspunkter {
                 totrinn = true
             ),
             Aksjonspunkt(
+                kode = "9003",
+                navn = "Vurder årskvantum kvote",
+                aksjonspunktype = "Manuell",
+                behandlingsstegtype = "Vurder uttak",
+                plassering = "UT",
+                vilkårtype = "Årskvantum",
+                totrinn = false
+            ),
+            Aksjonspunkt(
                 kode = "6002",
                 navn = "Saksbehandler initierer kontroll av søkers opplysningsplikt",
                 aksjonspunktype = "Saksbehandleroverstyring",
@@ -611,5 +620,6 @@ data class Aksjonspunkt(
     val behandlingsstegtype: String,
     val plassering: String,
     val vilkårtype: String,
-    val totrinn: Boolean
+    val totrinn: Boolean,
+    var antall: Int = 0 
 )

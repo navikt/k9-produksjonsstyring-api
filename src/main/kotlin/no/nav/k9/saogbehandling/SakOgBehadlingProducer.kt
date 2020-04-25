@@ -4,7 +4,10 @@ import no.nav.helse.dusseldorf.ktor.health.HealthCheck
 import no.nav.helse.dusseldorf.ktor.health.Healthy
 import no.nav.helse.dusseldorf.ktor.health.Result
 import no.nav.helse.dusseldorf.ktor.health.UnHealthy
+import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.kafka.*
+import no.nav.k9.saogbehandling.kontrakt.BehandlingAvsluttet
+import no.nav.k9.saogbehandling.kontrakt.BehandlingOpprettet
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
@@ -24,15 +27,34 @@ class SakOgBehadlingProducer(
         private val logger = LoggerFactory.getLogger(SakOgBehadlingProducer::class.java)
     }
 
-    private val producer = KafkaProducer<String, TopicEntry<JSONObject>>(
+    private val producer = KafkaProducer(
         kafkaConfig.producer(NAME),
         TOPIC_USE_SAK_OG_BEHANDLING.keySerializer(),
         TOPIC_USE_SAK_OG_BEHANDLING.valueSerializer
     )
 
-    internal fun produce(
-        melding: Any,
-        metadata: Metadata
+    internal fun opprettetBehandlng(
+        metadata: Metadata,
+        behandlingOpprettet: BehandlingOpprettet
+    ) {
+        val recordMetaData = producer.send(
+            ProducerRecord(
+                TOPIC_USE_SAK_OG_BEHANDLING.name,
+                "key",
+                TopicEntry(
+                    metadata = metadata,
+                    data = JSONObject()
+                        .put("metadata", metadata)
+                        .put("data", objectMapper().writeValueAsString(behandlingOpprettet)) 
+                )
+            )
+        ).get()
+        logger.info("Søknad sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+    }
+
+    internal fun avsluttetBehandling(
+        metadata: Metadata,
+        behandlingAvsluttet: BehandlingAvsluttet
     ) {
 
         val recordMetaData = producer.send(
@@ -41,7 +63,9 @@ class SakOgBehadlingProducer(
                 "key",
                 TopicEntry(
                     metadata = metadata,
-                    data = JSONObject()
+                    data =  JSONObject()
+                        .put("metadata", metadata)
+                        .put("data", objectMapper().writeValueAsString(behandlingAvsluttet))
                 )
             )
         ).get()

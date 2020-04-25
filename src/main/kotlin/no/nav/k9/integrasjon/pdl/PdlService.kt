@@ -158,6 +158,88 @@ class PdlService @KtorExperimentalAPI constructor(
         }
     }
 
+/*
+* {
+  "data": {
+    "hentIdenter": {
+      "identer": [
+        {
+          "ident": "2392173967319",
+          "historisk": false,
+          "gruppe": "AKTORID"
+        }
+      ]
+    }
+  }
+}
+* */
+    @KtorExperimentalAPI
+    internal suspend fun identifikator(fnummer: String): AktøridPdl? {
+        if (configuration.erLokalt()) {
+            return AktøridPdl(
+                data = AktøridPdl.Data(
+                    hentIdenter = AktøridPdl.Data.HentIdenter(
+                        identer = listOf(
+                            AktøridPdl.Data.HentIdenter.Identer(gruppe = "AKTORID", historisk = false, ident = "2392173967319")
+                        )
+                    )
+                )
+            )
+        }
+        val queryRequest = QueryRequest(
+            getStringFromResource("/pdl/hentIdent.graphql"),
+            mapOf("ident" to getQ2Ident(fnummer, configuration = configuration),
+                "historikk" to "false",
+                "grupper" to "[\"AKTORID\"]")
+            )
+        
+        val httpRequest = personUrl
+            .httpPost()
+            .body(
+                objectMapper().writeValueAsString(
+                    queryRequest
+                )
+            )
+            .header(
+                HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
+                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(henteNavnScopes)
+                    .asAuthoriationHeader(),
+                HttpHeaders.Accept to "application/json",
+                HttpHeaders.ContentType to "application/json",
+                NavHeaders.Tema to "OMS",
+                NavHeaders.CallId to UUID.randomUUID().toString()
+            )
+
+        val json = Retry.retry(
+            operation = "hente-person",
+            initialDelay = Duration.ofMillis(200),
+            factor = 2.0,
+            logger = log
+        ) {
+            val (request, _, result) = Operation.monitored(
+                app = "k9-los-api",
+                operation = "hente-person",
+                resultResolver = { 200 == it.second.statusCode }
+            ) { httpRequest.awaitStringResponseResult() }
+
+            result.fold(
+                { success -> success },
+                { error ->
+                    log.error(
+                        "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+                    )
+                    log.error(error.toString())
+                    throw IllegalStateException("Feil ved henting av person.")
+                }
+            )
+        }
+        return try {
+            return objectMapper().readValue<AktøridPdl>(json)
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
     @KtorExperimentalAPI
     private fun getQ2Ident(aktorId: String, configuration: Configuration): String {
         if (!configuration.erIDevFss()) {
