@@ -10,6 +10,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.*
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.tjenester.mock.Aksjonspunkter
+import kotlin.streams.toList
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -40,6 +41,21 @@ fun Route.InnsiktGrensesnitt(
 
 
                     val aksjonspunkter = Aksjonspunkter().aksjonspunkter()
+                    p {
+                        +"Det er nå ${aktiveOppgaver.size} åpne aksjonskunkter."
+                    }
+
+                    val ukjenteAksjonspunkter =
+                        aktiveOppgaver.stream().flatMap { t -> t.sisteOppgave().aksjonspunkter.liste.keys.stream() }
+                            .filter { t -> !aksjonspunkter.map { a -> a.kode }.contains(t) }.toList()
+
+                    for (u in ukjenteAksjonspunkter) {
+                        div {
+                            classes = setOf("input-group-text display-4")
+                            +"Ukjent aksjonspunkt: ${u} "
+                        }
+                    }
+
                     for (aksjonspunkt in aksjonspunkter) {
                         aksjonspunkt.antall = aktiveOppgaver.filter { oppgaveModell ->
                             oppgaveModell.sisteOppgave().aksjonspunkter.liste.containsKey(
@@ -47,16 +63,14 @@ fun Route.InnsiktGrensesnitt(
                             )
                         }.size
                     }
-                    
+
                     for (aksjonspunkt in aksjonspunkter.stream().sorted { o1, o2 -> o2.antall.compareTo(o1.antall) }) {
-                        if (aksjonspunkt.antall == 0){
+                        if (aksjonspunkt.antall == 0) {
                             continue
                         }
                         div {
-                            div {
-                                classes = setOf("input-group-text display-4")
-                                +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
-                            }
+                            classes = setOf("input-group-text display-4")
+                            +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
                     }
                 }
