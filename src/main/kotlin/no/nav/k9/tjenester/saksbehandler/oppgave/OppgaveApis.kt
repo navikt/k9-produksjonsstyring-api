@@ -59,7 +59,7 @@ internal fun Route.OppgaveApis(
                             oppgave.aksjonspunkter.liste.entries.stream().map { t ->
                                 val a = Aksjonspunkter().aksjonspunkter()
                                     .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                                "${a?.kode} ${a?.navn}"
+                                "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
                             }.toList(),
                             ", "
                         )
