@@ -611,5 +611,6 @@ data class Aksjonspunkt(
     val behandlingsstegtype: String,
     val plassering: String,
     val vilkårtype: String,
-    val totrinn: Boolean
+    val totrinn: Boolean,
+    var antall: Int = 0 
 )

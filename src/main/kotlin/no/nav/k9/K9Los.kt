@@ -44,6 +44,7 @@ import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.avdelingsleder.saksbehandler.AvdelingslederSaksbehandlerApis
+import no.nav.k9.tjenester.innsikt.InnsiktGrensesnitt
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
 import no.nav.k9.tjenester.kodeverk.KodeverkApis
 import no.nav.k9.tjenester.konfig.KonfigApis
@@ -164,6 +165,9 @@ fun Application.k9Los() {
         )
         route("mock") {
             MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
+        }
+        route("innsikt") {
+            InnsiktGrensesnitt(oppgaveRepository)
         }
         if (configuration.erIkkeLokalt()) {
             authenticate(*issuers.allIssuers()) {
