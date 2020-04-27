@@ -45,8 +45,8 @@ class K9sakEventHandlerTest {
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-            config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            config = config
+//            sakOgBehadlingProducer = sakOgBehadlingProducer
         )
 
         @Language("JSON") val json =
@@ -101,8 +101,8 @@ class K9sakEventHandlerTest {
             OppgaveRepository(dataSource = dataSource),
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-            config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            config = config
+//            sakOgBehadlingProducer = sakOgBehadlingProducer
         )
 
         @Language("JSON") val json =
@@ -154,8 +154,8 @@ class K9sakEventHandlerTest {
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
-            config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            config = config
+//            sakOgBehadlingProducer = sakOgBehadlingProducer
         )
 
         @Language("JSON") val json =
@@ -209,8 +209,8 @@ class K9sakEventHandlerTest {
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
-            config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            config = config
+//            sakOgBehadlingProducer = sakOgBehadlingProducer
         )
 
         @Language("JSON") val json =
@@ -267,8 +267,8 @@ class K9sakEventHandlerTest {
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
-            config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            config = config
+//            sakOgBehadlingProducer = sakOgBehadlingProducer
 //            gosysOppgaveGateway = gosysOppgaveGateway
         )
 

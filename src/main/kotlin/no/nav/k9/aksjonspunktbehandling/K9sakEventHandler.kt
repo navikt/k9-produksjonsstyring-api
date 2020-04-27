@@ -21,8 +21,8 @@ import javax.xml.datatype.XMLGregorianCalendar
 class K9sakEventHandler @KtorExperimentalAPI constructor(
     val oppgaveRepository: OppgaveRepository,
     val behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    val config: Configuration,
-    val sakOgBehadlingProducer: SakOgBehadlingProducer
+    val config: Configuration
+//    val sakOgBehadlingProducer: SakOgBehadlingProducer
 //    val gosysOppgaveGateway: GosysOppgaveGateway
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
@@ -40,11 +40,11 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         val oppgave = modell.oppgave()
         // Sjekk om behandlingen starter eller avsluttes, skal da sende en melding til behandlesak for å fortelle modia.
         if (modell.starterSak()) {
-            behandlingOpprettet(modell, sakOgBehadlingProducer)
+            behandlingOpprettet(modell)
         }
 
         if (!oppgave.aktiv) {
-            behandlingAvsluttet(modell, sakOgBehadlingProducer)
+            behandlingAvsluttet(modell)
         }
 
         oppgaveRepository.lagre(oppgave.eksternId) { forrigeOppgave: Oppgave? ->
@@ -61,8 +61,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun behandlingOpprettet(
-        modell: Modell,
-        sakOgBehadlingProducer: SakOgBehadlingProducer
+        modell: Modell
+//        sakOgBehadlingProducer: SakOgBehadlingProducer
     ) {
         val applikasjoner =
             Applikasjoner()
@@ -99,8 +99,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun behandlingAvsluttet(
-        modell: Modell,
-        sakOgBehadlingProducer: SakOgBehadlingProducer
+        modell: Modell
+//        sakOgBehadlingProducer: SakOgBehadlingProducer
     ) {
         val applikasjoner =
             Applikasjoner()

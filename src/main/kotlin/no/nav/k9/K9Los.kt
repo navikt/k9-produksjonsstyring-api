@@ -37,7 +37,6 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.kafka.AsynkronProsesseringV1Service
-import no.nav.k9.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
@@ -119,14 +118,14 @@ fun Application.k9Los() {
     )
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
-    val sakOgBehadlingProducer = SakOgBehadlingProducer(
-        kafkaConfig = configuration.getKafkaConfig()
-    )
+//    val sakOgBehadlingProducer = SakOgBehadlingProducer(
+//        kafkaConfig = configuration.getKafkaConfig()
+//    )
     val k9sakEventHandler = K9sakEventHandler(
         oppgaveRepository = oppgaveRepository,
         behandlingProsessEventRepository = behandlingProsessEventRepository
-        , config = configuration,
-        sakOgBehadlingProducer = sakOgBehadlingProducer
+        , config = configuration
+//        sakOgBehadlingProducer = sakOgBehadlingProducer
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
@@ -138,7 +137,7 @@ fun Application.k9Los() {
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
         asynkronProsesseringV1Service.stop()
-        sakOgBehadlingProducer.stop()
+//        sakOgBehadlingProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
     }
     val requestContextService = RequestContextService()
