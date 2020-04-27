@@ -76,7 +76,9 @@ spec:
       value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
     - name: KAFKA_AKSJONSPUNKTHENDELSE_TOPIC
       value: privat-k9-aksjonspunkthendelse
-
+    - name: KAFKA_SAKOGBEHANDLING_TOPIC
+      value: aapen-sob-oppgaveHendelse-v1
+      
       # ABAC
     - name: ABAC_PDP_ENDPOINT_URL
       value: https://wasapp-q1.adeo.no/asm-pdp/authorize
