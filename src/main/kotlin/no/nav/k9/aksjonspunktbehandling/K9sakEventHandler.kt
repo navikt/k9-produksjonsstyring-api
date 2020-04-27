@@ -7,10 +7,8 @@ import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.integrasjon.sakogbehandling.sendBehandlingAvsluttet
-import no.nav.k9.integrasjon.sakogbehandling.sendBehandlingOpprettet
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto
-import no.nav.k9.saogbehandling.SakOgBehadlingProducer
+import no.nav.k9.sakogbehandling.SakOgBehadlingProducer
 import no.nav.melding.virksomhet.behandlingsstatus.hendelsehandterer.v1.hendelseshandtererbehandlingsstatus.*
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -77,28 +75,27 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         val sisteEvent = modell.sisteEvent()
         val fagsakYtelseType = FagsakYtelseType.fraKode(sisteEvent.ytelseTypeKode)
         aktoer.withAktoerId(sisteEvent.aktørId)
-        sendBehandlingOpprettet(
-            BehandlingOpprettet()
-                .withBehandlingsID("k9-los-" + sisteEvent.behandlingId)
-                .withBehandlingstema(
-                    Behandlingstemaer(
-                        fagsakYtelseType.navn,
-                        fagsakYtelseType.kode,
-                        fagsakYtelseType.kodeverk
-                    )
+        val behandlingOpprettet = BehandlingOpprettet()
+            .withBehandlingsID("k9-los-" + sisteEvent.behandlingId)
+            .withBehandlingstema(
+                Behandlingstemaer(
+                    fagsakYtelseType.navn,
+                    fagsakYtelseType.kode,
+                    fagsakYtelseType.kodeverk
                 )
-                .withHendelsesId(UUID.randomUUID().toString())
-                .withHendelsesprodusentREF(applikasjoner)
-                .withHendelsesTidspunkt(gregDate(sisteEvent.eventTid.toLocalDate()))
-                .withBehandlingstype(
-                    Behandlingstyper(
-                    ).withKodeRef(sisteEvent.behandlingTypeKode)
-                )
-                .withAktoerREF(aktoer)
-                .withSakstema(Sakstemaer().withKodeRef("k9 kode"))
-                .withAnsvarligEnhetREF("NASJONAL")
-        )
-
+            )
+            .withHendelsesId(UUID.randomUUID().toString())
+            .withHendelsesprodusentREF(applikasjoner)
+            .withHendelsesTidspunkt(gregDate(sisteEvent.eventTid.toLocalDate()))
+            .withBehandlingstype(
+                Behandlingstyper(
+                ).withKodeRef(sisteEvent.behandlingTypeKode)
+            )
+            .withAktoerREF(aktoer)
+            .withSakstema(Sakstemaer().withKodeRef("k9 kode"))
+            .withAnsvarligEnhetREF("NASJONAL")
+        
+      //  sakOgBehadlingProducer.opprettetBehandlng(no.nav.k9.kafka.Metadata(1, "", ""), objectMapper().writeValueAsString(behandlingOpprettet))
     }
 
     private fun behandlingAvsluttet(
@@ -114,18 +111,18 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             "forrige" //Er fra kodeverk: http://nav.no/kodeverk/Kode/Prim_c3_a6rRelasjonstyper/forrige?v=1
         val aktoer = Aktoer()
         aktoer.withAktoerId(modell.sisteEvent().aktørId)
-        sendBehandlingAvsluttet(
-            BehandlingAvsluttet()
-                .withBehandlingsID("k9-los-" + modell.sisteEvent().behandlingId)
-                .withBehandlingstema(Behandlingstemaer("", "", ""))
-                .withHendelsesId(UUID.randomUUID().toString())
-                .withHendelsesprodusentREF(applikasjoner)
-                .withHendelsesTidspunkt(gregDate(modell.sisteEvent().eventTid.toLocalDate()))
-                .withBehandlingstype(Behandlingstyper().withValue("aS"))
-                .withAktoerREF(aktoer)
-                .withSakstema(Sakstemaer())
-                .withAnsvarligEnhetREF("NASJONAL")
-        )
+        val behandlingAvsluttet = BehandlingAvsluttet()
+            .withBehandlingsID("k9-los-" + modell.sisteEvent().behandlingId)
+            .withBehandlingstema(Behandlingstemaer("", "", ""))
+            .withHendelsesId(UUID.randomUUID().toString())
+            .withHendelsesprodusentREF(applikasjoner)
+            .withHendelsesTidspunkt(gregDate(modell.sisteEvent().eventTid.toLocalDate()))
+            .withBehandlingstype(Behandlingstyper().withValue("aS"))
+            .withAktoerREF(aktoer)
+            .withSakstema(Sakstemaer())
+            .withAnsvarligEnhetREF("NASJONAL")
+      //  sakOgBehadlingProducer.avsluttetBehandling(no.nav.k9.kafka.Metadata(1, "", ""), objectMapper().writeValueAsString(behandlingAvsluttet))
+       
     }
 
     private fun gregDate(localDate: LocalDate): XMLGregorianCalendar? {

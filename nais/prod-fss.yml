@@ -58,7 +58,7 @@ spec:
     - name: AZURE_V2_DISCOVERY_ENDPOINT
       value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration
     - name: AZURE_TOKEN_ENDPOINT
-      value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token
+      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/oauth2/v2.0/token
     - name: OPPGAVE_BASE_URI
       value: https://oppgave.nais.adeo.no
     - name: DB_URL

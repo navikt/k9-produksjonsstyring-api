@@ -1,4 +1,4 @@
-package no.nav.k9.saogbehandling
+package no.nav.k9.sakogbehandling
 
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
 import no.nav.helse.dusseldorf.ktor.health.Healthy
@@ -6,8 +6,6 @@ import no.nav.helse.dusseldorf.ktor.health.Result
 import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.kafka.*
-import no.nav.k9.saogbehandling.kontrakt.BehandlingAvsluttet
-import no.nav.k9.saogbehandling.kontrakt.BehandlingOpprettet
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
@@ -35,7 +33,7 @@ class SakOgBehadlingProducer(
 
     internal fun opprettetBehandlng(
         metadata: Metadata,
-        behandlingOpprettet: BehandlingOpprettet
+        behandlingOpprettet: String
     ) {
         val recordMetaData = producer.send(
             ProducerRecord(
@@ -54,7 +52,7 @@ class SakOgBehadlingProducer(
 
     internal fun avsluttetBehandling(
         metadata: Metadata,
-        behandlingAvsluttet: BehandlingAvsluttet
+        behandlingAvsluttet: String?
     ) {
 
         val recordMetaData = producer.send(
