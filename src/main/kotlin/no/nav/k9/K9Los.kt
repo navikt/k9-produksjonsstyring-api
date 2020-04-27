@@ -119,7 +119,8 @@ fun Application.k9Los() {
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
 //    val sakOgBehadlingProducer = SakOgBehadlingProducer(
-//        kafkaConfig = configuration.getKafkaConfig()
+//        kafkaConfig = configuration.getKafkaConfig(),
+//        config = configuration
 //    )
     val k9sakEventHandler = K9sakEventHandler(
         oppgaveRepository = oppgaveRepository,

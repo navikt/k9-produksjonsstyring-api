@@ -15,6 +15,3 @@ internal data class TopicUse<V>(
     internal fun keySerializer() = StringSerializer()
 }
 
-internal object Topics {
-    internal const val SAK_OG_BEHANDLING = "private_sak_og_behandling_topic"
-}

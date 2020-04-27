@@ -1,27 +1,32 @@
 package no.nav.k9.sakogbehandling
 
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
 import no.nav.helse.dusseldorf.ktor.health.Healthy
 import no.nav.helse.dusseldorf.ktor.health.Result
 import no.nav.helse.dusseldorf.ktor.health.UnHealthy
+import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.kafka.*
+import no.nav.k9.sakogbehandling.kontrakt.BehandlingAvsluttet
+import no.nav.k9.sakogbehandling.kontrakt.BehandlingOpprettet
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 
-class SakOgBehadlingProducer(
-    val kafkaConfig: KafkaConfig
+class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
+    val kafkaConfig: KafkaConfig,
+    val config: Configuration
 ) : HealthCheck {
-
+    private val TOPIC_USE_SAK_OG_BEHANDLING = TopicUse(
+        name = config.getAksjonspunkthendelseTopic(),
+        valueSerializer = SakOgBehandlingSerialier()
+    )
     private companion object {
         private val NAME = "SakOgBehadlingProducer"
-        private val TOPIC_USE_SAK_OG_BEHANDLING = TopicUse(
-            name = Topics.SAK_OG_BEHANDLING,
-            valueSerializer = SakOgBehandlingSerialier()
-        )
+      
         private val logger = LoggerFactory.getLogger(SakOgBehadlingProducer::class.java)
     }
 
@@ -33,7 +38,7 @@ class SakOgBehadlingProducer(
 
     internal fun opprettetBehandlng(
         metadata: Metadata,
-        behandlingOpprettet: String
+        behandlingOpprettet: BehandlingOpprettet
     ) {
         val recordMetaData = producer.send(
             ProducerRecord(
@@ -52,7 +57,7 @@ class SakOgBehadlingProducer(
 
     internal fun avsluttetBehandling(
         metadata: Metadata,
-        behandlingAvsluttet: String?
+        behandlingAvsluttet: BehandlingAvsluttet
     ) {
 
         val recordMetaData = producer.send(

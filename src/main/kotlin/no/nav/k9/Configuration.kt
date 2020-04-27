@@ -48,6 +48,11 @@ data class Configuration(private val config: ApplicationConfig) {
             ?: "privat-k9-aksjonspunkthendelse"
     }
 
+    internal fun getSakOgBehandlingTopic(): String {
+        return config.getOptionalString("nav.kafka.sakOgBehandlingTopic", secret = false)
+            ?: ""
+    }
+
     internal fun getKafkaConfig() =
         config.getRequiredString("nav.kafka.bootstrap_servers", secret = false).let { bootstrapServers ->
             val trustStore = config.getRequiredString("nav.trust_store.path", secret = false).let { trustStorePath ->
