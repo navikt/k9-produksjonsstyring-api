@@ -1,5 +1,9 @@
 package no.nav.k9.integrasjon.pdl
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
 import java.time.LocalDate
 
 
@@ -18,6 +22,8 @@ data class PersonPdl(
             )
             
             data class Doedsfall(
+                @JsonSerialize(using = ToStringSerializer::class)
+                @JsonDeserialize(using = LocalDateDeserializer::class)
                 val doedsdato: LocalDate
             )
             
