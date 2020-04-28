@@ -1,5 +1,7 @@
 package no.nav.k9.integrasjon.pdl
 
+import java.time.LocalDate
+
 
 data class PersonPdl(
     val `data`: Data
@@ -11,6 +13,14 @@ data class PersonPdl(
             val folkeregisteridentifikator: List<Folkeregisteridentifikator>,
             val navn: List<Navn>
         ) {
+            data class Kjoenn(
+                val kjoenn: String
+            )
+            
+            data class Doedsfall(
+                val doedsdato: LocalDate
+            )
+            
             data class Folkeregisteridentifikator(
                 val identifikasjonsnummer: String
             )
