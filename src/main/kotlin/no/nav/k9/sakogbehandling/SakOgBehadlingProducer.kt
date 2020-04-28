@@ -7,7 +7,10 @@ import no.nav.helse.dusseldorf.ktor.health.Result
 import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.kafka.*
+import no.nav.k9.kafka.KafkaConfig
+import no.nav.k9.kafka.Metadata
+import no.nav.k9.kafka.TopicEntry
+import no.nav.k9.kafka.TopicUse
 import no.nav.k9.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.sakogbehandling.kontrakt.BehandlingOpprettet
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -20,8 +23,9 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
     val kafkaConfig: KafkaConfig,
     val config: Configuration
 ) : HealthCheck {
+    @KtorExperimentalAPI
     private val TOPIC_USE_SAK_OG_BEHANDLING = TopicUse(
-        name = config.getAksjonspunkthendelseTopic(),
+        name = config.getSakOgBehandlingTopic(),
         valueSerializer = SakOgBehandlingSerialier()
     )
     private companion object {
@@ -30,12 +34,14 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
         private val logger = LoggerFactory.getLogger(SakOgBehadlingProducer::class.java)
     }
 
+    @KtorExperimentalAPI
     private val producer = KafkaProducer(
         kafkaConfig.producer(NAME),
         TOPIC_USE_SAK_OG_BEHANDLING.keySerializer(),
         TOPIC_USE_SAK_OG_BEHANDLING.valueSerializer
     )
 
+    @KtorExperimentalAPI
     internal fun opprettetBehandlng(
         metadata: Metadata,
         behandlingOpprettet: BehandlingOpprettet
@@ -55,6 +61,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
         logger.info("Søknad sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
     }
 
+    @KtorExperimentalAPI
     internal fun avsluttetBehandling(
         metadata: Metadata,
         behandlingAvsluttet: BehandlingAvsluttet
