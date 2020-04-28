@@ -26,7 +26,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 //    val gosysOppgaveGateway: GosysOppgaveGateway
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
-
+    private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
     @KtorExperimentalAPI
     fun prosesser(
         event: BehandlingProsessEventDto
@@ -73,7 +73,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
             behandlingstype = BehandlingOpprettet.Behandlingstype("", "", sisteEvent.behandlingTypeKode),
             sakstema = BehandlingOpprettet.Sakstema("", "", "OMS"),
-            behandlingstema = BehandlingOpprettet.Behandlingstema("", "", ""),
+            behandlingstema = BehandlingOpprettet.Behandlingstema("", "", `Omsorgspenger, Pleiepenger og opplæringspenger`),
             aktoerREF = listOf(BehandlingOpprettet.AktoerREF(sisteEvent.aktørId)),
             ansvarligEnhetREF = "NASJONAL",
             primaerBehandlingREF = BehandlingOpprettet.PrimaerBehandlingREF(
@@ -95,14 +95,14 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     ) {
         val sisteEvent = modell.sisteEvent()
         val behandlingAvsluttet = BehandlingAvsluttet(
-            hendelseType = "behandlingOpprettet",
+            hendelseType = "behandlingAvsluttet",
             hendelsesId = UUID.randomUUID().toString(),
             hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", ""),
             hendelsesTidspunkt = sisteEvent.eventTid,
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
             behandlingstype = BehandlingAvsluttet.Behandlingstype("", "", sisteEvent.behandlingTypeKode),
             sakstema = BehandlingAvsluttet.Sakstema("", "", "OMS"),
-            behandlingstema = BehandlingAvsluttet.Behandlingstema("", "", ""),
+            behandlingstema = BehandlingAvsluttet.Behandlingstema("", "", `Omsorgspenger, Pleiepenger og opplæringspenger`),
             aktoerREF = listOf(BehandlingAvsluttet.AktoerREF(sisteEvent.aktørId)),
             ansvarligEnhetREF = "NASJONAL",
             primaerBehandlingREF = BehandlingAvsluttet.PrimaerBehandlingREF(
