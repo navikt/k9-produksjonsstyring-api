@@ -36,7 +36,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
 
     private val producer: KafkaProducer<String, String> = KafkaProducer(
         kafkaConfig.producer(NAME),
-        null,
+        StringSerializer(),
         StringSerializer()
     )
 
