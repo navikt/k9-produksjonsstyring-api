@@ -36,8 +36,11 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.kafka.AsynkronProsesseringV1Service
+import no.nav.k9.tilgangskontroll.Tilgangskontroll
+import no.nav.k9.tilgangskontroll.TilgangskontrollContext
+import no.nav.k9.tilgangskontroll.abac.AbacClient
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
@@ -143,6 +146,8 @@ fun Application.k9Los() {
         log.info("AsynkronProsesseringV1Service Stoppet.")
     }
     val requestContextService = RequestContextService()
+    
+    val tilgangskontroll = Tilgangskontroll(TilgangskontrollContext(AbacClient(configuration.abacClient())))
     install(CallIdRequired)
 
     install(Locations)
@@ -179,7 +184,8 @@ fun Application.k9Los() {
                     kodeverkTjeneste = kodeverkTjeneste,
                     pdlService = pdlService,
                     accessTokenClientResolver = accessTokenClientResolver,
-                    configuration = configuration
+                    configuration = configuration,
+                    tilgangskontroll = tilgangskontroll
                 )
             }
         } else {
@@ -195,7 +201,9 @@ fun Application.k9Los() {
                 avdelingslederTjeneste,
                 pdlService = pdlService,
                 accessTokenClientResolver = accessTokenClientResolver,
-                configuration = configuration
+                configuration = configuration,
+                tilgangskontroll = tilgangskontroll
+                
             )
         }
 
@@ -236,7 +244,8 @@ private fun Route.api(
     avdelingslederTjeneste: AvdelingslederTjeneste,
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
-    configuration: Configuration
+    configuration: Configuration,
+    tilgangskontroll : Tilgangskontroll
 ) {
     route("api") {
         AdminApis()
@@ -267,7 +276,7 @@ private fun Route.api(
             }
         }
         NavAnsattApis(requestContextService, configuration)
-        TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration)
+        TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration, tilgangskontroll = tilgangskontroll)
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)

@@ -12,6 +12,9 @@ import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
+import no.nav.k9.tilgangskontroll.Policies
+import no.nav.k9.tilgangskontroll.Tilgangskontroll
+import no.nav.k9.tilgangskontroll.rsbac.DecisionEnums
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
@@ -20,7 +23,8 @@ internal fun Route.TestApis(
     requestContextService: RequestContextService,
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
-    configuration: Configuration
+    configuration: Configuration,
+    tilgangskontroll: Tilgangskontroll
 ) {
 
     val log = LoggerFactory.getLogger("Route.TestApis")
@@ -64,10 +68,9 @@ internal fun Route.TestApis(
                 idToken = call.idToken()
             )
         ) {
-            // val client = AbacClient(configuration.abacClient())
-            // client.evaluate(AbacRequest(mapOf(Category.AccessSubject to )))
             call.respond(
-                ""
+                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
+                    .getDecision().decision == DecisionEnums.PERMIT
             )
         }
     }
