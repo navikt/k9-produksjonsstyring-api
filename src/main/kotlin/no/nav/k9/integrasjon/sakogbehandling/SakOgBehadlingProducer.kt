@@ -44,13 +44,15 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
     internal fun opprettetBehandlng(
         behandlingOpprettet: BehandlingOpprettet
     ) {
+        val melding = objectMapper().writeValueAsString(behandlingOpprettet)
         val recordMetaData = producer.send(
            ProducerRecord(
                 TOPIC_USE_SAK_OG_BEHANDLING.name,
-               objectMapper().writeValueAsString(behandlingOpprettet)
+               melding
             )
         ).get()
-        logger.info("Søknad sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        logger.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        logger.info("StartetBehandling: $melding")
     }
 
     @KtorExperimentalAPI
@@ -58,12 +60,15 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
         behandlingAvsluttet: BehandlingAvsluttet
     ) {
 
+        val melding = objectMapper().writeValueAsString(behandlingAvsluttet)
         val recordMetaData = producer.send(
             ProducerRecord(
                 TOPIC_USE_SAK_OG_BEHANDLING.name,
-                objectMapper().writeValueAsString(behandlingAvsluttet))
+                melding
+            )
         ).get()
-        logger.info("Søknad sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        logger.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        logger.info("AvsluttetBehandling: $melding")
     }
 
 
