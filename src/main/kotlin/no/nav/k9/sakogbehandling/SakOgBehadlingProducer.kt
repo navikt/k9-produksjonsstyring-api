@@ -8,7 +8,6 @@ import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.kafka.KafkaConfig
-import no.nav.k9.kafka.Metadata
 import no.nav.k9.kafka.TopicEntry
 import no.nav.k9.kafka.TopicUse
 import no.nav.k9.sakogbehandling.kontrakt.BehandlingAvsluttet
@@ -16,6 +15,7 @@ import no.nav.k9.sakogbehandling.kontrakt.BehandlingOpprettet
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 
@@ -34,28 +34,20 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
         private val logger = LoggerFactory.getLogger(SakOgBehadlingProducer::class.java)
     }
 
-    @KtorExperimentalAPI
-    private val producer = KafkaProducer(
+    private val producer: KafkaProducer<String, String> = KafkaProducer(
         kafkaConfig.producer(NAME),
-        TOPIC_USE_SAK_OG_BEHANDLING.keySerializer(),
-        TOPIC_USE_SAK_OG_BEHANDLING.valueSerializer
+        null,
+        StringSerializer()
     )
 
     @KtorExperimentalAPI
     internal fun opprettetBehandlng(
-        metadata: Metadata,
         behandlingOpprettet: BehandlingOpprettet
     ) {
         val recordMetaData = producer.send(
-            ProducerRecord(
+           ProducerRecord(
                 TOPIC_USE_SAK_OG_BEHANDLING.name,
-                "key",
-                TopicEntry(
-                    metadata = metadata,
-                    data = JSONObject()
-                        .put("metadata", metadata)
-                        .put("data", objectMapper().writeValueAsString(behandlingOpprettet)) 
-                )
+               objectMapper().writeValueAsString(behandlingOpprettet)
             )
         ).get()
         logger.info("Søknad sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
@@ -63,21 +55,13 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     internal fun avsluttetBehandling(
-        metadata: Metadata,
         behandlingAvsluttet: BehandlingAvsluttet
     ) {
 
         val recordMetaData = producer.send(
             ProducerRecord(
                 TOPIC_USE_SAK_OG_BEHANDLING.name,
-                "key",
-                TopicEntry(
-                    metadata = metadata,
-                    data =  JSONObject()
-                        .put("metadata", metadata)
-                        .put("data", objectMapper().writeValueAsString(behandlingAvsluttet))
-                )
-            )
+                objectMapper().writeValueAsString(behandlingAvsluttet))
         ).get()
         logger.info("Søknad sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
     }

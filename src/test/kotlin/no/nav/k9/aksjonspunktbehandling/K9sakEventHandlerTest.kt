@@ -37,7 +37,8 @@ class K9sakEventHandlerTest {
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
-        every { sakOgBehadlingProducer.opprettetBehandlng(any(), any()) } just runs
+        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
+        every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
@@ -93,7 +94,8 @@ class K9sakEventHandlerTest {
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
-        every { sakOgBehadlingProducer.opprettetBehandlng(any(), any()) } just runs
+        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
+        every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource),
@@ -145,7 +147,7 @@ class K9sakEventHandlerTest {
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
-        every { sakOgBehadlingProducer.opprettetBehandlng(any(), any()) } just runs
+        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()
         val k9sakEventHandler = K9sakEventHandler(
@@ -201,7 +203,7 @@ class K9sakEventHandlerTest {
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
-        every { sakOgBehadlingProducer.opprettetBehandlng(any(), any()) } just runs
+        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()
@@ -260,7 +262,7 @@ class K9sakEventHandlerTest {
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
-        every { sakOgBehadlingProducer.opprettetBehandlng(any(), any()) } just runs
+        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
         
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()

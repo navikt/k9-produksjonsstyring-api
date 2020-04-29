@@ -44,7 +44,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
 
         if (!oppgave.aktiv) {
-            behandlingAvsluttet(modell)
+            behandlingAvsluttet(modell, sakOgBehadlingProducer)
         }
 
         oppgaveRepository.lagre(oppgave.eksternId) { forrigeOppgave: Oppgave? ->
@@ -60,6 +60,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
     }
 
+    @KtorExperimentalAPI
     private fun behandlingOpprettet(
         modell: Modell,
         sakOgBehadlingProducer: SakOgBehadlingProducer
@@ -86,12 +87,13 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             styringsinformasjonListe = listOf()
         )
 
-        sakOgBehadlingProducer.opprettetBehandlng(no.nav.k9.kafka.Metadata(1, "", ""),behandlingOpprettet)
+        sakOgBehadlingProducer.opprettetBehandlng(behandlingOpprettet)
     }
 
+    @KtorExperimentalAPI
     private fun behandlingAvsluttet(
-        modell: Modell
-//        sakOgBehadlingProducer: SakOgBehadlingProducer
+        modell: Modell,
+        sakOgBehadlingProducer: SakOgBehadlingProducer
     ) {
         val sisteEvent = modell.sisteEvent()
         val behandlingAvsluttet = BehandlingAvsluttet(
@@ -115,8 +117,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             styringsinformasjonListe = listOf(),
             avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "")
         )
-
-        //  sakOgBehadlingProducer.avsluttetBehandling(no.nav.k9.kafka.Metadata(1, "", ""), objectMapper().writeValueAsString(behandlingAvsluttet))
+        sakOgBehadlingProducer.avsluttetBehandling(behandlingAvsluttet)
 
     }
 
