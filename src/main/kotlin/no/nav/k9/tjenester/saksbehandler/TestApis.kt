@@ -12,9 +12,7 @@ import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.tilgangskontroll.Policies
 import no.nav.k9.tilgangskontroll.Tilgangskontroll
-import no.nav.k9.tilgangskontroll.rsbac.DecisionEnums
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
@@ -69,8 +67,9 @@ internal fun Route.TestApis(
             )
         ) {
             call.respond(
-                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
-                    .getDecision().decision == DecisionEnums.PERMIT
+                ""
+//                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
+//                    .getDecision().decision == DecisionEnums.PERMIT
             )
         }
     }
