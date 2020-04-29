@@ -1,4 +1,4 @@
-package no.nav.k9.sakogbehandling.kontrakt
+package no.nav.k9.integrasjon.sakogbehandling.kontrakt
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
@@ -7,12 +7,11 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
 import java.time.LocalDateTime
 
 
-data class BehandlingAvsluttet(
+data class BehandlingOpprettet(
     val aktoerREF: List<AktoerREF>,
     val ansvarligEnhetREF: String,
     val applikasjonBehandlingREF: String,
     val applikasjonSakREF: String,
-    val avslutningsstatus: Avslutningsstatus,
     val behandlingsID: String,
     val behandlingstema: Behandlingstema,
     val behandlingstype: Behandlingstype,
@@ -29,12 +28,6 @@ data class BehandlingAvsluttet(
 ) {
     data class AktoerREF(
         val aktoerId: String
-    )
-
-    data class Avslutningsstatus(
-        val kodeRef: String,
-        val kodeverksRef: String,
-        val value: String
     )
 
     data class Behandlingstema(

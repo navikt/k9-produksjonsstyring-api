@@ -109,10 +109,7 @@ fun Route.MockGrensesnitt(
 
     post { _: aksjonspunkt ->
         val aksjonspunktToggle = call.receive<AksjonspunktToggle>()
-
-        val aksjonspunkt =
-            Aksjonspunkter().aksjonspunkter().find { aksjonspunkt -> aksjonspunkt.kode == aksjonspunktToggle.kode }!!
-
+        
         val modell = behandlingProsessEventRepository.hent(UUID.fromString(aksjonspunktToggle.eksternid))
 
         val event = if (modell.erTom()) {

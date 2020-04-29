@@ -1,11 +1,12 @@
 package no.nav.k9.kafka
 
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.AksjonspunktStream
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import org.slf4j.LoggerFactory
 
-internal class AsynkronProsesseringV1Service(
+internal class AsynkronProsesseringV1Service @KtorExperimentalAPI constructor(
     kafkaConfig: KafkaConfig,
     configuration: Configuration,
     k9sakEventHandler: K9sakEventHandler
@@ -16,6 +17,7 @@ internal class AsynkronProsesseringV1Service(
     }
 
 
+    @KtorExperimentalAPI
     private val aksjonspunktStream = AksjonspunktStream(
         kafkaConfig = kafkaConfig,
         configuration = configuration,
@@ -24,20 +26,25 @@ internal class AsynkronProsesseringV1Service(
 
 
 
+    @KtorExperimentalAPI
     private val healthChecks = setOf(
         aksjonspunktStream.healthy
     )
 
+    @KtorExperimentalAPI
     private val isReadyChecks = setOf(
         aksjonspunktStream.ready
     )
 
+    @KtorExperimentalAPI
     internal fun stop() {
         logger.info("Stopper streams.")
         aksjonspunktStream.stop()
         logger.info("Alle streams stoppet.")
     }
 
+    @KtorExperimentalAPI
     internal fun healthChecks() = healthChecks
+    @KtorExperimentalAPI
     internal fun isReadyChecks() = isReadyChecks
 }

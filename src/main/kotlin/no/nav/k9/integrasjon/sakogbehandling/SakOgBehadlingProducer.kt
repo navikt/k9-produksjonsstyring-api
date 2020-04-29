@@ -1,4 +1,4 @@
-package no.nav.k9.sakogbehandling
+package no.nav.k9.integrasjon.sakogbehandling
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
@@ -7,11 +7,11 @@ import no.nav.helse.dusseldorf.ktor.health.Result
 import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
+import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
 import no.nav.k9.kafka.KafkaConfig
 import no.nav.k9.kafka.TopicEntry
 import no.nav.k9.kafka.TopicUse
-import no.nav.k9.sakogbehandling.kontrakt.BehandlingAvsluttet
-import no.nav.k9.sakogbehandling.kontrakt.BehandlingOpprettet
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
@@ -68,6 +68,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
 
 
     internal fun stop() = producer.close()
+    @KtorExperimentalAPI
     override suspend fun check(): Result {
         return try {
             producer.partitionsFor(TOPIC_USE_SAK_OG_BEHANDLING.name)
