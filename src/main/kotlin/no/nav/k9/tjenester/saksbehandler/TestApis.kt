@@ -10,6 +10,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.Configuration
+import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tilgangskontroll.Tilgangskontroll
@@ -22,7 +23,8 @@ internal fun Route.TestApis(
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
     configuration: Configuration,
-    tilgangskontroll: Tilgangskontroll
+    tilgangskontroll: Tilgangskontroll,
+    pepClient: PepClient
 ) {
 
     val log = LoggerFactory.getLogger("Route.TestApis")
@@ -66,8 +68,9 @@ internal fun Route.TestApis(
                 idToken = call.idToken()
             )
         ) {
+            val erOppgaveStyrer = pepClient.erOppgaveStyrer(call.idToken().value)
             call.respond(
-                ""
+                "erOppgavestyrer: $erOppgaveStyrer"
 //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
 //                    .getDecision().decision == DecisionEnums.PERMIT
             )

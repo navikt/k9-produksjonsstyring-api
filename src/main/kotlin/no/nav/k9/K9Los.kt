@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
+import io.ktor.client.HttpClient
 import io.ktor.features.*
 import io.ktor.http.HttpMethod
 import io.ktor.http.content.resources
@@ -34,6 +35,8 @@ import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.abac.Decision
+import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -59,6 +62,7 @@ import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApi
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
+import org.apache.http.impl.client.HttpClients
 import java.time.Duration
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -149,6 +153,8 @@ fun Application.k9Los() {
     val requestContextService = RequestContextService()
     
     val tilgangskontroll = Tilgangskontroll(TilgangskontrollContext(AbacClient(configuration.abacClient())))
+    val pepClient = PepClient(configuration,Decision.Deny)
+   
     install(CallIdRequired)
 
     install(Locations)
@@ -186,7 +192,8 @@ fun Application.k9Los() {
                     pdlService = pdlService,
                     accessTokenClientResolver = accessTokenClientResolver,
                     configuration = configuration,
-                    tilgangskontroll = tilgangskontroll
+                    tilgangskontroll = tilgangskontroll,
+                    pepClient = pepClient
                 )
             }
         } else {
@@ -203,7 +210,8 @@ fun Application.k9Los() {
                 pdlService = pdlService,
                 accessTokenClientResolver = accessTokenClientResolver,
                 configuration = configuration,
-                tilgangskontroll = tilgangskontroll
+                tilgangskontroll = tilgangskontroll,
+                pepClient = pepClient
                 
             )
         }
@@ -246,7 +254,8 @@ private fun Route.api(
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
     configuration: Configuration,
-    tilgangskontroll : Tilgangskontroll
+    tilgangskontroll : Tilgangskontroll,
+    pepClient : PepClient
 ) {
     route("api") {
         AdminApis()
@@ -279,7 +288,7 @@ private fun Route.api(
             }
         }
         NavAnsattApis(requestContextService, configuration)
-        TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration, tilgangskontroll = tilgangskontroll)
+        TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration, tilgangskontroll = tilgangskontroll, pepClient = pepClient)
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)

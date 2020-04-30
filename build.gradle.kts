@@ -41,7 +41,10 @@ dependencies {
     // Client
     implementation("no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
     implementation("no.nav.helse:dusseldorf-oauth2-client:$dusseldorfKtorVersion")
-
+    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
+    implementation("io.ktor:ktor-client-auth:$ktorVersion")
+    
     // Kafka
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
