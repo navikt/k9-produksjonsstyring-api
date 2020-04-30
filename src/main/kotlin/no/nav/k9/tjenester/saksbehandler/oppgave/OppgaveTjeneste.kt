@@ -16,7 +16,6 @@ import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
@@ -98,8 +97,9 @@ class OppgaveTjeneste(
                         PersonDto(
                             person.data.hentPerson.navn[0].forkortetNavn,
                             person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                            person.data.hentPerson.kjoenn.kjoenn,
-                            person.data.hentPerson.doedsfall!!.doedsdato
+                            person.data.hentPerson.kjoenn[0].kjoenn,
+                                null
+                            //   person.data.hentPerson.doedsfall[0].doedsdato
                         ),
                         it.sisteOppgave().fagsakYtelseType,
                         it.sisteOppgave().behandlingStatus,
@@ -117,8 +117,9 @@ class OppgaveTjeneste(
                 PersonDto(
                     person.data.hentPerson.navn[0].forkortetNavn,
                     person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                    person.data.hentPerson.kjoenn.kjoenn,
-                    person.data.hentPerson.doedsfall!!.doedsdato
+                    person.data.hentPerson.kjoenn[0].kjoenn,
+                    null
+                   // person.data.hentPerson.doedsfall!!.doedsdato
                 ),
                 it.sisteOppgave().fagsakYtelseType,
                 it.sisteOppgave().behandlingStatus,

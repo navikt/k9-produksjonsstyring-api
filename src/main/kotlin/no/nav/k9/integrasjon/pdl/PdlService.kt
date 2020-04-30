@@ -102,10 +102,12 @@ class PdlService @KtorExperimentalAPI constructor(
                                 mellomnavn = null
                             )
                         ),
-                        kjoenn = PersonPdl.Data.HentPerson.Kjoenn(
-                            "KVINNE"
+                        kjoenn = listOf(
+                            PersonPdl.Data.HentPerson.Kjoenn(
+                                "KVINNE"
+                            )
                         ),
-                        doedsfall = null
+                        doedsfall = emptyList()
                     )
                 )
             )
@@ -165,21 +167,21 @@ class PdlService @KtorExperimentalAPI constructor(
         }
     }
 
-/*
-* {
-  "data": {
-    "hentIdenter": {
-      "identer": [
-        {
-          "ident": "2392173967319",
-          "historisk": false,
-          "gruppe": "AKTORID"
+    /*
+    * {
+      "data": {
+        "hentIdenter": {
+          "identer": [
+            {
+              "ident": "2392173967319",
+              "historisk": false,
+              "gruppe": "AKTORID"
+            }
+          ]
         }
-      ]
+      }
     }
-  }
-}
-* */
+    * */
     @KtorExperimentalAPI
     internal suspend fun identifikator(fnummer: String): AktøridPdl? {
         if (configuration.erLokalt()) {
@@ -187,7 +189,11 @@ class PdlService @KtorExperimentalAPI constructor(
                 data = AktøridPdl.Data(
                     hentIdenter = AktøridPdl.Data.HentIdenter(
                         identer = listOf(
-                            AktøridPdl.Data.HentIdenter.Identer(gruppe = "AKTORID", historisk = false, ident = "2392173967319")
+                            AktøridPdl.Data.HentIdenter.Identer(
+                                gruppe = "AKTORID",
+                                historisk = false,
+                                ident = "2392173967319"
+                            )
                         )
                     )
                 )
@@ -195,10 +201,12 @@ class PdlService @KtorExperimentalAPI constructor(
         }
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentIdent.graphql"),
-            mapOf("ident" to getQ2Ident(fnummer, configuration = configuration),
+            mapOf(
+                "ident" to getQ2Ident(fnummer, configuration = configuration),
                 "historikk" to "false",
-                "grupper" to "[\"AKTORID\"]")
+                "grupper" to "[\"AKTORID\"]"
             )
+        )
 
         val httpRequest = personUrl
             .httpPost()
