@@ -1,7 +1,7 @@
 package no.nav.k9.integrasjon.behandling
 
 import ResourceLink
-import no.nav.k9.domene.lager.oppgave.BehandlingStatus
+import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -23,7 +23,7 @@ class BehandlingDto(
     var erAktivPapirsoknad: Boolean = false,
     var behandlingsfristTid: LocalDate
 ) {
-    
+
     private val links: List<ResourceLink> = ArrayList<ResourceLink>()
 
     open fun getLinks(): List<ResourceLink> {

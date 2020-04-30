@@ -1,11 +1,7 @@
 package no.nav.k9.tjenester.kodeverk
 
-import no.nav.k9.domene.lager.oppgave.FagsakStatus
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
-import no.nav.k9.domene.modell.AndreKriterierType
-import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.FagsakYtelseType
-import no.nav.k9.domene.modell.KøSortering
+import no.nav.k9.domene.modell.*
 
 class HentKodeverkTjeneste  {
      fun hentGruppertKodeliste(): MutableMap<String, Collection<out Kodeverdi>> {
@@ -22,6 +18,7 @@ class HentKodeverkTjeneste  {
         koder[KøSortering::class.java.simpleName] = KøSortering.values().asList()
         koder[FagsakStatus::class.java.simpleName] = FagsakStatus.values().asList()
         koder[AndreKriterierType::class.java.simpleName] = AndreKriterierType.values().asList()
+        koder[BehandlingStatus::class.java.simpleName] = BehandlingStatus.values().asList()
         return koder
     }
 }

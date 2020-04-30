@@ -101,7 +101,11 @@ class PdlService @KtorExperimentalAPI constructor(
                                 fornavn = "Fornavn",
                                 mellomnavn = null
                             )
-                        )
+                        ),
+                        kjoenn = PersonPdl.Data.HentPerson.Kjoenn(
+                            "KVINNE"
+                        ),
+                        doedsfall = null
                     )
                 )
             )
@@ -192,7 +196,7 @@ class PdlService @KtorExperimentalAPI constructor(
                 "historikk" to "false",
                 "grupper" to "[\"AKTORID\"]")
             )
-        
+
         val httpRequest = personUrl
             .httpPost()
             .body(
@@ -239,7 +243,7 @@ class PdlService @KtorExperimentalAPI constructor(
             null
         }
     }
-    
+
     @KtorExperimentalAPI
     private fun getQ2Ident(aktorId: String, configuration: Configuration): String {
         if (!configuration.erIDevFss()) {

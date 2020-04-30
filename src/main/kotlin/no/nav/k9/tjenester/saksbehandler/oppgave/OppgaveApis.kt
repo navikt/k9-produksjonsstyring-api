@@ -12,12 +12,16 @@ import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.streams.toList
 
@@ -70,7 +74,7 @@ internal fun Route.OppgaveApis(
 
                     list.add(
                         OppgaveDto(
-                            OppgaveStatusDto(false, null, false, null, null, null),
+                            OppgaveStatusDto(false, null, false, null, null),
                             oppgave.behandlingId,
                             oppgave.fagsakSaksnummer,
                             navn,
@@ -102,7 +106,7 @@ internal fun Route.OppgaveApis(
             for (oppgave in oppgaver) {
                 list.add(
                     OppgaveDto(
-                        OppgaveStatusDto(false, null, false, null, null, null),
+                        OppgaveStatusDto(false, null, false, null, null),
                         oppgave.behandlingId,
                         oppgave.fagsakSaksnummer,
                         "Navn",
@@ -247,4 +251,15 @@ internal fun Route.OppgaveApis(
             )
         )
     }
+
+    @Location("/oppgaver-for-fagsaker")
+    class oppgaverForFagsaker
+
+    get { _: oppgaverForFagsaker ->
+        var saker = call.request.queryParameters["saksnummerListe"]
+        val saksnummerliste = saker?.split(",") ?: emptyList()
+
+        call.respond(oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste))
+    }
+
 }

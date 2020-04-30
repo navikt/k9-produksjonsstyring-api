@@ -1,7 +1,6 @@
 package no.nav.k9.domene.modell
 
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.k9.domene.lager.oppgave.BehandlingStatus
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.integrasjon.gosys.*
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto

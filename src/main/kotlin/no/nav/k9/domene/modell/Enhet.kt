@@ -96,6 +96,22 @@ enum class FagsakYtelseType private constructor(override val kode: String, overr
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
+enum class FagsakStatus(override val kode: String, override val navn: String): Kodeverdi  {
+    OPPRETTET("OPPR", "Opprettet"),
+    UNDER_BEHANDLING("UBEH", "Under behandling"),
+    LØPENDE("LOP", "Løpende"),
+    AVSLUTTET("AVSLU", "Avsluttet");
+
+    override val kodeverk = "FAGSAK_STATUS"
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fraKode(kode: String): FagsakStatus = values().find { it.kode == kode }!!
+    }
+}
+
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class BehandlingType(override val kode: String, override val navn: String) : Kodeverdi {
     FORSTEGANGSSOKNAD("BT-002", "Førstegangsbehandling"),
     KLAGE("BT-003", "Klage"),
@@ -112,6 +128,24 @@ enum class BehandlingType(override val kode: String, override val navn: String) 
         fun fraKode(kode: String): BehandlingType = values().find { it.kode == kode }!!
     }
 
+}
+
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
+enum class BehandlingStatus (override val kode: String) : Kodeverdi {
+    AVSLUTTET("AVSLU"),
+    FATTER_VEDTAK("FVED"),
+    IVERKSETTER_VEDTAK("IVED"),
+    OPPRETTET("OPPRE"),
+    UTREDES("UTRED");
+
+    override val kodeverk = "BEHANDLING_TYPE"
+    override val navn = ""
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fraKode(kode: String): BehandlingStatus = values().find { it.kode == kode }!!
+    }
 }
 
 

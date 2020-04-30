@@ -47,6 +47,7 @@ import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.avdelingsleder.saksbehandler.AvdelingslederSaksbehandlerApis
+import no.nav.k9.tjenester.fagsak.FagsakApis
 import no.nav.k9.tjenester.innsikt.InnsiktGrensesnitt
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
 import no.nav.k9.tjenester.kodeverk.KodeverkApis
@@ -216,15 +217,15 @@ fun Application.k9Los() {
     install(MicrometerMetrics) {
         init(appId)
     }
-    
+
     intercept(ApplicationCallPipeline.Monitoring) {
         call.request.log()
     }
-    
+
     install(CallId) {
         generated()
     }
-   
+
     install(CallLogging) {
         correlationIdAndRequestIdInMdc()
         logRequests()
@@ -249,7 +250,9 @@ private fun Route.api(
 ) {
     route("api") {
         AdminApis()
-
+        route("fagsak"){
+          FagsakApis(oppgaveTjeneste)
+        }
         AvdelingslederSaksbehandlerApis()
         NøkkeltallApis()
         route("saksbehandler") {

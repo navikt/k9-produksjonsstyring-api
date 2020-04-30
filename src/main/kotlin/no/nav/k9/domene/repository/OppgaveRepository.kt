@@ -8,6 +8,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.OppgaveModell
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
 
@@ -69,6 +70,7 @@ class OppgaveRepository(private val dataSource: DataSource) {
                 } else {
                     f(null)
                 }
+               // oppgave.sistEndret = LocalDateTime.now()
                 val json = objectMapper().writeValueAsString(oppgave)
                 tx.run(
                     queryOf(
@@ -84,6 +86,13 @@ class OppgaveRepository(private val dataSource: DataSource) {
             }
         }
     }
+
+    fun hentOppgaverMedAktorId(aktørId: String) = hent()
+        .filter { it.sisteOppgave().aktorId == aktørId }
+
+    fun hentOppgaverMedSaksnummer(saksnummer: String) = hent()
+        .filter { it.sisteOppgave().fagsakSaksnummer == saksnummer }
+
 
     fun hentReserverteOppgaver(reservatør: String): List<OppgaveModell> {
         return hentAktiveOppgaver()

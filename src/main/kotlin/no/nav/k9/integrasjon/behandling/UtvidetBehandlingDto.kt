@@ -3,7 +3,7 @@ package no.nav.k9.integrasjon.behandling
 import ResourceLink
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonProperty
-import no.nav.k9.domene.lager.oppgave.BehandlingStatus
+import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import java.time.LocalDate
 import java.time.LocalDateTime

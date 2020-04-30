@@ -4,6 +4,7 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.datavarehus.Behandling
 import no.nav.k9.datavarehus.Sak
 import no.nav.k9.domene.modell.Aksjonspunkter
+import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import java.time.LocalDate

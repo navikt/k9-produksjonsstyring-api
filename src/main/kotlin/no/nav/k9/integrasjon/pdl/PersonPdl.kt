@@ -15,18 +15,20 @@ data class PersonPdl(
     ) {
         data class HentPerson(
             val folkeregisteridentifikator: List<Folkeregisteridentifikator>,
-            val navn: List<Navn>
+            val navn: List<Navn>,
+            val kjoenn: Kjoenn,
+            val doedsfall: Doedsfall?
         ) {
             data class Kjoenn(
                 val kjoenn: String
             )
-            
+
             data class Doedsfall(
                 @JsonSerialize(using = ToStringSerializer::class)
                 @JsonDeserialize(using = LocalDateDeserializer::class)
                 val doedsdato: LocalDate
             )
-            
+
             data class Folkeregisteridentifikator(
                 val identifikasjonsnummer: String
             )

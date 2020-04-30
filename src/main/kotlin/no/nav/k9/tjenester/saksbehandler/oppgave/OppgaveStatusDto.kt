@@ -7,7 +7,5 @@ class OppgaveStatusDto(
     val reservertTilTidspunkt: LocalDateTime?,
     val erReservertAvInnloggetBruker: Boolean,
     val reservertAvUid: String?,
-    val reservertAvNavn // Settes når oppgave er reservert av annen saksbehandler
-    : String?,
     val flyttetReservasjon: FlyttetReservasjonDto?
 )
