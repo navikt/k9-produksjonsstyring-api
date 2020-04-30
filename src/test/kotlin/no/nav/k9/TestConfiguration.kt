@@ -23,6 +23,9 @@ object TestConfiguration {
 
         map["nav.auth.trustore.path"] = "vtp"
         map["nav.auth.trustore.password"] = "vtp"
+        map["nav.abac.system_user"] = "very"
+        map["nav.abac.system_user_password"] = "secret"
+        map["nav.abac.url"] = "https://url"
         map["nav.auth.cookie_name"] = "selvbetjening-idtoken"
 
         map["nav.auth.clients.0.alias"] = "nais-sts"

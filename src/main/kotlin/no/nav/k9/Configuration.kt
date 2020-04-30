@@ -34,7 +34,7 @@ data class Configuration(private val config: ApplicationConfig) {
     internal fun abacClient() = AbacClientConfig(
         username = config.getRequiredString("nav.abac.system_user", secret = false),
         password = config.getRequiredString("nav.abac.system_user_password", secret = true),
-        endpointUrl = config.getRequiredString("nav.abac.pdp_url", secret = false)
+        endpointUrl = config.getRequiredString("nav.abac.url", secret = false)
     )
 
     internal fun hikariConfig() = createHikariConfig(
