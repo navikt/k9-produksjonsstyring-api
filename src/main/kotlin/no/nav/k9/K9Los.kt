@@ -151,10 +151,10 @@ fun Application.k9Los() {
         log.info("AsynkronProsesseringV1Service Stoppet.")
     }
     val requestContextService = RequestContextService()
-    
+
     val tilgangskontroll = Tilgangskontroll(TilgangskontrollContext(AbacClient(configuration.abacClient())))
     val pepClient = PepClient(configuration,Decision.Deny)
-   
+
     install(CallIdRequired)
 
     install(Locations)
@@ -212,7 +212,7 @@ fun Application.k9Los() {
                 configuration = configuration,
                 tilgangskontroll = tilgangskontroll,
                 pepClient = pepClient
-                
+
             )
         }
 
@@ -260,7 +260,11 @@ private fun Route.api(
     route("api") {
         AdminApis()
         route("fagsak"){
-          FagsakApis(oppgaveTjeneste)
+          FagsakApis(
+              oppgaveTjeneste = oppgaveTjeneste,
+              requestContextService = requestContextService,
+              configuration = configuration
+          )
         }
         AvdelingslederSaksbehandlerApis()
         NøkkeltallApis()
