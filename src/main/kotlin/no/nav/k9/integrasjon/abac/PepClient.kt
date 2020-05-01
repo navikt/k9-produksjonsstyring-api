@@ -36,6 +36,7 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
             .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE, OPPGAVESTYRER)
+            .addActionAttribute(ACTION_ID, "read")
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
@@ -54,7 +55,7 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
             .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE, BASIS_TILGANG)
-            .addResourceAttribute(ACTION_ID, "read")
+            .addActionAttribute(ACTION_ID, "read")
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
@@ -104,27 +105,10 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
                 )
             }
             
-            
-            
-            
-//            val result = abacClient.post<HttpResponse>(url) {
-//                body = TextContent(xacmlJson, ContentType.parse(XACML_CONTENT_TYPE))
-//            }
-//            if (result.status.value != 200) {
-//                throw RuntimeException("ABAC call failed with ${result.status.value}")
-//            }
-//            val res = result.readText()
             log.info("Abac: $json")
             XacmlResponseWrapper(json)
         }
     }
-
-    private fun createRequestWithDefaultHeaders(oidcTokenBody: String, action: String): XacmlRequestBuilder =
-            XacmlRequestBuilder()
-                .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, oidcTokenBody)
-                .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
-                .addActionAttribute(ACTION_ID, action)
-
 
     private fun createBiasedDecision(decision: Decision): Decision =
             when (decision) {
