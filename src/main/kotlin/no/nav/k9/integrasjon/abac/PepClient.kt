@@ -37,6 +37,7 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE, OPPGAVESTYRER)
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
         val response = evaluate(createRequestWithDefaultHeaders(idToken.value, OPPGAVESTYRER))
         val decision = createBiasedDecision(response.getDecision()) == Decision.Permit
