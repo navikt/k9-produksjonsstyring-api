@@ -79,7 +79,7 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
                     HttpHeaders.ContentType to XACML_CONTENT_TYPE,
                     NavHeaders.CallId to UUID.randomUUID().toString()
                 )
-
+            log.info("Abac request: " + httpRequest.toString())
             val json = Retry.retry(
                 operation = "evaluer abac",
                 initialDelay = Duration.ofMillis(200),

@@ -67,8 +67,9 @@ internal fun Route.TestApis(
             )
         ) {
             val erOppgaveStyrer = pepClient.erOppgaveStyrer(call.idToken())
+            val harbasistilgang = pepClient.harBasisTilgang(call.idToken())
             call.respond(
-                "erOppgavestyrer: $erOppgaveStyrer"
+                "erOppgavestyrer: $erOppgaveStyrer harBasistilgang $harbasistilgang"
 //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
 //                    .getDecision().decision == DecisionEnums.PERMIT
             )
