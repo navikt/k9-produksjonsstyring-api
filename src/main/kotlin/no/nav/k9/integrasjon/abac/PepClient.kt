@@ -36,7 +36,6 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
             .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER)
-            .addActionAttribute(ACTION_ID, "read")
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
