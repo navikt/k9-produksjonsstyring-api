@@ -10,20 +10,18 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.tilgangskontroll.log
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
 import kotlin.streams.toList
 
 
-private val LOGGER: Logger =
+private val log: Logger =
     LoggerFactory.getLogger(OppgaveTjeneste::class.java)
 
 
@@ -41,7 +39,7 @@ class OppgaveTjeneste(
                 .map { t -> t.sisteOppgave() }.toList()
             alleOppgaver
         } catch (e: Exception) {
-            LOGGER.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
+            log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
         }
     }
@@ -98,8 +96,9 @@ class OppgaveTjeneste(
                         PersonDto(
                             person.data.hentPerson.navn[0].forkortetNavn,
                             person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                            person.data.hentPerson.kjoenn.kjoenn,
-                            person.data.hentPerson.doedsfall!!.doedsdato
+                            person.data.hentPerson.kjoenn[0].kjoenn,
+                                null
+                            //   person.data.hentPerson.doedsfall[0].doedsdato
                         ),
                         it.sisteOppgave().fagsakYtelseType,
                         it.sisteOppgave().behandlingStatus,
@@ -117,8 +116,9 @@ class OppgaveTjeneste(
                 PersonDto(
                     person.data.hentPerson.navn[0].forkortetNavn,
                     person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                    person.data.hentPerson.kjoenn.kjoenn,
-                    person.data.hentPerson.doedsfall!!.doedsdato
+                    person.data.hentPerson.kjoenn[0].kjoenn,
+                    null
+                   // person.data.hentPerson.doedsfall!!.doedsdato
                 ),
                 it.sisteOppgave().fagsakYtelseType,
                 it.sisteOppgave().behandlingStatus,

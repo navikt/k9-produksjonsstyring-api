@@ -92,6 +92,10 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.slett(uuid)
     }
 
+    fun opprettSaksbehandler(ident: String) {
+
+    }
+
     fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
         val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(behandling.id))
         if (behandling.checked) oppgaveKø.filtreringBehandlingTyper.add(behandling.behandlingType)

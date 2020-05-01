@@ -16,8 +16,8 @@ data class PersonPdl(
         data class HentPerson(
             val folkeregisteridentifikator: List<Folkeregisteridentifikator>,
             val navn: List<Navn>,
-            val kjoenn: Kjoenn,
-            val doedsfall: Doedsfall?
+            val kjoenn: List<Kjoenn>,
+            val doedsfall:List<Doedsfall>
         ) {
             data class Kjoenn(
                 val kjoenn: String

@@ -13,7 +13,6 @@ import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.tilgangskontroll.Tilgangskontroll
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
@@ -23,7 +22,6 @@ internal fun Route.TestApis(
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
     configuration: Configuration,
-    tilgangskontroll: Tilgangskontroll,
     pepClient: PepClient
 ) {
 
@@ -68,7 +66,7 @@ internal fun Route.TestApis(
                 idToken = call.idToken()
             )
         ) {
-            val erOppgaveStyrer = pepClient.erOppgaveStyrer(call.idToken().value)
+            val erOppgaveStyrer = pepClient.erOppgaveStyrer(call.idToken())
             call.respond(
                 "erOppgavestyrer: $erOppgaveStyrer"
 //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
