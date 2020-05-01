@@ -9,11 +9,9 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.integrasjon.rest.CorrelationId
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
 import org.slf4j.LoggerFactory
-import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -33,7 +31,7 @@ internal fun Route.NavAnsattApis(requestContextService: RequestContextService, c
 
 
     get { _: getInnloggetBruker ->
-        if (configuration.erIkkeLokalt()) {
+        if (configuration.erIkkeLokalt) {
             val idtoken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(

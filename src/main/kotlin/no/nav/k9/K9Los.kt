@@ -169,7 +169,7 @@ fun Application.k9Los() {
             healthService = healthService,
             frequency = Duration.ofMinutes(1)
         )
-        if (!configuration.erIProd()) {
+        if (!configuration.erIProd) {
             route("mock") {
                 MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
             }
@@ -177,7 +177,7 @@ fun Application.k9Los() {
         route("innsikt") {
             InnsiktGrensesnitt(oppgaveRepository)
         }
-        if (configuration.erIkkeLokalt()) {
+        if (configuration.erIkkeLokalt) {
             authenticate(*issuers.allIssuers()) {
                 api(
                     requestContextService,
@@ -286,7 +286,7 @@ private fun Route.api(
             }
         }
         NavAnsattApis(requestContextService, configuration)
-        if (!configuration.erIProd()) {
+        if (!configuration.erIProd) {
             TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration, pepClient = pepClient)
         }
         SaksbehandlerNøkkeltallApis()

@@ -81,33 +81,25 @@ data class Configuration(private val config: ApplicationConfig) {
         return URI(config.getRequiredString("nav.gosys.baseuri", secret = false))
     }
 
-    fun erIkkeLokalt(): Boolean {
-        return !config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
+    var erIkkeLokalt: Boolean
+    var erLokalt: Boolean
+    var erIDevFss: Boolean
+    var erIProd: Boolean
+
+    init {
+        erIkkeLokalt = !config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
+        erLokalt = config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
+
+        val clustername = config.getOptionalString("nav.clustername", secret = false)
+        erIDevFss = if (clustername.isNullOrBlank()) {
+            false
+        } else clustername == "dev-fss"
+
+        erIProd = if (clustername.isNullOrBlank()) {
+            false
+        } else clustername == "prod-fss"
     }
 
-    fun erLokalt(): Boolean {
-        return config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
-    }
-
-    fun erIDevFss(): Boolean {
-        val optionalString = config.getOptionalString("nav.clustername", secret = false)
-        if (optionalString.isNullOrBlank()) {
-            return false
-        } else if (optionalString == "dev-fss") {
-            return true
-        }
-        return false
-    }
-
-    fun erIProd(): Boolean {
-        val optionalString = config.getOptionalString("nav.clustername", secret = false)
-        if (optionalString.isNullOrBlank()) {
-            return false
-        } else if (optionalString == "prod-fss") {
-            return true
-        }
-        return false
-    }
 
     fun getVaultDbPath(): String {
         return config.getOptionalString("nav.db.vault_mountpath", secret = false)!!

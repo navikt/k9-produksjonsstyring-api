@@ -16,7 +16,7 @@ enum class Role {
 
 @KtorExperimentalAPI
 fun Application.getDataSource(configuration: Configuration) =
-    if (configuration.erIkkeLokalt()) {
+    if (configuration.erIkkeLokalt) {
         dataSourceFromVault(configuration, Role.User)
     } else {
         HikariDataSource(configuration.hikariConfig())
@@ -32,7 +32,7 @@ fun Application.dataSourceFromVault(hikariConfig: Configuration, role: Role) =
 
 @KtorExperimentalAPI
 fun Application.migrate(configuration: Configuration) =
-    if (configuration.erIkkeLokalt()) {
+    if (configuration.erIkkeLokalt) {
         runMigration(
             dataSourceFromVault(configuration, Role.Admin), "SET ROLE \"${configuration.databaseName()}-${Role.Admin}\""
         )

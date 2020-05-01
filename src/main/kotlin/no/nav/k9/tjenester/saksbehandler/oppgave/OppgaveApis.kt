@@ -12,16 +12,12 @@ import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 import java.util.*
 import kotlin.streams.toList
 
@@ -42,7 +38,7 @@ internal fun Route.OppgaveApis(
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["id"]
 
-        if (configuration.erIkkeLokalt()) {
+        if (configuration.erIkkeLokalt) {
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
@@ -58,7 +54,7 @@ internal fun Route.OppgaveApis(
                         oppgaveTjeneste.flyttOppgaveTilVikafossen(oppgave)
                         continue
                     }
-                    val navn = if (configuration.erIDevFss()) {
+                    val navn = if (configuration.erIDevFss) {
                         "${oppgave.fagsakSaksnummer} " +  Strings.join(
                             oppgave.aksjonspunkter.liste.entries.stream().map { t ->
                                 val a = Aksjonspunkter().aksjonspunkter()
@@ -150,7 +146,7 @@ internal fun Route.OppgaveApis(
 
     get { _: getBehandledeOppgaver ->
 
-        if (configuration.erIkkeLokalt()) {
+        if (configuration.erIkkeLokalt) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
@@ -171,7 +167,7 @@ internal fun Route.OppgaveApis(
     class getReserverteOppgaver
 
     get { _: getReserverteOppgaver ->
-        if (configuration.erIkkeLokalt()) {
+        if (configuration.erIkkeLokalt) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
@@ -184,8 +180,6 @@ internal fun Route.OppgaveApis(
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
         }
-
-
     }
 
     @Location("/antall")
@@ -205,7 +199,7 @@ internal fun Route.OppgaveApis(
     post { _: reserverOppgave ->
         val oppgaveId = call.receive<OppgaveId>()
 
-        if (configuration.erIkkeLokalt()) {
+        if (configuration.erIkkeLokalt) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(

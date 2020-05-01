@@ -86,7 +86,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     internal suspend fun person(aktorId: String): PersonPdl? {
-        if (configuration.erLokalt()) {
+        if (configuration.erLokalt) {
             return PersonPdl(
                 data = PersonPdl.Data(
                     hentPerson = PersonPdl.Data.HentPerson(
@@ -184,7 +184,7 @@ class PdlService @KtorExperimentalAPI constructor(
     * */
     @KtorExperimentalAPI
     internal suspend fun identifikator(fnummer: String): AktøridPdl? {
-        if (configuration.erLokalt()) {
+        if (configuration.erLokalt) {
             return AktøridPdl(
                 data = AktøridPdl.Data(
                     hentIdenter = AktøridPdl.Data.HentIdenter(
@@ -257,7 +257,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     private fun getQ2Ident(aktorId: String, configuration: Configuration): String {
-        if (!configuration.erIDevFss()) {
+        if (!configuration.erIDevFss) {
             return aktorId
         }
         return getQ2Ident(aktorId)
