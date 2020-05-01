@@ -147,9 +147,7 @@ fun Application.k9Los() {
     }
     val requestContextService = RequestContextService()
 
-
-    val pepClient = PepClient(configuration,Decision.Deny)
-
+    val pepClient = PepClient(configuration, Decision.Deny)
     install(CallIdRequired)
 
     install(Locations)
@@ -171,8 +169,10 @@ fun Application.k9Los() {
             healthService = healthService,
             frequency = Duration.ofMinutes(1)
         )
-        route("mock") {
-            MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
+        if (!configuration.erIProd()) {
+            route("mock") {
+                MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
+            }
         }
         route("innsikt") {
             InnsiktGrensesnitt(oppgaveRepository)
@@ -205,7 +205,6 @@ fun Application.k9Los() {
                 accessTokenClientResolver = accessTokenClientResolver,
                 configuration = configuration,
                 pepClient = pepClient
-
             )
         }
 
@@ -231,8 +230,11 @@ fun Application.k9Los() {
         correlationIdAndRequestIdInMdc()
         logRequests()
         mdc("id_token_jti") { call ->
-            try { idTokenProvider.getIdToken(call).getId() }
-            catch (cause: Throwable) { null }
+            try {
+                idTokenProvider.getIdToken(call).getId()
+            } catch (cause: Throwable) {
+                null
+            }
         }
     }
 }
@@ -247,7 +249,7 @@ private fun Route.api(
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
     configuration: Configuration,
-    pepClient : PepClient
+    pepClient: PepClient
 ) {
     route("api") {
         AdminApis()
@@ -284,7 +286,9 @@ private fun Route.api(
             }
         }
         NavAnsattApis(requestContextService, configuration)
-        TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration, pepClient = pepClient)
+        if (!configuration.erIProd()) {
+            TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration, pepClient = pepClient)
+        }
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)

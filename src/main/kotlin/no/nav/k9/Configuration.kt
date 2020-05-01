@@ -99,6 +99,16 @@ data class Configuration(private val config: ApplicationConfig) {
         return false
     }
 
+    fun erIProd(): Boolean {
+        val optionalString = config.getOptionalString("nav.clustername", secret = false)
+        if (optionalString.isNullOrBlank()) {
+            return false
+        } else if (optionalString == "prod-fss") {
+            return true
+        }
+        return false
+    }
+
     fun getVaultDbPath(): String {
         return config.getOptionalString("nav.db.vault_mountpath", secret = false)!!
     }

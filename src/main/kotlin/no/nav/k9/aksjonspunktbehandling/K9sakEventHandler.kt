@@ -6,10 +6,10 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
+import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.ZoneId

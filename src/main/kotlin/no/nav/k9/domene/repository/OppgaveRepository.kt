@@ -8,14 +8,14 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.OppgaveModell
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
 
 
 class OppgaveRepository(private val dataSource: DataSource) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveRepository::class.java)
-    fun hent(): MutableList<OppgaveModell> {
+    fun hent(): List<OppgaveModell> {
+        var spørring = System.currentTimeMillis()
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -27,13 +27,12 @@ class OppgaveRepository(private val dataSource: DataSource) {
                     }.asList
             )
         }
-        val mutableList = mutableListOf<OppgaveModell>()
-        for (s in json) {
-            val oppgaveModell = objectMapper().readValue(s, OppgaveModell::class.java)
-            mutableList.add(oppgaveModell)
-        }
-        log.info("Henter: " + mutableList.size + " oppgaver")
-        return mutableList
+        spørring = System.currentTimeMillis() - spørring
+        val serialisering = System.currentTimeMillis()
+        val list = json.map { s -> objectMapper().readValue(s, OppgaveModell::class.java) }.toList()
+        
+        log.info("Henter: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring )
+        return list
     }
 
     fun hent(uuid: UUID): OppgaveModell {
@@ -86,19 +85,37 @@ class OppgaveRepository(private val dataSource: DataSource) {
             }
         }
     }
-
+    
     fun hentOppgaverMedAktorId(aktørId: String) = hent()
         .filter { it.sisteOppgave().aktorId == aktørId }
 
     fun hentOppgaverMedSaksnummer(saksnummer: String) = hent()
         .filter { it.sisteOppgave().fagsakSaksnummer == saksnummer }
-
-
+    
     fun hentReserverteOppgaver(reservatør: String): List<OppgaveModell> {
         return hentAktiveOppgaver()
             .filter { o -> o.sisteOppgave().reservasjon?.reservertAv == reservatør }
     }
 
-    internal fun hentAktiveOppgaver() = hent()
-        .filter { o -> o.sisteOppgave().aktiv }
+    internal fun hentAktiveOppgaver(): List<OppgaveModell> {
+        var spørring = System.currentTimeMillis()
+        val json: List<String> = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select data from oppgave where (data ::jsonb -> 'oppgaver' -> 0 -> 'aktiv') ::boolean",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        val serialisering = System.currentTimeMillis()
+        val list = json.map { s -> objectMapper().readValue(s, OppgaveModell::class.java) }.toList()
+
+        log.info("Henter aktive oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring )
+        list.filter { o -> o.sisteOppgave().aktiv }
+        return list
+    }
 }

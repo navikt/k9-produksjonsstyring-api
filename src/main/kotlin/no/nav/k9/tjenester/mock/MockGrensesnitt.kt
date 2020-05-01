@@ -109,7 +109,7 @@ fun Route.MockGrensesnitt(
 
     post { _: aksjonspunkt ->
         val aksjonspunktToggle = call.receive<AksjonspunktToggle>()
-        
+
         val modell = behandlingProsessEventRepository.hent(UUID.fromString(aksjonspunktToggle.eksternid))
 
         val event = if (modell.erTom()) {
@@ -152,6 +152,35 @@ fun Route.MockGrensesnitt(
         }
         k9sakEventHandler.prosesser(event)
 
+        call.respond(HttpStatusCode.Accepted)
+    }
+
+    @Location("/10000AktiveEventer")
+    class aksjonspunkt2
+
+    get { _: aksjonspunkt2 ->
+        for (i in 0..10000 step 1) {
+
+            val event =
+                BehandlingProsessEventDto(
+                    UUID.randomUUID(),
+                    Fagsystem.K9SAK,
+                    "Saksnummer",
+                    UUID.randomUUID().toString(),
+                    1234L,
+                    LocalDate.now(),
+                    LocalDateTime.now(),
+                    EventHendelse.AKSJONSPUNKT_OPPRETTET,
+                    behandlingStatus = "UTRED",
+                    aksjonspunktKoderMedStatusListe = mutableMapOf("5003" to "OPPR"),
+                    behandlingSteg = "",
+                    opprettetBehandling = LocalDateTime.now(),
+                    behandlingTypeKode = "BT-005",
+                    ytelseTypeKode = "PSB"
+                )
+
+            k9sakEventHandler.prosesser(event)
+        }
         call.respond(HttpStatusCode.Accepted)
     }
 }
