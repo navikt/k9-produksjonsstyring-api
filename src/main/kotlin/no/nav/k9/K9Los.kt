@@ -285,7 +285,7 @@ private fun Route.api(
                 )
             }
         }
-        NavAnsattApis(requestContextService, configuration)
+        NavAnsattApis(requestContextService = requestContextService, pepClient = pepClient, configuration = configuration)
         if (!configuration.erIProd) {
             TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration, pepClient = pepClient)
         }

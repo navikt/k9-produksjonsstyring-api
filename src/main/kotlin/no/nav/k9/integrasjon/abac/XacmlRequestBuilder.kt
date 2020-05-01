@@ -13,6 +13,7 @@ const val ANSVARLIG_SAKSBEHANDLER = "no.nav.abac.attributter.resource.k9.sak.ans
 const val BEHANDLINGSSTATUS = "no.nav.abac.attributter.resource.k9.sak.behandlingsstatus"
 const val SAKSSTATUS = "no.nav.abac.attributter.resource.k9.sak.saksstatus"
 const val OPPGAVESTYRER = "no.nav.abac.attributter.k9.oppgavestyring"
+const val BASIS_TILGANG = "no.nav.abac.attributter.k9"
 const val INTERNBRUKER = "InternBruker"
 
 enum class Category {

@@ -45,6 +45,25 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
         return decision
     }
 
+    suspend fun harBasisTilgang(idToken: IdToken): Boolean {
+        val cachedResponse = abacCache.hasAccess(idToken, BASIS_TILGANG, BASIS_TILGANG )
+        if (cachedResponse != null) {
+            return cachedResponse
+        }
+        val requestBuilder = XacmlRequestBuilder()
+            .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
+            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+            .addResourceAttribute(RESOURCE, BASIS_TILGANG)
+            .addResourceAttribute(ACTION_ID, "read")
+            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+
+        val response = evaluate(requestBuilder)
+        val decision = createBiasedDecision(response.getDecision()) == Decision.Permit
+        abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, OPPGAVESTYRER, decision)
+        return decision
+    }
+    
     private suspend fun evaluate(xacmlRequestBuilder: XacmlRequestBuilder): XacmlResponseWrapper {
         val xacmlJson = gson.toJson(xacmlRequestBuilder.build())
         return withContext(Dispatchers.IO) {
