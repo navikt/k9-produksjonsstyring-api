@@ -9,7 +9,6 @@ import no.nav.helse.dusseldorf.ktor.core.getOptionalString
 import no.nav.helse.dusseldorf.ktor.core.getRequiredString
 import no.nav.k9.db.createHikariConfig
 import no.nav.k9.kafka.KafkaConfig
-import no.nav.k9.tilgangskontroll.abac.AbacClientConfig
 import java.net.URI
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -29,13 +28,9 @@ data class Configuration(private val config: ApplicationConfig) {
 
     internal fun pdlUrl() = URI(config.getRequiredString("nav.register_urls.pdl_url", secret = false))
 
-    // private fun azureClientConfigured() = clients().containsKey(AZURE_V2_ALIAS)
-
-    internal fun abacClient() = AbacClientConfig(
-        username = config.getRequiredString("nav.abac.system_user", secret = false),
-        password = config.getRequiredString("nav.abac.system_user_password", secret = true),
-        endpointUrl = config.getRequiredString("nav.abac.url", secret = false)
-    )
+    internal val abacUsername = config.getRequiredString("nav.abac.system_user", secret = false)
+    internal val abacPassword = config.getRequiredString("nav.abac.system_user_password", secret = false)
+    internal val abacEndpointUrl = config.getRequiredString("nav.abac.url", secret = false)
 
     internal fun hikariConfig() = createHikariConfig(
         jdbcUrl = config.getRequiredString("nav.db.url", secret = false),
@@ -107,7 +102,7 @@ data class Configuration(private val config: ApplicationConfig) {
     fun getVaultDbPath(): String {
         return config.getOptionalString("nav.db.vault_mountpath", secret = false)!!
     }
-    
+
     fun databaseName(): String {
         return "k9-los"
     }

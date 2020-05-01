@@ -10,7 +10,6 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.tilgangskontroll.log
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.saksbehandler.IdToken
@@ -22,7 +21,7 @@ import kotlin.coroutines.coroutineContext
 import kotlin.streams.toList
 
 
-private val LOGGER: Logger =
+private val log: Logger =
     LoggerFactory.getLogger(OppgaveTjeneste::class.java)
 
 
@@ -40,7 +39,7 @@ class OppgaveTjeneste(
                 .map { t -> t.sisteOppgave() }.toList()
             alleOppgaver
         } catch (e: Exception) {
-            LOGGER.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
+            log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
         }
     }

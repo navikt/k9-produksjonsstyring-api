@@ -11,6 +11,7 @@ import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.rest.NavHeaders
+import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -23,40 +24,23 @@ private const val XACML_CONTENT_TYPE = "application/xacml+json"
 private const val DOMENE = "k9"
 
 class PepClient(private val config: Configuration, private val bias: Decision) {
-    private val url = config.abacClient().endpointUrl
+    private val url = config.abacEndpointUrl
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
-    suspend fun checkAccess(bearerToken: String?, method: String, action: String): Boolean {
-        requireNotNull(bearerToken) { "Authorization token not set" }
-        val token = bearerToken.substringAfter(" ")
-        return hasAccessToResource(extractBodyFromOidcToken(token), method, action)
-    }
-
-    private suspend fun hasAccessToResource(oidcTokenBody: String, method:String, action: String): Boolean {
-        val cachedResponse = abacCache.hasAccess(oidcTokenBody, method, action)
-        if (cachedResponse != null) {
-            return cachedResponse
-        }
-
-        val response = evaluate(createRequestWithDefaultHeaders(oidcTokenBody, action))
-        val decision = createBiasedDecision(response.getDecision()) == Decision.Permit
-        abacCache.storeResultOfLookup(oidcTokenBody, method, action, decision)
-        return decision
-    }
-    
-    suspend fun erOppgaveStyrer(oidcTokenBody: String): Boolean {
-        val cachedResponse = abacCache.hasAccess(oidcTokenBody, OPPGAVESTYRER, OPPGAVESTYRER )
+        
+    suspend fun erOppgaveStyrer(idToken: IdToken): Boolean {
+        val cachedResponse = abacCache.hasAccess(idToken, OPPGAVESTYRER, OPPGAVESTYRER )
         if (cachedResponse != null) {
             return cachedResponse
         }
         XacmlRequestBuilder()
-            .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, oidcTokenBody)
+            .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE, OPPGAVESTYRER)
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
 
-        val response = evaluate(createRequestWithDefaultHeaders(oidcTokenBody, OPPGAVESTYRER))
+        val response = evaluate(createRequestWithDefaultHeaders(idToken.value, OPPGAVESTYRER))
         val decision = createBiasedDecision(response.getDecision()) == Decision.Permit
-        abacCache.storeResultOfLookup(oidcTokenBody, OPPGAVESTYRER, OPPGAVESTYRER, decision)
+        abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, OPPGAVESTYRER, decision)
         return decision
     }
 
@@ -66,7 +50,7 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
             val httpRequest = url
                 .httpPost()
                 .authentication()
-                .basic(config.abacClient().username, config.abacClient().password)
+                .basic(config.abacUsername, config.abacPassword)
                 .body(
                     xacmlJson
                 )
