@@ -111,10 +111,10 @@ data class Configuration(private val config: ApplicationConfig) {
     
     
     fun azureClientId(): String {
-        return config.getOptionalString("auth.azure_client_id", secret = false)!!
+        return config.getOptionalString("nav.auth.azure_client_id", secret = false)!!
     }
     fun azureClientSecret(): String {
-        return config.getOptionalString("auth.azure_client_secret", secret = true)!!
+        return config.getOptionalString("nav.auth.azure_client_secret", secret = true)!!
     }
     
     
