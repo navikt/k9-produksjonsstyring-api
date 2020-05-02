@@ -36,7 +36,7 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
             .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER)
-//            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
         val response = evaluate(requestBuilder)
@@ -56,7 +56,7 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, BASIS_TILGANG)
             .addActionAttribute(ACTION_ID, "read")
-//            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
         val response = evaluate(requestBuilder)
