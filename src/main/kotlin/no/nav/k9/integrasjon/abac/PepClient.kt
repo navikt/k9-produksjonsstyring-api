@@ -53,11 +53,12 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
         }
         
         val requestBuilder = XacmlRequestBuilder()
-            .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
+        //    .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, BASIS_TILGANG)
             .addActionAttribute(ACTION_ID, "read")
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+            .addAccessSubjectAttribute(SUBJECTID, "z994048")
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
         val response = evaluate(requestBuilder)
