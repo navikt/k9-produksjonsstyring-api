@@ -108,4 +108,14 @@ data class Configuration(private val config: ApplicationConfig) {
     fun databaseName(): String {
         return "k9-los"
     }
+    
+    
+    fun azureClientId(): String {
+        return config.getOptionalString("auth.azure_client_id", secret = false)!!
+    }
+    fun azureClientSecret(): String {
+        return config.getOptionalString("auth.azure_client_secret", secret = true)!!
+    }
+    
+    
 }
