@@ -1,9 +1,6 @@
 package no.nav.k9.tjenester.saksbehandler
 
-import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
-import com.github.kittinunf.fuel.httpGet
 import io.ktor.application.call
-import io.ktor.http.HttpHeaders
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
@@ -11,16 +8,12 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
-import no.nav.helse.dusseldorf.ktor.core.Retry
-import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.integrasjon.rest.idToken
 import org.slf4j.LoggerFactory
-import java.time.Duration
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -78,44 +71,44 @@ internal fun Route.TestApis(
 
 
 
-            val httpRequest = "https://graph.microsoft.com/v1.0/me"
-                .httpGet()
-                .header(
-                    HttpHeaders.Authorization to "Bearer ${kotlin.coroutines.coroutineContext.idToken().value}",
-                    "grant_type" to "application/json",
-                    "client_id" to configuration.azureClientId(),
-                    "client_secret" to configuration.azureClientSecret(),
-                    "scope" to "https://graph.microsoft.com/.default"
-                )
-
-            val json = Retry.retry(
-                operation = "hente-person",
-                initialDelay = Duration.ofMillis(200),
-                factor = 2.0,
-                logger = log
-            ) {
-                val (request, _, result) = Operation.monitored(
-                    app = "k9-los-api",
-                    operation = "hente-person",
-                    resultResolver = { 200 == it.second.statusCode }
-                ) { httpRequest.awaitStringResponseResult() }
-
-                result.fold(
-                    { success -> success },
-                    { error ->
-                        log.error(
-                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
-                        )
-                        log.error(error.toString())
-                        throw IllegalStateException("Feil ved henting av person.")
-                    }
-                )
-            }
-
-            
+//            val httpRequest = "https://graph.microsoft.com/v1.0/me"
+//                .httpGet()
+//                .header(
+//                    HttpHeaders.Authorization to "Bearer ${kotlin.coroutines.coroutineContext.idToken().value}",
+//                    "grant_type" to "application/json",
+//                    "client_id" to configuration.azureClientId(),
+//                    "client_secret" to configuration.azureClientSecret(),
+//                    "scope" to "https://graph.microsoft.com/.default"
+//                )
+//
+//            val json = Retry.retry(
+//                operation = "hente-person",
+//                initialDelay = Duration.ofMillis(200),
+//                factor = 2.0,
+//                logger = log
+//            ) {
+//                val (request, _, result) = Operation.monitored(
+//                    app = "k9-los-api",
+//                    operation = "hente-person",
+//                    resultResolver = { 200 == it.second.statusCode }
+//                ) { httpRequest.awaitStringResponseResult() }
+//
+//                result.fold(
+//                    { success -> success },
+//                    { error ->
+//                        log.error(
+//                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+//                        )
+//                        log.error(error.toString())
+//                        throw IllegalStateException("Feil ved henting av person.")
+//                    }
+//                )
+//            }
+//
+//            
 
             call.respond(
-                "erOppgavestyrer: $erOppgaveStyrer harBasistilgang $harbasistilgang graph $json"
+                "erOppgavestyrer: $erOppgaveStyrer harBasistilgang $harbasistilgang graph"
 //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
 //                    .getDecision().decision == DecisionEnums.PERMIT
             )
