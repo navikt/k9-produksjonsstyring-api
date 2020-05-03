@@ -116,7 +116,7 @@ internal fun Route.TestApis(
                 )
             }
 
-            val httpRequest1 = "https://graph.microsoft.com/v1.0/me"
+            val httpRequest1 = "https://graph.microsoft.com/v1.0/me?\$select=displayName"
                 .httpGet()
                 .header(
                     HttpHeaders.Accept to "application/json",

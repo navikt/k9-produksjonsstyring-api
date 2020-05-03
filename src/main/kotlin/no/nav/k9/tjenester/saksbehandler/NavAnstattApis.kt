@@ -40,13 +40,13 @@ internal fun Route.NavAnsattApis(
                     InnloggetNavAnsattDto(
                         token.getUsername(),
                         token.getName(),
-                        kanSaksbehandle = true,
-                        kanVeilede = true,
+                        kanSaksbehandle = pepClient.harBasisTilgang(token),
+                        kanVeilede = pepClient.harBasisTilgang(token),
                         kanBeslutte = true,
                         kanBehandleKodeEgenAnsatt = true,
                         kanBehandleKode6 = true,
                         kanBehandleKode7 = true,
-                        kanOppgavestyre = true
+                        kanOppgavestyre = pepClient.erOppgaveStyrer(token)
                     )
                 )
             }

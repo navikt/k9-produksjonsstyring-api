@@ -81,7 +81,7 @@ spec:
 
       # ABAC
     - name: ABAC_PDP_ENDPOINT_URL
-      value: https://wasapp.adeo.no/asm-pdp/authorize
+      value: https://abac-k9.adeo.no/asm-pdp/authorize
       
     - name: APPDYNAMICS_CONTROLLER_HOST_NAME
       value: appdynamics.adeo.no
