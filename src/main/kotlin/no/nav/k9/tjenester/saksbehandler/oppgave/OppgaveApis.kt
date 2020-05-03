@@ -46,12 +46,12 @@ internal fun Route.OppgaveApis(
                 )
             ) {
                 val list = mutableListOf<OppgaveDto>()
-                val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
+                val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter), limit = 10)
                 for (oppgave in oppgaver) {
 
                     val person = pdlService.person(oppgave.aktorId)
                     if (person == null) {
-                        oppgaveTjeneste.flyttOppgaveTilVikafossen(oppgave)
+                        oppgaveTjeneste.settSkjermet(oppgave)
                         continue
                     }
                     val navn = if (configuration.erIDevFss) {
@@ -98,7 +98,7 @@ internal fun Route.OppgaveApis(
             }
         } else {
             val list = mutableListOf<OppgaveDto>()
-            val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
+            val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter), limit = 10)
             for (oppgave in oppgaver) {
                 list.add(
                     OppgaveDto(

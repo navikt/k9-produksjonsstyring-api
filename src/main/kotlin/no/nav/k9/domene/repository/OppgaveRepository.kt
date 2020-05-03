@@ -69,7 +69,6 @@ class OppgaveRepository(private val dataSource: DataSource) {
                 } else {
                     f(null)
                 }
-               // oppgave.sistEndret = LocalDateTime.now()
                 val json = objectMapper().writeValueAsString(oppgave)
                 tx.run(
                     queryOf(
@@ -93,17 +92,35 @@ class OppgaveRepository(private val dataSource: DataSource) {
         .filter { it.sisteOppgave().fagsakSaksnummer == saksnummer }
     
     fun hentReserverteOppgaver(reservatør: String): List<OppgaveModell> {
-        return hentAktiveOppgaver()
+        return hentAktiveOppgaver(Int.MAX_VALUE)
             .filter { o -> o.sisteOppgave().reservasjon?.reservertAv == reservatør }
     }
-
-    internal fun hentAktiveOppgaver(): List<OppgaveModell> {
+    
+    internal fun hentAktiveOppgaverTotalt(): Int {
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select count(*) as count  from oppgave where (data ::jsonb -> 'oppgaver' -> 0 -> 'aktiv') ::boolean",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        val serialisering = System.currentTimeMillis()
+        log.info("Teller aktive oppgaver: $spørring ms")
+        return count!!
+    }
+    internal fun hentAktiveOppgaver(limit: Int): List<OppgaveModell> {
         var spørring = System.currentTimeMillis()
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select data from oppgave where (data ::jsonb -> 'oppgaver' -> 0 -> 'aktiv') ::boolean",
-                    mapOf()
+                    "select data from oppgave where (data ::jsonb -> 'oppgaver' -> 0 -> 'aktiv') ::boolean limit :limit",
+                    mapOf("limit" to limit)
                 )
                     .map { row ->
                         row.string("data")

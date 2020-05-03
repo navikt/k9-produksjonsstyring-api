@@ -37,7 +37,7 @@ fun Route.InnsiktGrensesnitt(
                         +"Antall åpne oppgaver fordelt på aksjonspunkt."
                     }
 
-                    val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+                    val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver(Int.MAX_VALUE)
 
 
                     val aksjonspunkter = Aksjonspunkter().aksjonspunkter()

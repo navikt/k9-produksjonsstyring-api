@@ -31,10 +31,10 @@ class OppgaveTjeneste(
     private val pdlService: PdlService
 ) {
 
-    fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
+    fun hentOppgaver(oppgavekøId: UUID, limit: Int): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            val alleOppgaver = oppgaveRepository.hentAktiveOppgaver().stream()
+            val alleOppgaver = oppgaveRepository.hentAktiveOppgaver(limit).stream()
                 .filter { t -> t.sisteOppgave().reservasjon?.reservertAv.isNullOrEmpty() }
                 .map { t -> t.sisteOppgave() }.toList()
             alleOppgaver
@@ -220,11 +220,11 @@ class OppgaveTjeneste(
     }
 
     fun hentAntallOppgaver(oppgavekøId: UUID): Int {
-        return hentOppgaver(oppgavekøId).size
+        return hentOppgaver(oppgavekøId, Int.MAX_VALUE).size
     }
 
     fun hentAntallOppgaverTotalt(): Int {
-        return oppgaveRepository.hentAktiveOppgaver().size
+        return oppgaveRepository.hentAktiveOppgaverTotalt()
     }
 
     suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
@@ -234,7 +234,7 @@ class OppgaveTjeneste(
         for (oppgavemodell in reserverteOppgave) {
             val person = pdlService.person(oppgavemodell.sisteOppgave().aktorId)
             if (person == null) {
-                flyttOppgaveTilVikafossen(oppgave = oppgavemodell.sisteOppgave())
+                settSkjermet(oppgave = oppgavemodell.sisteOppgave())
                 log.info("Ikke tilgang til bruker: ${oppgavemodell.sisteOppgave().aktorId}")
                 continue
             }
@@ -299,7 +299,7 @@ class OppgaveTjeneste(
         return oppgaveKøRepository.hent()
     }
 
-    fun flyttOppgaveTilVikafossen(oppgave: Oppgave) {
+    fun settSkjermet(oppgave: Oppgave) {
         oppgaveRepository.lagre(oppgave.eksternId, f = { forrigeOppgave ->
             forrigeOppgave?.skjermet = true
             log.info("setter ${forrigeOppgave.toString()} til skjermet")
