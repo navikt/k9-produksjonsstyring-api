@@ -1,5 +1,6 @@
 package no.nav.k9.integrasjon.abac
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
@@ -11,6 +12,7 @@ import kotlinx.coroutines.withContext
 import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.Configuration
+import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.tjenester.saksbehandler.IdToken
@@ -43,8 +45,7 @@ class PepClient(private val azureGraphService: AzureGraphService, private val co
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
-        val response = evaluate(requestBuilder)
-        val decision = createBiasedDecision(response.getDecision()) == Decision.Permit
+        val decision = evaluate(requestBuilder)
         abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, OPPGAVESTYRER, decision)
         return decision
     }
@@ -64,13 +65,12 @@ class PepClient(private val azureGraphService: AzureGraphService, private val co
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
-        val response = evaluate(requestBuilder)
-        val decision = createBiasedDecision(response.getDecision()) == Decision.Permit
+        val decision =  evaluate(requestBuilder)
         abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, OPPGAVESTYRER, decision)
         return decision
     }
     
-    private suspend fun evaluate(xacmlRequestBuilder: XacmlRequestBuilder): XacmlResponseWrapper {
+    private suspend fun evaluate(xacmlRequestBuilder: XacmlRequestBuilder): Boolean {
         val xacmlJson = gson.toJson(xacmlRequestBuilder.build())
         return withContext(Dispatchers.IO) {
             val httpRequest = url
@@ -109,9 +109,16 @@ class PepClient(private val azureGraphService: AzureGraphService, private val co
                     }
                 )
             }
-            
+//            {"Response":[{"Decision":"Permit"}]}
             log.info("Abac: $json")
-            XacmlResponseWrapper(json)
+            try {
+                objectMapper().readValue<Response>(json).response.get(0).decision == "Permit"
+            } catch (e: Exception) {
+                log.error(
+                    "Feilet deserialisering", e
+                )
+                false
+            }
         }
     }
 
@@ -121,7 +128,5 @@ class PepClient(private val azureGraphService: AzureGraphService, private val co
                 else -> decision
             }
 
-    private fun extractBodyFromOidcToken(token: String): String =
-            token.substringAfter(".").substringBefore(".")
-
+   
 }

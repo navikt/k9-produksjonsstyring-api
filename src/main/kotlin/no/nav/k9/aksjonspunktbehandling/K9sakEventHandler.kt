@@ -43,7 +43,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             behandlingOpprettet(modell, sakOgBehadlingProducer)
         }
 
-        if (!oppgave.aktiv) {
+        if (oppgave.behandlingStatus.navn == "AVSLUTTET") {
             behandlingAvsluttet(modell, sakOgBehadlingProducer)
         }
 
@@ -74,7 +74,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
             behandlingstype = BehandlingOpprettet.Behandlingstype("", "", sisteEvent.behandlingTypeKode),
             sakstema = BehandlingOpprettet.Sakstema("", "", "OMS"),
-            behandlingstema = BehandlingOpprettet.Behandlingstema("", "", `Omsorgspenger, Pleiepenger og opplæringspenger`),
+            behandlingstema = BehandlingOpprettet.Behandlingstema("ab0149", "ab0149", `Omsorgspenger, Pleiepenger og opplæringspenger`),
             aktoerREF = listOf(BehandlingOpprettet.AktoerREF(sisteEvent.aktørId)),
             ansvarligEnhetREF = "NASJONAL",
             primaerBehandlingREF = BehandlingOpprettet.PrimaerBehandlingREF(
@@ -104,7 +104,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
             behandlingstype = BehandlingAvsluttet.Behandlingstype("", "", sisteEvent.behandlingTypeKode),
             sakstema = BehandlingAvsluttet.Sakstema("", "", "OMS"),
-            behandlingstema = BehandlingAvsluttet.Behandlingstema("", "", `Omsorgspenger, Pleiepenger og opplæringspenger`),
+            behandlingstema = BehandlingAvsluttet.Behandlingstema("ab0149", "ab0149", `Omsorgspenger, Pleiepenger og opplæringspenger`),
             aktoerREF = listOf(BehandlingAvsluttet.AktoerREF(sisteEvent.aktørId)),
             ansvarligEnhetREF = "NASJONAL",
             primaerBehandlingREF = BehandlingAvsluttet.PrimaerBehandlingREF(
