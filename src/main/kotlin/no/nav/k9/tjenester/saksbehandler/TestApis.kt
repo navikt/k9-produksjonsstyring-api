@@ -81,7 +81,7 @@ internal fun Route.TestApis(
             val accessToken =
                 accessTokenClient.getAccessToken(setOf("https://graph.microsoft.com/user.read"), kotlin.coroutines.coroutineContext.idToken().value)
 
-            val httpRequest = "https://graph.microsoft.com/v1.0/me"
+            val httpRequest = "https://graph.microsoft.com/v1.0/me/extensions"
                 .httpGet()
                 .header(
                     HttpHeaders.Accept to "application/json",
