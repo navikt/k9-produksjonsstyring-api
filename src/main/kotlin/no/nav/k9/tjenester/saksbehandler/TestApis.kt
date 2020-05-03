@@ -79,15 +79,12 @@ internal fun Route.TestApis(
           //  val harbasistilgang = pepClient.harBasisTilgang(call.idToken())
 
             val accessToken =
-                accessTokenClient.getAccessToken(setOf("user.read"), kotlin.coroutines.coroutineContext.idToken().value)
+                accessTokenClient.getAccessToken(setOf("https://graph.microsoft.com/user.read"), kotlin.coroutines.coroutineContext.idToken().ident.value)
 
             val httpRequest = "https://graph.microsoft.com/v1.0/me"
                 .httpGet()
                 .header(
-                    HttpHeaders.Authorization to "Bearer ${accessToken.accessToken}",
-                    "grant_type" to "application/json",
-                    "client_id" to configuration.azureClientId(),
-                    "client_secret" to configuration.azureClientSecret()
+                    HttpHeaders.Authorization to "Bearer ${accessToken.accessToken}"
                 )
 
             val json = Retry.retry(
@@ -116,7 +113,7 @@ internal fun Route.TestApis(
 
 
 
-            call.respond(accessToken.accessToken
+            call.respond(json
             //    "erOppgavestyrer: $erOppgaveStyrer harBasistilgang $harbasistilgang graph"
 //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
 //                    .getDecision().decision == DecisionEnums.PERMIT
