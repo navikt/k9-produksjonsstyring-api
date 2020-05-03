@@ -85,7 +85,7 @@ internal fun Route.TestApis(
                     kotlin.coroutines.coroutineContext.idToken().value
                 )
 
-            val httpRequest = "https://graph.microsoft.com/v1.0/users/me?\$select=onPremisesSamAccountName"
+            val httpRequest = "https://graph.microsoft.com/v1.0/me?\$select=onPremisesSamAccountName"
                 .httpGet()
                 .header(
                     HttpHeaders.Accept to "application/json",
@@ -116,7 +116,7 @@ internal fun Route.TestApis(
                 )
             }
 
-            val httpRequest1 = "https://graph.microsoft.com/v1.0/users/me"
+            val httpRequest1 = "https://graph.microsoft.com/v1.0/me"
                 .httpGet()
                 .header(
                     HttpHeaders.Accept to "application/json",
