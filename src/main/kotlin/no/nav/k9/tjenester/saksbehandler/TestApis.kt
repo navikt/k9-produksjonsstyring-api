@@ -84,6 +84,7 @@ internal fun Route.TestApis(
             val httpRequest = "https://graph.microsoft.com/v1.0/me"
                 .httpGet()
                 .header(
+                    HttpHeaders.Accept to "application/json",
                     HttpHeaders.Authorization to "Bearer ${accessToken.accessToken}"
                 )
 
