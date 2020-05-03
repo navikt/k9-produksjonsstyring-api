@@ -27,7 +27,8 @@ private val abacCache = AbacCache()
 private const val XACML_CONTENT_TYPE = "application/xacml+json"
 private const val DOMENE = "k9"
 
-class PepClient(private val azureGraphService: AzureGraphService, private val config: Configuration) {
+class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: AzureGraphService, private val config: Configuration) {
+    @KtorExperimentalAPI
     private val url = config.abacEndpointUrl
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
         
@@ -70,6 +71,7 @@ class PepClient(private val azureGraphService: AzureGraphService, private val co
         return decision
     }
     
+    @KtorExperimentalAPI
     private suspend fun evaluate(xacmlRequestBuilder: XacmlRequestBuilder): Boolean {
         val xacmlJson = gson.toJson(xacmlRequestBuilder.build())
         return withContext(Dispatchers.IO) {
@@ -85,7 +87,6 @@ class PepClient(private val azureGraphService: AzureGraphService, private val co
                     HttpHeaders.ContentType to XACML_CONTENT_TYPE,
                     NavHeaders.CallId to UUID.randomUUID().toString()
                 )
-            log.info("Abac request: " + httpRequest.toString())
             val json = Retry.retry(
                 operation = "evaluer abac",
                 initialDelay = Duration.ofMillis(200),
@@ -109,10 +110,8 @@ class PepClient(private val azureGraphService: AzureGraphService, private val co
                     }
                 )
             }
-//            {"Response":[{"Decision":"Permit"}]}
-            log.info("Abac: $json")
             try {
-                objectMapper().readValue<Response>(json).response.get(0).decision == "Permit"
+                objectMapper().readValue<Response>(json).response[0].decision == "Permit"
             } catch (e: Exception) {
                 log.error(
                     "Feilet deserialisering", e
@@ -121,12 +120,5 @@ class PepClient(private val azureGraphService: AzureGraphService, private val co
             }
         }
     }
-
-    private fun createBiasedDecision(decision: Decision): Decision =
-            when (decision) {
-                Decision.NotApplicable, Decision.Indeterminate -> Decision.Deny
-                else -> decision
-            }
-
    
 }
