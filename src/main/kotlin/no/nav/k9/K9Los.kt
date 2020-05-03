@@ -36,6 +36,7 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.abac.Decision
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -138,16 +139,18 @@ fun Application.k9Los() {
         configuration = configuration,
         k9sakEventHandler = k9sakEventHandler
     )
-
+    val azureGraphService = AzureGraphService(accessTokenClient = accessTokenClientResolver.accessTokenClient(), configuration = configuration)
+    
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
         asynkronProsesseringV1Service.stop()
         sakOgBehadlingProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
     }
+        
     val requestContextService = RequestContextService()
 
-    val pepClient = PepClient(configuration, Decision.Deny)
+    val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
     install(CallIdRequired)
 
     install(Locations)

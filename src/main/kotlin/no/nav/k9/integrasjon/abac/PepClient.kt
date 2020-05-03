@@ -5,11 +5,13 @@ import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
 import com.google.gson.GsonBuilder
 import io.ktor.http.HttpHeaders
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.Configuration
+import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
@@ -23,10 +25,11 @@ private val abacCache = AbacCache()
 private const val XACML_CONTENT_TYPE = "application/xacml+json"
 private const val DOMENE = "k9"
 
-class PepClient(private val config: Configuration, private val bias: Decision) {
+class PepClient(private val azureGraphService: AzureGraphService, private val config: Configuration) {
     private val url = config.abacEndpointUrl
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
         
+    @KtorExperimentalAPI
     suspend fun erOppgaveStyrer(idToken: IdToken): Boolean {
         val cachedResponse = abacCache.hasAccess(idToken, OPPGAVESTYRER, OPPGAVESTYRER )
         if (cachedResponse != null) {
@@ -37,7 +40,7 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER)
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
-           // .addAccessSubjectAttribute(SUBJECTID, "z994048")
+            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
         val response = evaluate(requestBuilder)
@@ -46,6 +49,7 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
         return decision
     }
 
+    @KtorExperimentalAPI
     suspend fun harBasisTilgang(idToken: IdToken): Boolean {
         val cachedResponse = abacCache.hasAccess(idToken, BASIS_TILGANG, BASIS_TILGANG )
         if (cachedResponse != null) {
@@ -53,12 +57,11 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
         }
         
         val requestBuilder = XacmlRequestBuilder()
-        //    .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, BASIS_TILGANG)
             .addActionAttribute(ACTION_ID, "read")
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
-            .addAccessSubjectAttribute(SUBJECTID, "z994048")
+            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
         val response = evaluate(requestBuilder)
@@ -114,11 +117,9 @@ class PepClient(private val config: Configuration, private val bias: Decision) {
 
     private fun createBiasedDecision(decision: Decision): Decision =
             when (decision) {
-                Decision.NotApplicable, Decision.Indeterminate -> bias
+                Decision.NotApplicable, Decision.Indeterminate -> Decision.Deny
                 else -> decision
             }
-
-
 
     private fun extractBodyFromOidcToken(token: String): String =
             token.substringAfter(".").substringBefore(".")

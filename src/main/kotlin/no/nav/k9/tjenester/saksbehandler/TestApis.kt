@@ -64,7 +64,7 @@ internal fun Route.TestApis(
             )
         }
     }
-    
+
     @Location("/test")
     class getInnloggetBruker
 
@@ -75,12 +75,15 @@ internal fun Route.TestApis(
                 idToken = call.idToken()
             )
         ) {
-          //  val erOppgaveStyrer = true // pepClient.erOppgaveStyrer(call.idToken())
-            
-          //  val harbasistilgang = pepClient.harBasisTilgang(call.idToken())
+            //  val erOppgaveStyrer = true // pepClient.erOppgaveStyrer(call.idToken())
+
+            //  val harbasistilgang = pepClient.harBasisTilgang(call.idToken())
 
             val accessToken =
-                accessTokenClient.getAccessToken(setOf("https://graph.microsoft.com/.default"), kotlin.coroutines.coroutineContext.idToken().value)
+                accessTokenClient.getAccessToken(
+                    setOf("https://graph.microsoft.com/.default"),
+                    kotlin.coroutines.coroutineContext.idToken().value
+                )
 
             val httpRequest = "https://graph.microsoft.com/v1.0/users/me?\$select=onPremisesSamAccountName"
                 .httpGet()
@@ -89,8 +92,7 @@ internal fun Route.TestApis(
                     HttpHeaders.Authorization to "Bearer ${accessToken.accessToken}"
                 )
 
-            
-            val json = Retry.retry(
+            val id = Retry.retry(
                 operation = "hente-person",
                 initialDelay = Duration.ofMillis(200),
                 factor = 2.0,
@@ -102,7 +104,7 @@ internal fun Route.TestApis(
                     resultResolver = { 200 == it.second.statusCode }
                 ) { httpRequest.awaitStringResponseResult() }
 
-                
+
                 result.fold(
                     { success -> success },
                     { error ->
@@ -110,18 +112,49 @@ internal fun Route.TestApis(
                             "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
                         )
                         log.error(error.toString())
-                        throw IllegalStateException("Feil ved henting av person.")
+                    }
+                )
+            }
+
+            val httpRequest1 = "https://graph.microsoft.com/v1.0/users/me"
+                .httpGet()
+                .header(
+                    HttpHeaders.Accept to "application/json",
+                    HttpHeaders.Authorization to "Bearer ${accessToken.accessToken}"
+                )
+
+            val bruker = Retry.retry(
+                operation = "hente-person",
+                initialDelay = Duration.ofMillis(200),
+                factor = 2.0,
+                logger = log
+            ) {
+                val (request, _, result) = Operation.monitored(
+                    app = "k9-los-api",
+                    operation = "hente-person",
+                    resultResolver = { 200 == it.second.statusCode }
+                ) { httpRequest1.awaitStringResponseResult() }
+
+
+                result.fold(
+                    { success -> success },
+                    { error ->
+                        log.error(
+                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+                        )
+                        log.error(error.toString())
                     }
                 )
             }
 
 
 
-            call.respond(json
+            call.respond("https://graph.microsoft.com/v1.0/users/me?\$select=onPremisesSamAccountName: $id\n" +
+                    "https://graph.microsoft.com/v1.0/users/me:$bruker")
             //    "erOppgavestyrer: $erOppgaveStyrer harBasistilgang $harbasistilgang graph"
 //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
 //                    .getDecision().decision == DecisionEnums.PERMIT
-            )
+//            )
         }
     }
 }

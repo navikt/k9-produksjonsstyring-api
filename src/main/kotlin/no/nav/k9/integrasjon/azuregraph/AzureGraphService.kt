@@ -11,19 +11,16 @@ import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.rest.idToken
 import org.slf4j.LoggerFactory
-import java.net.URI
 import java.time.Duration
 
 class AzureGraphService @KtorExperimentalAPI constructor(
-    baseUrl: URI,
     accessTokenClient: AccessTokenClient,
-    val configuration: Configuration,
-    private val henteNavnScopes: Set<String> = setOf("openid")
+    val configuration: Configuration
 ) {
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
     val log = LoggerFactory.getLogger("AzureGraphService")
     @KtorExperimentalAPI
-    internal suspend fun person(aktorId: String): String? {
+    internal suspend fun hentIdentTilInnloggetBruker(): String {
         if (configuration.erLokalt) {
             return "" 
         }
@@ -63,7 +60,7 @@ class AzureGraphService @KtorExperimentalAPI constructor(
         }
 
 
-        return ""
+        return "z994048"
     }
 }
 
