@@ -287,7 +287,14 @@ private fun Route.api(
         }
         NavAnsattApis(requestContextService = requestContextService, pepClient = pepClient, configuration = configuration)
         if (!configuration.erIProd) {
-            TestApis(requestContextService, pdlService, accessTokenClientResolver, configuration, pepClient = pepClient)
+            TestApis(
+                requestContextService = requestContextService,
+                pdlService = pdlService,
+                accessTokenClientResolver = accessTokenClientResolver,
+                configuration = configuration,
+                accessTokenClient = accessTokenClientResolver.accessTokenClient(),
+                pepClient = pepClient
+            )
         }
         SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis() }
