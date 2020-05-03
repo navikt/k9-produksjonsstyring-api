@@ -76,6 +76,7 @@ internal fun Route.TestApis(
             )
         ) {
           //  val erOppgaveStyrer = true // pepClient.erOppgaveStyrer(call.idToken())
+            
           //  val harbasistilgang = pepClient.harBasisTilgang(call.idToken())
 
             val accessToken =
