@@ -79,7 +79,7 @@ internal fun Route.TestApis(
           //  val harbasistilgang = pepClient.harBasisTilgang(call.idToken())
 
             val accessToken =
-                accessTokenClient.getAccessToken(setOf("https://graph.microsoft.com/user.read"), kotlin.coroutines.coroutineContext.idToken().ident.value)
+                accessTokenClient.getAccessToken(setOf("https://graph.microsoft.com/user.read"), kotlin.coroutines.coroutineContext.idToken().value)
 
             val httpRequest = "https://graph.microsoft.com/v1.0/me"
                 .httpGet()
