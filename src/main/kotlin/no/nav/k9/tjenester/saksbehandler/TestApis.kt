@@ -81,7 +81,7 @@ internal fun Route.TestApis(
             val accessToken =
                 accessTokenClient.getAccessToken(setOf("https://graph.microsoft.com/user.read"), kotlin.coroutines.coroutineContext.idToken().value)
 
-            val httpRequest = "https://graph.microsoft.com/v1.0/me/memberOf"
+            val httpRequest = "https://graph.microsoft.com/v1.0/users/me?\$select=onPremisesSamAccountName"
                 .httpGet()
                 .header(
                     HttpHeaders.Accept to "application/json",
