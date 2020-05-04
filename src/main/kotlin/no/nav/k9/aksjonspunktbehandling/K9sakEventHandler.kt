@@ -82,8 +82,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 BehandlingOpprettet.PrimaerBehandlingREF.Type("", "", "")
             ),
             sekundaerBehandlingREF = listOf(),
-            applikasjonSakREF = "",
-            applikasjonBehandlingREF = "",
+            applikasjonSakREF = modell.sisteEvent().saksnummer,
+            applikasjonBehandlingREF = modell.sisteEvent().eksternId.toString(),
             styringsinformasjonListe = listOf()
         )
 
@@ -112,8 +112,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 BehandlingAvsluttet.PrimaerBehandlingREF.Type("", "", "")
             ),
             sekundaerBehandlingREF = listOf(),
-            applikasjonSakREF = "",
-            applikasjonBehandlingREF = "",
+            applikasjonSakREF = modell.sisteEvent().saksnummer,
+            applikasjonBehandlingREF = modell.sisteEvent().eksternId.toString(),
             styringsinformasjonListe = listOf(),
             avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "")
         )
