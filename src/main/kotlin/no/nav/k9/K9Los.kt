@@ -34,6 +34,7 @@ import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
@@ -45,7 +46,7 @@ import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
-import no.nav.k9.tjenester.avdelingsleder.saksbehandler.AvdelingslederSaksbehandlerApis
+
 import no.nav.k9.tjenester.fagsak.FagsakApis
 import no.nav.k9.tjenester.innsikt.InnsiktGrensesnitt
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
@@ -111,15 +112,13 @@ fun Application.k9Los() {
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
     val oppgaveKøRepository = OppgaveKøRepository(dataSource)
+    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val oppgaveTjeneste = OppgaveTjeneste(
         oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
         pdlService = pdlService
     )
-    val avdelingslederTjeneste = AvdelingslederTjeneste(
-        oppgaveKøRepository,
-        oppgaveTjeneste
-    )
+
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
     val sakOgBehadlingProducer = SakOgBehadlingProducer(
@@ -139,14 +138,21 @@ fun Application.k9Los() {
         k9sakEventHandler = k9sakEventHandler
     )
     val azureGraphService = AzureGraphService(accessTokenClient = accessTokenClientResolver.accessTokenClient(), configuration = configuration)
-    
+
+    val avdelingslederTjeneste = AvdelingslederTjeneste(
+        oppgaveKøRepository,
+        saksbehandlerRepository,
+        azureGraphService,
+        oppgaveTjeneste
+    )
+
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
         asynkronProsesseringV1Service.stop()
         sakOgBehadlingProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
     }
-        
+
     val requestContextService = RequestContextService()
 
     val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
@@ -262,7 +268,6 @@ private fun Route.api(
               configuration = configuration
           )
         }
-        AvdelingslederSaksbehandlerApis()
         NøkkeltallApis()
         route("saksbehandler") {
             route("oppgaver") {

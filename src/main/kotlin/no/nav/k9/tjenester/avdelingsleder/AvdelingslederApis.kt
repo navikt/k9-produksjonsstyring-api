@@ -9,10 +9,7 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.k9.domene.modell.*
-import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
-import java.time.LocalDate
 import java.util.*
 
 @KtorExperimentalAPI
@@ -36,5 +33,20 @@ fun Route.AvdelingslederApis(
     get { _: hentAntallOppgaver ->
         val uuid = call.parameters["id"]
         call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid)))
+    }
+
+    @Location("/saksbehandlere")
+    class hentSaksbehandlere
+
+    get { _: hentSaksbehandlere ->
+        call.respond(avdelingslederTjeneste.hentSaksbehandlere())
+    }
+
+    @Location("/saksbehandlere/sok")
+    class søkSaksbehandler
+
+    post { _: søkSaksbehandler ->
+        val epost = call.receive<EpostDto>()
+        avdelingslederTjeneste.søkSaksbehandler(epost)?.let { call.respond(it) }
     }
 }

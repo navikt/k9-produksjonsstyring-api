@@ -28,7 +28,7 @@ fun Route.SaksbehandlerSakslisteApis(oppgaveTjeneste: OppgaveTjeneste) {
                     navn = oppgaveKø.navn,
                     behandlingTyper = oppgaveKø.filtreringBehandlingTyper,
                     fagsakYtelseTyper = oppgaveKø.filtreringYtelseTyper,
-                    saksbehandlere = listOf(Saksbehandler("alexaban", "Sara Saksbehandler")),
+                    saksbehandlere = listOf(Saksbehandler("alexaban", "Sara Saksbehandler", "alexaban@nav.no")),
                     antallBehandlinger = 1000,
                     sistEndret = oppgaveKø.sistEndret,
                     sortering = sortering,
@@ -44,7 +44,7 @@ fun Route.SaksbehandlerSakslisteApis(oppgaveTjeneste: OppgaveTjeneste) {
 
     get { _: hentSakslistensSaksbehandlere ->
         call.respond(
-            listOf(Saksbehandler("8ewer89uf", "SaksbehandlerEllen"))
+            listOf(Saksbehandler("8ewer89uf", "SaksbehandlerEllen", "ellen@nav.no"))
         )
     }
 }

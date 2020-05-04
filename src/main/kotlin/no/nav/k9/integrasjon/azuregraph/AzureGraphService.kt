@@ -75,6 +75,59 @@ class AzureGraphService @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
+    internal suspend fun hentNavnPåSaksbehandler(email: String): DisplayName? {
+        if (configuration.erLokalt) {
+            return DisplayName("", "", "")
+        }
+        val accessToken =
+            cachedAccessTokenClient.getAccessToken(
+                setOf("https://graph.microsoft.com/user.read"),
+                kotlin.coroutines.coroutineContext.idToken().value
+            )
+
+        val httpRequest = "https://graph.microsoft.com/v1.0/users/$email?\$select=displayName,onPremisesSamAccountName"
+            .httpGet()
+            .header(
+                HttpHeaders.Accept to "application/json",
+                HttpHeaders.Authorization to "Bearer ${accessToken.token}"
+            )
+
+
+        val json = Retry.retry(
+            operation = "hent-navn",
+            initialDelay = Duration.ofMillis(200),
+            factor = 2.0,
+            logger = log
+        ) {
+            val (request, _, result) = Operation.monitored(
+                app = "k9-los-api",
+                operation = "hent-navn",
+                resultResolver = { 200 == it.second.statusCode }
+            ) { httpRequest.awaitStringResponseResult() }
+
+            result.fold(
+                { success -> success },
+                { error ->
+                    log.error(
+                        "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+                    )
+                    log.error(error.toString())
+                    throw IllegalStateException("Feil ved henting av saksbehandlers id")
+                }
+            )
+        }
+        return try {
+            return objectMapper().readValue<DisplayName>(json)
+        } catch (e: Exception) {
+            log.error(
+                "Feilet deserialisering", e
+            )
+            null
+        }
+    }
+
+
+    @KtorExperimentalAPI
     internal suspend fun hentNavnPåInnloggetSaksbehandler(): String {
         if (configuration.erLokalt) {
             return ""

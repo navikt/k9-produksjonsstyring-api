@@ -32,7 +32,9 @@ data class OppgaveKø(
 
 class Saksbehandler(
     val brukerIdent: String,
-    val navn: String
+    val navn: String,
+    val epost: String
+
 )
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class Enhet(val navn: String) {
