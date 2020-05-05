@@ -16,7 +16,6 @@ import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.mock.Aksjonspunkter
-import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,110 +47,100 @@ internal fun Route.OppgaveApis(
                     idToken = call.idToken()
                 )
             ) {
-                val list = mutableListOf<OppgaveDto>()
-                val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
-                for (oppgave in oppgaver) {
+                if (pepClient.harBasisTilgang(call.idToken())) {
+                    val list = mutableListOf<OppgaveDto>()
+                    val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
+                    for (oppgave in oppgaver) {
 
-                    val person = pdlService.person(oppgave.aktorId)
-                    if (person == null) {
-                        oppgaveTjeneste.settSkjermet(oppgave)
-                        continue
-                    }
-                    val navn = if (configuration.erIDevFss) {
-                        "${oppgave.fagsakSaksnummer} " +  Strings.join(
-                            oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                                val a = Aksjonspunkter().aksjonspunkter()
-                                    .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                                "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                            }.toList(),
-                            ", "
+                        val person = pdlService.person(oppgave.aktorId)
+                        if (person == null) {
+                            oppgaveTjeneste.settSkjermet(oppgave)
+                            continue
+                        }
+                        val navn = if (configuration.erIDevFss) {
+                            "${oppgave.fagsakSaksnummer} " + Strings.join(
+                                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                                    val a = Aksjonspunkter().aksjonspunkter()
+                                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                                    "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                                }.toList(),
+                                ", "
+                            )
+                        } else {
+                            person.data.hentPerson.navn[0].forkortetNavn
+                        }
+
+
+                        list.add(
+                            OppgaveDto(
+                                OppgaveStatusDto(false, null, false, null, null),
+                                oppgave.behandlingId,
+                                oppgave.fagsakSaksnummer,
+                                navn,
+                                oppgave.system,
+                                person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                                oppgave.behandlingType,
+                                oppgave.fagsakYtelseType,
+                                oppgave.behandlingStatus,
+                                true,
+                                oppgave.behandlingOpprettet,
+                                oppgave.behandlingsfrist,
+                                oppgave.eksternId,
+                                tilBeslutter = false,
+                                utbetalingTilBruker = false,
+                                søktGradering = false,
+                                selvstendigFrilans = false,
+                                registrerPapir = false,
+                                kombinert = false
+                            )
                         )
-                    } else {
-                        person.data.hentPerson.navn[0].forkortetNavn
                     }
-
-
-                    list.add(
-                        OppgaveDto(
-                            OppgaveStatusDto(false, null, false, null, null),
-                            oppgave.behandlingId,
-                            oppgave.fagsakSaksnummer,
-                            navn,
-                            oppgave.system,
-                            person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                            oppgave.behandlingType,
-                            oppgave.fagsakYtelseType,
-                            oppgave.behandlingStatus,
-                            true,
-                            oppgave.behandlingOpprettet,
-                            oppgave.behandlingsfrist,
-                            oppgave.eksternId,
-                            tilBeslutter = false,
-                            utbetalingTilBruker = false,
-                            søktGradering = false,
-                            selvstendigFrilans = false,
-                            registrerPapir = false,
-                            kombinert = false
-                        )
+                    call.respond(
+                        list
                     )
+                } else {
+                    mutableListOf<OppgaveDto>()
                 }
-                call.respond(
-                    list
-                )
             }
         } else {
-            val idtoken = call.idToken()
-            withContext(
-                requestContextService.getCoroutineContext(
-                    context = coroutineContext,
-                    idToken = idtoken
+            val list = mutableListOf<OppgaveDto>()
+            val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
+            for (oppgave in oppgaver) {
+                list.add(
+                    OppgaveDto(
+                        OppgaveStatusDto(false, null, false, null, null),
+                        oppgave.behandlingId,
+                        oppgave.fagsakSaksnummer,
+                        "Navn",
+                        oppgave.system,
+                        oppgave.aktorId,
+                        oppgave.behandlingType,
+                        oppgave.fagsakYtelseType,
+                        oppgave.behandlingStatus,
+                        true,
+                        oppgave.behandlingOpprettet,
+                        oppgave.behandlingsfrist,
+                        oppgave.eksternId,
+                        tilBeslutter = false,
+                        utbetalingTilBruker = false,
+                        søktGradering = false,
+                        selvstendigFrilans = false,
+                        registrerPapir = false,
+                        kombinert = false
+                    )
                 )
-            ) {
-                val token = IdToken(idtoken.value)
-               if( pepClient.harBasisTilgang(token) ){
-                   val list = mutableListOf<OppgaveDto>()
-                   val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
-                   for (oppgave in oppgaver) {
-                       list.add(
-                           OppgaveDto(
-                               OppgaveStatusDto(false, null, false, null, null),
-                               oppgave.behandlingId,
-                               oppgave.fagsakSaksnummer,
-                               "Navn",
-                               oppgave.system,
-                               oppgave.aktorId,
-                               oppgave.behandlingType,
-                               oppgave.fagsakYtelseType,
-                               oppgave.behandlingStatus,
-                               true,
-                               oppgave.behandlingOpprettet,
-                               oppgave.behandlingsfrist,
-                               oppgave.eksternId,
-                               tilBeslutter = false,
-                               utbetalingTilBruker = false,
-                               søktGradering = false,
-                               selvstendigFrilans = false,
-                               registrerPapir = false,
-                               kombinert = false
-                           )
-                       )
-                   }
-                   call.respond(
-                       list
-                   )
-               }else{
-                   call.respond(
-                       mutableListOf<OppgaveDto>()
-                   )
-               }
             }
+            call.respond(
+                list
+            )
+        
         }
     }
 
     @Location("/resultat")
     class getOppgaverTilBehandling
 
-    get { _: getOppgaverTilBehandling -> 
+    get { _: getOppgaverTilBehandling ->
 //        val sakslisteId: SakslisteIdDto =
 //            ObjectMapper().readValue(call.request.queryParameters["sakslisteId"], SakslisteIdDto::class.java)
 //        val nesteOppgaver = oppgaveTjeneste.hentNesteOppgaver(sakslisteId.verdi)

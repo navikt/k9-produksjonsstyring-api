@@ -36,7 +36,7 @@ class AvdelingslederTjeneste(
                 fagsakYtelseTyper = it.filtreringYtelseTyper,
                 andreKriterier = it.filtreringAndreKriterierType,
                 sistEndret = it.sistEndret,
-                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id),
+                antallBehandlinger = it.oppgaver.size,
                 saksbehandlere = it.saksbehandlere
             )
         }
@@ -44,7 +44,7 @@ class AvdelingslederTjeneste(
 
     fun opprettOppgaveKø(): OppgavekøIdDto {
         val uuid = UUID.randomUUID()
-        oppgaveKøRepository.lagre(uuid){
+        oppgaveKøRepository.lagre(uuid) {
             OppgaveKø(
                 id = uuid,
                 navn = "Ny kø",
@@ -97,7 +97,9 @@ class AvdelingslederTjeneste(
             }.toMutableList()
             oppgaveKø
         }
+
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
+
     }
 
     fun endreYtelsesType(ytelse: YtelsesTypeDto) {
@@ -110,6 +112,7 @@ class AvdelingslederTjeneste(
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(ytelse.id))
+
     }
 
     fun endreKriterium(kriteriumDto: AndreKriterierDto) {
@@ -122,6 +125,7 @@ class AvdelingslederTjeneste(
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(kriteriumDto.id))
+
     }
 
     fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
@@ -137,6 +141,7 @@ class AvdelingslederTjeneste(
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(køSortering.id))
+
     }
 
     fun endreKøSorteringDato(datoSortering: SorteringDatoDto) {

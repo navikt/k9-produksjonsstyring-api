@@ -33,7 +33,7 @@ class OppgaveTjeneste(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            oppgaveKø.oppgaver.map { oppgaveRepository.hent(it).sisteOppgave() }.filter { it.reservasjon?.reservertAv.isNullOrEmpty() }
+            oppgaveKø.oppgaver.take(100).map { oppgaveRepository.hent(it).sisteOppgave() }.filter { it.reservasjon?.reservertAv.isNullOrEmpty() }
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -216,7 +216,7 @@ class OppgaveTjeneste(
     }
 
     fun hentAntallOppgaver(oppgavekøId: UUID): Int {
-        return hentOppgaver(oppgavekøId).size
+        return oppgaveKøRepository.hentOppgavekø(oppgavekøId).oppgaver.size
     }
 
     fun hentAntallOppgaverTotalt(): Int {

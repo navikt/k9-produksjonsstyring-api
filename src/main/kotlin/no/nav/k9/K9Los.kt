@@ -112,7 +112,7 @@ fun Application.k9Los() {
         configuration = configuration
     )
     
-    val oppgaveOppdatert = Channel<Oppgave>()
+    val oppgaveOppdatert = Channel<Oppgave>(10000)
     
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource, oppgaveOppdatert)
@@ -295,6 +295,7 @@ private fun Route.api(
             }
 
             SaksbehandlerSakslisteApis(
+                configuration = configuration,
                 oppgaveTjeneste = oppgaveTjeneste,
                 pepClient = pepClient,
                 requestContextService = requestContextService

@@ -93,10 +93,11 @@ class OppgaveKøRepository(private val dataSource: DataSource, private val oppga
     fun oppdaterKøMedOppgaver(uuid: UUID) {
         val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver(Int.MAX_VALUE)
         lagre(uuid) { oppgaveKø ->
+            oppgaveKø!!.oppgaver = mutableListOf()
             for (oppgaveModell in hentAktiveOppgaver) {
-                oppgaveKø!!.leggOppgaveTilEllerFjernFraKø(oppgave = oppgaveModell.sisteOppgave())
+                oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave = oppgaveModell.sisteOppgave())
             }
-            oppgaveKø!!
+            oppgaveKø
         }
     }
 }
