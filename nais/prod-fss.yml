@@ -81,7 +81,7 @@ spec:
 
       # ABAC
     - name: ABAC_PDP_ENDPOINT_URL
-      value: http://abac-k9.adeo.no/application/authorize
+      value: https://abac-k9.adeo.no/application/authorize
       
     - name: APPDYNAMICS_CONTROLLER_HOST_NAME
       value: appdynamics.adeo.no
