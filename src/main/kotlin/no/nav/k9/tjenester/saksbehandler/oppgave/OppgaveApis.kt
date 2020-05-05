@@ -49,7 +49,7 @@ internal fun Route.OppgaveApis(
                 )
             ) {
                 val list = mutableListOf<OppgaveDto>()
-                val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter), limit = 10)
+                val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
                 for (oppgave in oppgaver) {
 
                     val person = pdlService.person(oppgave.aktorId)
@@ -110,7 +110,7 @@ internal fun Route.OppgaveApis(
                 val token = IdToken(idtoken.value)
                if( pepClient.harBasisTilgang(token) ){
                    val list = mutableListOf<OppgaveDto>()
-                   val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter), limit = 10)
+                   val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
                    for (oppgave in oppgaver) {
                        list.add(
                            OppgaveDto(
@@ -151,9 +151,8 @@ internal fun Route.OppgaveApis(
     @Location("/resultat")
     class getOppgaverTilBehandling
 
-    get { _: getOppgaverTilBehandling ->
-
-        //        val sakslisteId: SakslisteIdDto =
+    get { _: getOppgaverTilBehandling -> 
+//        val sakslisteId: SakslisteIdDto =
 //            ObjectMapper().readValue(call.request.queryParameters["sakslisteId"], SakslisteIdDto::class.java)
 //        val nesteOppgaver = oppgaveTjeneste.hentNesteOppgaver(sakslisteId.verdi)
 
@@ -177,8 +176,6 @@ internal fun Route.OppgaveApis(
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
         }
-
-
     }
 
     @Location("/reserverte")
@@ -230,8 +227,6 @@ internal fun Route.OppgaveApis(
         } else {
             call.respond(oppgaveTjeneste.reserverOppgave("alexaban", UUID.fromString(oppgaveId.oppgaveId)))
         }
-
-
     }
 
     @Location("/opphev")
@@ -278,7 +273,6 @@ internal fun Route.OppgaveApis(
                     idToken = call.idToken()
                 )
             ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)) }
-
+        }
     }
-
 }

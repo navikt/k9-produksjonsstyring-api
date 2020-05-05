@@ -1,14 +1,12 @@
 package no.nav.k9.integrasjon
 
 import no.nav.k9.integrasjon.dto.aksjonspunkt.AksjonspunktDto
-import java.time.LocalDateTime
 import java.util.*
 
 class Aksjonspunkt(
     val definisjonKode: String,
     val statusKode: String,
-    val begrunnelse: String,
-    val fristTid: LocalDateTime
+    val begrunnelse: String
 ) {
     private val PÅ_VENT_KODEGRUPPE_STARTS_WITH = "7"
     private val MANUELT_SATT_PÅ_VENT_KODE = "7001";
@@ -67,8 +65,7 @@ class Aksjonspunkt(
         return Aksjonspunkt(
             aksjonspunktDto.definisjon.kode,
             aksjonspunktDto.status.kode,
-            aksjonspunktDto.begrunnelse,
-            aksjonspunktDto.fristTid
+            aksjonspunktDto.begrunnelse
         )
     }
 }

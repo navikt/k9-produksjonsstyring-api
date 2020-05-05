@@ -3,6 +3,7 @@ package no.nav.k9.domene.modell
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import java.time.LocalDate
 import java.util.*
 
@@ -17,7 +18,7 @@ data class OppgaveKø(
     val enhet: Enhet,
     var fomDato: LocalDate,
     var tomDato: LocalDate,
-    var saksbehandlere: List<Saksbehandler>
+    var saksbehandlere: List<Saksbehandler>,
 //    val tilBeslutter: Boolean,
 //    val utbetalingTilBruker: Boolean,
 //    val selvstendigFrilans: Boolean,
@@ -28,13 +29,25 @@ data class OppgaveKø(
 //    val erOmsorgspenger: Boolean,
 //    val opprettBehandling: Boolean,
 //    val førsteStønadsdag: Boolean
-)
+    var oppgaver: MutableList<UUID> = mutableListOf()
+) {
+    fun leggOppgaveTilEllerFjernFraKø(oppgave: Oppgave) {
+        if (tilhørerOppgaveTilKø(oppgave)) {
+            this.oppgaver.add(oppgave.eksternId)
+        }else {
+            this.oppgaver.remove(oppgave.eksternId)
+        }
+    }
+    
+    fun tilhørerOppgaveTilKø(oppgave: Oppgave): Boolean {
+        return true
+    }
+}
 
 class Saksbehandler(
     val brukerIdent: String,
     val navn: String,
     val epost: String
-
 )
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class Enhet(val navn: String) {

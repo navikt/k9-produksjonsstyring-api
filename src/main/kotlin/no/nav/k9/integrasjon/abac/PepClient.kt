@@ -13,6 +13,7 @@ import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.tjenester.saksbehandler.IdToken
@@ -70,7 +71,30 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
         abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, OPPGAVESTYRER, decision)
         return decision
     }
-    
+
+
+    @KtorExperimentalAPI
+    suspend fun harTilgangTilLesSak(idToken: IdToken, oppgave: Oppgave): Boolean {
+        val cachedResponse = abacCache.hasAccess(idToken, LESETILGANG_SAK, "read" )
+        if (cachedResponse != null) {
+            return cachedResponse
+        }
+
+        val requestBuilder = XacmlRequestBuilder()
+            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+            .addResourceAttribute(RESOURCE_TYPE, LESETILGANG_SAK)
+            .addActionAttribute(ACTION_ID, "read")
+            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
+            .addResourceAttribute(RESOURCE_FNR, "01234567890" /*oppgave.aktorId*/)    
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+
+        val decision =  evaluate(requestBuilder)
+        abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, "read" , decision)
+        return decision
+    }
+
+
     @KtorExperimentalAPI
     private suspend fun evaluate(xacmlRequestBuilder: XacmlRequestBuilder): Boolean {
         val xacmlJson = gson.toJson(xacmlRequestBuilder.build())

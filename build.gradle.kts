@@ -55,11 +55,7 @@ dependencies {
     implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
     implementation("no.nav.common:rest:1.2020.02.18-16.01-aba1e77ea3f9")
     implementation("com.google.code.gson:gson:2.7")
-
-    // SakOgBehandling
-    //<sakogbehandling-tjenestespesifikasjon.version>1.2018.11.06-01.45-c7f37fed0647</sakogbehandling-tjenestespesifikasjon.version>
-    implementation("no.nav.tjenestespesifikasjoner:sakogbehandling-tjenestespesifikasjon:1.2020.01.30-14.36-cdf257baea96")
-    implementation("no.nav.tjenestespesifikasjoner:nav-virksomhet-hendelsehandterer-behandlingstatus-v1-meldingsdefinisjon:1.2020.01.30-14.36-cdf257baea96")
+    
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:${cxf}")
     implementation("org.apache.cxf:cxf-rt-features-logging:${cxf}")
     implementation("org.apache.cxf:cxf-rt-transports-http:${cxf}")

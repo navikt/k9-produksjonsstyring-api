@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
-import kotlin.streams.toList
 
 
 private val log: Logger =
@@ -31,13 +30,10 @@ class OppgaveTjeneste(
     private val pdlService: PdlService
 ) {
 
-    fun hentOppgaver(oppgavekøId: UUID, limit: Int): List<Oppgave> {
+    fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            val alleOppgaver = oppgaveRepository.hentAktiveOppgaver(limit).stream()
-                .filter { t -> t.sisteOppgave().reservasjon?.reservertAv.isNullOrEmpty() }
-                .map { t -> t.sisteOppgave() }.toList()
-            alleOppgaver
+            oppgaveKø.oppgaver.map { oppgaveRepository.hent(it).sisteOppgave() }.filter { it.reservasjon?.reservertAv.isNullOrEmpty() }
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -220,7 +216,7 @@ class OppgaveTjeneste(
     }
 
     fun hentAntallOppgaver(oppgavekøId: UUID): Int {
-        return hentOppgaver(oppgavekøId, Int.MAX_VALUE).size
+        return hentOppgaver(oppgavekøId).size
     }
 
     fun hentAntallOppgaverTotalt(): Int {
@@ -295,7 +291,7 @@ class OppgaveTjeneste(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun hentOppgaveKøer(): MutableList<OppgaveKø> {
+    fun hentOppgaveKøer(): List<OppgaveKø> {
         return oppgaveKøRepository.hent()
     }
 

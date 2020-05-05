@@ -160,6 +160,7 @@ data class Modell(
             system = event.fagsystem.name,
             oppgaveEgenskap = emptyList(),
             aksjonspunkter = event.aktiveAksjonspunkt(),
+            utenlands = event.aktiveAksjonspunkt().liste.any { entry -> (entry.key == "5068" || entry.key == "6068") && entry.value != "AVBR" }, 
             tilBeslutter = beslutterOppgave,
             kombinert = false,
             registrerPapir = registrerPapir,
