@@ -137,7 +137,10 @@ fun Application.k9Los() {
         configuration = configuration,
         k9sakEventHandler = k9sakEventHandler
     )
-    val azureGraphService = AzureGraphService(accessTokenClient = accessTokenClientResolver.accessTokenClient(), configuration = configuration)
+    val azureGraphService = AzureGraphService(
+        accessTokenClient = accessTokenClientResolver.accessTokenClient(),
+        configuration = configuration
+    )
 
     val avdelingslederTjeneste = AvdelingslederTjeneste(
         oppgaveKøRepository,
@@ -261,24 +264,26 @@ private fun Route.api(
 ) {
     route("api") {
         AdminApis()
-        route("fagsak"){
-          FagsakApis(
-              oppgaveTjeneste = oppgaveTjeneste,
-              requestContextService = requestContextService,
-              configuration = configuration
-          )
+        route("fagsak") {
+            FagsakApis(
+                oppgaveTjeneste = oppgaveTjeneste,
+                requestContextService = requestContextService,
+                configuration = configuration
+            )
         }
         NøkkeltallApis()
         route("saksbehandler") {
             route("oppgaver") {
                 OppgaveApis(
-                    configuration,
-                    requestContextService,
-                    oppgaveTjeneste,
+                    pepClient = pepClient,
+                    configuration = configuration,
+                    requestContextService = requestContextService,
+                    oppgaveTjeneste = oppgaveTjeneste,
                     pdlService = pdlService
                 )
             }
-            SaksbehandlerSakslisteApis(oppgaveTjeneste)
+            
+            SaksbehandlerSakslisteApis(oppgaveTjeneste = oppgaveTjeneste, pepClient = pepClient,requestContextService = requestContextService)
             SaksbehandlerNøkkeltallApis()
         }
         route("avdelingsleder") {
@@ -294,7 +299,11 @@ private fun Route.api(
                 )
             }
         }
-        NavAnsattApis(requestContextService = requestContextService, pepClient = pepClient, configuration = configuration)
+        NavAnsattApis(
+            requestContextService = requestContextService,
+            pepClient = pepClient,
+            configuration = configuration
+        )
         if (!configuration.erIProd) {
             TestApis(
                 requestContextService = requestContextService,

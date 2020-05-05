@@ -12,9 +12,11 @@ import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.mock.Aksjonspunkter
+import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -26,6 +28,7 @@ private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.OppgaveApis(
+    pepClient: PepClient,
     configuration: Configuration,
     requestContextService: RequestContextService,
     oppgaveTjeneste: OppgaveTjeneste,
@@ -97,36 +100,51 @@ internal fun Route.OppgaveApis(
                 )
             }
         } else {
-            val list = mutableListOf<OppgaveDto>()
-            val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter), limit = 10)
-            for (oppgave in oppgaver) {
-                list.add(
-                    OppgaveDto(
-                        OppgaveStatusDto(false, null, false, null, null),
-                        oppgave.behandlingId,
-                        oppgave.fagsakSaksnummer,
-                        "Navn",
-                        oppgave.system,
-                        oppgave.aktorId,
-                        oppgave.behandlingType,
-                        oppgave.fagsakYtelseType,
-                        oppgave.behandlingStatus,
-                        true,
-                        oppgave.behandlingOpprettet,
-                        oppgave.behandlingsfrist,
-                        oppgave.eksternId,
-                        tilBeslutter = false,
-                        utbetalingTilBruker = false,
-                        søktGradering = false,
-                        selvstendigFrilans = false,
-                        registrerPapir = false,
-                        kombinert = false
-                    )
+            val idtoken = call.idToken()
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    idToken = idtoken
                 )
+            ) {
+                val token = IdToken(idtoken.value)
+               if( pepClient.harBasisTilgang(token) ){
+                   val list = mutableListOf<OppgaveDto>()
+                   val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter), limit = 10)
+                   for (oppgave in oppgaver) {
+                       list.add(
+                           OppgaveDto(
+                               OppgaveStatusDto(false, null, false, null, null),
+                               oppgave.behandlingId,
+                               oppgave.fagsakSaksnummer,
+                               "Navn",
+                               oppgave.system,
+                               oppgave.aktorId,
+                               oppgave.behandlingType,
+                               oppgave.fagsakYtelseType,
+                               oppgave.behandlingStatus,
+                               true,
+                               oppgave.behandlingOpprettet,
+                               oppgave.behandlingsfrist,
+                               oppgave.eksternId,
+                               tilBeslutter = false,
+                               utbetalingTilBruker = false,
+                               søktGradering = false,
+                               selvstendigFrilans = false,
+                               registrerPapir = false,
+                               kombinert = false
+                           )
+                       )
+                   }
+                   call.respond(
+                       list
+                   )
+               }else{
+                   call.respond(
+                       mutableListOf<OppgaveDto>()
+                   )
+               }
             }
-            call.respond(
-                list
-            )
         }
     }
 
