@@ -284,7 +284,9 @@ private fun Route.api(
         route("avdelingsleder") {
             AvdelingslederApis(
                 avdelingslederTjeneste = avdelingslederTjeneste,
-                oppgaveTjeneste = oppgaveTjeneste
+                oppgaveTjeneste = oppgaveTjeneste,
+                configuration = configuration,
+                requestContextService = requestContextService
             )
             route("oppgavekoer") {
                 AvdelingslederOppgavekøApis(

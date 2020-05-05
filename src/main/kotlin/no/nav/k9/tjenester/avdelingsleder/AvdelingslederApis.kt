@@ -9,14 +9,20 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.withContext
+import no.nav.k9.Configuration
+import no.nav.k9.integrasjon.rest.RequestContextService
+import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-fun Route.AvdelingslederApis(
+internal fun Route.AvdelingslederApis(
     oppgaveTjeneste: OppgaveTjeneste,
-    avdelingslederTjeneste: AvdelingslederTjeneste
+    avdelingslederTjeneste: AvdelingslederTjeneste,
+    configuration: Configuration,
+    requestContextService: RequestContextService
 ) {
 
     @Location("/oppgaver/antall-totalt")
@@ -47,6 +53,13 @@ fun Route.AvdelingslederApis(
 
     post { _: søkSaksbehandler ->
         val epost = call.receive<EpostDto>()
-        avdelingslederTjeneste.søkSaksbehandler(epost)?.let { call.respond(it) }
+        if (configuration.erIkkeLokalt) {
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    idToken = call.idToken()
+                )
+            ) { avdelingslederTjeneste.søkSaksbehandler(epost)?.let { call.respond(it) } }
+        }
     }
 }
