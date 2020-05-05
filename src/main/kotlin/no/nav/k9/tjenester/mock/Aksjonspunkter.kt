@@ -411,6 +411,15 @@ class Aksjonspunkter {
                 totrinn = false
             ),
             Aksjonspunkt(
+                kode = "8000",
+                navn = "Auto vent frisinn beregning",
+                aksjonspunktype = "Manuell",
+                behandlingsstegtype = "Vurder uttak",
+                plassering = "UT",
+                vilkårtype = "Frisinn",
+                totrinn = false
+            ),
+            Aksjonspunkt(
                 kode = "6002",
                 navn = "Saksbehandler initierer kontroll av søkers opplysningsplikt",
                 aksjonspunktype = "Saksbehandleroverstyring",
