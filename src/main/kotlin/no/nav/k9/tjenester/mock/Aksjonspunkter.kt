@@ -400,6 +400,16 @@ class Aksjonspunkter {
                 vilkårtype = "Årskvantum",
                 totrinn = false
             ),
+
+            Aksjonspunkt(
+                kode = "8003",
+                navn = "Auto vent frisinn manglende funksjonalitet",
+                aksjonspunktype = "Manuell",
+                behandlingsstegtype = "Vurder uttak",
+                plassering = "UT",
+                vilkårtype = "Frisinn",
+                totrinn = false
+            ),
             Aksjonspunkt(
                 kode = "6002",
                 navn = "Saksbehandler initierer kontroll av søkers opplysningsplikt",
