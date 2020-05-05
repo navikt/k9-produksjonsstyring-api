@@ -42,10 +42,10 @@ internal fun Route.NavAnsattApis(
                         token.getName(),
                         kanSaksbehandle = pepClient.harBasisTilgang(token),
                         kanVeilede = pepClient.harBasisTilgang(token),
-                        kanBeslutte = true,
-                        kanBehandleKodeEgenAnsatt = true,
-                        kanBehandleKode6 = true,
-                        kanBehandleKode7 = true,
+                        kanBeslutte = pepClient.harBasisTilgang(token),
+                        kanBehandleKodeEgenAnsatt = pepClient.harBasisTilgang(token),
+                        kanBehandleKode6 = pepClient.harBasisTilgang(token),
+                        kanBehandleKode7 = pepClient.harBasisTilgang(token),
                         kanOppgavestyre = pepClient.erOppgaveStyrer(token)
                     )
                 )
