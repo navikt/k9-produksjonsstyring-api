@@ -47,7 +47,7 @@ fun runMigration(dataSource: DataSource, initSql: String? = null): Int {
         .dataSource(dataSource)
         .initSql(initSql)
         .load()
-        .clean()
+//        .clean()
 
     return Flyway.configure()
         .locations("migreringer/")
