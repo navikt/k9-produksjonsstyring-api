@@ -271,7 +271,14 @@ internal fun Route.OppgaveApis(
         var saker = call.request.queryParameters["saksnummerListe"]
         val saksnummerliste = saker?.split(",") ?: emptyList()
 
-        call.respond(oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste))
+        if (configuration.erIkkeLokalt) {
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    idToken = call.idToken()
+                )
+            ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)) }
+
     }
 
 }
