@@ -197,7 +197,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     }
 
     fun påVent(): Boolean {
-        return this.liste.any { entry -> entry.key.startsWith("7") }
+        return this.liste.any { entry -> entry.key.startsWith("7") || entry.key.startsWith("8000")|| entry.key.startsWith("8003")}
     }
 
     fun erTom(): Boolean {
