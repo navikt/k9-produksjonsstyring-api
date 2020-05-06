@@ -7,7 +7,6 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.lager.oppgave.OppgaveModell
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -19,12 +18,12 @@ class OppgaveRepository(
     private val oppgaveOppdatert: Channel<Oppgave>
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveRepository::class.java)
-    fun hent(): List<OppgaveModell> {
+    fun hent(): List<Oppgave> {
         var spørring = System.currentTimeMillis()
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select data from oppgave",
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave",
                     mapOf()
                 )
                     .map { row ->
@@ -34,17 +33,17 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         val serialisering = System.currentTimeMillis()
-        val list = json.map { s -> objectMapper().readValue(s, OppgaveModell::class.java) }.toList()
+        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
 
         log.info("Henter: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list
     }
 
-    fun hent(uuid: UUID): OppgaveModell {
+    fun hent(uuid: UUID): Oppgave {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select data from oppgave where id = :id",
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where id = :id",
                     mapOf("id" to uuid.toString())
                 )
                     .map { row ->
@@ -52,7 +51,7 @@ class OppgaveRepository(
                     }.asSingle
             )
         }
-        return objectMapper().readValue(json!!, OppgaveModell::class.java)
+        return objectMapper().readValue(json!!, Oppgave::class.java)
 
     }
 
@@ -61,7 +60,7 @@ class OppgaveRepository(
             it.transaction { tx ->
                 val run = tx.run(
                     queryOf(
-                        "select data from oppgave where id = :id for update",
+                        "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where id = :id for update",
                         mapOf("id" to uuid.toString())
                     )
                         .map { row ->
@@ -70,7 +69,7 @@ class OppgaveRepository(
                 )
 
                 val oppgave = if (!run.isNullOrEmpty()) {
-                    f(objectMapper().readValue(run, OppgaveModell::class.java).sisteOppgave())
+                    f(objectMapper().readValue(run, Oppgave::class.java))
                 } else {
                     f(null)
                 }
@@ -95,22 +94,17 @@ class OppgaveRepository(
     }
 
     fun hentOppgaverMedAktorId(aktørId: String) = hent()
-        .filter { it.sisteOppgave().aktorId == aktørId }
+        .filter { it.aktorId == aktørId }
 
     fun hentOppgaverMedSaksnummer(saksnummer: String) = hent()
-        .filter { it.sisteOppgave().fagsakSaksnummer == saksnummer }
-
-    fun hentReserverteOppgaver(reservatør: String): List<OppgaveModell> {
-        return hentAktiveOppgaver(Int.MAX_VALUE)
-            .filter { o -> o.sisteOppgave().reservasjon?.reservertAv == reservatør }
-    }
-
+        .filter { it.fagsakSaksnummer == saksnummer }
+    
     internal fun hentAktiveOppgaverTotalt(): Int {
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select count(*) as count  from oppgave where (data ::jsonb -> 'oppgaver' -> 0 -> 'aktiv') ::boolean",
+                    "select count(*) as count from oppgave where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean",
                     mapOf()
                 )
                     .map { row ->
@@ -123,13 +117,13 @@ class OppgaveRepository(
         return count!!
     }
 
-    internal fun hentAktiveOppgaver(limit: Int): List<OppgaveModell> {
+    internal fun hentAktiveOppgaver(): List<Oppgave> {
         var spørring = System.currentTimeMillis()
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select data from oppgave where (data ::jsonb -> 'oppgaver' -> 0 -> 'aktiv') ::boolean limit :limit",
-                    mapOf("limit" to limit)
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean ",
+                    mapOf()
                 )
                     .map { row ->
                         row.string("data")
@@ -138,10 +132,9 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         val serialisering = System.currentTimeMillis()
-        val list = json.map { s -> objectMapper().readValue(s, OppgaveModell::class.java) }.toList()
+        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
 
         log.info("Henter aktive oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
-        list.filter { o -> o.sisteOppgave().aktiv }
         return list
     }
 }

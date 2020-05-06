@@ -3,11 +3,11 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 //import no.nav.k9.integrasjon.K9SakRestKlient
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.lager.oppgave.OppgaveModell
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.fagsak.FagsakDto
@@ -27,13 +27,14 @@ private val log: Logger =
 class OppgaveTjeneste(
     private val oppgaveRepository: OppgaveRepository,
     private val oppgaveKøRepository: OppgaveKøRepository,
-    private val pdlService: PdlService
+    private val pdlService: PdlService,
+    private val reservasjonRepository: ReservasjonRepository
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            oppgaveKø.oppgaver.take(100).map { oppgaveRepository.hent(it).sisteOppgave() }.filter { it.reservasjon?.reservertAv.isNullOrEmpty() }
+            oppgaveKø.oppgaver.take(100).map { oppgaveRepository.hent(it) }
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -56,30 +57,28 @@ class OppgaveTjeneste(
 
         val reservasjon = Reservasjon(
             LocalDateTime.now().plusHours(24),
-            ident, null, null, null
+            ident, null, null, null, oppgave = uuid
         )
-
-        oppgaveRepository.lagre(uuid) { forrigeOppgave ->
-            forrigeOppgave?.reservasjon = reservasjon
-            forrigeOppgave!!
+        reservasjonRepository.lagre(uuid) {
+            reservasjon
         }
 
         return reservasjon
     }
 
     fun hentReservasjon(uuid: UUID): Reservasjon {
-        return oppgaveRepository.hent(uuid).sisteOppgave().reservasjon!!
+        return reservasjonRepository.hent(uuid)
     }
 
- /*   fun alder(pnr: String): Int {
-        val år = pnr.substring(4, 5).toInt()
-        val måned = pnr.substring(2, 3).toInt()
-        val dag = pnr.substring(0, 1).toInt()
-        val nå = LocalDate.now()
-
-        val finalÅr = if (år in 0..nå.year) "20$år" else "19$år"
-
-    } */
+    /*   fun alder(pnr: String): Int {
+           val år = pnr.substring(4, 5).toInt()
+           val måned = pnr.substring(2, 3).toInt()
+           val dag = pnr.substring(0, 1).toInt()
+           val nå = LocalDate.now()
+   
+           val finalÅr = if (år in 0..nå.year) "20$år" else "19$år"
+   
+       } */
 
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
         val aktørId = pdlService.identifikator(query)
@@ -88,73 +87,77 @@ class OppgaveTjeneste(
             if (person != null) {
                 return oppgaveRepository.hentOppgaverMedAktorId(query).map {
                     FagsakDto(
-                        it.sisteOppgave().fagsakSaksnummer,
+                        it.fagsakSaksnummer,
                         PersonDto(
                             person.data.hentPerson.navn[0].forkortetNavn,
                             person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                             person.data.hentPerson.kjoenn[0].kjoenn,
-                                null
+                            null
                             //   person.data.hentPerson.doedsfall[0].doedsdato
                         ),
-                        it.sisteOppgave().fagsakYtelseType,
-                        it.sisteOppgave().behandlingStatus,
-                        it.sisteOppgave().behandlingOpprettet,
-                        it.sisteOppgave().aktiv
+                        it.fagsakYtelseType,
+                        it.behandlingStatus,
+                        it.behandlingOpprettet,
+                        it.aktiv
                     )
                 }
             }
         }
         val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer(query)
         return oppgaver.map {
-            val person = pdlService.person(it.sisteOppgave().aktorId)!!
+            val person = pdlService.person(it.aktorId)!!
             FagsakDto(
-                it.sisteOppgave().fagsakSaksnummer,
+                it.fagsakSaksnummer,
                 PersonDto(
                     person.data.hentPerson.navn[0].forkortetNavn,
                     person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                     person.data.hentPerson.kjoenn[0].kjoenn,
                     null
-                   // person.data.hentPerson.doedsfall!!.doedsdato
+                    // person.data.hentPerson.doedsfall!!.doedsdato
                 ),
-                it.sisteOppgave().fagsakYtelseType,
-                it.sisteOppgave().behandlingStatus,
-                it.sisteOppgave().behandlingOpprettet,
-                it.sisteOppgave().aktiv
+                it.fagsakYtelseType,
+                it.behandlingStatus,
+                it.behandlingOpprettet,
+                it.aktiv
             )
         }
     }
 
-    suspend fun reservertAvMeg(ident: String): Boolean {
+    suspend fun reservertAvMeg(ident: String?): Boolean {
         return IdToken(coroutineContext.idToken().value).ident.value == ident
-
     }
 
-    suspend fun tilOppgaveDto(oppgaveModell: OppgaveModell): OppgaveDto {
-
-        val reservasjon = oppgaveModell.sisteOppgave().reservasjon
-        val oppgaveStatus = if(reservasjon == null) OppgaveStatusDto(false, null, false, null, null)
-            else OppgaveStatusDto(true,reservasjon.reservertTil, reservertAvMeg(reservasjon.reservertAv), reservasjon.reservertAv, null)
-        val person = pdlService.person(oppgaveModell.sisteOppgave().aktorId)!!
+    suspend fun tilOppgaveDto(oppgave: Oppgave, reservasjon: Reservasjon?): OppgaveDto {
+       
+        val oppgaveStatus = if (reservasjon == null) OppgaveStatusDto(false, null, false, null, null)
+        else OppgaveStatusDto(
+            true,
+            reservasjon.reservertTil,
+            reservertAvMeg(reservasjon.reservertAv),
+            reservasjon.reservertAv,
+            null
+        )
+        val person = pdlService.person(oppgave.aktorId)!!
         return OppgaveDto(
             oppgaveStatus,
-            oppgaveModell.sisteOppgave().behandlingId,
-            oppgaveModell.sisteOppgave().fagsakSaksnummer,
+            oppgave.behandlingId,
+            oppgave.fagsakSaksnummer,
             person.data.hentPerson.navn[0].forkortetNavn,
-            oppgaveModell.sisteOppgave().system,
+            oppgave.system,
             person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-            oppgaveModell.sisteOppgave().behandlingType,
-            oppgaveModell.sisteOppgave().fagsakYtelseType,
-            oppgaveModell.sisteOppgave().behandlingStatus,
+            oppgave.behandlingType,
+            oppgave.fagsakYtelseType,
+            oppgave.behandlingStatus,
             true,
-            oppgaveModell.sisteOppgave().behandlingOpprettet,
-            oppgaveModell.sisteOppgave().behandlingsfrist,
-            oppgaveModell.sisteOppgave().eksternId,
-            oppgaveModell.sisteOppgave().tilBeslutter,
-            oppgaveModell.sisteOppgave().utbetalingTilBruker,
-            oppgaveModell.sisteOppgave().selvstendigFrilans,
-            oppgaveModell.sisteOppgave().kombinert,
-            oppgaveModell.sisteOppgave().søktGradering,
-            oppgaveModell.sisteOppgave().registrerPapir
+            oppgave.behandlingOpprettet,
+            oppgave.behandlingsfrist,
+            oppgave.eksternId,
+            oppgave.tilBeslutter,
+            oppgave.utbetalingTilBruker,
+            oppgave.selvstendigFrilans,
+            oppgave.kombinert,
+            oppgave.søktGradering,
+            oppgave.registrerPapir
         )
     }
 
@@ -163,46 +166,34 @@ class OppgaveTjeneste(
         val oppgaver = saksnummere.map { oppgaveRepository.hentOppgaverMedSaksnummer(it) }
         val finalList = mutableListOf<OppgaveDto>()
         oppgaver.forEach {
-            it.forEach { o -> finalList.add(tilOppgaveDto(o)) }
+            it.forEach { o -> finalList.add(tilOppgaveDto(o, null)) }
         }
         return finalList
     }
 
-    fun frigiOppgave(uuid: UUID, begrunnelse: String): Reservasjon {
-        var reservasjon: Reservasjon? = null
-        oppgaveRepository.lagre(uuid) { forrigeOppgave ->
-            forrigeOppgave?.reservasjon?.reservertAv = ""
-            forrigeOppgave?.reservasjon?.begrunnelse = begrunnelse
-            reservasjon = forrigeOppgave?.reservasjon!!
-            forrigeOppgave
+    fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
+        return reservasjonRepository.lagre(uuid) {
+            it!!.begrunnelse = begrunnelse
+            it.aktiv = false
+            it
         }
-
-        return reservasjon!!
     }
 
     fun forlengReservasjonPåOppgave(uuid: UUID): Reservasjon {
-        var reservasjon: Reservasjon? = null
-        oppgaveRepository.lagre(uuid) { forrigeOppgave ->
-            forrigeOppgave?.reservasjon?.reservertTil = forrigeOppgave?.reservasjon?.reservertTil?.plusHours(24)
-            reservasjon = forrigeOppgave?.reservasjon
-            forrigeOppgave!!
+        return reservasjonRepository.lagre(uuid) {
+            it!!.reservertTil = it.reservertTil?.plusHours(24)
+            it
         }
-
-        return reservasjon!!
     }
 
     fun flyttReservasjon(uuid: UUID, ident: String, begrunnelse: String): Reservasjon {
-        var reservasjon: Reservasjon? = null
-        oppgaveRepository.lagre(uuid) { forrigeOppgave ->
-            forrigeOppgave?.reservasjon?.reservertTil = forrigeOppgave?.reservasjon?.reservertTil?.plusHours(24)
-            forrigeOppgave?.reservasjon?.flyttetTidspunkt = LocalDateTime.now()
-            forrigeOppgave?.reservasjon?.reservertAv = ident
-            forrigeOppgave?.reservasjon?.begrunnelse = begrunnelse
-            reservasjon = forrigeOppgave?.reservasjon
-            forrigeOppgave!!
+        return reservasjonRepository.lagre(uuid) {
+            it!!.reservertTil = it.reservertTil?.plusHours(24)
+            it.flyttetTidspunkt = LocalDateTime.now()
+            it.reservertAv = ident
+            it.begrunnelse = begrunnelse            
+            it
         }
-
-        return reservasjon!!
     }
 
     fun hentAlleOppgaveKøer(ident: String): List<OppgaveKø> {
@@ -224,30 +215,31 @@ class OppgaveTjeneste(
     }
 
     suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
-        val reserverteOppgave = oppgaveRepository.hentReserverteOppgaver(ident)
+
         val list = mutableListOf<OppgaveDto>()
 
-        for (oppgavemodell in reserverteOppgave) {
-            val person = pdlService.person(oppgavemodell.sisteOppgave().aktorId)
+        for (reservasjon in reservasjonRepository.hent().filter { it.reservertAv == ident }) {
+            val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
+            val person = pdlService.person(oppgave.aktorId)
             if (person == null) {
-                settSkjermet(oppgave = oppgavemodell.sisteOppgave())
-                log.info("Ikke tilgang til bruker: ${oppgavemodell.sisteOppgave().aktorId}")
+                settSkjermet(oppgave = oppgave)
+                log.info("Ikke tilgang til bruker: ${oppgave.aktorId}")
                 continue
             }
             val status = if (ident == "alexaban") {
                 OppgaveStatusDto(
                     true,
-                    oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
+                    reservasjon.reservertTil,
                     true,
-                    oppgavemodell.sisteOppgave().reservasjon?.reservertAv,
+                    reservasjon.reservertAv,
                     null
                 )
             } else {
                 OppgaveStatusDto(
                     true,
-                    oppgavemodell.sisteOppgave().reservasjon?.reservertTil,
+                    reservasjon.reservertTil,
                     true,
-                    oppgavemodell.sisteOppgave().reservasjon?.reservertAv,
+                    reservasjon.reservertAv,
                     null
                 )
             }
@@ -255,24 +247,24 @@ class OppgaveTjeneste(
             list.add(
                 OppgaveDto(
                     status,
-                    oppgavemodell.sisteOppgave().behandlingId,
-                    oppgavemodell.sisteOppgave().fagsakSaksnummer,
+                    oppgave.behandlingId,
+                    oppgave.fagsakSaksnummer,
                     person.data.hentPerson.navn[0].forkortetNavn,
-                    oppgavemodell.sisteOppgave().system,
+                    oppgave.system,
                     person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                    oppgavemodell.sisteOppgave().behandlingType,
-                    oppgavemodell.sisteOppgave().fagsakYtelseType,
-                    oppgavemodell.sisteOppgave().behandlingStatus,
+                    oppgave.behandlingType,
+                    oppgave.fagsakYtelseType,
+                    oppgave.behandlingStatus,
                     true,
-                    oppgavemodell.sisteOppgave().behandlingOpprettet,
-                    oppgavemodell.sisteOppgave().behandlingsfrist,
-                    oppgavemodell.sisteOppgave().eksternId,
-                    oppgavemodell.sisteOppgave().tilBeslutter,
-                    oppgavemodell.sisteOppgave().utbetalingTilBruker,
-                    oppgavemodell.sisteOppgave().selvstendigFrilans,
-                    oppgavemodell.sisteOppgave().kombinert,
-                    oppgavemodell.sisteOppgave().søktGradering,
-                    oppgavemodell.sisteOppgave().registrerPapir
+                    oppgave.behandlingOpprettet,
+                    oppgave.behandlingsfrist,
+                    oppgave.eksternId,
+                    oppgave.tilBeslutter,
+                    oppgave.utbetalingTilBruker,
+                    oppgave.selvstendigFrilans,
+                    oppgave.kombinert,
+                    oppgave.søktGradering,
+                    oppgave.registrerPapir
                 )
             )
         }

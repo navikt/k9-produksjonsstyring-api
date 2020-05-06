@@ -2,7 +2,6 @@ package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
-import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -47,8 +46,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             behandlingAvsluttet(modell, sakOgBehadlingProducer)
         }
 
-        oppgaveRepository.lagre(oppgave.eksternId) { forrigeOppgave: Oppgave? ->
-            oppgave.reservasjon = forrigeOppgave?.reservasjon
+        oppgaveRepository.lagre(oppgave.eksternId) { 
             oppgave
         }
 

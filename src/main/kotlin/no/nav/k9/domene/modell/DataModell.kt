@@ -156,7 +156,6 @@ data class Modell(
             eksternId = event.eksternId ?: UUID.randomUUID(),
             behandlingOpprettet = event.opprettetBehandling,
             oppgaveAvsluttet = oppgaveAvsluttet,
-            reservasjon = null,
             system = event.fagsystem.name,
             oppgaveEgenskap = emptyList(),
             aksjonspunkter = event.aktiveAksjonspunkt(),

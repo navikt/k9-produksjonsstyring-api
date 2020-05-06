@@ -33,10 +33,7 @@ import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.launchOppgaveOppdatertProcessor
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
@@ -118,13 +115,15 @@ fun Application.k9Los() {
     val oppgaveRepository = OppgaveRepository(dataSource, oppgaveOppdatert)
     val oppgaveKøRepository = OppgaveKøRepository(dataSource, oppgaveRepository)
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
+    val reservasjonRepository = ReservasjonRepository(dataSource)
     val launchOppgaveOppdatertProcessor =
         launchOppgaveOppdatertProcessor(oppgaveKøRepository = oppgaveKøRepository, channel = oppgaveOppdatert)
     
     
     val oppgaveTjeneste = OppgaveTjeneste(
-        oppgaveRepository,
+        oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
+        reservasjonRepository = reservasjonRepository,
         pdlService = pdlService
     )
 
