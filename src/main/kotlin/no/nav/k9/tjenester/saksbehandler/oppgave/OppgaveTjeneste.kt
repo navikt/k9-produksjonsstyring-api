@@ -62,6 +62,11 @@ class OppgaveTjeneste(
         reservasjonRepository.lagre(uuid) {
             reservasjon
         }
+        val hent = oppgaveKøRepository.hent()
+        val oppgave = oppgaveRepository.hent(uuid)
+        for (oppgaveKø in hent) {
+            oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+        }
 
         return reservasjon
     }
@@ -128,7 +133,7 @@ class OppgaveTjeneste(
     }
 
     suspend fun tilOppgaveDto(oppgave: Oppgave, reservasjon: Reservasjon?): OppgaveDto {
-       
+
         val oppgaveStatus = if (reservasjon == null) OppgaveStatusDto(false, null, false, null, null)
         else OppgaveStatusDto(
             true,
@@ -191,7 +196,7 @@ class OppgaveTjeneste(
             it!!.reservertTil = it.reservertTil?.plusHours(24)
             it.flyttetTidspunkt = LocalDateTime.now()
             it.reservertAv = ident
-            it.begrunnelse = begrunnelse            
+            it.begrunnelse = begrunnelse
             it
         }
     }
@@ -218,7 +223,7 @@ class OppgaveTjeneste(
 
         val list = mutableListOf<OppgaveDto>()
 
-        for (reservasjon in reservasjonRepository.hent().filter { it.reservertAv == ident }) {
+        for (reservasjon in reservasjonRepository.hent().filter{ it.erAktiv(reservasjonRepository) }.filter { it.reservertAv == ident }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             val person = pdlService.person(oppgave.aktorId)
             if (person == null) {

@@ -108,18 +108,26 @@ fun Application.k9Los() {
         accessTokenClient = accessTokenClientResolver.naisSts(),
         configuration = configuration
     )
-    
+
     val oppgaveOppdatert = Channel<Oppgave>(10000)
-    
+
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource, oppgaveOppdatert)
-    val oppgaveKøRepository = OppgaveKøRepository(dataSource, oppgaveRepository)
-    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val reservasjonRepository = ReservasjonRepository(dataSource)
+    val oppgaveKøRepository = OppgaveKøRepository(
+        dataSource = dataSource,
+        oppgaveRepository = oppgaveRepository,
+        reservasjonRepository = reservasjonRepository
+    )
+    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val launchOppgaveOppdatertProcessor =
-        launchOppgaveOppdatertProcessor(oppgaveKøRepository = oppgaveKøRepository, channel = oppgaveOppdatert)
-    
-    
+        launchOppgaveOppdatertProcessor(
+            oppgaveKøRepository = oppgaveKøRepository,
+            channel = oppgaveOppdatert,
+            reservasjonRepository = reservasjonRepository
+        )
+
+
     val oppgaveTjeneste = OppgaveTjeneste(
         oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
@@ -150,7 +158,7 @@ fun Application.k9Los() {
         configuration = configuration
     )
 
-    
+
     val avdelingslederTjeneste = AvdelingslederTjeneste(
         oppgaveKøRepository,
         saksbehandlerRepository,

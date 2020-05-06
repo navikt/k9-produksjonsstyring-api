@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import javax.sql.DataSource
 
-class OppgaveKøRepository(private val dataSource: DataSource, private val oppgaveRepository: OppgaveRepository) {
+class OppgaveKøRepository(private val dataSource: DataSource, private val oppgaveRepository: OppgaveRepository, private val reservasjonRepository: ReservasjonRepository) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
     fun hent(): List<OppgaveKø> {
         val json: List<String> = using(sessionOf(dataSource)) {
@@ -95,7 +95,7 @@ class OppgaveKøRepository(private val dataSource: DataSource, private val oppga
         lagre(uuid) { oppgaveKø ->
             oppgaveKø!!.oppgaver = mutableListOf()
             for (oppgave in hentAktiveOppgaver) {
-                oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave = oppgave)
+                oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)
             }
             oppgaveKø
         }

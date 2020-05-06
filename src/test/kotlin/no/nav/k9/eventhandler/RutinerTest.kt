@@ -23,6 +23,7 @@ import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto
 import org.intellij.lang.annotations.Language
@@ -39,9 +40,9 @@ class RutinerTest {
         runMigration(dataSource)
         val oppgaveOppdatert = Channel<Oppgave>(1)
 
-
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource, oppgaveOppdatert = oppgaveOppdatert)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, reservasjonRepository = reservasjonRepository)
 
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(uuid) {
@@ -60,7 +61,7 @@ class RutinerTest {
             )
         }
         val launch = launch {
-            behandleOppgave(oppgaveKøRepository = oppgaveKøRepository, channel = oppgaveOppdatert)
+            behandleOppgave(oppgaveKøRepository = oppgaveKøRepository, channel = oppgaveOppdatert,reservasjonRepository = reservasjonRepository)
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs

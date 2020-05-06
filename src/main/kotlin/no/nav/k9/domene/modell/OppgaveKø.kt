@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.repository.ReservasjonRepository
 import java.time.LocalDate
 import java.util.*
 
@@ -31,15 +32,26 @@ data class OppgaveKø(
 //    val førsteStønadsdag: Boolean
     var oppgaver: MutableList<UUID> = mutableListOf()
 ) {
-    fun leggOppgaveTilEllerFjernFraKø(oppgave: Oppgave) {
-        if (tilhørerOppgaveTilKø(oppgave)) {
+    fun leggOppgaveTilEllerFjernFraKø(
+        oppgave: Oppgave,
+        reservasjonRepository: ReservasjonRepository
+    ) {
+        if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
             this.oppgaver.add(oppgave.eksternId)
-        }else {
+        } else {
             this.oppgaver.remove(oppgave.eksternId)
         }
     }
-    
-    fun tilhørerOppgaveTilKø(oppgave: Oppgave): Boolean {
+
+    fun tilhørerOppgaveTilKø(
+        oppgave: Oppgave,
+        reservasjonRepository: ReservasjonRepository
+    ): Boolean {
+        val reservasjon =
+            reservasjonRepository.hent().filter { it.aktiv }.firstOrNull { it.oppgave == oppgave.eksternId }
+        if (reservasjon != null) {
+          return !reservasjon.erAktiv(reservasjonRepository)
+        }
         return true
     }
 }
@@ -49,6 +61,7 @@ class Saksbehandler(
     val navn: String,
     val epost: String
 )
+
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class Enhet(val navn: String) {
     VIKAFOSSEN("VIKAFOSSEN"),
@@ -62,7 +75,12 @@ enum class Enhet(val navn: String) {
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum class KøSortering(override val kode: String, override val navn: String, val felttype: String, val feltkategori: String) :
+enum class KøSortering(
+    override val kode: String,
+    override val navn: String,
+    val felttype: String,
+    val feltkategori: String
+) :
     Kodeverdi {
     OPPRETT_BEHANDLING("OPPRBEH", "Dato for opprettelse av behandling", "DATO", ""),
     FORSTE_STONADSDAG("FORSTONAD", "Dato for første stønadsdag", "DATO", "");
@@ -111,7 +129,7 @@ enum class FagsakYtelseType private constructor(override val kode: String, overr
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum class FagsakStatus(override val kode: String, override val navn: String): Kodeverdi  {
+enum class FagsakStatus(override val kode: String, override val navn: String) : Kodeverdi {
     OPPRETTET("OPPR", "Opprettet"),
     UNDER_BEHANDLING("UBEH", "Under behandling"),
     LØPENDE("LOP", "Løpende"),
@@ -146,7 +164,7 @@ enum class BehandlingType(override val kode: String, override val navn: String) 
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum class BehandlingStatus (override val kode: String) : Kodeverdi {
+enum class BehandlingStatus(override val kode: String) : Kodeverdi {
     AVSLUTTET("AVSLU"),
     FATTER_VEDTAK("FVED"),
     IVERKSETTER_VEDTAK("IVED"),
