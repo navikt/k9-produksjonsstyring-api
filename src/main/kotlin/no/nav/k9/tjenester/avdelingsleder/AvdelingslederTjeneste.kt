@@ -77,6 +77,10 @@ class AvdelingslederTjeneste(
         return saksbehandler
     }
 
+    fun fjernSaksbehandler(epost: String) {
+        return saksbehandlerRepository.slettSaksbehandler(epost)
+    }
+
     fun hentSaksbehandlere(): List<Saksbehandler> {
         return saksbehandlerRepository.hentAlleSaksbehandlere()
     }

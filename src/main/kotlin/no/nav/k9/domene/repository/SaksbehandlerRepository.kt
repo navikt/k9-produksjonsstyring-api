@@ -46,6 +46,21 @@ class SaksbehandlerRepository(
         return saksbehandler
     }
 
+    fun slettSaksbehandler(epost: String) {
+        using(sessionOf(dataSource)) { it ->
+            it.transaction { tx ->
+                tx.run(
+                    queryOf(
+                        """
+                            delete from saksbehandler 
+                            where epost = :epost """,
+                        mapOf("epost" to epost)
+                    ).asUpdate
+                )
+            }
+        }
+    }
+
     fun hentAlleSaksbehandlere(): List<Saksbehandler> {
         val identer = using(sessionOf(dataSource)) {
             it.run(

@@ -54,4 +54,11 @@ internal fun Route.AvdelingslederApis(
     post { _: søkSaksbehandler ->
         val epost = call.receive<EpostDto>()
         call.respond(avdelingslederTjeneste.søkSaksbehandler(epost)) }
+
+    @Location("/saksbehandlere/slett")
+    class slettSaksbehandler
+
+    post { _: slettSaksbehandler ->
+        val epost = call.receive<EpostDto>()
+        call.respond(avdelingslederTjeneste.fjernSaksbehandler(epost.epost)) }
 }
