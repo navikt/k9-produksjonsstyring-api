@@ -67,20 +67,12 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.slett(uuid)
     }
 
-
-    @KtorExperimentalAPI
-    suspend fun søkSaksbehandler(epostDto: EpostDto): Saksbehandler? {
+    fun søkSaksbehandler(epostDto: EpostDto): Saksbehandler {
         var saksbehandler = saksbehandlerRepository.finnSaksbehandler(epostDto.epost)
         if (saksbehandler == null) {
-            val saksbehandlerAzure = azureGraphService.hentNavnPåSaksbehandler(epostDto.epost)
-            if (saksbehandlerAzure != null) {
-                saksbehandler = Saksbehandler(
-                    saksbehandlerAzure.PremisesSamAccountName,
-                    saksbehandlerAzure.displayName,
-                    epostDto.epost
-                )
-                saksbehandlerRepository.addSaksbehandler(saksbehandler)
-            }
+            saksbehandler = Saksbehandler(
+                null, null, epostDto.epost)
+            saksbehandlerRepository.addSaksbehandler(saksbehandler)
         }
         return saksbehandler
     }

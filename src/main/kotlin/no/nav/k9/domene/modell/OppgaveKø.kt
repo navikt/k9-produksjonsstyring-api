@@ -57,9 +57,9 @@ data class OppgaveKø(
 }
 
 class Saksbehandler(
-    val brukerIdent: String,
-    val navn: String,
-    val epost: String
+    var brukerIdent: String?,
+    var navn: String?,
+    var epost: String
 )
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)

@@ -53,13 +53,5 @@ internal fun Route.AvdelingslederApis(
 
     post { _: søkSaksbehandler ->
         val epost = call.receive<EpostDto>()
-        if (configuration.erIkkeLokalt) {
-            withContext(
-                requestContextService.getCoroutineContext(
-                    context = coroutineContext,
-                    idToken = call.idToken()
-                )
-            ) { avdelingslederTjeneste.søkSaksbehandler(epost)?.let { call.respond(it) } }
-        }
-    }
+        call.respond(avdelingslederTjeneste.søkSaksbehandler(epost)) }
 }

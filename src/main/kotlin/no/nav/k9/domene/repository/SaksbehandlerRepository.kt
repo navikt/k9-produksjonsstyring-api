@@ -37,8 +37,8 @@ class SaksbehandlerRepository(
                 )
                     .map { row ->
                         Saksbehandler(
-                            row.string("saksbehandlerid"),
-                            row.string("navn"),
+                            row.stringOrNull("saksbehandlerid"),
+                            row.stringOrNull("navn"),
                             row.string("epost"))
                     }.asSingle
             )
@@ -47,20 +47,22 @@ class SaksbehandlerRepository(
     }
 
     fun hentAlleSaksbehandlere(): List<Saksbehandler> {
-        val identer: List<String> = using(sessionOf(dataSource)) {
+        val identer = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select * from saksbehandler",
                     mapOf()
                 )
                     .map { row ->
-                        row.string("saksbehandlerid")
+                        Saksbehandler(
+                            row.stringOrNull("saksbehandlerid"),
+                            row.stringOrNull("navn"),
+                            row.string("epost"))
                     }.asList
             )
         }
-
         log.info("Henter " + identer.size + " saksbehanlere")
 
-        return identer.map { i -> objectMapper().readValue(i, Saksbehandler::class.java) }
+        return identer
     }
 }
