@@ -67,6 +67,7 @@ class RutinerTest {
         every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
+        every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),

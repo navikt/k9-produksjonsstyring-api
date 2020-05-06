@@ -85,7 +85,9 @@ data class Configuration(private val config: ApplicationConfig) {
     var erLokalt: Boolean
     var erIDevFss: Boolean
     var erIProd: Boolean
-
+    fun erLokalt() :Boolean{
+        return erLokalt
+    }   
     init {
         erIkkeLokalt = !config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
         erLokalt = config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()

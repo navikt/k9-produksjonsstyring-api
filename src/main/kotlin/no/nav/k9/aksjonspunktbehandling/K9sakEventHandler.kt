@@ -39,7 +39,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
         val oppgave = modell.oppgave()
 
-        if (!config.erLokalt) {
+        if (!config.erLokalt()) {
             if (modell.starterSak()) {
                 behandlingOpprettet(modell, sakOgBehadlingProducer)
             }
