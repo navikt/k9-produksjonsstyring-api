@@ -48,9 +48,9 @@ data class OppgaveKø(
         reservasjonRepository: ReservasjonRepository
     ): Boolean {
         val reservasjon =
-            reservasjonRepository.hent().filter { it.aktiv }.firstOrNull { it.oppgave == oppgave.eksternId }
+            reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }.firstOrNull { it.oppgave == oppgave.eksternId }
         if (reservasjon != null) {
-          return !reservasjon.erAktiv(reservasjonRepository)
+          return false
         }
         return true
     }

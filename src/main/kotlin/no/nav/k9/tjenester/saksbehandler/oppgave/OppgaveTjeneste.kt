@@ -180,11 +180,19 @@ class OppgaveTjeneste(
     }
 
     fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
-        return reservasjonRepository.lagre(uuid) {
+        val reservasjon = reservasjonRepository.lagre(uuid) {
             it!!.begrunnelse = begrunnelse
             it.aktiv = false
             it
         }
+        val oppgave = oppgaveRepository.hent(uuid)
+        for (oppgaveKø in oppgaveKøRepository.hent()) {
+            oppgaveKøRepository.lagre(oppgaveKø.id){
+                it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                it
+            }
+        }
+        return reservasjon
     }
 
     fun forlengReservasjonPåOppgave(uuid: UUID): Reservasjon {
