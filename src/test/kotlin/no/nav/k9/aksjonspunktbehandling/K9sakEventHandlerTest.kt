@@ -42,6 +42,7 @@ class K9sakEventHandlerTest {
         every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
+        every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -100,6 +101,7 @@ class K9sakEventHandlerTest {
         every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
+        every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource, oppgaveOppdatert = oppgaveOppdatert),
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -154,6 +156,7 @@ class K9sakEventHandlerTest {
         every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource, oppgaveOppdatert = oppgaveOppdatert)
         val config = mockk<Configuration>()
+        every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -212,6 +215,7 @@ class K9sakEventHandlerTest {
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource, oppgaveOppdatert = oppgaveOppdatert)
         val config = mockk<Configuration>()
+        every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
