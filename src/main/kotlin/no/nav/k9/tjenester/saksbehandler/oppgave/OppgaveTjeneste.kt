@@ -65,7 +65,10 @@ class OppgaveTjeneste(
         val hent = oppgaveKøRepository.hent()
         val oppgave = oppgaveRepository.hent(uuid)
         for (oppgaveKø in hent) {
-            oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+            oppgaveKøRepository.lagre(oppgaveKø.id){
+                it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                it
+            }
         }
 
         return reservasjon
