@@ -38,6 +38,7 @@ data class OppgaveKø(
     ) {
         if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
             this.oppgaver.add(oppgave.eksternId)
+            sortedSetOf(kotlin.Comparator { o1, o2 -> o1.compareTo(o2) }, "")
         } else {
             this.oppgaver.remove(oppgave.eksternId)
         }
@@ -47,13 +48,69 @@ data class OppgaveKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository
     ): Boolean {
-        val reservasjon =
-            reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }.firstOrNull { it.oppgave == oppgave.eksternId }
-        if (reservasjon != null) {
-          return false
+        if (erOppgavenReservert(reservasjonRepository, oppgave)) {
+            return false
         }
+        if (!erInnenforOppgavekøensPeriode(oppgave)) {
+            return false
+        }
+
+        if (filtreringYtelseTyper.isNotEmpty() && !filtreringYtelseTyper.contains(oppgave.fagsakYtelseType)) {
+            return false
+        }
+
+        if (!filtreringBehandlingTyper.contains(oppgave.behandlingType)) {
+            return false
+        }
+
+        if (oppgave.tilBeslutter && filtreringAndreKriterierType.contains(AndreKriterierType.TIL_BESLUTTER)) {
+            return true
+        }
+
+        if (oppgave.registrerPapir && filtreringAndreKriterierType.contains(AndreKriterierType.PAPIRSØKNAD)) {
+            return true
+        }
+
+        if (oppgave.utbetalingTilBruker && filtreringAndreKriterierType.contains(AndreKriterierType.UTBETALING_TIL_BRUKER)) {
+            return true
+        }
+
+        if (oppgave.utenlands && filtreringAndreKriterierType.contains(AndreKriterierType.UTLANDSSAK)) {
+            return true
+        }
+
+        if (oppgave.søktGradering && filtreringAndreKriterierType.contains(AndreKriterierType.SOKT_GRADERING)) {
+            return true
+        }
+
+        if (oppgave.selvstendigFrilans && filtreringAndreKriterierType.contains(AndreKriterierType.SELVSTENDIG_FRILANS)) {
+            return true
+        }
+
+        if (oppgave.kombinert && filtreringAndreKriterierType.contains(AndreKriterierType.KOMBINERT)) {
+            return true
+        }
+
+        return false
+    }
+
+    private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {
+        if (oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato.plusDays(1))) {
+            return false
+        }
+
+        if (oppgave.behandlingOpprettet.toLocalDate().isAfter(tomDato)) {
+            return false
+        }
+
         return true
     }
+
+    private fun erOppgavenReservert(
+        reservasjonRepository: ReservasjonRepository,
+        oppgave: Oppgave
+    ) = reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }
+        .any() { it.oppgave == oppgave.eksternId }
 }
 
 class Saksbehandler(

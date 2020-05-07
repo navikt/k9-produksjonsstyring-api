@@ -1,6 +1,5 @@
 package no.nav.k9.tjenester.avdelingsleder
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.modell.Enhet
 import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
@@ -143,7 +142,7 @@ class AvdelingslederTjeneste(
     fun endreKøSorteringDato(datoSortering: SorteringDatoDto) {
         oppgaveKøRepository.lagre(UUID.fromString(datoSortering.id)) { oppgaveKø ->
             oppgaveKø!!.fomDato = datoSortering.fomDato
-            oppgaveKø.fomDato = datoSortering.fomDato
+            oppgaveKø.tomDato = datoSortering.tomDato
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(datoSortering.id))
