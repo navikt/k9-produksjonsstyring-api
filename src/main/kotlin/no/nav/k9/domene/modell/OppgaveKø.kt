@@ -90,7 +90,9 @@ data class OppgaveKø(
         if (oppgave.kombinert && filtreringAndreKriterierType.contains(AndreKriterierType.KOMBINERT)) {
             return true
         }
-
+        if (filtreringAndreKriterierType.isEmpty()) {
+            return true
+        }
         return false
     }
 

@@ -17,9 +17,7 @@ import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.modell.Enhet
-import no.nav.k9.domene.modell.KøSortering
-import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -51,12 +49,12 @@ class RutinerTest {
                 navn = "Ny kø",
                 sistEndret = LocalDate.now(),
                 sortering = KøSortering.OPPRETT_BEHANDLING,
-                filtreringBehandlingTyper = mutableListOf(),
-                filtreringYtelseTyper = mutableListOf(),
+                filtreringBehandlingTyper = mutableListOf(BehandlingType.FORSTEGANGSSOKNAD),
+                filtreringYtelseTyper = mutableListOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
                 filtreringAndreKriterierType = mutableListOf(),
                 enhet = Enhet.NASJONAL,
-                fomDato = LocalDate.now(),
-                tomDato = LocalDate.now(),
+                fomDato = LocalDate.now().minusDays(100),
+                tomDato = LocalDate.now().plusDays(100),
                 saksbehandlere = emptyList()
             )
         }
