@@ -11,7 +11,11 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import javax.sql.DataSource
 
-class OppgaveKøRepository(private val dataSource: DataSource, private val oppgaveRepository: OppgaveRepository, private val reservasjonRepository: ReservasjonRepository) {
+class OppgaveKøRepository(
+    private val dataSource: DataSource,
+    private val oppgaveRepository: OppgaveRepository,
+    private val reservasjonRepository: ReservasjonRepository
+) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
     fun hent(): List<OppgaveKø> {
         val json: List<String> = using(sessionOf(dataSource)) {
@@ -94,19 +98,24 @@ class OppgaveKøRepository(private val dataSource: DataSource, private val oppga
     fun oppdaterKøMedOppgaver(uuid: UUID) {
         val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
         lagre(uuid) { oppgaveKø ->
-           
+            oppgaveKø!!.oppgaver = mutableListOf()
             for (oppgave in aktiveOppgaver) {
-                oppgaveKø!!.leggOppgaveTilEllerFjernFraKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)
+                oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                    oppgave = oppgave,
+                    reservasjonRepository = reservasjonRepository
+                )
             }
-            if (oppgaveKø!!.sortering== KøSortering.OPPRETT_BEHANDLING){
+            if (oppgaveKø.sortering == KøSortering.OPPRETT_BEHANDLING) {
                 oppgaveKø.oppgaver =
                     aktiveOppgaver.filter { oppgave -> oppgaveKø.oppgaver.contains(oppgave.eksternId) }
-                        .sortedBy { oppgave -> oppgave.behandlingOpprettet }.map { oppgave -> oppgave.eksternId }.toMutableList()
+                        .sortedBy { oppgave -> oppgave.behandlingOpprettet }.map { oppgave -> oppgave.eksternId }
+                        .toMutableList()
             }
-            if (oppgaveKø.sortering== KøSortering.FORSTE_STONADSDAG){
+            if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
                 oppgaveKø.oppgaver =
                     aktiveOppgaver.filter { oppgave -> oppgaveKø.oppgaver.contains(oppgave.eksternId) }
-                        .sortedBy { oppgave -> oppgave.forsteStonadsdag }.map { oppgave -> oppgave.eksternId }.toMutableList()
+                        .sortedBy { oppgave -> oppgave.forsteStonadsdag }.map { oppgave -> oppgave.eksternId }
+                        .toMutableList()
             }
             oppgaveKø
         }
