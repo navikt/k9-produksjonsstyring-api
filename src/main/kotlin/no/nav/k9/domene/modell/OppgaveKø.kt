@@ -59,14 +59,18 @@ data class OppgaveKø(
             return false
         }
 
-        if (!filtreringBehandlingTyper.contains(oppgave.behandlingType)) {
+        if (filtreringYtelseTyper.isNotEmpty() && !filtreringBehandlingTyper.contains(oppgave.behandlingType)) {
             return false
+        }
+
+        if (filtreringAndreKriterierType.isEmpty()) {
+            return true
         }
 
         if (oppgave.tilBeslutter && filtreringAndreKriterierType.contains(AndreKriterierType.TIL_BESLUTTER)) {
             return true
-        }
-
+        } 
+        
         if (oppgave.registrerPapir && filtreringAndreKriterierType.contains(AndreKriterierType.PAPIRSØKNAD)) {
             return true
         }
@@ -88,9 +92,6 @@ data class OppgaveKø(
         }
 
         if (oppgave.kombinert && filtreringAndreKriterierType.contains(AndreKriterierType.KOMBINERT)) {
-            return true
-        }
-        if (filtreringAndreKriterierType.isEmpty()) {
             return true
         }
         return false
