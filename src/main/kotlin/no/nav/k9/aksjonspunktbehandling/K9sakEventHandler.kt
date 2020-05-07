@@ -47,16 +47,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             if (oppgave.behandlingStatus.navn == "AVSLUTTET") {
                 behandlingAvsluttet(modell, sakOgBehadlingProducer)
             }
-
-
-            log.info(objectMapper().writeValueAsString(modell))
-            log.info(objectMapper().writeValueAsString(oppgave))
-
-            // log.info(oppgave.datavarehusSak())
-            // log.info(oppgave.datavarehusBehandling())
         }
 
-        // Sjekk om behandlingen starter eller avsluttes, skal da sende en melding til behandlesak for å fortelle modia.
         oppgaveRepository.lagre(oppgave.eksternId) {
             oppgave
         }
