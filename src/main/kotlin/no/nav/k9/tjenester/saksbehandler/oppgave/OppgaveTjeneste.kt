@@ -34,7 +34,7 @@ class OppgaveTjeneste(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            oppgaveKø.oppgaver.take(5).map { oppgaveRepository.hent(it) }
+            oppgaveKø.oppgaver.map { oppgaveRepository.hent(it) }
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
