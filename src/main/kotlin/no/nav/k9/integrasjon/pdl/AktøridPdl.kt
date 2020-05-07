@@ -13,7 +13,7 @@ data class AktøridPdl(
             data class Identer(
                 val gruppe: String,
                 val historisk: Boolean,
-                val ident: String
+                var ident: String
             )
         }
     }
