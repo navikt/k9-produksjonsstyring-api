@@ -95,12 +95,19 @@ class OppgaveRepository(
 
     fun hentOppgaverSortertPåOpprettetDato(oppgaveider: List<UUID>): List<Oppgave> {
         var spørring = System.currentTimeMillis()
-        val json: List<String> = using(sessionOf(dataSource)) {
+
+        val session = sessionOf(dataSource)
+        val json: List<String> = using(session) {
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (:oppgaveIder) order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet')",
-                    mapOf("oppgaveIder" to  oppgaveider.joinToString { uuid -> uuid.toString() })
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave " +
+                            "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
+                                0,
+                                oppgaveider.size - 1
+                            ).map { t -> ":p$t" }.joinToString()}) " +
+                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet')",
+                    IntRange(0, oppgaveider.size-1).map { t -> "p$t" to oppgaveider[t].toString() }.toMap()
                 )
                     .map { row ->
                         row.string("data")
@@ -117,12 +124,18 @@ class OppgaveRepository(
 
     fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: List<UUID>): List<Oppgave> {
         var spørring = System.currentTimeMillis()
-        val json: List<String> = using(sessionOf(dataSource)) {
+        val session = sessionOf(dataSource)
+        val json: List<String> = using(session) {
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (:oppgaveIder) order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag')",
-                    mapOf("oppgaveIder" to oppgaveider.joinToString { uuid -> uuid.toString() })
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave " +
+                            "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
+                                0,
+                                oppgaveider.size - 1
+                            ).map { t -> ":p$t" }.joinToString()}) " +
+                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag')",
+                    IntRange(0, oppgaveider.size-1).map { t -> "p$t" to oppgaveider[t].toString() }.toMap()
                 )
                     .map { row ->
                         row.string("data")
