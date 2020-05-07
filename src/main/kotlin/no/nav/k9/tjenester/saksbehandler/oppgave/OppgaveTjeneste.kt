@@ -4,6 +4,7 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -22,7 +23,6 @@ import kotlin.coroutines.coroutineContext
 private val log: Logger =
     LoggerFactory.getLogger(OppgaveTjeneste::class.java)
 
-
 class OppgaveTjeneste(
     private val oppgaveRepository: OppgaveRepository,
     private val oppgaveKøRepository: OppgaveKøRepository,
@@ -33,7 +33,10 @@ class OppgaveTjeneste(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            oppgaveKø.oppgaver.map { oppgaveRepository.hent(it) }
+            when(oppgaveKø.sortering){
+                KøSortering.OPPRETT_BEHANDLING -> oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver)
+                KøSortering.FORSTE_STONADSDAG -> oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver)
+            }
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -61,9 +64,8 @@ class OppgaveTjeneste(
         reservasjonRepository.lagre(uuid) {
             reservasjon
         }
-        val hent = oppgaveKøRepository.hent()
         val oppgave = oppgaveRepository.hent(uuid)
-        for (oppgaveKø in hent) {
+        for (oppgaveKø in oppgaveKøRepository.hent()) {
             oppgaveKøRepository.lagre(oppgaveKø.id) {
                 it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                 it

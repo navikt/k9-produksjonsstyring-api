@@ -74,7 +74,7 @@ class OppgaveRepository(
                     f(null)
                 }
                 val json = objectMapper().writeValueAsString(oppgave)
-               
+
                 tx.run(
                     queryOf(
                         """
@@ -93,12 +93,56 @@ class OppgaveRepository(
 
     }
 
+    fun hentOppgaverSortertPåOpprettetDato(oppgaveider: List<UUID>): List<Oppgave> {
+        var spørring = System.currentTimeMillis()
+        val json: List<String> = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (:oppgaveIder) order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet')",
+                    mapOf("oppgaveIder" to  oppgaveider.joinToString { uuid -> uuid.toString() })
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        val serialisering = System.currentTimeMillis()
+        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
+
+        log.info("Henter oppgaver basert på opprettetDato: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
+        return list
+    }
+
+    fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: List<UUID>): List<Oppgave> {
+        var spørring = System.currentTimeMillis()
+        val json: List<String> = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (:oppgaveIder) order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag')",
+                    mapOf("oppgaveIder" to oppgaveider.joinToString { uuid -> uuid.toString() })
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        val serialisering = System.currentTimeMillis()
+        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
+
+        log.info("Henter oppgaver basert på forsteStonadsdag: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
+        return list
+    }
+
     fun hentOppgaverMedAktorId(aktørId: String) = hent()
         .filter { it.aktorId == aktørId }
 
     fun hentOppgaverMedSaksnummer(saksnummer: String) = hent()
         .filter { it.fagsakSaksnummer == saksnummer }
-    
+
     internal fun hentAktiveOppgaverTotalt(): Int {
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {

@@ -4,7 +4,6 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -105,19 +104,8 @@ class OppgaveKøRepository(
                     reservasjonRepository = reservasjonRepository
                 )
             }
-            if (oppgaveKø.sortering == KøSortering.OPPRETT_BEHANDLING) {
-                oppgaveKø.oppgaver =
-                    aktiveOppgaver.filter { oppgave -> oppgaveKø.oppgaver.contains(oppgave.eksternId) }
-                        .sortedBy { oppgave -> oppgave.behandlingOpprettet }.map { oppgave -> oppgave.eksternId }
-                        .toMutableList()
-            }
-            if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
-                oppgaveKø.oppgaver =
-                    aktiveOppgaver.filter { oppgave -> oppgaveKø.oppgaver.contains(oppgave.eksternId) }
-                        .sortedBy { oppgave -> oppgave.forsteStonadsdag }.map { oppgave -> oppgave.eksternId }
-                        .toMutableList()
-            }
             oppgaveKø
         }
     }
+
 }
