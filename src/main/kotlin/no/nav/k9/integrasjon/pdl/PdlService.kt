@@ -251,7 +251,7 @@ class PdlService @KtorExperimentalAPI constructor(
         return try {
             if (configuration.erIDevFss) {
                 val ident = objectMapper().readValue<AktøridPdl>(json)
-                ident.data.hentIdenter.identer[0].ident = "aktøridFraDolly"
+                ident.data.hentIdenter.identer[0].ident = "1671237347458"
             }
             return objectMapper().readValue<AktøridPdl>(json)
         } catch (e: Exception) {
