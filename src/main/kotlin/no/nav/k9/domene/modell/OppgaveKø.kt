@@ -37,7 +37,9 @@ data class OppgaveKø(
         reservasjonRepository: ReservasjonRepository
     ) {
         if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
-            this.oppgaver.add(oppgave.eksternId)
+            if (!this.oppgaver.contains(oppgave.eksternId)) {
+                this.oppgaver.add(oppgave.eksternId)
+            }
         } else {
             this.oppgaver.remove(oppgave.eksternId)
         }
@@ -68,8 +70,8 @@ data class OppgaveKø(
 
         if (oppgave.tilBeslutter && filtreringAndreKriterierType.contains(AndreKriterierType.TIL_BESLUTTER)) {
             return true
-        } 
-        
+        }
+
         if (oppgave.registrerPapir && filtreringAndreKriterierType.contains(AndreKriterierType.PAPIRSØKNAD)) {
             return true
         }

@@ -1,6 +1,5 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
-//import no.nav.k9.integrasjon.K9SakRestKlient
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
-
 
 private val log: Logger =
     LoggerFactory.getLogger(OppgaveTjeneste::class.java)
