@@ -1,6 +1,7 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
 //import no.nav.k9.integrasjon.K9SakRestKlient
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
@@ -65,7 +66,7 @@ class OppgaveTjeneste(
         val hent = oppgaveKøRepository.hent()
         val oppgave = oppgaveRepository.hent(uuid)
         for (oppgaveKø in hent) {
-            oppgaveKøRepository.lagre(oppgaveKø.id){
+            oppgaveKøRepository.lagre(oppgaveKø.id) {
                 it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                 it
             }
@@ -88,12 +89,14 @@ class OppgaveTjeneste(
    
        } */
 
+    @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
         val aktørId = pdlService.identifikator(query)
         if (aktørId != null) {
-            val person = pdlService.person(aktørId.toString())
+            val aktorId = aktørId.data.hentIdenter.identer[0].ident
+            val person = pdlService.person(aktorId)
             if (person != null) {
-                return oppgaveRepository.hentOppgaverMedAktorId(query).map {
+                return oppgaveRepository.hentOppgaverMedAktorId(aktorId).map {
                     FagsakDto(
                         it.fagsakSaksnummer,
                         PersonDto(
@@ -187,7 +190,7 @@ class OppgaveTjeneste(
         }
         val oppgave = oppgaveRepository.hent(uuid)
         for (oppgaveKø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgaveKø.id){
+            oppgaveKøRepository.lagre(oppgaveKø.id) {
                 it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                 it
             }
@@ -234,7 +237,8 @@ class OppgaveTjeneste(
 
         val list = mutableListOf<OppgaveDto>()
 
-        for (reservasjon in reservasjonRepository.hent().filter{ it.erAktiv(reservasjonRepository) }.filter { it.reservertAv == ident }) {
+        for (reservasjon in reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }
+            .filter { it.reservertAv == ident }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             val person = pdlService.person(oppgave.aktorId)
             if (person == null) {

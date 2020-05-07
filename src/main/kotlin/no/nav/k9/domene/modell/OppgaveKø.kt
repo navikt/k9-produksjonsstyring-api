@@ -38,7 +38,6 @@ data class OppgaveKø(
     ) {
         if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
             this.oppgaver.add(oppgave.eksternId)
-            sortedSetOf(kotlin.Comparator { o1, o2 -> o1.compareTo(o2) }, "")
         } else {
             this.oppgaver.remove(oppgave.eksternId)
         }
