@@ -9,7 +9,10 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.domene.modell.Saksbehandler
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
 import org.slf4j.LoggerFactory
@@ -19,6 +22,8 @@ import org.slf4j.LoggerFactory
 internal fun Route.NavAnsattApis(
     pepClient: PepClient,
     requestContextService: RequestContextService,
+    saksbehandlerRepository: SaksbehandlerRepository,
+    azureGraphService: AzureGraphService,
     configuration: Configuration
 ) {
     @Location("/saksbehandler")
@@ -36,18 +41,28 @@ internal fun Route.NavAnsattApis(
                 )
             ) {
                 val token = IdToken(idtoken.value)
-                call.respond(
-                    InnloggetNavAnsattDto(
-                        token.getUsername(),
-                        token.getName(),
-                        kanSaksbehandle = pepClient.harBasisTilgang(token),
-                        kanVeilede = pepClient.harBasisTilgang(token),
-                        kanBeslutte = pepClient.harBasisTilgang(token),
-                        kanBehandleKodeEgenAnsatt = pepClient.harBasisTilgang(token),
-                        kanBehandleKode6 = pepClient.harBasisTilgang(token),
-                        kanBehandleKode7 = pepClient.harBasisTilgang(token),
-                        kanOppgavestyre = pepClient.erOppgaveStyrer(token)
+                val innloggetNavAnsattDto = InnloggetNavAnsattDto(
+                    token.getUsername(),
+                    token.getName(),
+                    kanSaksbehandle = pepClient.harBasisTilgang(token),
+                    kanVeilede = pepClient.harBasisTilgang(token),
+                    kanBeslutte = pepClient.harBasisTilgang(token),
+                    kanBehandleKodeEgenAnsatt = pepClient.harBasisTilgang(token),
+                    kanBehandleKode6 = pepClient.harBasisTilgang(token),
+                    kanBehandleKode7 = pepClient.harBasisTilgang(token),
+                    kanOppgavestyre = pepClient.erOppgaveStyrer(token)
+                )
+                if (saksbehandlerRepository.finnSaksbehandler(token.getUsername()) != null) {
+                    saksbehandlerRepository.addSaksbehandler(
+                        Saksbehandler(
+                            azureGraphService.hentIdentTilInnloggetBruker(),
+                            token.getName(),
+                            token.getUsername()
+                        )
                     )
+                }
+                call.respond(
+                    innloggetNavAnsattDto
                 )
             }
         } else {

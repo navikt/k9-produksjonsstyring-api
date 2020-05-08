@@ -69,8 +69,8 @@ private fun hentOppgavekøer(oppgaveTjeneste: OppgaveTjeneste): List<OppgavekøD
             navn = oppgaveKø.navn,
             behandlingTyper = oppgaveKø.filtreringBehandlingTyper,
             fagsakYtelseTyper = oppgaveKø.filtreringYtelseTyper,
-            saksbehandlere = mutableListOf(Saksbehandler("alexaban", "Sara Saksbehandler", "alexaban@nav.no")),
-            antallBehandlinger = 1000,
+            saksbehandlere = oppgaveKø.saksbehandlere,
+            antallBehandlinger = oppgaveKø.oppgaver.size,
             sistEndret = oppgaveKø.sistEndret,
             sortering = sortering,
             andreKriterier = oppgaveKø.filtreringAndreKriterierType

@@ -48,7 +48,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 behandlingOpprettet(modell, sakOgBehadlingProducer)
             }
 
-            if (oppgave.behandlingStatus.navn == "AVSLUTTET") {
+            if (oppgave.behandlingStatus.navn == "AVSLUTTET" ) {
                 behandlingAvsluttet(modell, sakOgBehadlingProducer)
             }
         }

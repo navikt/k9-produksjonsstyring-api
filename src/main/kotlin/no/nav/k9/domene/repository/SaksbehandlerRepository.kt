@@ -3,7 +3,6 @@ package no.nav.k9.domene.repository
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.Saksbehandler
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -20,7 +19,10 @@ class SaksbehandlerRepository(
                     queryOf(
                         """
                             insert into saksbehandler (saksbehandlerid, navn, epost)
-                            values(:ident, :navn, :epost)""",
+                            values(:ident, :navn, :epost)
+                            on conflict (epost) do update
+                            set (navn = :navn, ident = :ident)
+                            """,
                         mapOf("ident" to saksbehandler.brukerIdent, "navn" to saksbehandler.navn, "epost" to saksbehandler.epost)
                     ).asUpdate
                 )

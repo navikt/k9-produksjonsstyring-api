@@ -218,7 +218,9 @@ fun Application.k9Los() {
                     pdlService = pdlService,
                     accessTokenClientResolver = accessTokenClientResolver,
                     configuration = configuration,
-                    pepClient = pepClient
+                    pepClient = pepClient,
+                    saksbehhandlerRepository = saksbehandlerRepository,
+                    azureGraphService = azureGraphService
                 )
             }
         } else {
@@ -235,7 +237,9 @@ fun Application.k9Los() {
                 pdlService = pdlService,
                 accessTokenClientResolver = accessTokenClientResolver,
                 configuration = configuration,
-                pepClient = pepClient
+                pepClient = pepClient,
+                saksbehhandlerRepository = saksbehandlerRepository,
+                azureGraphService = azureGraphService
             )
         }
 
@@ -280,7 +284,9 @@ private fun Route.api(
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
     configuration: Configuration,
-    pepClient: PepClient
+    pepClient: PepClient,
+    saksbehhandlerRepository: SaksbehandlerRepository,
+    azureGraphService: AzureGraphService
 ) {
     route("api") {
         AdminApis()
@@ -327,7 +333,9 @@ private fun Route.api(
         NavAnsattApis(
             requestContextService = requestContextService,
             pepClient = pepClient,
-            configuration = configuration
+            configuration = configuration,
+            azureGraphService = azureGraphService,
+            saksbehandlerRepository = saksbehhandlerRepository
         )
         if (!configuration.erIProd) {
             TestApis(
