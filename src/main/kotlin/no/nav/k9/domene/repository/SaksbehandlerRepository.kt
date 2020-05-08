@@ -21,7 +21,7 @@ class SaksbehandlerRepository(
                             insert into saksbehandler (saksbehandlerid, navn, epost)
                             values(:ident, :navn, :epost)
                             on conflict (epost) do update
-                            set (navn = :navn, ident = :ident)
+                            set navn = :navn, saksbehandlerid = :ident
                             """,
                         mapOf("ident" to saksbehandler.brukerIdent, "navn" to saksbehandler.navn, "epost" to saksbehandler.epost)
                     ).asUpdate
