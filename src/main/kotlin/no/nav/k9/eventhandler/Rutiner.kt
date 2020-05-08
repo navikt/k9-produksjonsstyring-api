@@ -6,7 +6,9 @@ import kotlinx.coroutines.launch
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
+import org.slf4j.LoggerFactory
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 
 fun CoroutineScope.launchOppgaveOppdatertProcessor(
@@ -22,7 +24,7 @@ fun CoroutineScope.launchOppgaveOppdatertProcessor(
         reservasjonRepository = reservasjonRepository
     )
 }
-
+val log = LoggerFactory.getLogger("behandleOppgave")
 suspend fun behandleOppgave(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
@@ -30,17 +32,19 @@ suspend fun behandleOppgave(
     reservasjonRepository: ReservasjonRepository
 ) {
     for (uuid in channel) {
-
-        val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-        oppgaveKøRepository. lagre(uuid) { oppgaveKø ->
-            oppgaveKø!!.oppgaver.clear()
-            for (oppgave in aktiveOppgaver) {
-                oppgaveKø.leggOppgaveTilEllerFjernFraKø(
-                    oppgave = oppgave,
-                    reservasjonRepository = reservasjonRepository
-                )
+        val measureTimeMillis = measureTimeMillis {
+            val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+            oppgaveKøRepository.lagre(uuid) { oppgaveKø ->
+                oppgaveKø!!.oppgaver.clear()
+                for (oppgave in aktiveOppgaver) {
+                    oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                        oppgave = oppgave,
+                        reservasjonRepository = reservasjonRepository
+                    )
+                }
+                oppgaveKø
             }
-            oppgaveKø
         }
+        log.info("tok ${measureTimeMillis}ms å oppdatere kø")
     }
 }
