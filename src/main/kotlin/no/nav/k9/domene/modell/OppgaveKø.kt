@@ -47,6 +47,9 @@ data class OppgaveKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository
     ): Boolean {
+        if (!oppgave.aktiv) {
+            return false
+        }
         if (erOppgavenReservert(reservasjonRepository, oppgave)) {
             return false
         }

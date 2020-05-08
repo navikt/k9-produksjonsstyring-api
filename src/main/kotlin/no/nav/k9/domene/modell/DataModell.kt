@@ -4,6 +4,7 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.integrasjon.gosys.*
 import no.nav.k9.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.kafka.dto.EventHendelse
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -138,7 +139,9 @@ data class Modell(
                 aktiv = true
             }
         }
-
+        if (event.eventHendelse == EventHendelse.AKSJONSPUNKT_AVBRUTT || event.eventHendelse == EventHendelse.AKSJONSPUNKT_UTFØRT) {
+            aktiv = false
+        }
         var behandlingStatus = event.behandlingStatus
         behandlingStatus = behandlingStatus ?: BehandlingStatus.OPPRETTET.kode
         return Oppgave(
