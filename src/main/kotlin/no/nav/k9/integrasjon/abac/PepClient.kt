@@ -88,6 +88,7 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addResourceAttribute(RESOURCE_FNR, "01234567890" /*oppgave.aktorId*/)    
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+            .addResourceAttribute(RESOURCE_SAKSNR, oppgave.fagsakSaksnummer)
 
         val decision =  evaluate(requestBuilder)
         abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, "read" , decision)

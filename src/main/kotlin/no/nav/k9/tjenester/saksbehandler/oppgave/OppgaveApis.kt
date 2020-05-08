@@ -51,12 +51,12 @@ internal fun Route.OppgaveApis(
                     val list = mutableListOf<OppgaveDto>()
                     val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
                     for (oppgave in oppgaver) {
-
-                        val person = pdlService.person(oppgave.aktorId)
-                        if (person == null) {
+                        if (!pepClient.harTilgangTilLesSak(idToken = call.idToken(), oppgave = oppgave)) {
                             oppgaveTjeneste.settSkjermet(oppgave)
                             continue
                         }
+                        val person = pdlService.person(oppgave.aktorId)
+                       
                         val navn = if (configuration.erIDevFss) {
                             "${oppgave.fagsakSaksnummer} " + Strings.join(
                                 oppgave.aksjonspunkter.liste.entries.stream().map { t ->
@@ -67,7 +67,7 @@ internal fun Route.OppgaveApis(
                                 ", "
                             )
                         } else {
-                            person.data.hentPerson.navn[0].forkortetNavn
+                            person!!.data.hentPerson.navn[0].forkortetNavn
                         }
 
 
@@ -78,7 +78,7 @@ internal fun Route.OppgaveApis(
                                 oppgave.fagsakSaksnummer,
                                 navn,
                                 oppgave.system,
-                                person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                                person!!.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                                 oppgave.behandlingType,
                                 oppgave.fagsakYtelseType,
                                 oppgave.behandlingStatus,

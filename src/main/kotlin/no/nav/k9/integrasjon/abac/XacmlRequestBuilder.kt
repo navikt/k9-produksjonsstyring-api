@@ -19,6 +19,7 @@ const val OPPGAVESTYRER = "no.nav.abac.attributter.k9.oppgavestyring"
 const val BASIS_TILGANG = "no.nav.abac.attributter.k9"
 const val LESETILGANG_SAK = "no.nav.abac.attributter.k9.fagsak"
 const val INTERNBRUKER = "InternBruker"
+const val RESOURCE_SAKSNR = "no.nav.abac.attributter.resource.k9.saksnr"
 
 enum class Category {
     Resource,
