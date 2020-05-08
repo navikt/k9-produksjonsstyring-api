@@ -57,7 +57,7 @@ class RutinerTest {
                 enhet = Enhet.NASJONAL,
                 fomDato = LocalDate.now().minusDays(100),
                 tomDato = LocalDate.now().plusDays(100),
-                saksbehandlere = emptyList()
+                saksbehandlere = mutableListOf()
             )
         }
         val launch = launch {

@@ -55,7 +55,7 @@ class AvdelingslederTjeneste(
                 enhet = Enhet.NASJONAL,
                 fomDato = LocalDate.now(),
                 tomDato = LocalDate.now(),
-                saksbehandlere = emptyList()
+                saksbehandlere = mutableListOf()
             )
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(uuid)
@@ -92,9 +92,7 @@ class AvdelingslederTjeneste(
             }.toMutableList()
             oppgaveKø
         }
-
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
-
     }
 
     fun endreYtelsesType(ytelse: YtelsesTypeDto) {
@@ -146,5 +144,16 @@ class AvdelingslederTjeneste(
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(datoSortering.id))
+    }
+
+    fun leggFjernSaksbehandlerOppgavekø(saksbehandlerKø: SaksbehandlerOppgavekoDto) {
+        oppgaveKøRepository.lagre(UUID.fromString(saksbehandlerKø.id))
+        { oppgaveKø ->
+            if (saksbehandlerKø.checked) oppgaveKø!!.saksbehandlere.add(saksbehandlerRepository.finnSaksbehandler(saksbehandlerKø.epost)!!)
+            else oppgaveKø!!.saksbehandlere = oppgaveKø.saksbehandlere.filter {
+                it.epost != saksbehandlerKø.epost
+            }.toMutableList()
+            oppgaveKø
+        }
     }
 }

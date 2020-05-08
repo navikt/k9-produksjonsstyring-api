@@ -55,6 +55,7 @@ internal fun Route.AvdelingslederApis(
         val epost = call.receive<EpostDto>()
         call.respond(avdelingslederTjeneste.søkSaksbehandler(epost)) }
 
+
     @Location("/saksbehandlere/slett")
     class slettSaksbehandler
 

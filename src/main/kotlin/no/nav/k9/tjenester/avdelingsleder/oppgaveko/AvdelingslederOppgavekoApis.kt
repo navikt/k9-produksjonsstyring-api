@@ -9,7 +9,6 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
-import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import java.util.*
 
 @KtorExperimentalLocationsAPI
@@ -84,5 +83,13 @@ fun Route.AvdelingslederOppgavekøApis(
     post { _: lagreSorteringType ->
         val sortering = call.receive<SorteringDatoDto>()
         call.respond(avdelingslederTjeneste.endreKøSorteringDato(sortering))
+    }
+
+    @Location("/saksbehandler")
+    class leggFjernSaksbehandlerOppgaveko
+
+    post { _: leggFjernSaksbehandlerOppgaveko ->
+        val saksbehandler = call.receive<SaksbehandlerOppgavekoDto>()
+        call.respond(avdelingslederTjeneste.leggFjernSaksbehandlerOppgavekø(saksbehandler))
     }
 }

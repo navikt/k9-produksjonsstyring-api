@@ -19,7 +19,7 @@ data class OppgaveKø(
     val enhet: Enhet,
     var fomDato: LocalDate,
     var tomDato: LocalDate,
-    var saksbehandlere: List<Saksbehandler>,
+    var saksbehandlere: MutableList<Saksbehandler>,
 //    val tilBeslutter: Boolean,
 //    val utbetalingTilBruker: Boolean,
 //    val selvstendigFrilans: Boolean,
