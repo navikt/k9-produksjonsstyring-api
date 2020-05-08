@@ -1,1 +1,0 @@
-package no.nav.k9.domene.repository

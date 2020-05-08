@@ -54,7 +54,7 @@ internal class AksjonspunktLaget : SerDes<BehandlingProsessEventDto>() {
             } catch (e: Exception) {
                 log.warn("", e)
                 log.warn(String(it))
-                null
+                throw e
             }
         }
     }

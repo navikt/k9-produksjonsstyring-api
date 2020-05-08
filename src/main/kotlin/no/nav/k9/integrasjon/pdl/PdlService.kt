@@ -32,7 +32,7 @@ class PdlService @KtorExperimentalAPI constructor(
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
 
     companion object {
-        fun getQ2Ident(aktorId: String): String {
+        fun getQ2Ident(string: String): String {
             val q2 = listOf(
                 "14128521632",
                 "14088521472",
@@ -67,7 +67,7 @@ class PdlService @KtorExperimentalAPI constructor(
             var newIdent = "14128521632"
 
             q2.forEach { i ->
-                val distance = levenshtein.distance(i, aktorId)
+                val distance = levenshtein.distance(i, string)
                 if (distance < dist) {
                     dist = distance
                     newIdent = i
@@ -249,6 +249,10 @@ class PdlService @KtorExperimentalAPI constructor(
             )
         }
         return try {
+            if (configuration.erIDevFss) {
+                val ident = objectMapper().readValue<AktøridPdl>(json)
+                ident.data.hentIdenter.identer[0].ident = "1671237347458"
+            }
             return objectMapper().readValue<AktøridPdl>(json)
         } catch (e: Exception) {
             null
@@ -256,11 +260,11 @@ class PdlService @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    private fun getQ2Ident(aktorId: String, configuration: Configuration): String {
+    private fun getQ2Ident(string: String, configuration: Configuration): String {
         if (!configuration.erIDevFss) {
-            return aktorId
+            return string
         }
-        return getQ2Ident(aktorId)
+        return getQ2Ident(string)
     }
 
 

@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName
 const val ENVIRONMENT_OIDC_TOKEN_BODY = "no.nav.abac.attributter.environment.felles.oidc_token_body"
 const val ENVIRONMENT_PEP_ID = "no.nav.abac.attributter.environment.felles.pep_id"
 const val RESOURCE_DOMENE = "no.nav.abac.attributter.resource.felles.domene"
+const val RESOURCE_FNR = "no.nav.abac.attributter.resource.felles.person.fnr"
 const val RESOURCE = "no.nav.abac.attributter.k9.oppgaveno.nav.abac.attributter.resource.felles.resource"
 const val RESOURCE_TYPE = "no.nav.abac.attributter.resource.felles.resource_type"
 const val SUBJECTID = "urn:oasis:names:tc:xacml:1.0:subject:subject-id"
@@ -16,7 +17,9 @@ const val BEHANDLINGSSTATUS = "no.nav.abac.attributter.resource.k9.sak.behandlin
 const val SAKSSTATUS = "no.nav.abac.attributter.resource.k9.sak.saksstatus"
 const val OPPGAVESTYRER = "no.nav.abac.attributter.k9.oppgavestyring"
 const val BASIS_TILGANG = "no.nav.abac.attributter.k9"
+const val LESETILGANG_SAK = "no.nav.abac.attributter.k9.fagsak"
 const val INTERNBRUKER = "InternBruker"
+const val RESOURCE_SAKSNR = "no.nav.abac.attributter.resource.k9.saksnr"
 
 enum class Category {
     Resource,

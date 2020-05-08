@@ -3,7 +3,6 @@ package no.nav.k9.domene.repository
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.Saksbehandler
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -20,7 +19,10 @@ class SaksbehandlerRepository(
                     queryOf(
                         """
                             insert into saksbehandler (saksbehandlerid, navn, epost)
-                            values(:ident, :navn, :epost)""",
+                            values(:ident, :navn, :epost)
+                            on conflict (epost) do update
+                            set (navn = :navn, ident = :ident)
+                            """,
                         mapOf("ident" to saksbehandler.brukerIdent, "navn" to saksbehandler.navn, "epost" to saksbehandler.epost)
                     ).asUpdate
                 )
@@ -37,8 +39,8 @@ class SaksbehandlerRepository(
                 )
                     .map { row ->
                         Saksbehandler(
-                            row.string("saksbehandlerid"),
-                            row.string("navn"),
+                            row.stringOrNull("saksbehandlerid"),
+                            row.stringOrNull("navn"),
                             row.string("epost"))
                     }.asSingle
             )
@@ -46,21 +48,38 @@ class SaksbehandlerRepository(
         return saksbehandler
     }
 
+    fun slettSaksbehandler(epost: String) {
+        using(sessionOf(dataSource)) { it ->
+            it.transaction { tx ->
+                tx.run(
+                    queryOf(
+                        """
+                            delete from saksbehandler 
+                            where epost = :epost """,
+                        mapOf("epost" to epost)
+                    ).asUpdate
+                )
+            }
+        }
+    }
+
     fun hentAlleSaksbehandlere(): List<Saksbehandler> {
-        val identer: List<String> = using(sessionOf(dataSource)) {
+        val identer = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select * from saksbehandler",
                     mapOf()
                 )
                     .map { row ->
-                        row.string("saksbehandlerid")
+                        Saksbehandler(
+                            row.stringOrNull("saksbehandlerid"),
+                            row.stringOrNull("navn"),
+                            row.string("epost"))
                     }.asList
             )
         }
-
         log.info("Henter " + identer.size + " saksbehanlere")
 
-        return identer.map { i -> objectMapper().readValue(i, Saksbehandler::class.java) }
+        return identer
     }
 }

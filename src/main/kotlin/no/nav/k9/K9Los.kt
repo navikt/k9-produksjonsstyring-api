@@ -18,6 +18,7 @@ import io.ktor.routing.Routing
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
+import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -31,10 +32,8 @@ import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.domene.repository.*
+import no.nav.k9.eventhandler.launchOppgaveOppdatertProcessor
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
@@ -46,7 +45,6 @@ import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
-
 import no.nav.k9.tjenester.fagsak.FagsakApis
 import no.nav.k9.tjenester.innsikt.InnsiktGrensesnitt
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
@@ -60,6 +58,7 @@ import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import java.time.Duration
+import java.util.*
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -109,13 +108,30 @@ fun Application.k9Los() {
         accessTokenClient = accessTokenClientResolver.naisSts(),
         configuration = configuration
     )
+
+    val oppgaveKøOppdatert = Channel<UUID>(10000)
+
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
-    val oppgaveKøRepository = OppgaveKøRepository(dataSource)
+    val reservasjonRepository = ReservasjonRepository(dataSource)
+    val oppgaveKøRepository = OppgaveKøRepository(
+        dataSource = dataSource,
+        oppgaveKøOppdatert = oppgaveKøOppdatert
+    )
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
+    val launchOppgaveOppdatertProcessor =
+        launchOppgaveOppdatertProcessor(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository,
+            channel = oppgaveKøOppdatert,
+            reservasjonRepository = reservasjonRepository
+        )
+
+
     val oppgaveTjeneste = OppgaveTjeneste(
-        oppgaveRepository,
+        oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
+        reservasjonRepository = reservasjonRepository,
         pdlService = pdlService
     )
 
@@ -129,7 +145,9 @@ fun Application.k9Los() {
         oppgaveRepository = oppgaveRepository,
         behandlingProsessEventRepository = behandlingProsessEventRepository
         , config = configuration,
-        sakOgBehadlingProducer = sakOgBehadlingProducer
+        sakOgBehadlingProducer = sakOgBehadlingProducer,
+        oppgaveKøRepository = oppgaveKøRepository,
+        reservasjonRepository = reservasjonRepository
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
@@ -141,6 +159,7 @@ fun Application.k9Los() {
         accessTokenClient = accessTokenClientResolver.accessTokenClient(),
         configuration = configuration
     )
+
 
     val avdelingslederTjeneste = AvdelingslederTjeneste(
         oppgaveKøRepository,
@@ -154,10 +173,11 @@ fun Application.k9Los() {
         asynkronProsesseringV1Service.stop()
         sakOgBehadlingProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
+        log.info("Stopper pipeline")
+        launchOppgaveOppdatertProcessor.cancel()
     }
 
     val requestContextService = RequestContextService()
-
     val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
     install(CallIdRequired)
 
@@ -198,7 +218,9 @@ fun Application.k9Los() {
                     pdlService = pdlService,
                     accessTokenClientResolver = accessTokenClientResolver,
                     configuration = configuration,
-                    pepClient = pepClient
+                    pepClient = pepClient,
+                    saksbehhandlerRepository = saksbehandlerRepository,
+                    azureGraphService = azureGraphService
                 )
             }
         } else {
@@ -215,7 +237,9 @@ fun Application.k9Los() {
                 pdlService = pdlService,
                 accessTokenClientResolver = accessTokenClientResolver,
                 configuration = configuration,
-                pepClient = pepClient
+                pepClient = pepClient,
+                saksbehhandlerRepository = saksbehandlerRepository,
+                azureGraphService = azureGraphService
             )
         }
 
@@ -260,7 +284,9 @@ private fun Route.api(
     pdlService: PdlService,
     accessTokenClientResolver: AccessTokenClientResolver,
     configuration: Configuration,
-    pepClient: PepClient
+    pepClient: PepClient,
+    saksbehhandlerRepository: SaksbehandlerRepository,
+    azureGraphService: AzureGraphService
 ) {
     route("api") {
         AdminApis()
@@ -282,8 +308,13 @@ private fun Route.api(
                     pdlService = pdlService
                 )
             }
-            
-            SaksbehandlerSakslisteApis(oppgaveTjeneste = oppgaveTjeneste, pepClient = pepClient,requestContextService = requestContextService)
+
+            SaksbehandlerSakslisteApis(
+                configuration = configuration,
+                oppgaveTjeneste = oppgaveTjeneste,
+                pepClient = pepClient,
+                requestContextService = requestContextService
+            )
             SaksbehandlerNøkkeltallApis()
         }
         route("avdelingsleder") {
@@ -302,7 +333,9 @@ private fun Route.api(
         NavAnsattApis(
             requestContextService = requestContextService,
             pepClient = pepClient,
-            configuration = configuration
+            configuration = configuration,
+            azureGraphService = azureGraphService,
+            saksbehandlerRepository = saksbehhandlerRepository
         )
         if (!configuration.erIProd) {
             TestApis(
@@ -319,3 +352,4 @@ private fun Route.api(
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
     }
 }
+

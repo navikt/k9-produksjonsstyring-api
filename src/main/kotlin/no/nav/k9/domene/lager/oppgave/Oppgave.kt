@@ -28,7 +28,6 @@ data class Oppgave(
     val oppgaveAvsluttet: LocalDateTime?,
     val utfortFraAdmin: Boolean,
     val eksternId: UUID,
-    var reservasjon: Reservasjon?,
     val oppgaveEgenskap: List<OppgaveEgenskap>,
     val aksjonspunkter: Aksjonspunkter,
     val tilBeslutter: Boolean,
@@ -37,7 +36,8 @@ data class Oppgave(
     val kombinert: Boolean,
     val søktGradering: Boolean,
     val registrerPapir: Boolean,
-    var skjermet: Boolean
+    var skjermet: Boolean,
+    val utenlands: Boolean
 
 ) {
     fun datavarehusSak(): String {
@@ -66,7 +66,7 @@ data class Oppgave(
         // lag statistikk
 
         val beslutter = if (tilBeslutter) {
-            reservasjon?.reservertAv ?: ""
+          //  reservasjon?.reservertAv ?: ""
         } else {
             ""
         }
@@ -82,7 +82,7 @@ data class Oppgave(
             behandlingOpprettetTypeBeskrivelse = "Opprettet automatisk av systemet",
             behandlingType = behandlingType.navn,
             behandlingTypeBeskrivelse = "",
-            beslutter = beslutter,
+            beslutter = "beslutter",
             datoForUtbetaling = forsteStonadsdag.format(DateTimeFormatter.BASIC_ISO_DATE),
             datoForUttak = "",
             funksjonellTid = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),

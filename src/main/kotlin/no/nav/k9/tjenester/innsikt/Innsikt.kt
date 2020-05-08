@@ -37,7 +37,7 @@ fun Route.InnsiktGrensesnitt(
                         +"Antall åpne oppgaver fordelt på aksjonspunkt."
                     }
 
-                    val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver(Int.MAX_VALUE)
+                    val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
 
                     val aksjonspunkter = Aksjonspunkter().aksjonspunkter()
@@ -46,7 +46,7 @@ fun Route.InnsiktGrensesnitt(
                     }
 
                     val ukjenteAksjonspunkter =
-                        aktiveOppgaver.stream().flatMap { t -> t.sisteOppgave().aksjonspunkter.liste.keys.stream() }
+                        aktiveOppgaver.stream().flatMap { t -> t.aksjonspunkter.liste.keys.stream() }
                             .filter { t -> !aksjonspunkter.map { a -> a.kode }.contains(t) }.toList()
 
                     for (u in ukjenteAksjonspunkter) {
@@ -58,7 +58,7 @@ fun Route.InnsiktGrensesnitt(
 
                     for (aksjonspunkt in aksjonspunkter) {
                         aksjonspunkt.antall = aktiveOppgaver.filter { oppgaveModell ->
-                            oppgaveModell.sisteOppgave().aksjonspunkter.liste.containsKey(
+                            oppgaveModell.aksjonspunkter.liste.containsKey(
                                 aksjonspunkt.kode
                             )
                         }.size

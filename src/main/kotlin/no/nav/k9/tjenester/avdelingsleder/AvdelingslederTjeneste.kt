@@ -18,7 +18,8 @@ class AvdelingslederTjeneste(
     private val oppgaveKøRepository: OppgaveKøRepository,
     private val saksbehandlerRepository: SaksbehandlerRepository,
     private val azureGraphService: AzureGraphService,
-    private val oppgaveTjeneste: OppgaveTjeneste) {
+    private val oppgaveTjeneste: OppgaveTjeneste
+) {
 
     fun hentOppgaveKøer(): List<OppgavekøDto> {
         return oppgaveKøRepository.hent().map {
@@ -34,7 +35,7 @@ class AvdelingslederTjeneste(
                 fagsakYtelseTyper = it.filtreringYtelseTyper,
                 andreKriterier = it.filtreringAndreKriterierType,
                 sistEndret = it.sistEndret,
-                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id),
+                antallBehandlinger = it.oppgaver.size,
                 saksbehandlere = it.saksbehandlere
             )
         }
@@ -42,21 +43,22 @@ class AvdelingslederTjeneste(
 
     fun opprettOppgaveKø(): OppgavekøIdDto {
         val uuid = UUID.randomUUID()
-        oppgaveKøRepository.lagre(
+        oppgaveKøRepository.lagre(uuid) {
             OppgaveKø(
-                uuid,
-                "Ny kø",
-                LocalDate.now(),
-                KøSortering.OPPRETT_BEHANDLING,
-                mutableListOf(),
-                mutableListOf(),
-                mutableListOf(),
-                Enhet.NASJONAL,
-                LocalDate.now(),
-                LocalDate.now(),
-                emptyList()
+                id = uuid,
+                navn = "Ny kø",
+                sistEndret = LocalDate.now(),
+                sortering = KøSortering.OPPRETT_BEHANDLING,
+                filtreringBehandlingTyper = mutableListOf(),
+                filtreringYtelseTyper = mutableListOf(),
+                filtreringAndreKriterierType = mutableListOf(),
+                enhet = Enhet.NASJONAL,
+                fomDato = LocalDate.now(),
+                tomDato = LocalDate.now(),
+                saksbehandlere = mutableListOf()
             )
-        )
+        }
+        oppgaveKøRepository.oppdaterKøMedOppgaver(uuid)
         return OppgavekøIdDto(uuid.toString())
     }
 
@@ -64,20 +66,18 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.slett(uuid)
     }
 
-
-    suspend fun søkSaksbehandler(epostDto: EpostDto): Saksbehandler? {
+    fun søkSaksbehandler(epostDto: EpostDto): Saksbehandler {
         var saksbehandler = saksbehandlerRepository.finnSaksbehandler(epostDto.epost)
-        if (saksbehandler == null)  {
-            val saksbehandlerAzure = azureGraphService.hentNavnPåSaksbehandler(epostDto.epost)
-            if (saksbehandlerAzure != null) {
-                saksbehandler = Saksbehandler(
-                    saksbehandlerAzure.PremisesSamAccountName,
-                    saksbehandlerAzure.displayName,
-                    epostDto.epost)
-                saksbehandlerRepository.addSaksbehandler(saksbehandler)
-            }
+        if (saksbehandler == null) {
+            saksbehandler = Saksbehandler(
+                null, null, epostDto.epost)
+            saksbehandlerRepository.addSaksbehandler(saksbehandler)
         }
         return saksbehandler
+    }
+
+    fun fjernSaksbehandler(epost: String) {
+        return saksbehandlerRepository.slettSaksbehandler(epost)
     }
 
     fun hentSaksbehandlere(): List<Saksbehandler> {
@@ -85,46 +85,75 @@ class AvdelingslederTjeneste(
     }
 
     fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
-        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(behandling.id))
-        if (behandling.checked) oppgaveKø.filtreringBehandlingTyper.add(behandling.behandlingType)
-        else oppgaveKø.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
-            it != behandling.behandlingType }.toMutableList()
-        oppgaveKøRepository.lagre(oppgaveKø)
+        oppgaveKøRepository.lagre(UUID.fromString(behandling.id)) { oppgaveKø ->
+            if (behandling.checked) oppgaveKø!!.filtreringBehandlingTyper.add(behandling.behandlingType)
+            else oppgaveKø!!.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
+                it != behandling.behandlingType
+            }.toMutableList()
+            oppgaveKø
+        }
+        oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
     }
 
     fun endreYtelsesType(ytelse: YtelsesTypeDto) {
-        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(ytelse.id))
-        oppgaveKø.filtreringYtelseTyper = mutableListOf()
-        if (ytelse.fagsakYtelseType !== null) {
-            oppgaveKø.filtreringYtelseTyper.add(ytelse.fagsakYtelseType)
+        oppgaveKøRepository.lagre(UUID.fromString(ytelse.id))
+        { oppgaveKø ->
+            oppgaveKø!!.filtreringYtelseTyper = mutableListOf()
+            if (ytelse.fagsakYtelseType != null) {
+                oppgaveKø.filtreringYtelseTyper.add(ytelse.fagsakYtelseType)
+            }
+            oppgaveKø
         }
-        oppgaveKøRepository.lagre(oppgaveKø)
+        oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(ytelse.id))
+
     }
 
     fun endreKriterium(kriteriumDto: AndreKriterierDto) {
-        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(kriteriumDto.id))
-        if (kriteriumDto.checked) oppgaveKø.filtreringAndreKriterierType.add(kriteriumDto.andreKriterierType)
-        else oppgaveKø.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
-            it != kriteriumDto.andreKriterierType }.toMutableList()
-        oppgaveKøRepository.lagre(oppgaveKø)
+        oppgaveKøRepository.lagre(UUID.fromString(kriteriumDto.id))
+        { oppgaveKø ->
+            if (kriteriumDto.checked) oppgaveKø!!.filtreringAndreKriterierType.add(kriteriumDto.andreKriterierType)
+            else oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
+                it != kriteriumDto.andreKriterierType
+            }.toMutableList()
+            oppgaveKø
+        }
+        oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(kriteriumDto.id))
+
     }
 
     fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
-        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(køNavn.id))
-        oppgaveKø.navn = køNavn.navn
-        oppgaveKøRepository.lagre(oppgaveKø)
+        oppgaveKøRepository.lagre(UUID.fromString(køNavn.id)) { oppgaveKø ->
+            oppgaveKø!!.navn = køNavn.navn
+            oppgaveKø
+        }
     }
 
     fun endreKøSortering(køSortering: KøSorteringDto) {
-        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(køSortering.id))
-        oppgaveKø.sortering = køSortering.oppgavekoSorteringValg
-        oppgaveKøRepository.lagre(oppgaveKø)
+        oppgaveKøRepository.lagre(UUID.fromString(køSortering.id)) { oppgaveKø ->
+            oppgaveKø!!.sortering = køSortering.oppgavekoSorteringValg
+            oppgaveKø
+        }
+        oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(køSortering.id))
+
     }
 
     fun endreKøSorteringDato(datoSortering: SorteringDatoDto) {
-        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(datoSortering.id))
-        oppgaveKø.fomDato = datoSortering.fomDato
-        oppgaveKø.fomDato = datoSortering.fomDato
-        oppgaveKøRepository.lagre(oppgaveKø)
+        oppgaveKøRepository.lagre(UUID.fromString(datoSortering.id)) { oppgaveKø ->
+            oppgaveKø!!.fomDato = datoSortering.fomDato
+            oppgaveKø.tomDato = datoSortering.tomDato
+            oppgaveKø
+        }
+        oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(datoSortering.id))
+    }
+
+    fun leggFjernSaksbehandlerOppgavekø(saksbehandlerKø: SaksbehandlerOppgavekoDto) {
+        oppgaveKøRepository.lagre(UUID.fromString(saksbehandlerKø.id))
+        { oppgaveKø ->
+            if (saksbehandlerKø.checked) oppgaveKø!!.saksbehandlere.add(saksbehandlerRepository.finnSaksbehandler(saksbehandlerKø.epost)!!)
+            else oppgaveKø!!.saksbehandlere = oppgaveKø.saksbehandlere.filter {
+                it.epost != saksbehandlerKø.epost
+            }.toMutableList()
+            oppgaveKø
+        }
     }
 }
