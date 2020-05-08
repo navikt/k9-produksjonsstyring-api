@@ -19,7 +19,6 @@ fun Route.AvdelingslederOppgavekøApis(
     class hentAlleOppgaveKøer
 
     get { _: hentAlleOppgaveKøer ->
-
         call.respond(avdelingslederTjeneste.hentOppgaveKøer())
     }
 

@@ -161,7 +161,8 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     UTLANDSSAK("UTLANDSSAK", "Utland"),
     SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
-    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans");
+    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
+    SKJERMET("SKJERMET", "Skjermet");
 
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
@@ -208,7 +209,6 @@ enum class BehandlingType(override val kode: String, override val navn: String) 
     FORSTEGANGSSOKNAD("BT-002", "Førstegangsbehandling"),
     KLAGE("BT-003", "Klage"),
     REVURDERING("BT-004", "Revurdering"),
-    SOKNAD("BT-005", "Søknad"),
     INNSYN("BT-006", "Innsyn"),
     ANKE("BT-008", "Anke");
 

@@ -9,10 +9,10 @@ class OppgavekøDto(
     val id: UUID,
     var navn: String,
     var sortering: SorteringDto,
-    var behandlingTyper: List<BehandlingType>,
-    var fagsakYtelseTyper: List<FagsakYtelseType>,
-    var andreKriterier: List<AndreKriterierType>,
+    var behandlingTyper: MutableList<BehandlingType>,
+    var fagsakYtelseTyper: MutableList<FagsakYtelseType>,
+    var andreKriterier: MutableList<AndreKriterierType>,
     var sistEndret: LocalDate,
     var antallBehandlinger: Int,
-    val saksbehandlere: List<Saksbehandler>
+    var saksbehandlere: MutableList<Saksbehandler>
 )
