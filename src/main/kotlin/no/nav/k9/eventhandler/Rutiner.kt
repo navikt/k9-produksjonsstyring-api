@@ -24,13 +24,14 @@ fun CoroutineScope.launchOppgaveOppdatertProcessor(
         reservasjonRepository = reservasjonRepository
     )
 }
-val log = LoggerFactory.getLogger("behandleOppgave")
+
 suspend fun behandleOppgave(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
     reservasjonRepository: ReservasjonRepository
 ) {
+    val log = LoggerFactory.getLogger("behandleOppgave")
     for (uuid in channel) {
         val measureTimeMillis = measureTimeMillis {
             val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
