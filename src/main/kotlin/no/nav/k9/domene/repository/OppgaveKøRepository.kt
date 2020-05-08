@@ -1,5 +1,7 @@
 package no.nav.k9.domene.repository
 
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -12,8 +14,7 @@ import javax.sql.DataSource
 
 class OppgaveKøRepository(
     private val dataSource: DataSource,
-    private val oppgaveRepository: OppgaveRepository,
-    private val reservasjonRepository: ReservasjonRepository
+    private val oppgaveKøOppdatert: Channel<UUID>
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
     fun hent(): List<OppgaveKø> {
@@ -95,16 +96,8 @@ class OppgaveKøRepository(
     }
 
     fun oppdaterKøMedOppgaver(uuid: UUID) {
-        val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-        lagre(uuid) { oppgaveKø ->
-            oppgaveKø!!.oppgaver = mutableListOf()
-            for (oppgave in aktiveOppgaver) {
-                oppgaveKø.leggOppgaveTilEllerFjernFraKø(
-                    oppgave = oppgave,
-                    reservasjonRepository = reservasjonRepository
-                )
-            }
-            oppgaveKø
+        runBlocking {
+            oppgaveKøOppdatert.send(uuid)
         }
     }
 

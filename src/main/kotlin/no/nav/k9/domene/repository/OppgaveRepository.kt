@@ -1,7 +1,5 @@
 package no.nav.k9.domene.repository
 
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -14,8 +12,7 @@ import javax.sql.DataSource
 
 
 class OppgaveRepository(
-    private val dataSource: DataSource,
-    private val oppgaveOppdatert: Channel<Oppgave>
+    private val dataSource: DataSource
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveRepository::class.java)
     fun hent(): List<Oppgave> {
@@ -85,15 +82,13 @@ class OppgaveRepository(
                  """, mapOf("id" to uuid.toString(), "dataInitial" to "{\"oppgaver\": [$json]}", "data" to json)
                     ).asUpdate
                 )
-                runBlocking {
-                    oppgaveOppdatert.send(oppgave)
-                }
             }
         }
 
     }
 
-    fun hentOppgaverSortertPåOpprettetDato(oppgaveider: List<UUID>): List<Oppgave> {
+    fun hentOppgaverSortertPåOpprettetDato(oppgaveider: Collection<UUID>): List<Oppgave> {
+        val oppgaveiderList = oppgaveider.toList()
         var spørring = System.currentTimeMillis()
 
         val session = sessionOf(dataSource)
@@ -104,10 +99,10 @@ class OppgaveRepository(
                     "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave " +
                             "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
                                 0,
-                                oppgaveider.size - 1
+                                oppgaveiderList.size - 1
                             ).map { t -> ":p$t" }.joinToString()}) " +
                             "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet')",
-                    IntRange(0, oppgaveider.size-1).map { t -> "p$t" to oppgaveider[t].toString() }.toMap()
+                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
                 )
                     .map { row ->
                         row.string("data")
@@ -122,7 +117,8 @@ class OppgaveRepository(
         return list
     }
 
-    fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: List<UUID>): List<Oppgave> {
+    fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: Collection<UUID>): List<Oppgave> {
+        val oppgaveiderList = oppgaveider.toList()
         var spørring = System.currentTimeMillis()
         val session = sessionOf(dataSource)
         val json: List<String> = using(session) {
@@ -132,10 +128,10 @@ class OppgaveRepository(
                     "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave " +
                             "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
                                 0,
-                                oppgaveider.size - 1
+                                oppgaveiderList.size - 1
                             ).map { t -> ":p$t" }.joinToString()}) " +
                             "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag')",
-                    IntRange(0, oppgaveider.size-1).map { t -> "p$t" to oppgaveider[t].toString() }.toMap()
+                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
                 )
                     .map { row ->
                         row.string("data")

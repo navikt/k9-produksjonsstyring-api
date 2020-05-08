@@ -16,7 +16,6 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
-import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -36,11 +35,14 @@ class RutinerTest {
         val pg = EmbeddedPostgres.start()
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
-        val oppgaveOppdatert = Channel<Oppgave>(1)
+        val oppgaveKøOppdatert = Channel<UUID>(1)
 
         val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, oppgaveOppdatert = oppgaveOppdatert)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, reservasjonRepository = reservasjonRepository)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(
+            dataSource = dataSource,
+            oppgaveKøOppdatert = oppgaveKøOppdatert
+        )
 
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(uuid) {
@@ -59,18 +61,25 @@ class RutinerTest {
             )
         }
         val launch = launch {
-            behandleOppgave(oppgaveKøRepository = oppgaveKøRepository, channel = oppgaveOppdatert,reservasjonRepository = reservasjonRepository)
+            behandleOppgave(
+                oppgaveKøRepository = oppgaveKøRepository,
+                channel = oppgaveKøOppdatert,
+                reservasjonRepository = reservasjonRepository,
+                oppgaveRepository = oppgaveRepository
+            )
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
-        every{config.erLokalt()} returns true
+        every { config.erLokalt() } returns true
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            oppgaveKøRepository = oppgaveKøRepository,
+            reservasjonRepository = reservasjonRepository
         )
 
         @Language("JSON") val json =
@@ -104,7 +113,7 @@ class RutinerTest {
         k9sakEventHandler.prosesser(event)
         launch.cancelAndJoin()
         val hent = oppgaveKøRepository.hent()
-        assert(hent[0].oppgaver[0] == UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        assert(hent[0].oppgaver.toList()[0] == UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
     }
 
 }

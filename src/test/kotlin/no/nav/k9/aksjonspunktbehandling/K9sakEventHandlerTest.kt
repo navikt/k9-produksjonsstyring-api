@@ -9,9 +9,10 @@ import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.db.runMigration
-import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
+import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.gosys.GosysOppgave
 import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -32,8 +33,10 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
 
-        val oppgaveOppdatert = Channel<Oppgave>(1)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, oppgaveOppdatert = oppgaveOppdatert)
+        val oppgaveKøOppdatert = Channel<UUID>(1)
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
 
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -48,7 +51,9 @@ class K9sakEventHandlerTest {
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            oppgaveKøRepository = oppgaveKøRepository,
+            reservasjonRepository = reservasjonRepository
         )
 
         @Language("JSON") val json =
@@ -93,7 +98,10 @@ class K9sakEventHandlerTest {
         val pg = EmbeddedPostgres.start()
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
-        val oppgaveOppdatert = Channel<Oppgave>(1)
+        val oppgaveKøOppdatert = Channel<UUID>(1)
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
@@ -103,11 +111,13 @@ class K9sakEventHandlerTest {
         val config = mockk<Configuration>()
         every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
-            OppgaveRepository(dataSource = dataSource, oppgaveOppdatert = oppgaveOppdatert),
+            OppgaveRepository(dataSource = dataSource),
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            oppgaveKøRepository = oppgaveKøRepository,
+            reservasjonRepository = reservasjonRepository
         )
 
         @Language("JSON") val json =
@@ -148,13 +158,15 @@ class K9sakEventHandlerTest {
         val pg = EmbeddedPostgres.start()
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
-        val oppgaveOppdatert = Channel<Oppgave>(1)
+        val oppgaveKøOppdatert = Channel<UUID>(1)
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, oppgaveOppdatert = oppgaveOppdatert)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()
         every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
@@ -162,7 +174,9 @@ class K9sakEventHandlerTest {
             BehandlingProsessEventRepository(dataSource = dataSource),
 //            gosysOppgaveGateway = gosysOppgaveGateway
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            oppgaveKøRepository = oppgaveKøRepository,
+            reservasjonRepository = reservasjonRepository
         )
 
         @Language("JSON") val json =
@@ -206,21 +220,25 @@ class K9sakEventHandlerTest {
         val pg = EmbeddedPostgres.start()
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
-        val oppgaveOppdatert = Channel<Oppgave>(10)
+        val oppgaveKøOppdatert = Channel<UUID>(1)
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
         every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, oppgaveOppdatert = oppgaveOppdatert)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()
         every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer
+            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            oppgaveKøRepository = oppgaveKøRepository,
+            reservasjonRepository = reservasjonRepository
         )
 
         @Language("JSON") val json =

@@ -32,7 +32,6 @@ import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
-import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.launchOppgaveOppdatertProcessor
 import no.nav.k9.integrasjon.abac.PepClient
@@ -59,6 +58,7 @@ import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import java.time.Duration
+import java.util.*
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -109,21 +109,21 @@ fun Application.k9Los() {
         configuration = configuration
     )
 
-    val oppgaveOppdatert = Channel<Oppgave>(10000)
+    val oppgaveKøOppdatert = Channel<UUID>(10000)
 
     val dataSource = hikariConfig(configuration)
-    val oppgaveRepository = OppgaveRepository(dataSource, oppgaveOppdatert)
+    val oppgaveRepository = OppgaveRepository(dataSource)
     val reservasjonRepository = ReservasjonRepository(dataSource)
     val oppgaveKøRepository = OppgaveKøRepository(
         dataSource = dataSource,
-        oppgaveRepository = oppgaveRepository,
-        reservasjonRepository = reservasjonRepository
+        oppgaveKøOppdatert = oppgaveKøOppdatert
     )
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val launchOppgaveOppdatertProcessor =
         launchOppgaveOppdatertProcessor(
             oppgaveKøRepository = oppgaveKøRepository,
-            channel = oppgaveOppdatert,
+            oppgaveRepository = oppgaveRepository,
+            channel = oppgaveKøOppdatert,
             reservasjonRepository = reservasjonRepository
         )
 
@@ -145,7 +145,9 @@ fun Application.k9Los() {
         oppgaveRepository = oppgaveRepository,
         behandlingProsessEventRepository = behandlingProsessEventRepository
         , config = configuration,
-        sakOgBehadlingProducer = sakOgBehadlingProducer
+        sakOgBehadlingProducer = sakOgBehadlingProducer,
+        oppgaveKøRepository = oppgaveKøRepository,
+        reservasjonRepository = reservasjonRepository
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(

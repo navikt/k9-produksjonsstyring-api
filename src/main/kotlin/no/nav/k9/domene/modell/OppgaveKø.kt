@@ -30,16 +30,14 @@ data class OppgaveKø(
 //    val erOmsorgspenger: Boolean,
 //    val opprettBehandling: Boolean,
 //    val førsteStønadsdag: Boolean
-    var oppgaver: MutableList<UUID> = mutableListOf()
+    var oppgaver: MutableSet<UUID> = mutableSetOf()
 ) {
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository
     ) {
         if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
-            if (!this.oppgaver.contains(oppgave.eksternId)) {
-                this.oppgaver.add(oppgave.eksternId)
-            }
+            this.oppgaver.add(oppgave.eksternId)
         } else {
             this.oppgaver.remove(oppgave.eksternId)
         }
