@@ -52,7 +52,15 @@ internal fun Route.NavAnsattApis(
                     kanBehandleKode7 = pepClient.harBasisTilgang(token),
                     kanOppgavestyre = pepClient.erOppgaveStyrer(token)
                 )
-                saksbehandlerRepository.addSaksbehandler(Saksbehandler(azureGraphService.hentIdentTilInnloggetBruker(), token.getName(), token.getUsername()))
+                if (saksbehandlerRepository.finnSaksbehandler(token.getUsername()) != null) {
+                    saksbehandlerRepository.addSaksbehandler(
+                        Saksbehandler(
+                            azureGraphService.hentIdentTilInnloggetBruker(),
+                            token.getName(),
+                            token.getUsername()
+                        )
+                    )
+                }
                 call.respond(
                     innloggetNavAnsattDto
                 )
