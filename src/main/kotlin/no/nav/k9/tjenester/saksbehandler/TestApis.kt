@@ -1,9 +1,6 @@
 package no.nav.k9.tjenester.saksbehandler
 
-import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
-import com.github.kittinunf.fuel.httpGet
 import io.ktor.application.call
-import io.ktor.http.HttpHeaders
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
@@ -11,8 +8,6 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
-import no.nav.helse.dusseldorf.ktor.core.Retry
-import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.Configuration
@@ -21,7 +16,6 @@ import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.rest.idToken
 import org.slf4j.LoggerFactory
-import java.time.Duration
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -75,86 +69,22 @@ internal fun Route.TestApis(
                 idToken = call.idToken()
             )
         ) {
-            //  val erOppgaveStyrer = true // pepClient.erOppgaveStyrer(call.idToken())
+              val erOppgaveStyrer = true // pepClient.erOppgaveStyrer(call.idToken())
 
-            //  val harbasistilgang = pepClient.harBasisTilgang(call.idToken())
+              val harbasistilgang = pepClient.harBasisTilgang(call.idToken())
 
             val accessToken =
                 accessTokenClient.getAccessToken(
                     setOf("https://graph.microsoft.com/.default"),
                     kotlin.coroutines.coroutineContext.idToken().value
                 )
+            val harTilgangTilLesSak = pepClient.harTilgangTilLesSak(call.idToken(), "60HFW")
 
-            val httpRequest = "https://graph.microsoft.com/v1.0/me?\$select=onPremisesSamAccountName"
-                .httpGet()
-                .header(
-                    HttpHeaders.Accept to "application/json",
-                    HttpHeaders.Authorization to "Bearer ${accessToken.accessToken}"
-                )
-
-            val id = Retry.retry(
-                operation = "hente-person",
-                initialDelay = Duration.ofMillis(200),
-                factor = 2.0,
-                logger = log
-            ) {
-                val (request, _, result) = Operation.monitored(
-                    app = "k9-los-api",
-                    operation = "hente-person",
-                    resultResolver = { 200 == it.second.statusCode }
-                ) { httpRequest.awaitStringResponseResult() }
-
-
-                result.fold(
-                    { success -> success },
-                    { error ->
-                        log.error(
-                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
-                        )
-                        log.error(error.toString())
-                    }
-                )
-            }
-
-            val httpRequest1 = "https://graph.microsoft.com/v1.0/me?\$select=displayName"
-                .httpGet()
-                .header(
-                    HttpHeaders.Accept to "application/json",
-                    HttpHeaders.Authorization to "Bearer ${accessToken.accessToken}"
-                )
-
-            val bruker = Retry.retry(
-                operation = "hente-person",
-                initialDelay = Duration.ofMillis(200),
-                factor = 2.0,
-                logger = log
-            ) {
-                val (request, _, result) = Operation.monitored(
-                    app = "k9-los-api",
-                    operation = "hente-person",
-                    resultResolver = { 200 == it.second.statusCode }
-                ) { httpRequest1.awaitStringResponseResult() }
-
-
-                result.fold(
-                    { success -> success },
-                    { error ->
-                        log.error(
-                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
-                        )
-                        log.error(error.toString())
-                    }
-                )
-            }
-
-
-
-            call.respond("https://graph.microsoft.com/v1.0/users/me?\$select=onPremisesSamAccountName: $id\n" +
-                    "https://graph.microsoft.com/v1.0/users/me:$bruker")
-            //    "erOppgavestyrer: $erOppgaveStyrer harBasistilgang $harbasistilgang graph"
+            call.respond(
+                "erOppgavestyrer: $erOppgaveStyrer harBasistilgang $harbasistilgang har tilgang til 60HFW:$harTilgangTilLesSak"
 //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
 //                    .getDecision().decision == DecisionEnums.PERMIT
-//            )
+            )
         }
     }
 }

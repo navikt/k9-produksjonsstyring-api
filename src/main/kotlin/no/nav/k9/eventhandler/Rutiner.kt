@@ -11,13 +11,13 @@ import java.util.*
 import kotlin.system.measureTimeMillis
 
 
-fun CoroutineScope.launchOppgaveOppdatertProcessor(
+fun CoroutineScope.køOppdatertProsessor(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
     reservasjonRepository: ReservasjonRepository
 ) = launch {
-    behandleOppgave(
+    oppdatereKø(
         channel = channel,
         oppgaveKøRepository = oppgaveKøRepository,
         oppgaveRepository = oppgaveRepository,
@@ -25,7 +25,7 @@ fun CoroutineScope.launchOppgaveOppdatertProcessor(
     )
 }
 
-suspend fun behandleOppgave(
+suspend fun oppdatereKø(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,

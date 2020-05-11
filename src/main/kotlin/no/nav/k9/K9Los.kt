@@ -33,7 +33,7 @@ import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.*
-import no.nav.k9.eventhandler.launchOppgaveOppdatertProcessor
+import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
@@ -119,8 +119,8 @@ fun Application.k9Los() {
         oppgaveKøOppdatert = oppgaveKøOppdatert
     )
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
-    val launchOppgaveOppdatertProcessor =
-        launchOppgaveOppdatertProcessor(
+    val job =
+        køOppdatertProsessor(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             channel = oppgaveKøOppdatert,
@@ -174,7 +174,7 @@ fun Application.k9Los() {
         sakOgBehadlingProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
-        launchOppgaveOppdatertProcessor.cancel()
+        job.cancel()
     }
 
     val requestContextService = RequestContextService()
@@ -220,7 +220,11 @@ fun Application.k9Los() {
                     configuration = configuration,
                     pepClient = pepClient,
                     saksbehhandlerRepository = saksbehandlerRepository,
-                    azureGraphService = azureGraphService
+                    azureGraphService = azureGraphService,
+                    oppgaveKøRepository = oppgaveKøRepository,
+                    oppgaveRepository = oppgaveRepository,
+                    reservasjonRepository = reservasjonRepository,
+                    eventRepository = behandlingProsessEventRepository
                 )
             }
         } else {
@@ -239,7 +243,11 @@ fun Application.k9Los() {
                 configuration = configuration,
                 pepClient = pepClient,
                 saksbehhandlerRepository = saksbehandlerRepository,
-                azureGraphService = azureGraphService
+                azureGraphService = azureGraphService,
+                oppgaveKøRepository = oppgaveKøRepository,
+                oppgaveRepository = oppgaveRepository,
+                reservasjonRepository = reservasjonRepository,
+                eventRepository = behandlingProsessEventRepository
             )
         }
 
@@ -286,10 +294,14 @@ private fun Route.api(
     configuration: Configuration,
     pepClient: PepClient,
     saksbehhandlerRepository: SaksbehandlerRepository,
-    azureGraphService: AzureGraphService
+    azureGraphService: AzureGraphService,
+    eventRepository: BehandlingProsessEventRepository,
+    oppgaveKøRepository: OppgaveKøRepository,
+    oppgaveRepository: OppgaveRepository,
+    reservasjonRepository: ReservasjonRepository
 ) {
     route("api") {
-        AdminApis()
+        AdminApis(behandlingProsessEventRepository =eventRepository , oppgaveRepository = oppgaveRepository, reservasjonRepository = reservasjonRepository, oppgaveKøRepository = oppgaveKøRepository)
         route("fagsak") {
             FagsakApis(
                 oppgaveTjeneste = oppgaveTjeneste,

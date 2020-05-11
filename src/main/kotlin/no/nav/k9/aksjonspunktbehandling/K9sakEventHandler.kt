@@ -73,8 +73,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         val sisteEvent = modell.sisteEvent()
         val behandlingOpprettet = BehandlingOpprettet(
             hendelseType = "behandlingOpprettet",
-            hendelsesId = UUID.randomUUID().toString(),
-            hendelsesprodusentREF = BehandlingOpprettet.HendelsesprodusentREF("", "", ""),
+            hendelsesId = """${sisteEvent.eksternId.toString()}_${modell.eventer.size}""",
+            hendelsesprodusentREF = BehandlingOpprettet.HendelsesprodusentREF("", "", "K9"),
             hendelsesTidspunkt = sisteEvent.eventTid,
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
             behandlingstype = BehandlingOpprettet.Behandlingstype("", "", sisteEvent.behandlingTypeKode),
@@ -107,8 +107,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         val sisteEvent = modell.sisteEvent()
         val behandlingAvsluttet = BehandlingAvsluttet(
             hendelseType = "behandlingAvsluttet",
-            hendelsesId = UUID.randomUUID().toString(),
-            hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", ""),
+            hendelsesId = """${sisteEvent.eksternId.toString()}_${modell.eventer.size}""",
+            hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", "K9"),
             hendelsesTidspunkt = sisteEvent.eventTid,
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
             behandlingstype = BehandlingAvsluttet.Behandlingstype("", "", sisteEvent.behandlingTypeKode),

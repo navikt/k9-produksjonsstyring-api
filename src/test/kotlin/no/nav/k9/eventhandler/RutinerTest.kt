@@ -61,7 +61,7 @@ class RutinerTest {
             )
         }
         val launch = launch {
-            behandleOppgave(
+            oppdatereKø(
                 oppgaveKøRepository = oppgaveKøRepository,
                 channel = oppgaveKøOppdatert,
                 reservasjonRepository = reservasjonRepository,
