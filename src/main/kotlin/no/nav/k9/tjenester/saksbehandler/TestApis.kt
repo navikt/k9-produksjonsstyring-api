@@ -82,7 +82,7 @@ internal fun Route.TestApis(
             
             call.respond(
                 "${call.idToken().getUsername()} erOppgavestyrer: $erOppgaveStyrer, harBasistilgang: $harbasistilgang, har tilgang til 60HFW:$harTilgangTilLesSak"
-//                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
+ //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
 //                    .getDecision().decision == DecisionEnums.PERMIT
             )
         }
