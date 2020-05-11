@@ -250,7 +250,6 @@ fun Application.k9Los() {
                 eventRepository = behandlingProsessEventRepository
             )
         }
-
         static("static") {
             resources("static/css")
             resources("static/js")

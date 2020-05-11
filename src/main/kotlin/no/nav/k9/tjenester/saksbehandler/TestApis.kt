@@ -79,9 +79,9 @@ internal fun Route.TestApis(
                     kotlin.coroutines.coroutineContext.idToken().value
                 )
             val harTilgangTilLesSak = pepClient.harTilgangTilLesSak(call.idToken(), "60HFW")
-
+            
             call.respond(
-                "erOppgavestyrer: $erOppgaveStyrer harBasistilgang $harbasistilgang har tilgang til 60HFW:$harTilgangTilLesSak"
+                "${call.idToken().getUsername()} erOppgavestyrer: $erOppgaveStyrer, harBasistilgang: $harbasistilgang, har tilgang til 60HFW:$harTilgangTilLesSak"
 //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
 //                    .getDecision().decision == DecisionEnums.PERMIT
             )
