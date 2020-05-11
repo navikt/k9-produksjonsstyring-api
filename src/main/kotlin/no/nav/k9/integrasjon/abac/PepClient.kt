@@ -88,7 +88,6 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
             .addActionAttribute(ACTION_ID, "read")
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
-            .addResourceAttribute(RESOURCE_FNR, "01234567890" /*oppgave.aktorId*/)    
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
             .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
 
