@@ -51,6 +51,9 @@ internal fun Route.OppgaveApis(
                     val list = mutableListOf<OppgaveDto>()
                     val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
                     for (oppgave in oppgaver) {
+                        if (list.size == 3) {
+                            break
+                        }
                         if (!pepClient.harTilgangTilLesSak(
                                 idToken = call.idToken(),
                                 fagsakNummer = oppgave.fagsakSaksnummer
