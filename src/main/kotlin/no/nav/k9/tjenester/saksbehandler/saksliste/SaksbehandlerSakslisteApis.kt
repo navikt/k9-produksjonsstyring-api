@@ -46,8 +46,10 @@ internal fun Route.SaksbehandlerSakslisteApis(
                 if (pepClient.harBasisTilgang(token)) {
                     
                     val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
-                    val saksbehandler = saksbehandlerRepository.finnSaksbehandler(idtoken.getUsername())
-                    val list = hentOppgaveKøer.filter { oppgaveKø -> oppgaveKø.saksbehandlere.contains(saksbehandler) }.map { oppgaveKø ->
+                    val list = hentOppgaveKøer
+                        .filter { oppgaveKø -> oppgaveKø.saksbehandlere
+                            .any { saksbehandler -> saksbehandler.epost == idtoken.getUsername() } }
+                        .map { oppgaveKø ->
                         val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato)
 
                         OppgavekøDto(
