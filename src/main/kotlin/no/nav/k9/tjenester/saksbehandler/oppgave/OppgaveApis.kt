@@ -11,8 +11,6 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.integrasjon.abac.PepClient
-import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
@@ -24,11 +22,9 @@ private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.OppgaveApis(
-    pepClient: PepClient,
     configuration: Configuration,
     requestContextService: RequestContextService,
-    oppgaveTjeneste: OppgaveTjeneste,
-    pdlService: PdlService
+    oppgaveTjeneste: OppgaveTjeneste
 ) {
 
     @Location("/")

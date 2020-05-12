@@ -348,11 +348,9 @@ private fun Route.api(
         route("saksbehandler") {
             route("oppgaver") {
                 OppgaveApis(
-                    pepClient = pepClient,
                     configuration = configuration,
                     requestContextService = requestContextService,
-                    oppgaveTjeneste = oppgaveTjeneste,
-                    pdlService = pdlService
+                    oppgaveTjeneste = oppgaveTjeneste
                 )
             }
 
@@ -360,7 +358,8 @@ private fun Route.api(
                 configuration = configuration,
                 oppgaveTjeneste = oppgaveTjeneste,
                 pepClient = pepClient,
-                requestContextService = requestContextService
+                requestContextService = requestContextService,
+                saksbehandlerRepository = saksbehhandlerRepository
             )
             SaksbehandlerNøkkeltallApis()
         }

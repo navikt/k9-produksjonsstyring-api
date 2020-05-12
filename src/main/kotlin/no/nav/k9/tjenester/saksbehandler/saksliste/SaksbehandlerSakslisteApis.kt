@@ -6,6 +6,7 @@ import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.domene.modell.OppgaveKø
@@ -17,6 +18,7 @@ import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 
+@KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.SaksbehandlerSakslisteApis(
     oppgaveTjeneste: OppgaveTjeneste,
