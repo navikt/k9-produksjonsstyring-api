@@ -112,7 +112,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", "K9"),
             hendelsesTidspunkt = sisteEvent.eventTid,
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
-            behandlingstype = BehandlingAvsluttet.Behandlingstype("", "", sisteEvent.behandlingTypeKode),
+            behandlingstype = BehandlingAvsluttet.Behandlingstype("", "", BehandlingType.fraKode(sisteEvent.behandlingTypeKode).kodeverk),
             sakstema = BehandlingAvsluttet.Sakstema("", "", "OMS"),
             behandlingstema = BehandlingAvsluttet.Behandlingstema(
                 "ab0149",
