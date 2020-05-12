@@ -1,10 +1,7 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
-import io.ktor.application.call
-import io.ktor.response.respond
 import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
-import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -21,7 +18,6 @@ import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.IdToken
-import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -245,9 +241,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun hentNesteOppgaverIKø(idToken: IdToken, kø: UUID): List<OppgaveDto> {
+    suspend fun hentNesteOppgaverIKø(idToken: IdToken? = null, kø: UUID): List<OppgaveDto> {
         if (configuration.erIkkeLokalt) {
-            if (pepClient.harBasisTilgang(idToken)) {
+            if (pepClient.harBasisTilgang(idToken!!)) {
                 val list = mutableListOf<OppgaveDto>()
                 val oppgaver = hentOppgaver(kø)
                 for (oppgave in oppgaver) {
@@ -255,7 +251,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         break
                     }
                     if (!pepClient.harTilgangTilLesSak(
-                            idToken = idToken,
+                            idToken = idToken!!,
                             fagsakNummer = oppgave.fagsakSaksnummer
                         )
                     ) {

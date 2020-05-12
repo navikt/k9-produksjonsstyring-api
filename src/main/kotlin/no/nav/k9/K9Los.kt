@@ -189,13 +189,19 @@ fun Application.k9Los() {
         val measureTimeMillis = measureTimeMillis {
             val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
+            for (oppgavekø in oppgaveKøRepository.hent()) {
+                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                    forrige!!.oppgaver.clear()
+                    forrige
+                }
+            }
+            
             for (aktivOppgave in hentAktiveOppgaver) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
                 oppgaveRepository.lagre(oppgave.eksternId) {
                     oppgave
                 }
-
                 for (oppgavekø in oppgaveKøRepository.hent()) {
                     oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
                         forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)

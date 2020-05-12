@@ -36,11 +36,14 @@ internal fun Route.OppgaveApis(
 
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["id"]
+        if (configuration.erIkkeLokalt) {
+            call.respond(
+                oppgaveTjeneste.hentNesteOppgaverIKø(call.idToken(), UUID.fromString(queryParameter))
+            )
+        }else{
+            oppgaveTjeneste.hentNesteOppgaverIKø(kø = UUID.fromString(queryParameter))
+        }
 
-        call.respond(
-            oppgaveTjeneste.hentNesteOppgaverIKø(call.idToken(), UUID.fromString(queryParameter))
-        )
-        
     }
 
     @Location("/resultat")
