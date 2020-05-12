@@ -1,6 +1,11 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
+import io.ktor.application.call
+import io.ktor.response.respond
 import io.ktor.util.KtorExperimentalAPI
+import joptsimple.internal.Strings
+import kotlinx.coroutines.withContext
+import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
@@ -9,31 +14,37 @@ import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
+import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.IdToken
+import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
+import kotlin.streams.toList
 
 private val log: Logger =
     LoggerFactory.getLogger(OppgaveTjeneste::class.java)
 
-class OppgaveTjeneste(
+class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val oppgaveRepository: OppgaveRepository,
     private val oppgaveKøRepository: OppgaveKøRepository,
     private val pdlService: PdlService,
-    private val reservasjonRepository: ReservasjonRepository
+    private val reservasjonRepository: ReservasjonRepository,
+    private val configuration: Configuration,
+    private val pepClient: PepClient
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            when(oppgaveKø.sortering){
+            when (oppgaveKø.sortering) {
                 KøSortering.OPPRETT_BEHANDLING -> oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver)
                 KøSortering.FORSTE_STONADSDAG -> oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver)
             }
@@ -231,6 +242,100 @@ class OppgaveTjeneste(
 
     fun hentAntallOppgaverTotalt(): Int {
         return oppgaveRepository.hentAktiveOppgaverTotalt()
+    }
+
+    @KtorExperimentalAPI
+    suspend fun hentNesteOppgaverIKø(idToken: IdToken, kø: UUID): List<OppgaveDto> {
+        if (configuration.erIkkeLokalt) {
+            if (pepClient.harBasisTilgang(idToken)) {
+                val list = mutableListOf<OppgaveDto>()
+                val oppgaver = hentOppgaver(kø)
+                for (oppgave in oppgaver) {
+                    if (list.size == 3) {
+                        break
+                    }
+                    if (!pepClient.harTilgangTilLesSak(
+                            idToken = idToken,
+                            fagsakNummer = oppgave.fagsakSaksnummer
+                        )
+                    ) {
+                        settSkjermet(oppgave)
+                        continue
+                    }
+                    val person = pdlService.person(oppgave.aktorId)
+
+                    val navn = if (configuration.erIDevFss) {
+                        "${oppgave.fagsakSaksnummer} " + Strings.join(
+                            oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                                val a = Aksjonspunkter().aksjonspunkter()
+                                    .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                                "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                            }.toList(),
+                            ", "
+                        )
+                    } else {
+                        person!!.data.hentPerson.navn[0].forkortetNavn
+                    }
+                    
+                    list.add(
+                        OppgaveDto(
+                            OppgaveStatusDto(false, null, false, null, null),
+                            oppgave.behandlingId,
+                            oppgave.fagsakSaksnummer,
+                            navn,
+                            oppgave.system,
+                            person!!.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                            oppgave.behandlingType,
+                            oppgave.fagsakYtelseType,
+                            oppgave.behandlingStatus,
+                            true,
+                            oppgave.behandlingOpprettet,
+                            oppgave.behandlingsfrist,
+                            oppgave.eksternId,
+                            tilBeslutter = false,
+                            utbetalingTilBruker = false,
+                            søktGradering = false,
+                            selvstendigFrilans = false,
+                            registrerPapir = false,
+                            kombinert = false
+                        )
+                    )
+                }
+                return list
+            } else {
+                return emptyList()
+            }
+
+        } else {
+            val list = mutableListOf<OppgaveDto>()
+            val oppgaver = hentOppgaver(kø)
+            for (oppgave in oppgaver) {
+                list.add(
+                    OppgaveDto(
+                        OppgaveStatusDto(false, null, false, null, null),
+                        oppgave.behandlingId,
+                        oppgave.fagsakSaksnummer,
+                        "Navn",
+                        oppgave.system,
+                        oppgave.aktorId,
+                        oppgave.behandlingType,
+                        oppgave.fagsakYtelseType,
+                        oppgave.behandlingStatus,
+                        true,
+                        oppgave.behandlingOpprettet,
+                        oppgave.behandlingsfrist,
+                        oppgave.eksternId,
+                        tilBeslutter = false,
+                        utbetalingTilBruker = false,
+                        søktGradering = false,
+                        selvstendigFrilans = false,
+                        registrerPapir = false,
+                        kombinert = false
+                    )
+                )
+            }
+            return list
+        }
     }
 
     suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {

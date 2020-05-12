@@ -130,13 +130,7 @@ fun Application.k9Los() {
         )
 
 
-    val oppgaveTjeneste = OppgaveTjeneste(
-        oppgaveRepository = oppgaveRepository,
-        oppgaveKøRepository = oppgaveKøRepository,
-        reservasjonRepository = reservasjonRepository,
-        pdlService = pdlService
-    )
-
+ 
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
     val sakOgBehadlingProducer = SakOgBehadlingProducer(
@@ -162,13 +156,18 @@ fun Application.k9Los() {
         configuration = configuration
     )
 
+    val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
+   
 
-    val avdelingslederTjeneste = AvdelingslederTjeneste(
-        oppgaveKøRepository,
-        saksbehandlerRepository,
-        azureGraphService,
-        oppgaveTjeneste
+    val oppgaveTjeneste = OppgaveTjeneste(
+        oppgaveRepository = oppgaveRepository,
+        oppgaveKøRepository = oppgaveKøRepository,
+        reservasjonRepository = reservasjonRepository,
+        pdlService = pdlService,
+        configuration = configuration,
+        pepClient = pepClient
     )
+
 
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
@@ -178,7 +177,12 @@ fun Application.k9Los() {
         log.info("Stopper pipeline")
         job.cancel()
     }
-
+    val avdelingslederTjeneste = AvdelingslederTjeneste(
+        oppgaveKøRepository,
+        saksbehandlerRepository,
+        azureGraphService,
+        oppgaveTjeneste
+    )
     // Synkroniser oppgaver
     launch  {
         log.info("Starter oppgavesynkronisering")
@@ -205,7 +209,6 @@ fun Application.k9Los() {
     
     
     val requestContextService = RequestContextService()
-    val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
     install(CallIdRequired)
 
     install(Locations)
