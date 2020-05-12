@@ -19,6 +19,7 @@ import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -59,6 +60,7 @@ import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import java.time.Duration
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -177,6 +179,31 @@ fun Application.k9Los() {
         job.cancel()
     }
 
+    // Synkroniser oppgaver
+    launch  {
+        log.info("Starter oppgavesynkronisering")
+        val measureTimeMillis = measureTimeMillis {
+            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+
+            for (aktivOppgave in hentAktiveOppgaver) {
+                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
+                val oppgave = event.oppgave()
+                oppgaveRepository.lagre(oppgave.eksternId) {
+                    oppgave
+                }
+
+                for (oppgavekø in oppgaveKøRepository.hent()) {
+                    oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                        forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                        forrige!!
+                    }
+                }
+            }
+        }
+        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
+    }
+    
+    
     val requestContextService = RequestContextService()
     val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
     install(CallIdRequired)

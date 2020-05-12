@@ -4,7 +4,6 @@ import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.routing.Route
-import kotlinx.coroutines.launch
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -20,25 +19,7 @@ fun Route.AdminApis(
     @Location("/admin/synkroniseroppgave")
     class synkroniserOppgave
 
-    get { _: synkroniserOppgave ->
-        launch {
-            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-
-            for (aktivOppgave in hentAktiveOppgaver) {
-                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
-                val oppgave = event.oppgave()
-                oppgaveRepository.lagre(oppgave.eksternId) {
-                    oppgave
-                }
-
-                for (oppgavekø in oppgaveKøRepository.hent()) {
-                    oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                        forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                        forrige!!
-                    }
-                }
-            }
-        }
+    get { _: synkroniserOppgave ->       
     }
 
     @Location("/admin/sepaaoppgave")
