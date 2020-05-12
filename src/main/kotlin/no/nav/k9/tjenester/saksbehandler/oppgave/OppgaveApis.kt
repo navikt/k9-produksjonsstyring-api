@@ -74,7 +74,7 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.ident.value))
+                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
@@ -93,7 +93,7 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.ident.value))
+                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
@@ -125,7 +125,7 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(oppgaveTjeneste.reserverOppgave(idToken.ident.value, UUID.fromString(oppgaveId.oppgaveId)))
+                call.respond(oppgaveTjeneste.reserverOppgave(idToken.getUsername(), UUID.fromString(oppgaveId.oppgaveId)))
             }
         } else {
             call.respond(oppgaveTjeneste.reserverOppgave("alexaban", UUID.fromString(oppgaveId.oppgaveId)))
