@@ -2,6 +2,7 @@ package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
+import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -73,11 +74,11 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         val sisteEvent = modell.sisteEvent()
         val behandlingOpprettet = BehandlingOpprettet(
             hendelseType = "behandlingOpprettet",
-            hendelsesId = UUID.randomUUID().toString(),
-            hendelsesprodusentREF = BehandlingOpprettet.HendelsesprodusentREF("", "", ""),
+            hendelsesId = sisteEvent.eksternId.toString() +"_"+ modell.eventer.size,
+            hendelsesprodusentREF = BehandlingOpprettet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
-            behandlingstype = BehandlingOpprettet.Behandlingstype("", "", sisteEvent.behandlingTypeKode),
+            behandlingstype = BehandlingOpprettet.Behandlingstype("", "", BehandlingType.fraKode(sisteEvent.behandlingTypeKode).kodeverk),
             sakstema = BehandlingOpprettet.Sakstema("", "", "OMS"),
             behandlingstema = BehandlingOpprettet.Behandlingstema(
                 "ab0149",
@@ -107,11 +108,11 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         val sisteEvent = modell.sisteEvent()
         val behandlingAvsluttet = BehandlingAvsluttet(
             hendelseType = "behandlingAvsluttet",
-            hendelsesId = UUID.randomUUID().toString(),
-            hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", ""),
+            hendelsesId = """${sisteEvent.eksternId.toString()}_${modell.eventer.size}""",
+            hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
-            behandlingstype = BehandlingAvsluttet.Behandlingstype("", "", sisteEvent.behandlingTypeKode),
+            behandlingstype = BehandlingAvsluttet.Behandlingstype("", "", BehandlingType.fraKode(sisteEvent.behandlingTypeKode).kodeverk),
             sakstema = BehandlingAvsluttet.Sakstema("", "", "OMS"),
             behandlingstema = BehandlingAvsluttet.Behandlingstema(
                 "ab0149",

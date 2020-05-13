@@ -19,6 +19,7 @@ import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -33,7 +34,7 @@ import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.*
-import no.nav.k9.eventhandler.launchOppgaveOppdatertProcessor
+import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
@@ -59,6 +60,7 @@ import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
 import java.time.Duration
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -119,8 +121,8 @@ fun Application.k9Los() {
         oppgaveKøOppdatert = oppgaveKøOppdatert
     )
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
-    val launchOppgaveOppdatertProcessor =
-        launchOppgaveOppdatertProcessor(
+    val job =
+        køOppdatertProsessor(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             channel = oppgaveKøOppdatert,
@@ -128,13 +130,7 @@ fun Application.k9Los() {
         )
 
 
-    val oppgaveTjeneste = OppgaveTjeneste(
-        oppgaveRepository = oppgaveRepository,
-        oppgaveKøRepository = oppgaveKøRepository,
-        reservasjonRepository = reservasjonRepository,
-        pdlService = pdlService
-    )
-
+ 
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
     val sakOgBehadlingProducer = SakOgBehadlingProducer(
@@ -160,13 +156,18 @@ fun Application.k9Los() {
         configuration = configuration
     )
 
+    val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
+   
 
-    val avdelingslederTjeneste = AvdelingslederTjeneste(
-        oppgaveKøRepository,
-        saksbehandlerRepository,
-        azureGraphService,
-        oppgaveTjeneste
+    val oppgaveTjeneste = OppgaveTjeneste(
+        oppgaveRepository = oppgaveRepository,
+        oppgaveKøRepository = oppgaveKøRepository,
+        reservasjonRepository = reservasjonRepository,
+        pdlService = pdlService,
+        configuration = configuration,
+        pepClient = pepClient
     )
+
 
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
@@ -174,11 +175,46 @@ fun Application.k9Los() {
         sakOgBehadlingProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
-        launchOppgaveOppdatertProcessor.cancel()
+        job.cancel()
     }
+    val avdelingslederTjeneste = AvdelingslederTjeneste(
+        oppgaveKøRepository,
+        saksbehandlerRepository,
+        azureGraphService,
+        oppgaveTjeneste
+    )
+    // Synkroniser oppgaver
+    launch  {
+        log.info("Starter oppgavesynkronisering")
+        val measureTimeMillis = measureTimeMillis {
+            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
+            for (oppgavekø in oppgaveKøRepository.hent()) {
+                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                    forrige!!.oppgaver.clear()
+                    forrige
+                }
+            }
+            
+            for (aktivOppgave in hentAktiveOppgaver) {
+                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
+                val oppgave = event.oppgave()
+                oppgaveRepository.lagre(oppgave.eksternId) {
+                    oppgave
+                }
+                for (oppgavekø in oppgaveKøRepository.hent()) {
+                    oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                        forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                        forrige!!
+                    }
+                }
+            }
+        }
+        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
+    }
+    
+    
     val requestContextService = RequestContextService()
-    val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
     install(CallIdRequired)
 
     install(Locations)
@@ -220,7 +256,11 @@ fun Application.k9Los() {
                     configuration = configuration,
                     pepClient = pepClient,
                     saksbehhandlerRepository = saksbehandlerRepository,
-                    azureGraphService = azureGraphService
+                    azureGraphService = azureGraphService,
+                    oppgaveKøRepository = oppgaveKøRepository,
+                    oppgaveRepository = oppgaveRepository,
+                    reservasjonRepository = reservasjonRepository,
+                    eventRepository = behandlingProsessEventRepository
                 )
             }
         } else {
@@ -239,10 +279,13 @@ fun Application.k9Los() {
                 configuration = configuration,
                 pepClient = pepClient,
                 saksbehhandlerRepository = saksbehandlerRepository,
-                azureGraphService = azureGraphService
+                azureGraphService = azureGraphService,
+                oppgaveKøRepository = oppgaveKøRepository,
+                oppgaveRepository = oppgaveRepository,
+                reservasjonRepository = reservasjonRepository,
+                eventRepository = behandlingProsessEventRepository
             )
         }
-
         static("static") {
             resources("static/css")
             resources("static/js")
@@ -286,10 +329,14 @@ private fun Route.api(
     configuration: Configuration,
     pepClient: PepClient,
     saksbehhandlerRepository: SaksbehandlerRepository,
-    azureGraphService: AzureGraphService
+    azureGraphService: AzureGraphService,
+    eventRepository: BehandlingProsessEventRepository,
+    oppgaveKøRepository: OppgaveKøRepository,
+    oppgaveRepository: OppgaveRepository,
+    reservasjonRepository: ReservasjonRepository
 ) {
     route("api") {
-        AdminApis()
+        AdminApis(behandlingProsessEventRepository =eventRepository , oppgaveRepository = oppgaveRepository, reservasjonRepository = reservasjonRepository, oppgaveKøRepository = oppgaveKøRepository)
         route("fagsak") {
             FagsakApis(
                 oppgaveTjeneste = oppgaveTjeneste,
@@ -301,11 +348,9 @@ private fun Route.api(
         route("saksbehandler") {
             route("oppgaver") {
                 OppgaveApis(
-                    pepClient = pepClient,
                     configuration = configuration,
                     requestContextService = requestContextService,
-                    oppgaveTjeneste = oppgaveTjeneste,
-                    pdlService = pdlService
+                    oppgaveTjeneste = oppgaveTjeneste
                 )
             }
 
@@ -313,7 +358,8 @@ private fun Route.api(
                 configuration = configuration,
                 oppgaveTjeneste = oppgaveTjeneste,
                 pepClient = pepClient,
-                requestContextService = requestContextService
+                requestContextService = requestContextService,
+                saksbehandlerRepository = saksbehhandlerRepository
             )
             SaksbehandlerNøkkeltallApis()
         }

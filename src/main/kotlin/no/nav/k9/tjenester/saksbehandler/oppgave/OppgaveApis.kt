@@ -9,29 +9,22 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
-import joptsimple.internal.Strings
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.integrasjon.abac.PepClient
-import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import kotlin.streams.toList
 
 private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.OppgaveApis(
-    pepClient: PepClient,
     configuration: Configuration,
     requestContextService: RequestContextService,
-    oppgaveTjeneste: OppgaveTjeneste,
-    pdlService: PdlService
+    oppgaveTjeneste: OppgaveTjeneste
 ) {
 
     @Location("/")
@@ -39,7 +32,6 @@ internal fun Route.OppgaveApis(
 
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["id"]
-
         if (configuration.erIkkeLokalt) {
             withContext(
                 requestContextService.getCoroutineContext(
@@ -47,94 +39,12 @@ internal fun Route.OppgaveApis(
                     idToken = call.idToken()
                 )
             ) {
-                if (pepClient.harBasisTilgang(call.idToken())) {
-                    val list = mutableListOf<OppgaveDto>()
-                    val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
-                    for (oppgave in oppgaver) {
-                        if (!pepClient.harTilgangTilLesSak(idToken = call.idToken(), oppgave = oppgave)) {
-                            oppgaveTjeneste.settSkjermet(oppgave)
-                            continue
-                        }
-                        val person = pdlService.person(oppgave.aktorId)
-                       
-                        val navn = if (configuration.erIDevFss) {
-                            "${oppgave.fagsakSaksnummer} " + Strings.join(
-                                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                                    val a = Aksjonspunkter().aksjonspunkter()
-                                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                                    "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                                }.toList(),
-                                ", "
-                            )
-                        } else {
-                            person!!.data.hentPerson.navn[0].forkortetNavn
-                        }
-
-
-                        list.add(
-                            OppgaveDto(
-                                OppgaveStatusDto(false, null, false, null, null),
-                                oppgave.behandlingId,
-                                oppgave.fagsakSaksnummer,
-                                navn,
-                                oppgave.system,
-                                person!!.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                                oppgave.behandlingType,
-                                oppgave.fagsakYtelseType,
-                                oppgave.behandlingStatus,
-                                true,
-                                oppgave.behandlingOpprettet,
-                                oppgave.behandlingsfrist,
-                                oppgave.eksternId,
-                                tilBeslutter = false,
-                                utbetalingTilBruker = false,
-                                søktGradering = false,
-                                selvstendigFrilans = false,
-                                registrerPapir = false,
-                                kombinert = false
-                            )
-                        )
-                    }
-                    call.respond(
-                        list
-                    )
-                } else {
-                    mutableListOf<OppgaveDto>()
-                }
+                call.respond(  oppgaveTjeneste.hentNesteOppgaverIKø(call.idToken(), UUID.fromString(queryParameter)))
             }
-        } else {
-            val list = mutableListOf<OppgaveDto>()
-            val oppgaver = oppgaveTjeneste.hentOppgaver(UUID.fromString(queryParameter))
-            for (oppgave in oppgaver) {
-                list.add(
-                    OppgaveDto(
-                        OppgaveStatusDto(false, null, false, null, null),
-                        oppgave.behandlingId,
-                        oppgave.fagsakSaksnummer,
-                        "Navn",
-                        oppgave.system,
-                        oppgave.aktorId,
-                        oppgave.behandlingType,
-                        oppgave.fagsakYtelseType,
-                        oppgave.behandlingStatus,
-                        true,
-                        oppgave.behandlingOpprettet,
-                        oppgave.behandlingsfrist,
-                        oppgave.eksternId,
-                        tilBeslutter = false,
-                        utbetalingTilBruker = false,
-                        søktGradering = false,
-                        selvstendigFrilans = false,
-                        registrerPapir = false,
-                        kombinert = false
-                    )
-                )
-            }
-            call.respond(
-                list
-            )
-        
+        }else{
+            oppgaveTjeneste.hentNesteOppgaverIKø(kø = UUID.fromString(queryParameter))
         }
+
     }
 
     @Location("/resultat")
@@ -160,7 +70,7 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.ident.value))
+                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
@@ -179,7 +89,7 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.ident.value))
+                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
@@ -211,7 +121,7 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(oppgaveTjeneste.reserverOppgave(idToken.ident.value, UUID.fromString(oppgaveId.oppgaveId)))
+                call.respond(oppgaveTjeneste.reserverOppgave(idToken.getUsername(), UUID.fromString(oppgaveId.oppgaveId)))
             }
         } else {
             call.respond(oppgaveTjeneste.reserverOppgave("alexaban", UUID.fromString(oppgaveId.oppgaveId)))

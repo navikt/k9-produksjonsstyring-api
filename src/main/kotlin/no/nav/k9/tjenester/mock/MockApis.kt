@@ -126,7 +126,7 @@ fun Route.MockGrensesnitt(
                 aksjonspunktKoderMedStatusListe = mutableMapOf(aksjonspunktToggle.kode to "OPPR"),
                 behandlingSteg = "",
                 opprettetBehandling = LocalDateTime.now(),
-                behandlingTypeKode = "BT-005",
+                behandlingTypeKode = "BT-002",
                 ytelseTypeKode = "PSB"
             )
         } else {
@@ -146,7 +146,7 @@ fun Route.MockGrensesnitt(
                 aksjonspunktKoderMedStatusListe = sisteEvent.aksjonspunktKoderMedStatusListe,
                 behandlingSteg = "",
                 opprettetBehandling = LocalDateTime.now(),
-                behandlingTypeKode = "BT-005",
+                behandlingTypeKode = "BT-002",
                 ytelseTypeKode = sisteEvent.ytelseTypeKode
             )
         }
@@ -175,7 +175,7 @@ fun Route.MockGrensesnitt(
                     aksjonspunktKoderMedStatusListe = mutableMapOf("5003" to "OPPR"),
                     behandlingSteg = "",
                     opprettetBehandling = LocalDateTime.now(),
-                    behandlingTypeKode = "BT-005",
+                    behandlingTypeKode = "BT-002",
                     ytelseTypeKode = "PSB"
                 )
 

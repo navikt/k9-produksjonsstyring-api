@@ -208,15 +208,13 @@ enum class FagsakStatus(override val kode: String, override val navn: String) : 
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum class BehandlingType(override val kode: String, override val navn: String) : Kodeverdi {
-    FORSTEGANGSSOKNAD("BT-002", "Førstegangsbehandling"),
-    KLAGE("BT-003", "Klage"),
-    REVURDERING("BT-004", "Revurdering"),
-    INNSYN("BT-006", "Innsyn"),
-    ANKE("BT-008", "Anke");
-
-    override val kodeverk = "BEHANDLING_TYPE"
-
+enum class BehandlingType(override val kode: String, override val navn: String,override val kodeverk : String) : Kodeverdi {
+    FORSTEGANGSSOKNAD("BT-002", "Førstegangsbehandling", "ae0034"),
+    KLAGE("BT-003", "Klage","ae0058" ),
+    REVURDERING("BT-004", "Revurdering", "ae0028"),
+    INNSYN("BT-006", "Innsyn", "ae0042"),
+    ANKE("BT-008", "Anke", "ae0046");
+    
     companion object {
         @JsonCreator
         @JvmStatic

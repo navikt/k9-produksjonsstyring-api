@@ -89,6 +89,9 @@ class OppgaveRepository(
 
     fun hentOppgaverSortertPåOpprettetDato(oppgaveider: Collection<UUID>): List<Oppgave> {
         val oppgaveiderList = oppgaveider.toList()
+        if (oppgaveider.isEmpty()) {
+            return emptyList()
+        }
         var spørring = System.currentTimeMillis()
 
         val session = sessionOf(dataSource)
@@ -119,6 +122,9 @@ class OppgaveRepository(
 
     fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: Collection<UUID>): List<Oppgave> {
         val oppgaveiderList = oppgaveider.toList()
+        if (oppgaveider.isEmpty()) {
+            return emptyList()
+        }
         var spørring = System.currentTimeMillis()
         val session = sessionOf(dataSource)
         val json: List<String> = using(session) {

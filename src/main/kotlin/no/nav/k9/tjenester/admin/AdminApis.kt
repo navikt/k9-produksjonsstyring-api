@@ -1,19 +1,25 @@
 package no.nav.k9.tjenester.admin
 
-import io.ktor.application.call
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
-import io.ktor.response.respond
 import io.ktor.routing.Route
+import no.nav.k9.domene.repository.BehandlingProsessEventRepository
+import no.nav.k9.domene.repository.OppgaveKøRepository
+import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.ReservasjonRepository
 
 @KtorExperimentalLocationsAPI
 fun Route.AdminApis(
+    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    oppgaveRepository: OppgaveRepository,
+    reservasjonRepository: ReservasjonRepository,
+    oppgaveKøRepository: OppgaveKøRepository
 ) {
     @Location("/admin/synkroniseroppgave")
     class synkroniserOppgave
 
-    get { _: synkroniserOppgave ->
+    get { _: synkroniserOppgave ->       
     }
 
     @Location("/admin/sepaaoppgave")

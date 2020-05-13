@@ -13,7 +13,6 @@ import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.tjenester.saksbehandler.IdToken
@@ -74,7 +73,10 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
 
 
     @KtorExperimentalAPI
-    suspend fun harTilgangTilLesSak(idToken: IdToken, oppgave: Oppgave): Boolean {
+    suspend fun harTilgangTilLesSak(
+        idToken: IdToken,
+        fagsakNummer: String
+    ): Boolean {
         val cachedResponse = abacCache.hasAccess(idToken, LESETILGANG_SAK, "read" )
         if (cachedResponse != null) {
             return cachedResponse
@@ -86,9 +88,8 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
             .addActionAttribute(ACTION_ID, "read")
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
-            .addResourceAttribute(RESOURCE_FNR, "01234567890" /*oppgave.aktorId*/)    
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
-            .addResourceAttribute(RESOURCE_SAKSNR, oppgave.fagsakSaksnummer)
+            .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
 
         val decision =  evaluate(requestBuilder)
         abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, "read" , decision)
@@ -135,6 +136,7 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
                     }
                 )
             }
+            log.info("abac result: $json \n\n $xacmlJson")
             try {
                 objectMapper().readValue<Response>(json).response[0].decision == "Permit"
             } catch (e: Exception) {
