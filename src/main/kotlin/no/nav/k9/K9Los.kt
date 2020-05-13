@@ -376,6 +376,7 @@ private fun Route.api(
                 )
             }
         }
+        
         NavAnsattApis(
             requestContextService = requestContextService,
             pepClient = pepClient,
