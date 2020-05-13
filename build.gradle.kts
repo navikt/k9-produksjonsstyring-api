@@ -57,7 +57,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.7")
     
     // Kontrakter
-    implementation("no.nav.k9.sak:kodeverk:3.1.0-20200513051403-18ca619")
+    implementation("no.nav.k9.sak:kodeverk:3.1.0-20200513120503-5f45a1c")
     
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:${cxf}")
     implementation("org.apache.cxf:cxf-rt-features-logging:${cxf}")
@@ -96,21 +96,22 @@ repositories {
 
     maven {
         name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/navikt/dusseldorf-ktor")
-        credentials {
-            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
-            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-        }
-    }
-    maven {
-        name = "GitHubPackages"
         url = uri("https://maven.pkg.github.com/navikt/k9-sak")
         credentials {
             username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
             password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
         }
     }
-
+    
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/navikt/dusseldorf-ktor")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+    
     jcenter()
     mavenLocal()
     mavenCentral()
