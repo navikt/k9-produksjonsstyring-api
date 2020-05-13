@@ -262,7 +262,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
                     val navn = if (configuration.erIDevFss) {
                         "${oppgave.fagsakSaksnummer} " + Strings.join(
-                            oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                            oppgave.aksjonspunkter.aksjonspunkter.entries.stream().map { t ->
                                 val a = Aksjonspunkter().aksjonspunkter()
                                     .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
                                 "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
@@ -334,12 +334,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
+    suspend fun hentSisteReserverteOppgaver(username: String): List<OppgaveDto> {
 
         val list = mutableListOf<OppgaveDto>()
 
         for (reservasjon in reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }
-            .filter { it.reservertAv == ident }) {
+            .filter { it.reservertAv?.toLowerCase() == username.toLowerCase() }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             val person = pdlService.person(oppgave.aktorId)
             if (person == null) {
@@ -347,7 +347,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 log.info("Ikke tilgang til bruker: ${oppgave.aktorId}")
                 continue
             }
-            val status = if (ident == "alexaban") {
+            val status = if (username == "alexaban") {
                 OppgaveStatusDto(
                     true,
                     reservasjon.reservertTil,

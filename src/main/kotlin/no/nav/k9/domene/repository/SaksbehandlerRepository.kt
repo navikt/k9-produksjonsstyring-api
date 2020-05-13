@@ -49,7 +49,7 @@ class SaksbehandlerRepository(
     }
 
     fun slettSaksbehandler(epost: String) {
-        using(sessionOf(dataSource)) { it ->
+        using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 tx.run(
                     queryOf(

@@ -38,15 +38,16 @@ fun Route.InnsiktGrensesnitt(
                     }
 
                     val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-
-
-                    val aksjonspunkter = Aksjonspunkter().aksjonspunkter()
+                    
+                   
+                    val aksjonspunkter =  Aksjonspunkter().aksjonspunkter()
+                    
                     p {
                         +"Det er nå ${aktiveOppgaver.size} åpne oppgaver."
                     }
 
                     val ukjenteAksjonspunkter =
-                        aktiveOppgaver.stream().flatMap { t -> t.aksjonspunkter.liste.keys.stream() }
+                        aktiveOppgaver.stream().flatMap { t -> t.aksjonspunkter.aksjonspunkter.keys.stream() }
                             .filter { t -> !aksjonspunkter.map { a -> a.kode }.contains(t) }.toList()
 
                     for (u in ukjenteAksjonspunkter) {
@@ -58,7 +59,7 @@ fun Route.InnsiktGrensesnitt(
 
                     for (aksjonspunkt in aksjonspunkter) {
                         aksjonspunkt.antall = aktiveOppgaver.filter { oppgaveModell ->
-                            oppgaveModell.aksjonspunkter.liste.containsKey(
+                            oppgaveModell.aksjonspunkter.aksjonspunkter.containsKey(
                                 aksjonspunkt.kode
                             )
                         }.size
