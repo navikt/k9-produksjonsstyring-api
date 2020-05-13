@@ -103,7 +103,7 @@ repositories {
         }
     }
     maven {
-        name = "GitHubPackagesk9Sak"
+        name = "GitHubPackages"
         url = uri("https://maven.pkg.github.com/navikt/k9-sak")
         credentials {
             username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
