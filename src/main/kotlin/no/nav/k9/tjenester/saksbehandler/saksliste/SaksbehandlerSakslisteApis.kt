@@ -26,7 +26,6 @@ internal fun Route.SaksbehandlerSakslisteApis(
     pepClient: PepClient,
     requestContextService: RequestContextService,
     configuration: Configuration,
-    saksbehandlerRepository: SaksbehandlerRepository,
     oppgaveKøRepository: OppgaveKøRepository
 ) {
     @Location("/saksliste")

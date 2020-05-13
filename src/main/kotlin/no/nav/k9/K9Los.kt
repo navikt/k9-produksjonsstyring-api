@@ -359,7 +359,7 @@ private fun Route.api(
                 oppgaveTjeneste = oppgaveTjeneste,
                 pepClient = pepClient,
                 requestContextService = requestContextService,
-                saksbehandlerRepository = saksbehhandlerRepository
+                oppgaveKøRepository = oppgaveKøRepository
             )
             SaksbehandlerNøkkeltallApis()
         }

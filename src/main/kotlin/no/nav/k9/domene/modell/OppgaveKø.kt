@@ -126,7 +126,6 @@ class Saksbehandler(
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class Enhet(val navn: String) {
-    VIKAFOSSEN("VIKAFOSSEN"),
     NASJONAL("NASJONAL");
 
     companion object {
