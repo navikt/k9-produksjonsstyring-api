@@ -10,13 +10,14 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.modell.Saksbehandler
+import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -25,7 +26,8 @@ internal fun Route.SaksbehandlerSakslisteApis(
     pepClient: PepClient,
     requestContextService: RequestContextService,
     configuration: Configuration,
-    saksbehandlerRepository: SaksbehandlerRepository
+    saksbehandlerRepository: SaksbehandlerRepository,
+    oppgaveKøRepository: OppgaveKøRepository
 ) {
     @Location("/saksliste")
     class getSakslister
@@ -78,7 +80,7 @@ internal fun Route.SaksbehandlerSakslisteApis(
 
     get { _: hentSakslistensSaksbehandlere ->
         call.respond(
-            listOf(Saksbehandler("8ewer89uf", "SaksbehandlerEllen", "ellen@nav.no"))
+            oppgaveKøRepository.hentOppgavekø(UUID.fromString(call.parameters["id"])).saksbehandlere
         )
     }
 }
