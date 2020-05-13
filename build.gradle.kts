@@ -95,7 +95,7 @@ repositories {
     maven("http://packages.confluent.io/maven/")
 
     maven {
-        name = "GitHubPackages"
+        name = "GitHubPackagesDD"
         url = uri("https://maven.pkg.github.com/navikt/k9-sak")
         credentials {
             username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
@@ -104,7 +104,7 @@ repositories {
     }
     
     maven {
-        name = "GitHubPackages"
+        name = "GitHubPackagesK9"
         url = uri("https://maven.pkg.github.com/navikt/dusseldorf-ktor")
         credentials {
             username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
