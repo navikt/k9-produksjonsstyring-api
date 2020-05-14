@@ -35,7 +35,7 @@ class SaksbehandlerRepository(
             it.run(
                 queryOf(
                     "select * from saksbehandler where epost = :epost",
-                    mapOf("epost" to epost)
+                    mapOf("epost" to epost.toLowerCase())
                 )
                     .map { row ->
                         Saksbehandler(
