@@ -51,6 +51,14 @@ fun Route.AvdelingslederOppgavekøApis(
         val behandling = call.receive<BehandlingsTypeDto>()
         call.respond(avdelingslederTjeneste.endreBehandlingsType(behandling))
     }
+    
+    @Location("/skjermet")
+    class lagreSkjermet
+
+    post { _: lagreSkjermet ->
+        val behandling = call.receive<SkjermetDto>()
+        call.respond(avdelingslederTjeneste.endreSkjerming(behandling))
+    }
 
     @Location("/ytelsetype")
     class lagreYtelsestype

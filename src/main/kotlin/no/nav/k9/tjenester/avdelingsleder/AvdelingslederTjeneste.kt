@@ -103,6 +103,14 @@ class AvdelingslederTjeneste(
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
     }
+    
+    fun endreSkjerming(skjermet: SkjermetDto) {
+        oppgaveKøRepository.lagre(UUID.fromString(skjermet.id)) { oppgaveKø ->
+            oppgaveKø!!.skjermet = skjermet.skjermet
+            oppgaveKø
+        }
+        oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(skjermet.id))
+    }
 
     fun endreYtelsesType(ytelse: YtelsesTypeDto) {
         oppgaveKøRepository.lagre(UUID.fromString(ytelse.id))
