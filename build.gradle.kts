@@ -57,7 +57,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.7")
     
     // Kontrakter
-    implementation("no.nav.k9.sak:kodeverk:3.1.0-20200513120503-5f45a1c")
+    implementation("no.nav.k9.sak:kodeverk:3.1.0-20200513213126-09f2048")
     
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:${cxf}")
     implementation("org.apache.cxf:cxf-rt-features-logging:${cxf}")
