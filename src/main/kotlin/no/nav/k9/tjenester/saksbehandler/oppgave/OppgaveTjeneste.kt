@@ -299,9 +299,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
                 return list
             } else {
+                log.info("har ikke basistilgang")
                 return emptyList()
             }
-
         } else {
             val list = mutableListOf<OppgaveDto>()
             val oppgaver = hentOppgaver(kø)
