@@ -22,7 +22,7 @@ data class BehandlingAvsluttet(
     @JsonDeserialize(using = LocalDateTimeDeserializer::class)
     val hendelsesTidspunkt: LocalDateTime,
     val hendelsesprodusentREF: HendelsesprodusentREF,
-    val primaerBehandlingREF: PrimaerBehandlingREF,
+    val primaerBehandlingREF: PrimaerBehandlingREF?,
     val sakstema: Sakstema,
     val sekundaerBehandlingREF: List<SekundaerBehandlingREF>,
     val styringsinformasjonListe: List<StyringsinformasjonListe>

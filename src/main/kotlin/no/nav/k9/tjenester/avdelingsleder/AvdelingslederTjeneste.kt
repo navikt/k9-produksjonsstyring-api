@@ -70,7 +70,8 @@ class AvdelingslederTjeneste(
         var saksbehandler = saksbehandlerRepository.finnSaksbehandler(epostDto.epost)
         if (saksbehandler == null) {
             saksbehandler = Saksbehandler(
-                null, null, epostDto.epost)
+                null, null, epostDto.epost
+            )
             saksbehandlerRepository.addSaksbehandler(saksbehandler)
         }
         return saksbehandler
@@ -147,10 +148,16 @@ class AvdelingslederTjeneste(
     }
 
     fun leggFjernSaksbehandlerOppgavekø(saksbehandlerKø: SaksbehandlerOppgavekoDto) {
+        val saksbehandler = saksbehandlerRepository.finnSaksbehandler(
+            saksbehandlerKø.epost
+        )!!
         oppgaveKøRepository.lagre(UUID.fromString(saksbehandlerKø.id))
         { oppgaveKø ->
-            if (saksbehandlerKø.checked) oppgaveKø!!.saksbehandlere.add(saksbehandlerRepository.finnSaksbehandler(saksbehandlerKø.epost)!!)
-            else oppgaveKø!!.saksbehandlere = oppgaveKø.saksbehandlere.filter {
+            if (saksbehandlerKø.checked && !oppgaveKø!!.saksbehandlere.any{ it.epost == saksbehandler.epost }) {
+                oppgaveKø.saksbehandlere.add(
+                    saksbehandler
+                )
+            } else oppgaveKø!!.saksbehandlere = oppgaveKø.saksbehandlere.filter {
                 it.epost != saksbehandlerKø.epost
             }.toMutableList()
             oppgaveKø

@@ -29,15 +29,7 @@ internal fun Route.TestApis(
 ) {
 
     val log = LoggerFactory.getLogger("Route.TestApis")
-    val gruppenavnSaksbehandler = "0000-GA-k9sak-saksbehandler"
-    val gruppenavnVeileder = "0000-GA-k9sak-veileder"
-    val gruppenavnBeslutter = "0000-GA-k9sak-beslutter"
-    val gruppenavnEgenAnsatt = "0000-GA-GOSYS_UTVIDET"
-    val gruppenavnKode6 = "0000-GA-GOSYS_KODE6"
-    val gruppenavnKode7 = "0000-GA-GOSYS_KODE7"
-    val gruppenavnOppgavestyrer = "0000-GA-k9sak-Oppgavestyrer"
-
-
+ 
     @Location("/testToken")
     class getInnloggetBrukerToken
     get { _: getInnloggetBrukerToken ->
@@ -82,8 +74,6 @@ internal fun Route.TestApis(
             
             call.respond(
                 "${call.idToken().getUsername()} erOppgavestyrer: $erOppgaveStyrer, harBasistilgang: $harbasistilgang, har tilgang til 60HFW:$harTilgangTilLesSak"
- //                tilgangskontroll.check(Policies.tilgangTilKode6.with("6"))
-//                    .getDecision().decision == DecisionEnums.PERMIT
             )
         }
     }

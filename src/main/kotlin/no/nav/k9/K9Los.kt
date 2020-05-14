@@ -130,7 +130,7 @@ fun Application.k9Los() {
         )
 
 
- 
+
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
     val sakOgBehadlingProducer = SakOgBehadlingProducer(
@@ -157,7 +157,7 @@ fun Application.k9Los() {
     )
 
     val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
-   
+
 
     val oppgaveTjeneste = OppgaveTjeneste(
         oppgaveRepository = oppgaveRepository,
@@ -195,7 +195,7 @@ fun Application.k9Los() {
                     forrige
                 }
             }
-            
+
             for (aktivOppgave in hentAktiveOppgaver) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
@@ -212,8 +212,8 @@ fun Application.k9Los() {
         }
         log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
     }
-    
-    
+
+
     val requestContextService = RequestContextService()
     install(CallIdRequired)
 
@@ -359,7 +359,7 @@ private fun Route.api(
                 oppgaveTjeneste = oppgaveTjeneste,
                 pepClient = pepClient,
                 requestContextService = requestContextService,
-                saksbehandlerRepository = saksbehhandlerRepository
+                oppgaveKøRepository = oppgaveKøRepository
             )
             SaksbehandlerNøkkeltallApis()
         }
@@ -376,6 +376,7 @@ private fun Route.api(
                 )
             }
         }
+
         NavAnsattApis(
             requestContextService = requestContextService,
             pepClient = pepClient,
@@ -394,7 +395,7 @@ private fun Route.api(
             )
         }
         SaksbehandlerNøkkeltallApis()
-        route("konfig") { KonfigApis() }
+        route("konfig") { KonfigApis(configuration) }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
     }
 }

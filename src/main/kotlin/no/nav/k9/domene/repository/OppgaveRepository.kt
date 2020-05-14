@@ -155,8 +155,22 @@ class OppgaveRepository(
     fun hentOppgaverMedAktorId(aktørId: String) = hent()
         .filter { it.aktorId == aktørId }
 
-    fun hentOppgaverMedSaksnummer(saksnummer: String) = hent()
-        .filter { it.fagsakSaksnummer == saksnummer }
+    fun hentOppgaveMedSaksnummer(saksnummer: String): Oppgave? {
+        val json: String = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where (data ::jsonb -> 'oppgaver' -> -1 ->> 'fagsakSaksnummer') = :saksnummer",
+                    mapOf("saksnummer" to saksnummer)
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asSingle
+            )
+        }
+            ?: return null
+        return objectMapper().readValue(json, Oppgave::class.java)
+    }
+
 
     internal fun hentAktiveOppgaverTotalt(): Int {
         var spørring = System.currentTimeMillis()

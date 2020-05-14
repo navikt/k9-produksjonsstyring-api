@@ -39,10 +39,14 @@ internal fun Route.OppgaveApis(
                     idToken = call.idToken()
                 )
             ) {
-                call.respond(  oppgaveTjeneste.hentNesteOppgaverIKø(call.idToken(), UUID.fromString(queryParameter)))
+                call.respond(
+                    oppgaveTjeneste.hentNesteOppgaverIKø(call.idToken(), UUID.fromString(queryParameter))
+                )
             }
-        }else{
-            oppgaveTjeneste.hentNesteOppgaverIKø(kø = UUID.fromString(queryParameter))
+        } else {
+            call.respond(
+                oppgaveTjeneste.hentNesteOppgaverIKø(kø = UUID.fromString(queryParameter))
+            )
         }
 
     }
@@ -121,7 +125,12 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(oppgaveTjeneste.reserverOppgave(idToken.getUsername(), UUID.fromString(oppgaveId.oppgaveId)))
+                call.respond(
+                    oppgaveTjeneste.reserverOppgave(
+                        idToken.getUsername(),
+                        UUID.fromString(oppgaveId.oppgaveId)
+                    )
+                )
             }
         } else {
             call.respond(oppgaveTjeneste.reserverOppgave("alexaban", UUID.fromString(oppgaveId.oppgaveId)))

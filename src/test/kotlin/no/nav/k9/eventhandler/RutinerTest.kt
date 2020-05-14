@@ -103,7 +103,7 @@ class RutinerTest {
               "behandlingTypeKode": "BT-002",
               "opprettetBehandling": "2020-02-20T07:38:49",
               "aksjonspunktKoderMedStatusListe": {
-                "5003": "OPPR"
+                "5020": "OPPR"
               }
             }"""
         val objectMapper = jacksonObjectMapper()

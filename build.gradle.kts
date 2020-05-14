@@ -56,6 +56,9 @@ dependencies {
     implementation("no.nav.common:rest:1.2020.02.18-16.01-aba1e77ea3f9")
     implementation("com.google.code.gson:gson:2.7")
     
+    // Kontrakter
+    implementation("no.nav.k9.sak:kodeverk:3.1.0-20200513213126-09f2048")
+    
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:${cxf}")
     implementation("org.apache.cxf:cxf-rt-features-logging:${cxf}")
     implementation("org.apache.cxf:cxf-rt-transports-http:${cxf}")
@@ -99,7 +102,7 @@ repositories {
             password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
         }
     }
-
+    
     jcenter()
     mavenLocal()
     mavenCentral()

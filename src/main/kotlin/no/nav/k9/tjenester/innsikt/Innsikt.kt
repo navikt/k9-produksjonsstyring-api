@@ -38,9 +38,10 @@ fun Route.InnsiktGrensesnitt(
                     }
 
                     val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-
-
-                    val aksjonspunkter = Aksjonspunkter().aksjonspunkter()
+                    
+                   
+                    val aksjonspunkter =  Aksjonspunkter().aksjonspunkter()
+                    
                     p {
                         +"Det er nå ${aktiveOppgaver.size} åpne oppgaver."
                     }

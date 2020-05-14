@@ -121,24 +121,28 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
             }
         }
-        val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer(query)
-        return oppgaver.map {
-            val person = pdlService.person(it.aktorId)!!
-            FagsakDto(
-                it.fagsakSaksnummer,
-                PersonDto(
-                    person.data.hentPerson.navn[0].forkortetNavn,
-                    person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                    person.data.hentPerson.kjoenn[0].kjoenn,
-                    null
-                    // person.data.hentPerson.doedsfall!!.doedsdato
-                ),
-                it.fagsakYtelseType,
-                it.behandlingStatus,
-                it.behandlingOpprettet,
-                it.aktiv
+        val oppgave = oppgaveRepository.hentOppgaveMedSaksnummer(query)
+        if (oppgave != null) {
+            val person = pdlService.person(oppgave.aktorId)!!
+            return listOf(
+                FagsakDto(
+                    oppgave.fagsakSaksnummer,
+                    PersonDto(
+                        person.data.hentPerson.navn[0].forkortetNavn,
+                        person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                        person.data.hentPerson.kjoenn[0].kjoenn,
+                        null
+                        // person.data.hentPerson.doedsfall!!.doedsdato
+                    ),
+                    oppgave.fagsakYtelseType,
+                    oppgave.behandlingStatus,
+                    oppgave.behandlingOpprettet,
+                    oppgave.aktiv
+                )
             )
         }
+        return emptyList()
+
     }
 
     suspend fun reservertAvMeg(ident: String?): Boolean {
@@ -181,12 +185,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
 
     suspend fun hentOppgaverFraListe(saksnummere: List<String>): List<OppgaveDto> {
-        val oppgaver = saksnummere.map { oppgaveRepository.hentOppgaverMedSaksnummer(it) }
-        val finalList = mutableListOf<OppgaveDto>()
-        oppgaver.forEach {
-            it.forEach { o -> finalList.add(tilOppgaveDto(o, null)) }
-        }
-        return finalList
+        return saksnummere.map { oppgaveRepository.hentOppgaveMedSaksnummer(it) }
+            .map { oppgave -> tilOppgaveDto(oppgave!!, null) }.toList()
     }
 
     fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
@@ -299,9 +299,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
                 return list
             } else {
+                log.info("har ikke basistilgang")
                 return emptyList()
             }
-
         } else {
             val list = mutableListOf<OppgaveDto>()
             val oppgaver = hentOppgaver(kø)
@@ -334,12 +334,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    suspend fun hentSisteReserverteOppgaver(ident: String): List<OppgaveDto> {
+    suspend fun hentSisteReserverteOppgaver(username: String): List<OppgaveDto> {
 
         val list = mutableListOf<OppgaveDto>()
 
         for (reservasjon in reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }
-            .filter { it.reservertAv == ident }) {
+            .filter { it.reservertAv?.toLowerCase() == username.toLowerCase() }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             val person = pdlService.person(oppgave.aktorId)
             if (person == null) {
@@ -347,7 +347,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 log.info("Ikke tilgang til bruker: ${oppgave.aktorId}")
                 continue
             }
-            val status = if (ident == "alexaban") {
+            val status = if (username == "alexaban") {
                 OppgaveStatusDto(
                     true,
                     reservasjon.reservertTil,

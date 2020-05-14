@@ -13,7 +13,7 @@ class SaksbehandlerRepository(
     private val log: Logger = LoggerFactory.getLogger(SaksbehandlerRepository::class.java)
 
     fun addSaksbehandler(saksbehandler: Saksbehandler) {
-        using(sessionOf(dataSource)) { it ->
+        using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 tx.run(
                     queryOf(
@@ -23,7 +23,7 @@ class SaksbehandlerRepository(
                             on conflict (epost) do update
                             set navn = :navn, saksbehandlerid = :ident
                             """,
-                        mapOf("ident" to saksbehandler.brukerIdent, "navn" to saksbehandler.navn, "epost" to saksbehandler.epost)
+                        mapOf("ident" to saksbehandler.brukerIdent, "navn" to saksbehandler.navn, "epost" to saksbehandler.epost.toLowerCase())
                     ).asUpdate
                 )
             }
@@ -35,13 +35,13 @@ class SaksbehandlerRepository(
             it.run(
                 queryOf(
                     "select * from saksbehandler where epost = :epost",
-                    mapOf("epost" to epost)
+                    mapOf("epost" to epost.toLowerCase())
                 )
                     .map { row ->
                         Saksbehandler(
                             row.stringOrNull("saksbehandlerid"),
                             row.stringOrNull("navn"),
-                            row.string("epost"))
+                            row.string("epost").toLowerCase())
                     }.asSingle
             )
         }
@@ -49,14 +49,14 @@ class SaksbehandlerRepository(
     }
 
     fun slettSaksbehandler(epost: String) {
-        using(sessionOf(dataSource)) { it ->
+        using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 tx.run(
                     queryOf(
                         """
                             delete from saksbehandler 
                             where epost = :epost """,
-                        mapOf("epost" to epost)
+                        mapOf("epost" to epost.toLowerCase())
                     ).asUpdate
                 )
             }
@@ -74,7 +74,7 @@ class SaksbehandlerRepository(
                         Saksbehandler(
                             row.stringOrNull("saksbehandlerid"),
                             row.stringOrNull("navn"),
-                            row.string("epost"))
+                            row.string("epost").toLowerCase())
                     }.asList
             )
         }
