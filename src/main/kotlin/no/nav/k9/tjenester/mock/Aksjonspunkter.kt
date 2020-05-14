@@ -12,7 +12,7 @@ class Aksjonspunkter {
             behandlingsstegtype = it.behandlingSteg.name,
             plassering = "",
             totrinn = it.defaultTotrinnBehandling,
-            vilkårtype = it.vilkårType.name
+            vilkårtype = it.vilkårType?.name
         ) }
     }
 }
