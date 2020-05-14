@@ -57,7 +57,7 @@ internal fun Route.NavAnsattApis(
                         Saksbehandler(
                             azureGraphService.hentIdentTilInnloggetBruker(),
                             token.getName(),
-                            token.getUsername()
+                            token.getUsername().toLowerCase()
                         )
                     )
                 }
