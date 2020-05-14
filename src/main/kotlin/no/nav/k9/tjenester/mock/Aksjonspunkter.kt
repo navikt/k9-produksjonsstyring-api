@@ -5,7 +5,7 @@ import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 class Aksjonspunkter {
     fun aksjonspunkter(): List<Aksjonspunkt> {
 
-        return AksjonspunktDefinisjon.values().map { Aksjonspunkt(
+        return AksjonspunktDefinisjon.values().filter { it.kode!=null }.map { Aksjonspunkt(
             kode = it.kode,
             navn = it.navn,
             aksjonspunktype = it.aksjonspunktType.name,
