@@ -47,7 +47,7 @@ fun Route.InnsiktGrensesnitt(
                     }
 
                     val ukjenteAksjonspunkter =
-                        aktiveOppgaver.stream().flatMap { t -> t.aksjonspunkter.aksjonspunkter.keys.stream() }
+                        aktiveOppgaver.stream().flatMap { t -> t.aksjonspunkter.liste.keys.stream() }
                             .filter { t -> !aksjonspunkter.map { a -> a.kode }.contains(t) }.toList()
 
                     for (u in ukjenteAksjonspunkter) {
@@ -59,7 +59,7 @@ fun Route.InnsiktGrensesnitt(
 
                     for (aksjonspunkt in aksjonspunkter) {
                         aksjonspunkt.antall = aktiveOppgaver.filter { oppgaveModell ->
-                            oppgaveModell.aksjonspunkter.aksjonspunkter.containsKey(
+                            oppgaveModell.aksjonspunkter.liste.containsKey(
                                 aksjonspunkt.kode
                             )
                         }.size

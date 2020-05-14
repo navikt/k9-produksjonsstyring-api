@@ -262,7 +262,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
                     val navn = if (configuration.erIDevFss) {
                         "${oppgave.fagsakSaksnummer} " + Strings.join(
-                            oppgave.aksjonspunkter.aksjonspunkter.entries.stream().map { t ->
+                            oppgave.aksjonspunkter.liste.entries.stream().map { t ->
                                 val a = Aksjonspunkter().aksjonspunkter()
                                     .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
                                 "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"

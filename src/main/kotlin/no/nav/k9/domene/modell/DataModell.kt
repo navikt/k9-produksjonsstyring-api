@@ -67,7 +67,7 @@ data class Modell(
             system = event.fagsystem.name,
             oppgaveEgenskap = emptyList(),
             aksjonspunkter = event.aktiveAksjonspunkt(),
-            utenlands = event.aktiveAksjonspunkt().aksjonspunkter.any { entry -> (entry.key == "5068" || entry.key == "6068") && entry.value != "AVBR" }, 
+            utenlands = event.aktiveAksjonspunkt().liste.any { entry -> (entry.key == "5068" || entry.key == "6068") && entry.value != "AVBR" }, 
             tilBeslutter = beslutterOppgave,
             kombinert = false,
             registrerPapir = registrerPapir,
@@ -96,21 +96,21 @@ fun BehandlingProsessEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
     return Aksjonspunkter(this.aksjonspunktKoderMedStatusListe.filter { entry -> entry.value == "OPPR" })
 }
 
-data class Aksjonspunkter(val aksjonspunkter: Map<String, String>) {
+data class Aksjonspunkter(val liste: Map<String, String>) {
     fun lengde(): Int {
-        return aksjonspunkter.size
+        return liste.size
     }
 
     fun påVent(): Boolean {
-        return this.aksjonspunkter.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any{it.erAutopunkt()}
+        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any{it.erAutopunkt()}
     }
 
     fun erTom(): Boolean {
-        return this.aksjonspunkter.isEmpty()
+        return this.liste.isEmpty()
     }
 
     fun tilBeslutter(): Boolean {        
-        return this.aksjonspunkter.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any{it.defaultTotrinnBehandling}
+        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any{it.defaultTotrinnBehandling}
     }
 
     fun eventResultat(): EventResultat {
