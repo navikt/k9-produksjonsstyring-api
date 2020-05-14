@@ -6,17 +6,19 @@ import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import no.nav.k9.Configuration
 
 @KtorExperimentalLocationsAPI
-fun Route.KonfigApis(
+fun Route.KonfigApis(configuration: Configuration
 ) {
-    val k9sakUrl = "https://app-q1.adeo.no/k9/web"
+    val k9sakUrlDev = "https://app-q1.adeo.no/k9/web"
+    val k9sakUrlProd = "https://app.adeo.no/k9/web"
 
     @Location("/k9-sak-url")
     class hentK9SakUrl
 
     get { _: hentK9SakUrl ->
-        call.respond(Konfig(k9sakUrl))
+        if (configuration.erIDevFss) call.respond(Konfig(k9sakUrlDev)) else call.respond(Konfig(k9sakUrlProd))
     }
 }
 
