@@ -78,7 +78,15 @@ class AvdelingslederTjeneste(
     }
 
     fun fjernSaksbehandler(epost: String) {
-        return saksbehandlerRepository.slettSaksbehandler(epost)
+        saksbehandlerRepository.slettSaksbehandler(epost)
+        oppgaveKøRepository.hent().forEach { t: OppgaveKø ->
+            oppgaveKøRepository.lagre(t.id) { oppgaveKø ->
+                oppgaveKø!!.saksbehandlere =
+                    oppgaveKø.saksbehandlere.filter { saksbehandlerRepository.finnSaksbehandler(it.epost) != null }
+                        .toMutableList()
+                oppgaveKø
+            }
+        }
     }
 
     fun hentSaksbehandlere(): List<Saksbehandler> {
