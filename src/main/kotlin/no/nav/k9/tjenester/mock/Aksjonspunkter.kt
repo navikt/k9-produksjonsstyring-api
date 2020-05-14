@@ -23,7 +23,7 @@ data class Aksjonspunkt(
     val aksjonspunktype: String,
     val behandlingsstegtype: String,
     val plassering: String,
-    val vilkårtype: String,
+    val vilkårtype: String?,
     val totrinn: Boolean,
     var antall: Int = 0 
 )

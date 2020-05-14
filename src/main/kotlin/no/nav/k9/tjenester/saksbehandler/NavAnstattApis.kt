@@ -55,9 +55,9 @@ internal fun Route.NavAnsattApis(
                 if (saksbehandlerRepository.finnSaksbehandler(token.getUsername()) != null) {
                     saksbehandlerRepository.addSaksbehandler(
                         Saksbehandler(
-                            azureGraphService.hentIdentTilInnloggetBruker(),
-                            token.getName(),
-                            token.getUsername().toLowerCase()
+                            brukerIdent = azureGraphService.hentIdentTilInnloggetBruker(),
+                            navn = token.getName(),
+                            epost = token.getUsername().toLowerCase()
                         )
                     )
                 }
