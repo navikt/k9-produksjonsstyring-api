@@ -8,7 +8,7 @@ import no.nav.helse.dusseldorf.ktor.auth.withoutAdditionalClaimRules
 import no.nav.helse.dusseldorf.ktor.core.getOptionalString
 import no.nav.helse.dusseldorf.ktor.core.getRequiredString
 import no.nav.k9.db.createHikariConfig
-import no.nav.k9.kafka.KafkaConfig
+import no.nav.k9.integrasjon.kafka.KafkaConfig
 import java.net.URI
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -48,6 +48,14 @@ data class Configuration(private val config: ApplicationConfig) {
             ?: ""
     }
 
+    internal fun getStatistikkSakTopic(): String {
+        return config.getOptionalString("nav.kafka.statistikkSakTopic", secret = false)
+            ?: ""
+    }
+    internal fun getStatistikkBehandlingTopic(): String {
+        return config.getOptionalString("nav.kafka.statistikkBehandlingTopic", secret = false)
+            ?: ""
+    }
     internal fun getKafkaConfig() =
         config.getRequiredString("nav.kafka.bootstrap_servers", secret = false).let { bootstrapServers ->
             val trustStore = config.getRequiredString("nav.trust_store.path", secret = false).let { trustStorePath ->

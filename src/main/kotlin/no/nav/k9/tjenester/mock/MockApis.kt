@@ -14,9 +14,9 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.*
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.kafka.dto.BehandlingProsessEventDto
-import no.nav.k9.kafka.dto.EventHendelse
-import no.nav.k9.kafka.dto.Fagsystem
+import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.kafka.dto.EventHendelse
+import no.nav.k9.integrasjon.kafka.dto.Fagsystem
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*

@@ -17,9 +17,12 @@ data class Reservasjon(
         return if (aktiv && reservertTil!!.isAfter(LocalDateTime.now())) {
             true
         } else {
-            reservasjonRepository.lagre(oppgave) {
-                it!!.aktiv = false
-                it
+            if (aktiv) {
+                reservasjonRepository.lagre(oppgave) {
+                    it!!.aktiv = false
+                    it
+                }
+                aktiv = false
             }
             false
         }

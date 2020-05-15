@@ -11,7 +11,6 @@ import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.IdToken
@@ -21,14 +20,14 @@ import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.SaksbehandlerSakslisteApis(
+internal fun Route.SaksbehandlerOppgavekoApis(
     oppgaveTjeneste: OppgaveTjeneste,
     pepClient: PepClient,
     requestContextService: RequestContextService,
     configuration: Configuration,
     oppgaveKøRepository: OppgaveKøRepository
 ) {
-    @Location("/saksliste")
+    @Location("/oppgaveko")
     class getSakslister
 
     get { _: getSakslister ->
@@ -45,11 +44,11 @@ internal fun Route.SaksbehandlerSakslisteApis(
             ) {
                 val token = IdToken(idtoken.value)
                 if (pepClient.harBasisTilgang(token)) {
-                    
+
                     val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
                     val list = hentOppgaveKøer
                         .filter { oppgaveKø -> oppgaveKø.saksbehandlere
-                            .any { saksbehandler -> saksbehandler.epost == idtoken.getUsername() } }
+                            .any { saksbehandler -> saksbehandler.epost == idtoken.getUsername().toLowerCase() } }
                         .map { oppgaveKø ->
                         val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato)
 
@@ -61,6 +60,7 @@ internal fun Route.SaksbehandlerSakslisteApis(
                             saksbehandlere = oppgaveKø.saksbehandlere,
                             antallBehandlinger = oppgaveKø.oppgaver.size,
                             sistEndret = oppgaveKø.sistEndret,
+                            skjermet = oppgaveKø.skjermet,
                             sortering = sortering,
                             andreKriterier = oppgaveKø.filtreringAndreKriterierType
                         )
@@ -74,7 +74,7 @@ internal fun Route.SaksbehandlerSakslisteApis(
         }
     }
 
-    @Location("/saksliste/saksbehandlere")
+    @Location("/oppgaveko/saksbehandlere")
     class hentSakslistensSaksbehandlere
 
     get { _: hentSakslistensSaksbehandlere ->
@@ -98,6 +98,7 @@ private fun hentOppgavekøerLokalt(oppgaveTjeneste: OppgaveTjeneste): List<Oppga
             antallBehandlinger = oppgaveKø.oppgaver.size,
             sistEndret = oppgaveKø.sistEndret,
             sortering = sortering,
+            skjermet = oppgaveKø.skjermet,
             andreKriterier = oppgaveKø.filtreringAndreKriterierType
         )
 

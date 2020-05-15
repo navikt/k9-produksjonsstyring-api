@@ -35,6 +35,7 @@ class AvdelingslederTjeneste(
                 fagsakYtelseTyper = it.filtreringYtelseTyper,
                 andreKriterier = it.filtreringAndreKriterierType,
                 sistEndret = it.sistEndret,
+                skjermet = it.skjermet,
                 antallBehandlinger = it.oppgaver.size,
                 saksbehandlere = it.saksbehandlere
             )
@@ -67,7 +68,7 @@ class AvdelingslederTjeneste(
     }
 
     fun søkSaksbehandler(epostDto: EpostDto): Saksbehandler {
-        var saksbehandler = saksbehandlerRepository.finnSaksbehandler(epostDto.epost)
+        var saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedEpost(epostDto.epost)
         if (saksbehandler == null) {
             saksbehandler = Saksbehandler(
                 null, null, epostDto.epost
@@ -78,7 +79,15 @@ class AvdelingslederTjeneste(
     }
 
     fun fjernSaksbehandler(epost: String) {
-        return saksbehandlerRepository.slettSaksbehandler(epost)
+        saksbehandlerRepository.slettSaksbehandler(epost)
+        oppgaveKøRepository.hent().forEach { t: OppgaveKø ->
+            oppgaveKøRepository.lagre(t.id) { oppgaveKø ->
+                oppgaveKø!!.saksbehandlere =
+                    oppgaveKø.saksbehandlere.filter { saksbehandlerRepository.finnSaksbehandlerMedEpost(it.epost) != null }
+                        .toMutableList()
+                oppgaveKø
+            }
+        }
     }
 
     fun hentSaksbehandlere(): List<Saksbehandler> {
@@ -94,6 +103,14 @@ class AvdelingslederTjeneste(
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
+    }
+
+    fun endreSkjerming(skjermet: SkjermetDto) {
+        oppgaveKøRepository.lagre(UUID.fromString(skjermet.id)) { oppgaveKø ->
+            oppgaveKø!!.skjermet = skjermet.skjermet
+            oppgaveKø
+        }
+        oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(skjermet.id))
     }
 
     fun endreYtelsesType(ytelse: YtelsesTypeDto) {
@@ -148,7 +165,7 @@ class AvdelingslederTjeneste(
     }
 
     fun leggFjernSaksbehandlerOppgavekø(saksbehandlerKø: SaksbehandlerOppgavekoDto) {
-        val saksbehandler = saksbehandlerRepository.finnSaksbehandler(
+        val saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedEpost(
             saksbehandlerKø.epost
         )!!
         oppgaveKøRepository.lagre(UUID.fromString(saksbehandlerKø.id))

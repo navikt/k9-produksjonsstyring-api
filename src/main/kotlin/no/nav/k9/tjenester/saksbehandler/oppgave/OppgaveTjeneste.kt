@@ -8,9 +8,11 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
@@ -31,6 +33,7 @@ private val log: Logger =
 class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val oppgaveRepository: OppgaveRepository,
     private val oppgaveKøRepository: OppgaveKøRepository,
+    private val saksbehandlerRepository: SaksbehandlerRepository,
     private val pdlService: PdlService,
     private val reservasjonRepository: ReservasjonRepository,
     private val configuration: Configuration,
@@ -85,16 +88,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun hentReservasjon(uuid: UUID): Reservasjon {
         return reservasjonRepository.hent(uuid)
     }
-
-    /*   fun alder(pnr: String): Int {
-           val år = pnr.substring(4, 5).toInt()
-           val måned = pnr.substring(2, 3).toInt()
-           val dag = pnr.substring(0, 1).toInt()
-           val nå = LocalDate.now()
-   
-           val finalÅr = if (år in 0..nå.year) "20$år" else "19$år"
-   
-       } */
 
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
@@ -272,7 +265,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     } else {
                         person!!.data.hentPerson.navn[0].forkortetNavn
                     }
-                    
+
                     list.add(
                         OppgaveDto(
                             OppgaveStatusDto(false, null, false, null, null),
@@ -337,9 +330,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun hentSisteReserverteOppgaver(username: String): List<OppgaveDto> {
 
         val list = mutableListOf<OppgaveDto>()
-
         for (reservasjon in reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }
-            .filter { it.reservertAv?.toLowerCase() == username.toLowerCase() }) {
+            .filter { it.reservertAv == saksbehandlerRepository.finnSaksbehandlerMedEpost(username)!!.brukerIdent }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             val person = pdlService.person(oppgave.aktorId)
             if (person == null) {
@@ -347,7 +339,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 log.info("Ikke tilgang til bruker: ${oppgave.aktorId}")
                 continue
             }
-            val status = if (username == "alexaban") {
+            val status = if (username == "saksbehandler@nav.no") {
                 OppgaveStatusDto(
                     true,
                     reservasjon.reservertTil,
@@ -392,8 +384,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return list
     }
 
-    fun hentSaksbehandlerNavnOgAvdelinger(ident: String): SaksbehandlerinformasjonDto {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun sokSaksbehandlerMedIdent(ident: BrukerIdentDto): Saksbehandler? {
+        return saksbehandlerRepository.finnSaksbehandlerMedIdent(ident.brukerIdent)
     }
 
     fun hentNavnHvisReservertAvAnnenSaksbehandler(reservasjon: Reservasjon): String {
@@ -411,7 +403,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun settSkjermet(oppgave: Oppgave) {
         oppgaveRepository.lagre(oppgave.eksternId, f = { forrigeOppgave ->
             forrigeOppgave?.skjermet = true
-            log.info("setter ${forrigeOppgave.toString()} til skjermet")
             forrigeOppgave!!
         })
     }

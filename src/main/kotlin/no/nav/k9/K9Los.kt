@@ -37,10 +37,11 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
+import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
+import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
-import no.nav.k9.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
@@ -57,7 +58,7 @@ import no.nav.k9.tjenester.saksbehandler.TestApis
 import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
-import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
+import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
 import java.time.Duration
 import java.util.*
 import kotlin.system.measureTimeMillis
@@ -130,20 +131,27 @@ fun Application.k9Los() {
         )
 
 
-
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
     val sakOgBehadlingProducer = SakOgBehadlingProducer(
         kafkaConfig = configuration.getKafkaConfig(),
         config = configuration
     )
+
+    val statistikkProducer = StatistikkProducer(
+        kafkaConfig = configuration.getKafkaConfig(),
+        config = configuration
+    )
+
     val k9sakEventHandler = K9sakEventHandler(
         oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository
-        , config = configuration,
+        behandlingProsessEventRepository = behandlingProsessEventRepository,
+        config = configuration,
         sakOgBehadlingProducer = sakOgBehadlingProducer,
         oppgaveKøRepository = oppgaveKøRepository,
-        reservasjonRepository = reservasjonRepository
+        reservasjonRepository = reservasjonRepository,
+        saksbehandlerRepository = saksbehandlerRepository,
+        statistikkProducer = statistikkProducer
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
@@ -162,6 +170,7 @@ fun Application.k9Los() {
     val oppgaveTjeneste = OppgaveTjeneste(
         oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
+        saksbehandlerRepository = saksbehandlerRepository,
         reservasjonRepository = reservasjonRepository,
         pdlService = pdlService,
         configuration = configuration,
@@ -173,6 +182,7 @@ fun Application.k9Los() {
         log.info("Stopper AsynkronProsesseringV1Service.")
         asynkronProsesseringV1Service.stop()
         sakOgBehadlingProducer.stop()
+        statistikkProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
         job.cancel()
@@ -184,7 +194,7 @@ fun Application.k9Los() {
         oppgaveTjeneste
     )
     // Synkroniser oppgaver
-    launch  {
+    launch {
         log.info("Starter oppgavesynkronisering")
         val measureTimeMillis = measureTimeMillis {
             val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
@@ -225,7 +235,6 @@ fun Application.k9Los() {
 
         MetricsRoute()
         DefaultProbeRoutes()
-
 
         val healthService = HealthService(
             healthChecks = asynkronProsesseringV1Service.isReadyChecks()
@@ -336,7 +345,12 @@ private fun Route.api(
     reservasjonRepository: ReservasjonRepository
 ) {
     route("api") {
-        AdminApis(behandlingProsessEventRepository =eventRepository , oppgaveRepository = oppgaveRepository, reservasjonRepository = reservasjonRepository, oppgaveKøRepository = oppgaveKøRepository)
+        AdminApis(
+            behandlingProsessEventRepository = eventRepository,
+            oppgaveRepository = oppgaveRepository,
+            reservasjonRepository = reservasjonRepository,
+            oppgaveKøRepository = oppgaveKøRepository
+        )
         route("fagsak") {
             FagsakApis(
                 oppgaveTjeneste = oppgaveTjeneste,
@@ -350,11 +364,12 @@ private fun Route.api(
                 OppgaveApis(
                     configuration = configuration,
                     requestContextService = requestContextService,
-                    oppgaveTjeneste = oppgaveTjeneste
+                    oppgaveTjeneste = oppgaveTjeneste,
+                    saksbehandlerRepository = saksbehhandlerRepository
                 )
             }
 
-            SaksbehandlerSakslisteApis(
+            SaksbehandlerOppgavekoApis(
                 configuration = configuration,
                 oppgaveTjeneste = oppgaveTjeneste,
                 pepClient = pepClient,

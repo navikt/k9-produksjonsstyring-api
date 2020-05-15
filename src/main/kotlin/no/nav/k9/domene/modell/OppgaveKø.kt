@@ -20,6 +20,7 @@ data class OppgaveKø(
     var fomDato: LocalDate,
     var tomDato: LocalDate,
     var saksbehandlere: MutableList<Saksbehandler>,
+    var skjermet: Boolean = false,
 //    val tilBeslutter: Boolean,
 //    val utbetalingTilBruker: Boolean,
 //    val selvstendigFrilans: Boolean,
@@ -65,6 +66,10 @@ data class OppgaveKø(
             return false
         }
 
+        if (oppgave.skjermet != this.skjermet) {
+            return false
+        }
+        
         if (filtreringAndreKriterierType.isEmpty()) {
             return true
         }
@@ -163,9 +168,8 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     UTLANDSSAK("UTLANDSSAK", "Utland"),
     SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
-    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
-    SKJERMET("SKJERMET", "Skjermet");
-
+    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans");
+    
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
     companion object {
@@ -223,15 +227,14 @@ enum class BehandlingType(override val kode: String, override val navn: String,o
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum class BehandlingStatus(override val kode: String) : Kodeverdi {
-    AVSLUTTET("AVSLU"),
-    FATTER_VEDTAK("FVED"),
-    IVERKSETTER_VEDTAK("IVED"),
-    OPPRETTET("OPPRE"),
-    UTREDES("UTRED");
+enum class BehandlingStatus(override val kode: String, override val navn: String) : Kodeverdi {
+    AVSLUTTET("AVSLU", "Avsluttet"),
+    FATTER_VEDTAK("FVED", "Fatter vedtak"),
+    IVERKSETTER_VEDTAK("IVED", "Iverksetter vedtak"),
+    OPPRETTET("OPPRE", "Opprettet"),
+    UTREDES("UTRED", "Utredes");
 
     override val kodeverk = "BEHANDLING_TYPE"
-    override val navn = ""
 
     companion object {
         @JsonCreator

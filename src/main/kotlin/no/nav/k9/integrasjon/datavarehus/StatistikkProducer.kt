@@ -1,4 +1,4 @@
-package no.nav.k9.integrasjon.sakogbehandling
+package no.nav.k9.integrasjon.datavarehus
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
@@ -10,8 +10,8 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.kafka.KafkaConfig
 import no.nav.k9.integrasjon.kafka.TopicEntry
 import no.nav.k9.integrasjon.kafka.TopicUse
-import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
-import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
+import no.nav.k9.statistikk.kontrakter.Behandling
+import no.nav.k9.statistikk.kontrakter.Sak
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
@@ -19,19 +19,24 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 
-class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
+class StatistikkProducer @KtorExperimentalAPI constructor(
     val kafkaConfig: KafkaConfig,
     val config: Configuration
 ) : HealthCheck {
     @KtorExperimentalAPI
-    private val TOPIC_USE_SAK_OG_BEHANDLING = TopicUse(
-        name = config.getSakOgBehandlingTopic(),
-        valueSerializer = SakOgBehandlingSerialier()
+    private val TOPIC_USE_STATISTIKK_SAK = TopicUse(
+        name = config.getStatistikkSakTopic(),
+        valueSerializer = Serializer()
+    )
+    @KtorExperimentalAPI
+    private val TOPIC_USE_STATISTIKK_BEHANDLING = TopicUse(
+        name = config.getStatistikkBehandlingTopic(),
+        valueSerializer = Serializer()
     )
     private companion object {
-        private val NAME = "SakOgBehadlingProducer"
+        private val NAME = "StatistikkProducer"
       
-        private val logger = LoggerFactory.getLogger(SakOgBehadlingProducer::class.java)
+        private val logger = LoggerFactory.getLogger(StatistikkProducer::class.java)
     }
 
     private val producer: KafkaProducer<String, String> = KafkaProducer(
@@ -41,33 +46,32 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
     )
 
     @KtorExperimentalAPI
-    internal fun opprettetBehandlng(
-        behandlingOpprettet: BehandlingOpprettet
+    internal fun sendSak(
+        sak: Sak
     ) {
-        val melding = objectMapper().writeValueAsString(behandlingOpprettet)
+        val melding = objectMapper().writeValueAsString(sak)
         val recordMetaData = producer.send(
            ProducerRecord(
-                TOPIC_USE_SAK_OG_BEHANDLING.name,
+                TOPIC_USE_STATISTIKK_SAK.name,
                melding
             )
         ).get()
-        logger.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        logger.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
         logger.info("StartetBehandling: $melding")
     }
 
     @KtorExperimentalAPI
-    internal fun avsluttetBehandling(
-        behandlingAvsluttet: BehandlingAvsluttet
+    internal fun sendBehandling(
+        behandling: Behandling
     ) {
-
-        val melding = objectMapper().writeValueAsString(behandlingAvsluttet)
+        val melding = objectMapper().writeValueAsString(behandling)
         val recordMetaData = producer.send(
             ProducerRecord(
-                TOPIC_USE_SAK_OG_BEHANDLING.name,
+                TOPIC_USE_STATISTIKK_BEHANDLING.name,
                 melding
             )
         ).get()
-        logger.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        logger.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
         logger.info("AvsluttetBehandling: $melding")
     }
 
@@ -75,19 +79,27 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
     internal fun stop() = producer.close()
     @KtorExperimentalAPI
     override suspend fun check(): Result {
-        return try {
-            producer.partitionsFor(TOPIC_USE_SAK_OG_BEHANDLING.name)
+        val result = try {
+            producer.partitionsFor(TOPIC_USE_STATISTIKK_SAK.name)
             Healthy(NAME, "Tilkobling til Kafka OK!")
         } catch (cause: Throwable) {
             logger.error("Feil ved tilkobling til Kafka", cause)
             UnHealthy(NAME, "Feil ved tilkobling mot Kafka. ${cause.message}")
         }
+
+       try {
+            producer.partitionsFor(TOPIC_USE_STATISTIKK_BEHANDLING.name)
+            Healthy(NAME, "Tilkobling til Kafka OK!")
+        } catch (cause: Throwable) {
+            logger.error("Feil ved tilkobling til Kafka", cause)
+            return UnHealthy(NAME, "Feil ved tilkobling mot Kafka. ${cause.message}")
+        }
+        return result
     }
 
 }
 
-private class SakOgBehandlingSerialier :
-    Serializer<TopicEntry<JSONObject>> {
+private class Serializer : Serializer<TopicEntry<JSONObject>> {
     override fun serialize(topic: String, data: TopicEntry<JSONObject>): ByteArray {
         val metadata = JSONObject()
             .put("correlation_id", data.metadata.correlationId)

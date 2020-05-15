@@ -52,7 +52,7 @@ internal fun Route.NavAnsattApis(
                     kanBehandleKode7 = pepClient.harBasisTilgang(token),
                     kanOppgavestyre = pepClient.erOppgaveStyrer(token)
                 )
-                if (saksbehandlerRepository.finnSaksbehandler(token.getUsername()) != null) {
+                if (saksbehandlerRepository.finnSaksbehandlerMedEpost(token.getUsername()) != null) {
                     saksbehandlerRepository.addSaksbehandler(
                         Saksbehandler(
                             brukerIdent = azureGraphService.hentIdentTilInnloggetBruker(),
@@ -68,7 +68,7 @@ internal fun Route.NavAnsattApis(
         } else {
             call.respond(
                 InnloggetNavAnsattDto(
-                    "alexaban",
+                    "saksbehandler@nav.no",
                     "Saksbehandler Sara",
                     kanSaksbehandle = true,
                     kanVeilede = true,
