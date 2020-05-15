@@ -14,7 +14,6 @@ data class Reservasjon(
     val oppgave: UUID
 ) {
     fun erAktiv(reservasjonRepository: ReservasjonRepository): Boolean {
-        
         return if (aktiv && reservertTil!!.isAfter(LocalDateTime.now())) {
             true
         } else {
