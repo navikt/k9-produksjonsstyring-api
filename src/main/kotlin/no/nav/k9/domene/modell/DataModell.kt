@@ -1,8 +1,8 @@
 package no.nav.k9.domene.modell
 
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.kafka.dto.BehandlingProsessEventDto
-import no.nav.k9.kafka.dto.EventHendelse
+import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -11,7 +11,6 @@ import java.util.*
 data class Modell(
     val eventer: List<BehandlingProsessEventDto>
 ) {
-  
     fun oppgave(): Oppgave {
         val event = sisteEvent()
         val eventResultat = sisteEvent().aktiveAksjonspunkt().eventResultat()

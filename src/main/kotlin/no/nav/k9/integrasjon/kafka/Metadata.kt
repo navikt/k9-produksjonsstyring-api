@@ -1,4 +1,4 @@
-package no.nav.k9.kafka
+package no.nav.k9.integrasjon.kafka
 
 data class Metadata(
     val version: Int,

@@ -1,4 +1,4 @@
-package no.nav.k9.kafka.dto
+package no.nav.k9.integrasjon.kafka.dto
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize

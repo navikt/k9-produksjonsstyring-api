@@ -11,7 +11,7 @@ import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
-import no.nav.k9.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.ZoneId

@@ -16,7 +16,7 @@ import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.gosys.GosysOppgave
 import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
-import no.nav.k9.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 import java.util.*
