@@ -52,8 +52,8 @@ class SaksbehandlerRepository(
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select * from saksbehandler where saksbehandlerid = :ident",
-                    mapOf("ident" to ident.toLowerCase())
+                    "select * from saksbehandler where lower(saksbehandlerid) = lower(:ident)",
+                    mapOf("ident" to ident)
                 )
                     .map { row ->
                         Saksbehandler(
