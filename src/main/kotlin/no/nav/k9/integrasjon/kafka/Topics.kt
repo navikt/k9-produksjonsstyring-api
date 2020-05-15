@@ -1,4 +1,4 @@
-package no.nav.k9.kafka
+package no.nav.k9.integrasjon.kafka
 
 import org.apache.kafka.common.serialization.Serializer
 import org.apache.kafka.common.serialization.StringSerializer

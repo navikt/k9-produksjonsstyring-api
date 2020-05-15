@@ -5,7 +5,7 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.Modell
-import no.nav.k9.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import java.util.*
 import javax.sql.DataSource
 

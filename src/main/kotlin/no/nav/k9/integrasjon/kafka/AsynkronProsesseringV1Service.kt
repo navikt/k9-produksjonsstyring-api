@@ -1,4 +1,4 @@
-package no.nav.k9.kafka
+package no.nav.k9.integrasjon.kafka
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration

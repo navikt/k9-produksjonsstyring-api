@@ -45,7 +45,7 @@ internal fun Route.SaksbehandlerSakslisteApis(
             ) {
                 val token = IdToken(idtoken.value)
                 if (pepClient.harBasisTilgang(token)) {
-                    
+
                     val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
                     val list = hentOppgaveKøer
                         .filter { oppgaveKø -> oppgaveKø.saksbehandlere
@@ -61,6 +61,7 @@ internal fun Route.SaksbehandlerSakslisteApis(
                             saksbehandlere = oppgaveKø.saksbehandlere,
                             antallBehandlinger = oppgaveKø.oppgaver.size,
                             sistEndret = oppgaveKø.sistEndret,
+                            skjermet = oppgaveKø.skjermet,
                             sortering = sortering,
                             andreKriterier = oppgaveKø.filtreringAndreKriterierType
                         )
@@ -98,6 +99,7 @@ private fun hentOppgavekøerLokalt(oppgaveTjeneste: OppgaveTjeneste): List<Oppga
             antallBehandlinger = oppgaveKø.oppgaver.size,
             sistEndret = oppgaveKø.sistEndret,
             sortering = sortering,
+            skjermet = oppgaveKø.skjermet,
             andreKriterier = oppgaveKø.filtreringAndreKriterierType
         )
 

@@ -12,6 +12,7 @@ class OppgavekøDto(
     var behandlingTyper: MutableList<BehandlingType>,
     var fagsakYtelseTyper: MutableList<FagsakYtelseType>,
     var andreKriterier: MutableList<AndreKriterierType>,
+    var skjermet: Boolean,
     var sistEndret: LocalDate,
     var antallBehandlinger: Int,
     var saksbehandlere: MutableList<Saksbehandler>

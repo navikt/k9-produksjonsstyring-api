@@ -20,6 +20,7 @@ data class OppgaveKø(
     var fomDato: LocalDate,
     var tomDato: LocalDate,
     var saksbehandlere: MutableList<Saksbehandler>,
+    var skjermet: Boolean = false,
 //    val tilBeslutter: Boolean,
 //    val utbetalingTilBruker: Boolean,
 //    val selvstendigFrilans: Boolean,
@@ -65,6 +66,10 @@ data class OppgaveKø(
             return false
         }
 
+        if (oppgave.skjermet != this.skjermet) {
+            return false
+        }
+        
         if (filtreringAndreKriterierType.isEmpty()) {
             return true
         }
@@ -163,9 +168,8 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     UTLANDSSAK("UTLANDSSAK", "Utland"),
     SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
-    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
-    SKJERMET("SKJERMET", "Skjermet");
-
+    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans");
+    
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
     companion object {

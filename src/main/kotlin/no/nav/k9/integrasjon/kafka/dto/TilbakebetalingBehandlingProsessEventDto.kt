@@ -1,4 +1,4 @@
-package no.nav.k9.kafka.dto
+package no.nav.k9.integrasjon.kafka.dto
 
 import java.math.BigDecimal
 import java.time.LocalDate

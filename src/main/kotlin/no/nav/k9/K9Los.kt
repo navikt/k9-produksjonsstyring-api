@@ -40,7 +40,7 @@ import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
-import no.nav.k9.kafka.AsynkronProsesseringV1Service
+import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste

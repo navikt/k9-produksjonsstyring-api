@@ -8,7 +8,7 @@ import no.nav.helse.dusseldorf.ktor.auth.withoutAdditionalClaimRules
 import no.nav.helse.dusseldorf.ktor.core.getOptionalString
 import no.nav.helse.dusseldorf.ktor.core.getRequiredString
 import no.nav.k9.db.createHikariConfig
-import no.nav.k9.kafka.KafkaConfig
+import no.nav.k9.integrasjon.kafka.KafkaConfig
 import java.net.URI
 import java.time.Duration
 import java.time.temporal.ChronoUnit

@@ -411,7 +411,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun settSkjermet(oppgave: Oppgave) {
         oppgaveRepository.lagre(oppgave.eksternId, f = { forrigeOppgave ->
             forrigeOppgave?.skjermet = true
-            log.info("setter ${forrigeOppgave.toString()} til skjermet")
             forrigeOppgave!!
         })
     }

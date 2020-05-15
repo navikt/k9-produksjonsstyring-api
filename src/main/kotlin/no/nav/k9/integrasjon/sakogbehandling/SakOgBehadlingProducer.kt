@@ -9,9 +9,9 @@ import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
-import no.nav.k9.kafka.KafkaConfig
-import no.nav.k9.kafka.TopicEntry
-import no.nav.k9.kafka.TopicUse
+import no.nav.k9.integrasjon.kafka.KafkaConfig
+import no.nav.k9.integrasjon.kafka.TopicEntry
+import no.nav.k9.integrasjon.kafka.TopicUse
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
