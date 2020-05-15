@@ -21,14 +21,14 @@ import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.SaksbehandlerSakslisteApis(
+internal fun Route.SaksbehandlerOppgavekoApis(
     oppgaveTjeneste: OppgaveTjeneste,
     pepClient: PepClient,
     requestContextService: RequestContextService,
     configuration: Configuration,
     oppgaveKøRepository: OppgaveKøRepository
 ) {
-    @Location("/saksliste")
+    @Location("/oppgaveko")
     class getSakslister
 
     get { _: getSakslister ->
@@ -75,7 +75,7 @@ internal fun Route.SaksbehandlerSakslisteApis(
         }
     }
 
-    @Location("/saksliste/saksbehandlere")
+    @Location("/oppgaveko/saksbehandlere")
     class hentSakslistensSaksbehandlere
 
     get { _: hentSakslistensSaksbehandlere ->

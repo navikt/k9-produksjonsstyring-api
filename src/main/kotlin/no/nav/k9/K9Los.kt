@@ -57,7 +57,7 @@ import no.nav.k9.tjenester.saksbehandler.TestApis
 import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
-import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerSakslisteApis
+import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
 import java.time.Duration
 import java.util.*
 import kotlin.system.measureTimeMillis
@@ -162,6 +162,7 @@ fun Application.k9Los() {
     val oppgaveTjeneste = OppgaveTjeneste(
         oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
+        saksbehandlerRepository = saksbehandlerRepository,
         reservasjonRepository = reservasjonRepository,
         pdlService = pdlService,
         configuration = configuration,
@@ -354,7 +355,7 @@ private fun Route.api(
                 )
             }
 
-            SaksbehandlerSakslisteApis(
+            SaksbehandlerOppgavekoApis(
                 configuration = configuration,
                 oppgaveTjeneste = oppgaveTjeneste,
                 pepClient = pepClient,

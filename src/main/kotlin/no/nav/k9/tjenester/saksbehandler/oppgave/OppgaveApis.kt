@@ -11,6 +11,7 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
@@ -77,7 +78,7 @@ internal fun Route.OppgaveApis(
                 call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
-            call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
+            call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
         }
     }
 
@@ -96,7 +97,7 @@ internal fun Route.OppgaveApis(
                 call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
-            call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("alexaban"))
+            call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
         }
     }
 
@@ -133,7 +134,7 @@ internal fun Route.OppgaveApis(
                 )
             }
         } else {
-            call.respond(oppgaveTjeneste.reserverOppgave("alexaban", UUID.fromString(oppgaveId.oppgaveId)))
+            call.respond(oppgaveTjeneste.reserverOppgave("saksbehandler@nav.no", UUID.fromString(oppgaveId.oppgaveId)))
         }
     }
 
@@ -161,10 +162,18 @@ internal fun Route.OppgaveApis(
         call.respond(
             oppgaveTjeneste.flyttReservasjon(
                 UUID.fromString(params.oppgaveId),
-                params.brukernavn,
+                params.brukerIdent,
                 params.begrunnelse
             )
         )
+    }
+
+    @Location("/flytt/sok")
+    class søkSaksbehandler
+
+    post { _: søkSaksbehandler ->
+        val params = call.receive<BrukerIdentDto>()
+        call.respond(oppgaveTjeneste.sokSaksbehandlerMedIdent(params)!!)
     }
 
     @Location("/oppgaver-for-fagsaker")

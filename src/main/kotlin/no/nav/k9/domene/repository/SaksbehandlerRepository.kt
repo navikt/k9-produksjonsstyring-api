@@ -30,12 +30,30 @@ class SaksbehandlerRepository(
         }
     }
 
-    fun finnSaksbehandler(epost: String): Saksbehandler? {
+    fun finnSaksbehandlerMedEpost(epost: String): Saksbehandler? {
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select * from saksbehandler where epost = :epost",
                     mapOf("epost" to epost.toLowerCase())
+                )
+                    .map { row ->
+                        Saksbehandler(
+                            row.stringOrNull("saksbehandlerid"),
+                            row.stringOrNull("navn"),
+                            row.string("epost").toLowerCase())
+                    }.asSingle
+            )
+        }
+        return saksbehandler
+    }
+
+    fun finnSaksbehandlerMedIdent(ident: String): Saksbehandler? {
+        val saksbehandler = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select * from saksbehandler where saksbehandlerid = :ident",
+                    mapOf("ident" to ident.toLowerCase())
                 )
                     .map { row ->
                         Saksbehandler(
