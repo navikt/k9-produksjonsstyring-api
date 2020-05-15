@@ -11,7 +11,6 @@ import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.IdToken
@@ -49,7 +48,7 @@ internal fun Route.SaksbehandlerOppgavekoApis(
                     val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
                     val list = hentOppgaveKøer
                         .filter { oppgaveKø -> oppgaveKø.saksbehandlere
-                            .any { saksbehandler -> saksbehandler.epost == idtoken.getUsername() } }
+                            .any { saksbehandler -> saksbehandler.epost == idtoken.getUsername().toLowerCase() } }
                         .map { oppgaveKø ->
                         val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato)
 

@@ -17,12 +17,9 @@ import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.modell.*
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 import java.time.LocalDate
@@ -43,7 +40,7 @@ class RutinerTest {
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert
         )
-
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource=dataSource)
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(uuid) {
             OppgaveKø(
@@ -79,7 +76,8 @@ class RutinerTest {
             config = config,
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
-            reservasjonRepository = reservasjonRepository
+            reservasjonRepository = reservasjonRepository,
+            saksbehandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =

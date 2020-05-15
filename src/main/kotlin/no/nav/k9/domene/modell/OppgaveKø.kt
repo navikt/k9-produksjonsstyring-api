@@ -227,15 +227,14 @@ enum class BehandlingType(override val kode: String, override val navn: String,o
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum class BehandlingStatus(override val kode: String) : Kodeverdi {
-    AVSLUTTET("AVSLU"),
-    FATTER_VEDTAK("FVED"),
-    IVERKSETTER_VEDTAK("IVED"),
-    OPPRETTET("OPPRE"),
-    UTREDES("UTRED");
+enum class BehandlingStatus(override val kode: String, override val navn: String) : Kodeverdi {
+    AVSLUTTET("AVSLU", "Avsluttet"),
+    FATTER_VEDTAK("FVED", "Fatter vedtak"),
+    IVERKSETTER_VEDTAK("IVED", "Iverksetter vedtak"),
+    OPPRETTET("OPPRE", "Opprettet"),
+    UTREDES("UTRED", "Utredes");
 
     override val kodeverk = "BEHANDLING_TYPE"
-    override val navn = ""
 
     companion object {
         @JsonCreator

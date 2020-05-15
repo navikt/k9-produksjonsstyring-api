@@ -48,6 +48,14 @@ data class Configuration(private val config: ApplicationConfig) {
             ?: ""
     }
 
+    internal fun getStatistikkSakTopic(): String {
+        return config.getOptionalString("nav.kafka.statistikkSakTopic", secret = false)
+            ?: ""
+    }
+    internal fun getStatistikkBehandlingTopic(): String {
+        return config.getOptionalString("nav.kafka.statistikkBehandlingTopic", secret = false)
+            ?: ""
+    }
     internal fun getKafkaConfig() =
         config.getRequiredString("nav.kafka.bootstrap_servers", secret = false).let { bootstrapServers ->
             val trustStore = config.getRequiredString("nav.trust_store.path", secret = false).let { trustStorePath ->
