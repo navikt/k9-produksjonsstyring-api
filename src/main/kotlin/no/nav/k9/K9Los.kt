@@ -364,7 +364,8 @@ private fun Route.api(
                 OppgaveApis(
                     configuration = configuration,
                     requestContextService = requestContextService,
-                    oppgaveTjeneste = oppgaveTjeneste
+                    oppgaveTjeneste = oppgaveTjeneste,
+                    saksbehandlerRepository = saksbehhandlerRepository
                 )
             }
 
