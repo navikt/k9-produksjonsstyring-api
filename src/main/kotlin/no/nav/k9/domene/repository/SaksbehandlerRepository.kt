@@ -30,12 +30,12 @@ class SaksbehandlerRepository(
         }
     }
 
-    fun finnSaksbehandler(epost: String): Saksbehandler? {
+    fun finnSaksbehandler(epost: String?): Saksbehandler? {
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select * from saksbehandler where epost = :epost",
-                    mapOf("epost" to epost.toLowerCase())
+                    mapOf("epost" to epost?.toLowerCase())
                 )
                     .map { row ->
                         Saksbehandler(

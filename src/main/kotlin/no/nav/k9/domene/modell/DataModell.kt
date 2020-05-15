@@ -1,11 +1,18 @@
 package no.nav.k9.domene.modell
 
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
+import no.nav.k9.statistikk.kontrakter.Aktør
+import no.nav.k9.statistikk.kontrakter.Behandling
+import no.nav.k9.statistikk.kontrakter.Sak
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.util.*
 
 data class Modell(
@@ -66,7 +73,7 @@ data class Modell(
             system = event.fagsystem.name,
             oppgaveEgenskap = emptyList(),
             aksjonspunkter = event.aktiveAksjonspunkt(),
-            utenlands = event.aktiveAksjonspunkt().liste.any { entry -> (entry.key == "5068" || entry.key == "6068") && entry.value != "AVBR" }, 
+            utenlands = event.aktiveAksjonspunkt().liste.any { entry -> (entry.key == "5068" || entry.key == "6068") && entry.value != "AVBR" },
             tilBeslutter = beslutterOppgave,
             kombinert = false,
             registrerPapir = registrerPapir,
@@ -89,6 +96,79 @@ data class Modell(
         return this.eventer.isEmpty()
     }
 
+    fun dvhSak(): Sak {
+        val oppgave = oppgave()
+        val zone = ZoneId.of("Europe/Oslo")
+        return Sak(
+            saksnummer = oppgave.fagsakSaksnummer,
+            sakId = oppgave.fagsakSaksnummer,
+            funksjonellTid = sisteEvent().eventTid.atOffset(zone.rules.getOffset(sisteEvent().eventTid)),
+            tekniskTid = OffsetDateTime.now(),
+            opprettetDato = oppgave.behandlingOpprettet.toLocalDate(),
+            aktorId = oppgave.aktorId.toLong(),
+            aktorer = listOf(Aktør(oppgave.aktorId.toLong(), "Søker", "Søker")),
+            ytelseType = oppgave.fagsakYtelseType.navn,
+            underType = null,
+            sakStatus = oppgave.behandlingStatus.navn,
+            ytelseTypeBeskrivelse = null,
+            underTypeBeskrivelse = null,
+            sakStatusBeskrivelse = null,
+            avsender = "K9sak",
+            versjon = null
+        )
+    }
+
+    fun dvhBehandling(
+        saksbehandlerRepository: SaksbehandlerRepository,
+        reservasjonRepository: ReservasjonRepository
+    ): Behandling {
+        val oppgave = oppgave()
+        val beslutter = if (oppgave.tilBeslutter) {
+            val saksbehandler =
+                saksbehandlerRepository.finnSaksbehandler(reservasjonRepository.hent(oppgave.eksternId).reservertAv)
+            saksbehandler?.brukerIdent
+        } else {
+            ""
+        }
+        val zone = ZoneId.of("Europe/Oslo")
+        return Behandling(
+            sakId = oppgave.fagsakSaksnummer,
+            behandlingId = oppgave.behandlingId.toString(),
+            funksjonellTid = sisteEvent().eventTid.atOffset(zone.rules.getOffset(sisteEvent().eventTid)),
+            tekniskTid = OffsetDateTime.now(),
+            mottattDato = oppgave.behandlingOpprettet.toLocalDate(),
+            registrertDato = oppgave.behandlingOpprettet.toLocalDate(),
+            vedtaksDato = null,
+            relatertBehandlingId = null,
+            vedtakId = null,
+            saksnummer = oppgave.fagsakSaksnummer,
+            behandlingType = oppgave.behandlingType.navn,
+            behandlingStatus = oppgave.behandlingStatus.navn,
+            resultat = null,
+            resultatBegrunnelse = null,
+            utenlandstilsnitt = oppgave.utenlands.toString(),
+            behandlingTypeBeskrivelse = null,
+            behandlingStatusBeskrivelse = null,
+            resultatBeskrivelse = null,
+            resultatBegrunnelseBeskrivelse = null,
+            utenlandstilsnittBeskrivelse = null,
+            beslutter = beslutter,
+            saksbehandler = null,
+            behandlingOpprettetAv = "system",
+            behandlingOpprettetType = null,
+            behandlingOpprettetTypeBeskrivelse = null,
+            ansvarligEnhetKode = oppgave.behandlendeEnhet,
+            ansvarligEnhetType = "NORG",
+            behandlendeEnhetKode = oppgave.behandlendeEnhet,
+            behandlendeEnhetType = "NORG",
+            datoForUttak = null,
+            datoForUtbetaling = null,
+            totrinnsbehandling = oppgave.tilBeslutter,
+            avsender = "K9sak",
+            versjon = null
+        )
+    }
+
 }
 
 fun BehandlingProsessEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
@@ -101,15 +181,15 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     }
 
     fun påVent(): Boolean {
-        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any{it.erAutopunkt()}
+        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any { it.erAutopunkt() }
     }
 
     fun erTom(): Boolean {
         return this.liste.isEmpty()
     }
 
-    fun tilBeslutter(): Boolean {        
-        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any{it.defaultTotrinnBehandling}
+    fun tilBeslutter(): Boolean {
+        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any { it.defaultTotrinnBehandling }
     }
 
     fun eventResultat(): EventResultat {

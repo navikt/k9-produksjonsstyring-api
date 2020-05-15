@@ -58,15 +58,7 @@ dependencies {
     
     // Kontrakter
     implementation("no.nav.k9.sak:kodeverk:3.1.0-20200513213126-09f2048")
-    
-    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:${cxf}")
-    implementation("org.apache.cxf:cxf-rt-features-logging:${cxf}")
-    implementation("org.apache.cxf:cxf-rt-transports-http:${cxf}")
-    implementation("org.apache.cxf:cxf-rt-ws-security:${cxf}")
-    implementation("org.apache.ws.xmlschema:xmlschema-core:2.2.4") // Force newer version of XMLSchema to fix illegal reflective access warning
-    implementation("com.sun.xml.ws:jaxws-tools:${jaxwsTools}") {
-        exclude(group = "com.sun.xml.ws", module = "policy")
-    }
+    implementation("no.nav.k9.statistikk:kontrakter:2.0_20200514170610_720949d")
 
     // Div
     implementation("info.debatty:java-string-similarity:1.2.1")
