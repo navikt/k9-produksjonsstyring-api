@@ -34,6 +34,7 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
         
     @KtorExperimentalAPI
     suspend fun erOppgaveStyrer(idToken: IdToken): Boolean {
+        log.info("Sjekker oppgavestyrer")
         val cachedResponse = abacCache.hasAccess(idToken, OPPGAVESTYRER, OPPGAVESTYRER )
         if (cachedResponse != null) {
             return cachedResponse
