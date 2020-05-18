@@ -39,7 +39,20 @@ class ReservasjonRepository(private val dataSource: DataSource) {
             )
         }
         return objectMapper().readValue(json!!, Reservasjon::class.java)
+    }
 
+    fun finnes(id: UUID): Boolean {
+        val json: String? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon where id = :id",
+                    mapOf("id" to id.toString())
+                ).map { row ->
+                    row.string("data")
+                }.asSingle
+            )
+        }
+        return json!= null
     }
 
     fun lagre(uuid: UUID, f: (Reservasjon?) -> Reservasjon): Reservasjon {

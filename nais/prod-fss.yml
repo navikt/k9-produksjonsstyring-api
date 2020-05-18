@@ -79,9 +79,9 @@ spec:
     - name: KAFKA_SAKOGBEHANDLING_TOPIC
       value: aapen-sob-oppgaveHendelse-v1
     - name: KAFKA_STATISTIKK_SAK_TOPIC
-      value: aapen-k9statistikk-sak-v1
+      value: privat-k9statistikk-sak-v1
     - name: KAFKA_STATISTIKK_BEHANDLING_TOPIC
-      value: aapen-k9statistikk-behandling-v1
+      value: privat-k9statistikk-behandling-v1
       
       # ABAC
     - name: ABAC_PDP_ENDPOINT_URL

@@ -22,7 +22,6 @@ import java.time.Duration
 import java.util.*
 
 private val gson = GsonBuilder().setPrettyPrinting().create()
-private val abacCache = AbacCache()
 
 private const val XACML_CONTENT_TYPE = "application/xacml+json"
 private const val DOMENE = "k9"
@@ -34,10 +33,6 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
         
     @KtorExperimentalAPI
     suspend fun erOppgaveStyrer(idToken: IdToken): Boolean {
-        val cachedResponse = abacCache.hasAccess(idToken, OPPGAVESTYRER, OPPGAVESTYRER )
-        if (cachedResponse != null) {
-            return cachedResponse
-        }
         val requestBuilder = XacmlRequestBuilder()
             .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
@@ -47,16 +42,11 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
         val decision = evaluate(requestBuilder)
-        abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, OPPGAVESTYRER, decision)
         return decision
     }
 
     @KtorExperimentalAPI
     suspend fun harBasisTilgang(idToken: IdToken): Boolean {
-        val cachedResponse = abacCache.hasAccess(idToken, BASIS_TILGANG, BASIS_TILGANG )
-        if (cachedResponse != null) {
-            return cachedResponse
-        }
         
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
@@ -67,7 +57,6 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
         val decision =  evaluate(requestBuilder)
-        abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, OPPGAVESTYRER, decision)
         return decision
     }
 
@@ -77,11 +66,7 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
         idToken: IdToken,
         fagsakNummer: String
     ): Boolean {
-        val cachedResponse = abacCache.hasAccess(idToken, LESETILGANG_SAK, "read" )
-        if (cachedResponse != null) {
-            return cachedResponse
-        }
-
+      
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, LESETILGANG_SAK)
@@ -92,7 +77,6 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
             .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
 
         val decision =  evaluate(requestBuilder)
-        abacCache.storeResultOfLookup(idToken, OPPGAVESTYRER, "read" , decision)
         return decision
     }
 
@@ -136,7 +120,7 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
                     }
                 )
             }
-           // log.info("abac result: $json \n\n $xacmlJson")
+            // log.info("abac result: $json \n\n $xacmlJson")
             try {
                 objectMapper().readValue<Response>(json).response[0].decision == "Permit"
             } catch (e: Exception) {
