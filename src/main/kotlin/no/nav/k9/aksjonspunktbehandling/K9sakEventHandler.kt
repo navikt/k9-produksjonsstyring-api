@@ -54,7 +54,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 behandlingAvsluttet(modell, sakOgBehadlingProducer)
             }
 
-            if (false &&config.erIDevFss) {
+            if (config.erIDevFss) {
                 statistikkProducer.sendSak(modell.dvhSak())
                 statistikkProducer.sendBehandling(
                     modell.dvhBehandling(
