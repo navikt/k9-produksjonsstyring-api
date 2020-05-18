@@ -53,8 +53,12 @@ data class Modell(
         if (event.eventHendelse == EventHendelse.AKSJONSPUNKT_AVBRUTT || event.eventHendelse == EventHendelse.AKSJONSPUNKT_UTFØRT) {
             aktiv = false
         }
+        if ( FagsakYtelseType.fraKode(event.ytelseTypeKode) == FagsakYtelseType.FRISINN) {
+            aktiv = false
+        }
         var behandlingStatus = event.behandlingStatus
-        behandlingStatus = behandlingStatus ?: BehandlingStatus.OPPRETTET.kode
+        // feil i dto, sjekker begge feltene
+        behandlingStatus = behandlingStatus ?: event.behandlinStatus ?: BehandlingStatus.OPPRETTET.kode
         return Oppgave(
             behandlingId = event.behandlingId,
             fagsakSaksnummer = event.saksnummer,
@@ -123,7 +127,7 @@ data class Modell(
         reservasjonRepository: ReservasjonRepository
     ): Behandling {
         val oppgave = oppgave()
-        val beslutter = if (oppgave.tilBeslutter) {
+        val beslutter = if (oppgave.tilBeslutter && reservasjonRepository.finnes(oppgave.eksternId)) {
             val saksbehandler =
                 saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjonRepository.hent(oppgave.eksternId).reservertAv!!)
             saksbehandler?.brukerIdent

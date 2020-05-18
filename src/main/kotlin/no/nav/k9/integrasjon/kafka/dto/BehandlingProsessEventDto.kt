@@ -33,6 +33,7 @@ data class BehandlingProsessEventDto(
     val eventTid: LocalDateTime,
     val eventHendelse: EventHendelse,
     val behandlingStatus: String?,
+    val behandlinStatus: String?,
     val behandlingSteg: String?,
 
     /**
