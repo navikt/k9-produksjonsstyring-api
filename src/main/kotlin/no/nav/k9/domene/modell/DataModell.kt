@@ -53,6 +53,9 @@ data class Modell(
         if (event.eventHendelse == EventHendelse.AKSJONSPUNKT_AVBRUTT || event.eventHendelse == EventHendelse.AKSJONSPUNKT_UTFØRT) {
             aktiv = false
         }
+        if (event.aktiveAksjonspunkt().liste.containsKey(AksjonspunktDefinisjon.VURDER_FAKTA_FOR_ATFL_SN.kode)) {
+            aktiv = false
+        }
         var behandlingStatus = event.behandlingStatus
         behandlingStatus = behandlingStatus ?: BehandlingStatus.OPPRETTET.kode
         return Oppgave(
