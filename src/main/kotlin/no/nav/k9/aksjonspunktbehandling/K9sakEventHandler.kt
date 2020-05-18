@@ -44,7 +44,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
 
         val oppgave = modell.oppgave()
-        
+
         if (!config.erLokalt()) {
             if (modell.starterSak()) {
                 behandlingOpprettet(modell, sakOgBehadlingProducer)
@@ -54,8 +54,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 behandlingAvsluttet(modell, sakOgBehadlingProducer)
             }
 
-            statistikkProducer.sendSak(modell.dvhSak())
-            if(config.erIDevFss) {
+            if (config.erIDevFss) {
+                statistikkProducer.sendSak(modell.dvhSak())
                 statistikkProducer.sendBehandling(
                     modell.dvhBehandling(
                         saksbehandlerRepository = saksbehandlerRepository,
@@ -64,7 +64,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 )
             }
         }
-        
+
         oppgaveRepository.lagre(oppgave.eksternId) {
             oppgave
         }
