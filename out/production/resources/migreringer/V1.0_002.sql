@@ -1,0 +1,5 @@
+create table if not exists SAKSBEHANDLER
+(
+    SAKSBEHANDLERID VARCHAR(100) NOT NULL PRIMARY KEY,
+    NAVN            VARCHAR(200)
+);
