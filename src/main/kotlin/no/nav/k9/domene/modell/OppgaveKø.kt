@@ -75,31 +75,11 @@ data class OppgaveKø(
             return true
         }
 
-        if (oppgave.tilBeslutter && filtreringAndreKriterierType.map { it.andreKriterierType }.contains(AndreKriterierType.TIL_BESLUTTER)) {
-            return true
+        if (ekskluderer(oppgave)) {
+            return false
         }
 
-        if (oppgave.registrerPapir && filtreringAndreKriterierType.map { it.andreKriterierType }.contains(AndreKriterierType.PAPIRSØKNAD)) {
-            return true
-        }
-
-        if (oppgave.utbetalingTilBruker && filtreringAndreKriterierType.map { it.andreKriterierType }.contains(AndreKriterierType.UTBETALING_TIL_BRUKER)) {
-            return true
-        }
-
-        if (oppgave.utenlands && filtreringAndreKriterierType.map { it.andreKriterierType }.contains(AndreKriterierType.UTLANDSSAK)) {
-            return true
-        }
-
-        if (oppgave.søktGradering && filtreringAndreKriterierType.map { it.andreKriterierType }.contains(AndreKriterierType.SOKT_GRADERING)) {
-            return true
-        }
-
-        if (oppgave.selvstendigFrilans && filtreringAndreKriterierType.map { it.andreKriterierType }.contains(AndreKriterierType.SELVSTENDIG_FRILANS)) {
-            return true
-        }
-
-        if (oppgave.kombinert && filtreringAndreKriterierType.map { it.andreKriterierType }.contains(AndreKriterierType.KOMBINERT)) {
+        if (inkluderer(oppgave)) {
             return true
         }
         return false
@@ -115,6 +95,47 @@ data class OppgaveKø(
         }
 
         return true
+    }
+
+    private fun inkluderer(oppgave: Oppgave): Boolean {
+        val inkluderKriterier = filtreringAndreKriterierType.filter { it.inkluder }
+        return sjekkOppgavensKriterier(oppgave, inkluderKriterier)
+    }
+
+    private fun ekskluderer(oppgave: Oppgave): Boolean {
+        val ekskluderKriterier = filtreringAndreKriterierType.filter { !it.inkluder }
+        return sjekkOppgavensKriterier(oppgave, ekskluderKriterier)
+    }
+
+    private fun sjekkOppgavensKriterier(oppgave: Oppgave, kriterier: List<AndreKriterierDto>): Boolean {
+        if (oppgave.tilBeslutter && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.TIL_BESLUTTER)) {
+            return true
+        }
+
+        if (oppgave.registrerPapir && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.PAPIRSØKNAD)) {
+            return true
+        }
+
+        if (oppgave.utbetalingTilBruker && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.UTBETALING_TIL_BRUKER)) {
+            return true
+        }
+
+        if (oppgave.utenlands && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.UTLANDSSAK)) {
+            return true
+        }
+
+        if (oppgave.søktGradering && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.SOKT_GRADERING)) {
+            return true
+        }
+
+        if (oppgave.selvstendigFrilans && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.SELVSTENDIG_FRILANS)) {
+            return true
+        }
+
+        if (oppgave.kombinert && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.KOMBINERT)) {
+            return true
+        }
+        return false
     }
 
     private fun erOppgavenReservert(

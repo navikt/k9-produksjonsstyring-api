@@ -131,12 +131,11 @@ class AvdelingslederTjeneste(
         { oppgaveKø ->
             if (kriteriumDto.checked) oppgaveKø!!.filtreringAndreKriterierType.add(kriteriumDto)
             else oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
-                it != kriteriumDto
+                it.andreKriterierType != kriteriumDto.andreKriterierType
             }.toMutableList()
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(kriteriumDto.id))
-
     }
 
     fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
