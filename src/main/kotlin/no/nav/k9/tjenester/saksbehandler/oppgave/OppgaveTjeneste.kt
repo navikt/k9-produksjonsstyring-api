@@ -92,11 +92,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
         val aktørId = pdlService.identifikator(query)
-        log.info("FantAktør $aktørId")
-        if (aktørId != null) {
+         if (aktørId != null) {
             val aktorId = aktørId.data.hentIdenter.identer[0].ident
             val person = pdlService.person(aktorId)
-            log.info("FantPerson $person")
             if (person != null) {
                 return oppgaveRepository.hentOppgaverMedAktorId(aktorId).map {
                     FagsakDto(
