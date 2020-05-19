@@ -120,7 +120,7 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
                     }
                 )
             }
-            // log.info("abac result: $json \n\n $xacmlJson")
+            log.info("abac result: $json \n\n $xacmlJson")
             try {
                 objectMapper().readValue<Response>(json).response[0].decision == "Permit"
             } catch (e: Exception) {
