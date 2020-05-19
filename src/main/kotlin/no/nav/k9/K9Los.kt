@@ -236,7 +236,6 @@ fun Application.k9Los() {
         MetricsRoute()
         DefaultProbeRoutes()
 
-
         val healthService = HealthService(
             healthChecks = asynkronProsesseringV1Service.isReadyChecks()
         )
