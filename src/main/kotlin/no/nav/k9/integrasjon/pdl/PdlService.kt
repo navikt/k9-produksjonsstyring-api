@@ -204,7 +204,7 @@ class PdlService @KtorExperimentalAPI constructor(
             mapOf(
                 "ident" to getQ2Ident(fnummer, configuration = configuration),
                 "historikk" to "false",
-                "grupper" to "[\"AKTORID\"]"
+                "grupper" to listOf("AKTORID")
             )
         )
 
@@ -273,7 +273,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     data class QueryRequest(
         val query: String,
-        val variables: Map<String, String>,
+        val variables: Map<String, Any>,
         val operationName: String? = null
     ) {
         data class Variables(
