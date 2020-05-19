@@ -18,6 +18,7 @@ import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import org.intellij.lang.annotations.Language
@@ -33,7 +34,7 @@ class RutinerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
-
+        val statistikkProducer = mockk<StatistikkProducer>()
         val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
@@ -77,7 +78,8 @@ class RutinerTest {
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            saksbehandlerRepository = saksbehandlerRepository
+            saksbehandlerRepository = saksbehandlerRepository,
+            statistikkProducer = statistikkProducer
         )
 
         @Language("JSON") val json =

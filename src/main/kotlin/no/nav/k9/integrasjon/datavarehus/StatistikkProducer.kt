@@ -10,8 +10,8 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.kafka.KafkaConfig
 import no.nav.k9.integrasjon.kafka.TopicEntry
 import no.nav.k9.integrasjon.kafka.TopicUse
-import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
-import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
+import no.nav.k9.statistikk.kontrakter.Behandling
+import no.nav.k9.statistikk.kontrakter.Sak
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
@@ -25,13 +25,13 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
 ) : HealthCheck {
     @KtorExperimentalAPI
     private val TOPIC_USE_STATISTIKK_SAK = TopicUse(
-        name = config.getSakOgBehandlingTopic(),
-        valueSerializer = SakOgBehandlingSerialier()
+        name = config.getStatistikkSakTopic(),
+        valueSerializer = Serializer()
     )
     @KtorExperimentalAPI
     private val TOPIC_USE_STATISTIKK_BEHANDLING = TopicUse(
-        name = config.getSakOgBehandlingTopic(),
-        valueSerializer = SakOgBehandlingSerialier()
+        name = config.getStatistikkBehandlingTopic(),
+        valueSerializer = Serializer()
     )
     private companion object {
         private val NAME = "StatistikkProducer"
@@ -47,9 +47,9 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     internal fun sendSak(
-        behandlingOpprettet: BehandlingOpprettet
+        sak: Sak
     ) {
-        val melding = objectMapper().writeValueAsString(behandlingOpprettet)
+        val melding = objectMapper().writeValueAsString(sak)
         val recordMetaData = producer.send(
            ProducerRecord(
                 TOPIC_USE_STATISTIKK_SAK.name,
@@ -57,41 +57,49 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             )
         ).get()
         logger.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        logger.info("StartetBehandling: $melding")
+        logger.info("Statistikk sak: $melding")
     }
 
     @KtorExperimentalAPI
     internal fun sendBehandling(
-        behandlingAvsluttet: BehandlingAvsluttet
+        behandling: Behandling
     ) {
-
-        val melding = objectMapper().writeValueAsString(behandlingAvsluttet)
+        val melding = objectMapper().writeValueAsString(behandling)
         val recordMetaData = producer.send(
             ProducerRecord(
-                TOPIC_USE_STATISTIKK_SAK.name,
+                TOPIC_USE_STATISTIKK_BEHANDLING.name,
                 melding
             )
         ).get()
-        logger.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        logger.info("AvsluttetBehandling: $melding")
+        logger.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        logger.info("Statistikk behanlding: $melding")
     }
 
 
     internal fun stop() = producer.close()
     @KtorExperimentalAPI
     override suspend fun check(): Result {
-        return try {
+        val result = try {
             producer.partitionsFor(TOPIC_USE_STATISTIKK_SAK.name)
             Healthy(NAME, "Tilkobling til Kafka OK!")
         } catch (cause: Throwable) {
             logger.error("Feil ved tilkobling til Kafka", cause)
             UnHealthy(NAME, "Feil ved tilkobling mot Kafka. ${cause.message}")
         }
+
+       try {
+            producer.partitionsFor(TOPIC_USE_STATISTIKK_BEHANDLING.name)
+            Healthy(NAME, "Tilkobling til Kafka OK!")
+        } catch (cause: Throwable) {
+            logger.error("Feil ved tilkobling til Kafka", cause)
+            return UnHealthy(NAME, "Feil ved tilkobling mot Kafka. ${cause.message}")
+        }
+        return result
     }
 
 }
 
-private class SakOgBehandlingSerialier : Serializer<TopicEntry<JSONObject>> {
+private class Serializer : Serializer<TopicEntry<JSONObject>> {
     override fun serialize(topic: String, data: TopicEntry<JSONObject>): ByteArray {
         val metadata = JSONObject()
             .put("correlation_id", data.metadata.correlationId)

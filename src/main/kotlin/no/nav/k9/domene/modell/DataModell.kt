@@ -118,7 +118,7 @@ data class Modell(
             underTypeBeskrivelse = null,
             sakStatusBeskrivelse = null,
             avsender = "K9sak",
-            versjon = null
+            versjon = 1
         )
     }
 
@@ -171,7 +171,7 @@ data class Modell(
             datoForUtbetaling = null,
             totrinnsbehandling = oppgave.tilBeslutter,
             avsender = "K9sak",
-            versjon = null
+            versjon = 1
         )
     }
 

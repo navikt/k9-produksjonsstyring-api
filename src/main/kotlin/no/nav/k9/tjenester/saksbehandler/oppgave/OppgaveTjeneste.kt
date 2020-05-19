@@ -332,9 +332,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun hentSisteReserverteOppgaver(username: String): List<OppgaveDto> {
 
         val list = mutableListOf<OppgaveDto>()
-
         for (reservasjon in reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }
-            .filter { it.reservertAv?.toLowerCase() == username.toLowerCase() }) {
+            .filter { it.reservertAv == saksbehandlerRepository.finnSaksbehandlerMedEpost(username)!!.brukerIdent }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             val person = pdlService.person(oppgave.aktorId)
             if (person == null) {

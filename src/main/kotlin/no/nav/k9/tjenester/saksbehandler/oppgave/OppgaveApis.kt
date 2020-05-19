@@ -11,7 +11,7 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.domene.modell.Saksbehandler
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
@@ -25,7 +25,8 @@ private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 internal fun Route.OppgaveApis(
     configuration: Configuration,
     requestContextService: RequestContextService,
-    oppgaveTjeneste: OppgaveTjeneste
+    oppgaveTjeneste: OppgaveTjeneste,
+    saksbehandlerRepository: SaksbehandlerRepository
 ) {
 
     @Location("/")
@@ -126,9 +127,9 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(
+                 call.respond(
                     oppgaveTjeneste.reserverOppgave(
-                        idToken.getUsername(),
+                        saksbehandlerRepository.finnSaksbehandlerMedEpost(idToken.getUsername())!!.brukerIdent!!,
                         UUID.fromString(oppgaveId.oppgaveId)
                     )
                 )

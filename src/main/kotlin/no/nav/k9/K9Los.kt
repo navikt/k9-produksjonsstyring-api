@@ -37,6 +37,7 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
+import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
@@ -130,21 +131,27 @@ fun Application.k9Los() {
         )
 
 
-
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
     val sakOgBehadlingProducer = SakOgBehadlingProducer(
         kafkaConfig = configuration.getKafkaConfig(),
         config = configuration
     )
+
+    val statistikkProducer = StatistikkProducer(
+        kafkaConfig = configuration.getKafkaConfig(),
+        config = configuration
+    )
+
     val k9sakEventHandler = K9sakEventHandler(
         oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository
-        , config = configuration,
+        behandlingProsessEventRepository = behandlingProsessEventRepository,
+        config = configuration,
         sakOgBehadlingProducer = sakOgBehadlingProducer,
         oppgaveKøRepository = oppgaveKøRepository,
         reservasjonRepository = reservasjonRepository,
-        saksbehandlerRepository = saksbehandlerRepository
+        saksbehandlerRepository = saksbehandlerRepository,
+        statistikkProducer = statistikkProducer
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
@@ -175,6 +182,7 @@ fun Application.k9Los() {
         log.info("Stopper AsynkronProsesseringV1Service.")
         asynkronProsesseringV1Service.stop()
         sakOgBehadlingProducer.stop()
+        statistikkProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
         job.cancel()
@@ -186,7 +194,7 @@ fun Application.k9Los() {
         oppgaveTjeneste
     )
     // Synkroniser oppgaver
-    launch  {
+    launch {
         log.info("Starter oppgavesynkronisering")
         val measureTimeMillis = measureTimeMillis {
             val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
@@ -338,7 +346,12 @@ private fun Route.api(
     reservasjonRepository: ReservasjonRepository
 ) {
     route("api") {
-        AdminApis(behandlingProsessEventRepository =eventRepository , oppgaveRepository = oppgaveRepository, reservasjonRepository = reservasjonRepository, oppgaveKøRepository = oppgaveKøRepository)
+        AdminApis(
+            behandlingProsessEventRepository = eventRepository,
+            oppgaveRepository = oppgaveRepository,
+            reservasjonRepository = reservasjonRepository,
+            oppgaveKøRepository = oppgaveKøRepository
+        )
         route("fagsak") {
             FagsakApis(
                 oppgaveTjeneste = oppgaveTjeneste,
@@ -352,7 +365,8 @@ private fun Route.api(
                 OppgaveApis(
                     configuration = configuration,
                     requestContextService = requestContextService,
-                    oppgaveTjeneste = oppgaveTjeneste
+                    oppgaveTjeneste = oppgaveTjeneste,
+                    saksbehandlerRepository = saksbehhandlerRepository
                 )
             }
 

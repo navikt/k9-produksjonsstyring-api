@@ -6,6 +6,7 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
@@ -25,7 +26,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     val sakOgBehadlingProducer: SakOgBehadlingProducer,
     val oppgaveKøRepository: OppgaveKøRepository,
     val reservasjonRepository: ReservasjonRepository,
-    val saksbehandlerRepository: SaksbehandlerRepository
+    val saksbehandlerRepository: SaksbehandlerRepository,
+    val statistikkProducer: StatistikkProducer
 //    val gosysOppgaveGateway: GosysOppgaveGateway
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
@@ -52,11 +54,15 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 behandlingAvsluttet(modell, sakOgBehadlingProducer)
             }
 
-            val dvhSak = modell.dvhSak()
-            val dvhBehandling = modell.dvhBehandling(
-                saksbehandlerRepository = saksbehandlerRepository,
-                reservasjonRepository = reservasjonRepository
-            )
+            if (config.erIDevFss) {
+                statistikkProducer.sendSak(modell.dvhSak())
+                statistikkProducer.sendBehandling(
+                    modell.dvhBehandling(
+                        saksbehandlerRepository = saksbehandlerRepository,
+                        reservasjonRepository = reservasjonRepository
+                    )
+                )
+            }
         }
         
         oppgaveRepository.lagre(oppgave.eksternId) {

@@ -7,11 +7,11 @@ import no.nav.helse.dusseldorf.ktor.health.Result
 import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
-import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
 import no.nav.k9.integrasjon.kafka.KafkaConfig
 import no.nav.k9.integrasjon.kafka.TopicEntry
 import no.nav.k9.integrasjon.kafka.TopicUse
+import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
+import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
@@ -86,7 +86,8 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
 
 }
 
-private class SakOgBehandlingSerialier : Serializer<TopicEntry<JSONObject>> {
+private class SakOgBehandlingSerialier :
+    Serializer<TopicEntry<JSONObject>> {
     override fun serialize(topic: String, data: TopicEntry<JSONObject>): ByteArray {
         val metadata = JSONObject()
             .put("correlation_id", data.metadata.correlationId)
