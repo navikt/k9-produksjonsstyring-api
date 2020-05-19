@@ -254,8 +254,10 @@ class PdlService @KtorExperimentalAPI constructor(
                 ident.data.hentIdenter.identer[0].ident = "1671237347458"
             }
             return objectMapper().readValue<AktøridPdl>(json)
-        } catch (e: Exception) {
-            log.error("", e)
+        } catch (e: Exception) {           
+            log.error( objectMapper().writeValueAsString(
+                queryRequest
+            ), e)
             return null
         }
     }
