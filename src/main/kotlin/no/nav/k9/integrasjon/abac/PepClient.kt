@@ -34,7 +34,6 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
     @KtorExperimentalAPI
     suspend fun erOppgaveStyrer(idToken: IdToken): Boolean {
         val requestBuilder = XacmlRequestBuilder()
-            .addEnvironmentAttribute(ENVIRONMENT_OIDC_TOKEN_BODY, idToken.value)
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER)
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
