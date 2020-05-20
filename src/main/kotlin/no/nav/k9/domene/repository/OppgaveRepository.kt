@@ -152,8 +152,21 @@ class OppgaveRepository(
         return list
     }
 
-    fun hentOppgaverMedAktorId(aktørId: String) = hent()
-        .filter { it.aktorId == aktørId }
+    fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
+        val json: List<String> = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where (data ::jsonb -> 'oppgaver' -> -1 ->> 'aktorId') = :aktorId",
+                    mapOf("aktorId" to aktørId)
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
+    }
 
     fun hentOppgaveMedSaksnummer(saksnummer: String): Oppgave? {
         val json: String = using(sessionOf(dataSource)) {
