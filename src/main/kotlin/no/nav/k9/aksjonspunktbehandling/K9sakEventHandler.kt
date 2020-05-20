@@ -142,7 +142,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             applikasjonSakREF = modell.sisteEvent().saksnummer,
             applikasjonBehandlingREF = modell.sisteEvent().eksternId.toString().replace("-", ""),
             styringsinformasjonListe = listOf(),
-            avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "")
+            avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "ok")
         )
         sakOgBehadlingProducer.avsluttetBehandling(behandlingAvsluttet)
 
