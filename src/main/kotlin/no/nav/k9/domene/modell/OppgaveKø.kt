@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import java.time.LocalDate
 import java.util.*
 
@@ -15,7 +16,7 @@ data class OppgaveKø(
     var sortering: KøSortering,
     var filtreringBehandlingTyper: MutableList<BehandlingType>,
     var filtreringYtelseTyper: MutableList<FagsakYtelseType>,
-    var filtreringAndreKriterierType: MutableList<AndreKriterierType>,
+    var filtreringAndreKriterierType: MutableList<AndreKriterierDto>,
     val enhet: Enhet,
     var fomDato: LocalDate,
     var tomDato: LocalDate,
@@ -62,45 +63,30 @@ data class OppgaveKø(
             return false
         }
 
-        if (filtreringYtelseTyper.isNotEmpty() && !filtreringBehandlingTyper.contains(oppgave.behandlingType)) {
+        if (filtreringBehandlingTyper.isNotEmpty() && !filtreringBehandlingTyper.contains(oppgave.behandlingType)) {
             return false
         }
 
         if (oppgave.skjermet != this.skjermet) {
             return false
         }
-        
+
         if (filtreringAndreKriterierType.isEmpty()) {
             return true
         }
 
-        if (oppgave.tilBeslutter && filtreringAndreKriterierType.contains(AndreKriterierType.TIL_BESLUTTER)) {
-            return true
+        if (ekskluderer(oppgave)) {
+            return false
         }
 
-        if (oppgave.registrerPapir && filtreringAndreKriterierType.contains(AndreKriterierType.PAPIRSØKNAD)) {
+        if (filtreringAndreKriterierType.none { it.inkluder }) {
             return true
         }
-
-        if (oppgave.utbetalingTilBruker && filtreringAndreKriterierType.contains(AndreKriterierType.UTBETALING_TIL_BRUKER)) {
+               
+        if (inkluderer(oppgave)) {
             return true
         }
-
-        if (oppgave.utenlands && filtreringAndreKriterierType.contains(AndreKriterierType.UTLANDSSAK)) {
-            return true
-        }
-
-        if (oppgave.søktGradering && filtreringAndreKriterierType.contains(AndreKriterierType.SOKT_GRADERING)) {
-            return true
-        }
-
-        if (oppgave.selvstendigFrilans && filtreringAndreKriterierType.contains(AndreKriterierType.SELVSTENDIG_FRILANS)) {
-            return true
-        }
-
-        if (oppgave.kombinert && filtreringAndreKriterierType.contains(AndreKriterierType.KOMBINERT)) {
-            return true
-        }
+        
         return false
     }
 
@@ -114,6 +100,47 @@ data class OppgaveKø(
         }
 
         return true
+    }
+
+    private fun inkluderer(oppgave: Oppgave): Boolean {
+        val inkluderKriterier = filtreringAndreKriterierType.filter { it.inkluder }
+        return sjekkOppgavensKriterier(oppgave, inkluderKriterier)
+    }
+
+    private fun ekskluderer(oppgave: Oppgave): Boolean {
+        val ekskluderKriterier = filtreringAndreKriterierType.filter { !it.inkluder }
+        return sjekkOppgavensKriterier(oppgave, ekskluderKriterier)
+    }
+
+    private fun sjekkOppgavensKriterier(oppgave: Oppgave, kriterier: List<AndreKriterierDto>): Boolean {
+        if (oppgave.tilBeslutter && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.TIL_BESLUTTER)) {
+            return true
+        }
+
+        if (oppgave.registrerPapir && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.PAPIRSØKNAD)) {
+            return true
+        }
+
+        if (oppgave.utbetalingTilBruker && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.UTBETALING_TIL_BRUKER)) {
+            return true
+        }
+
+        if (oppgave.utenlands && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.UTLANDSSAK)) {
+            return true
+        }
+
+        if (oppgave.søktGradering && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.SOKT_GRADERING)) {
+            return true
+        }
+
+        if (oppgave.selvstendigFrilans && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.SELVSTENDIG_FRILANS)) {
+            return true
+        }
+
+        if (oppgave.kombinert && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.KOMBINERT)) {
+            return true
+        }
+        return false
     }
 
     private fun erOppgavenReservert(
@@ -169,7 +196,6 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
     KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans");
-    
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
     companion object {
@@ -217,7 +243,7 @@ enum class BehandlingType(override val kode: String, override val navn: String,o
     REVURDERING("BT-004", "Revurdering", "ae0028"),
     INNSYN("BT-006", "Innsyn", "ae0042"),
     ANKE("BT-008", "Anke", "ae0046");
-    
+
     companion object {
         @JsonCreator
         @JvmStatic

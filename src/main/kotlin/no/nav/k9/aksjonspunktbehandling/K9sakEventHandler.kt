@@ -44,7 +44,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
 
         val oppgave = modell.oppgave()
-
+        
         if (!config.erLokalt()) {
             if (modell.starterSak()) {
                 behandlingOpprettet(modell, sakOgBehadlingProducer)
@@ -64,7 +64,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 )
             }
         }
-
+        
         oppgaveRepository.lagre(oppgave.eksternId) {
             oppgave
         }
@@ -142,7 +142,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             applikasjonSakREF = modell.sisteEvent().saksnummer,
             applikasjonBehandlingREF = modell.sisteEvent().eksternId.toString().replace("-", ""),
             styringsinformasjonListe = listOf(),
-            avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "")
+            avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "ok")
         )
         sakOgBehadlingProducer.avsluttetBehandling(behandlingAvsluttet)
 

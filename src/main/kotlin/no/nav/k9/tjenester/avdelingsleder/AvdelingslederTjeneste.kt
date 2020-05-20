@@ -54,7 +54,7 @@ class AvdelingslederTjeneste(
                 filtreringYtelseTyper = mutableListOf(),
                 filtreringAndreKriterierType = mutableListOf(),
                 enhet = Enhet.NASJONAL,
-                fomDato = LocalDate.now(),
+                fomDato = LocalDate.of(2020, 4, 6),
                 tomDato = LocalDate.now(),
                 saksbehandlere = mutableListOf()
             )
@@ -129,14 +129,17 @@ class AvdelingslederTjeneste(
     fun endreKriterium(kriteriumDto: AndreKriterierDto) {
         oppgaveKøRepository.lagre(UUID.fromString(kriteriumDto.id))
         { oppgaveKø ->
-            if (kriteriumDto.checked) oppgaveKø!!.filtreringAndreKriterierType.add(kriteriumDto.andreKriterierType)
+            if (kriteriumDto.checked) {
+                oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
+                    it.andreKriterierType != kriteriumDto.andreKriterierType}.toMutableList()
+                oppgaveKø!!.filtreringAndreKriterierType.add(kriteriumDto)
+            }
             else oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
-                it != kriteriumDto.andreKriterierType
+                it.andreKriterierType != kriteriumDto.andreKriterierType
             }.toMutableList()
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(kriteriumDto.id))
-
     }
 
     fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
