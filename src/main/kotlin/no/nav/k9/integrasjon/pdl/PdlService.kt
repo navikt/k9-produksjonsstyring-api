@@ -204,7 +204,7 @@ class PdlService @KtorExperimentalAPI constructor(
             mapOf(
                 "ident" to getQ2Ident(fnummer, configuration = configuration),
                 "historikk" to "false",
-                "grupper" to "[\"AKTORID\"]"
+                "grupper" to listOf("AKTORID")
             )
         )
 
@@ -248,14 +248,17 @@ class PdlService @KtorExperimentalAPI constructor(
                 }
             )
         }
-        return try {
+        try {
             if (configuration.erIDevFss) {
                 val ident = objectMapper().readValue<AktøridPdl>(json)
                 ident.data.hentIdenter.identer[0].ident = "1671237347458"
             }
             return objectMapper().readValue<AktøridPdl>(json)
-        } catch (e: Exception) {
-            null
+        } catch (e: Exception) {           
+            log.error( objectMapper().writeValueAsString(
+                queryRequest
+            ), e)
+            return null
         }
     }
 
@@ -270,7 +273,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     data class QueryRequest(
         val query: String,
-        val variables: Map<String, String>,
+        val variables: Map<String, Any>,
         val operationName: String? = null
     ) {
         data class Variables(
