@@ -2,19 +2,18 @@ package no.nav.k9.tjenester.saksbehandler.saksliste
 
 import no.nav.k9.domene.modell.AndreKriterierType
 import no.nav.k9.domene.modell.*
-import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import java.time.LocalDate
 import java.util.*
 
 class OppgavekøDto(
-        val id: UUID,
-        var navn: String,
-        var sortering: SorteringDto,
-        var behandlingTyper: MutableList<BehandlingType>,
-        var fagsakYtelseTyper: MutableList<FagsakYtelseType>,
-        var andreKriterier: MutableList<AndreKriterierDto>,
-        var skjermet: Boolean,
+    val id: UUID,
+    var navn: String,
+    var sortering: SorteringDto,
+    var behandlingTyper: MutableList<BehandlingType>,
+    var fagsakYtelseTyper: MutableList<FagsakYtelseType>,
+    var andreKriterier: MutableList<AndreKriterierType>,
+    var skjermet: Boolean,
     var sistEndret: LocalDate,
-        var antallBehandlinger: Int,
-        var saksbehandlere: MutableList<Saksbehandler>
+    var antallBehandlinger: Int,
+    var saksbehandlere: MutableList<Saksbehandler>
 )

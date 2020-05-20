@@ -127,9 +127,7 @@ data class Modell(
         reservasjonRepository: ReservasjonRepository
     ): Behandling {
         val oppgave = oppgave()
-        val beslutter = if (oppgave.tilBeslutter 
-            && reservasjonRepository.finnes(oppgave.eksternId)&& reservasjonRepository.finnes(oppgave.eksternId)
-            && reservasjonRepository.hent(oppgave.eksternId).reservertAv != null) {
+        val beslutter = if (oppgave.tilBeslutter && reservasjonRepository.finnes(oppgave.eksternId)) {
             val saksbehandler =
                 saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjonRepository.hent(oppgave.eksternId).reservertAv!!)
             saksbehandler?.brukerIdent
