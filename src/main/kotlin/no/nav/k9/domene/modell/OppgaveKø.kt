@@ -63,7 +63,7 @@ data class OppgaveKø(
             return false
         }
 
-        if (filtreringYtelseTyper.isNotEmpty() && !filtreringBehandlingTyper.contains(oppgave.behandlingType)) {
+        if (filtreringBehandlingTyper.isNotEmpty() && !filtreringBehandlingTyper.contains(oppgave.behandlingType)) {
             return false
         }
 
