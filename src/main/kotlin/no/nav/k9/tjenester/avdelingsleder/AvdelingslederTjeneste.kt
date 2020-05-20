@@ -129,7 +129,11 @@ class AvdelingslederTjeneste(
     fun endreKriterium(kriteriumDto: AndreKriterierDto) {
         oppgaveKøRepository.lagre(UUID.fromString(kriteriumDto.id))
         { oppgaveKø ->
-            if (kriteriumDto.checked) oppgaveKø!!.filtreringAndreKriterierType.add(kriteriumDto)
+            if (kriteriumDto.checked) {
+                oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
+                    it.andreKriterierType != kriteriumDto.andreKriterierType}.toMutableList()
+                oppgaveKø!!.filtreringAndreKriterierType.add(kriteriumDto)
+            }
             else oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
                 it.andreKriterierType != kriteriumDto.andreKriterierType
             }.toMutableList()
