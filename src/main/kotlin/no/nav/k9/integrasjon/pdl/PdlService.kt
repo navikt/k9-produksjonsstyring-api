@@ -202,7 +202,7 @@ class PdlService @KtorExperimentalAPI constructor(
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentIdent.graphql"),
             mapOf(
-                "ident" to getQ2Ident(fnummer, configuration = configuration),
+                "ident" to fnummer, configuration = configuration,
                 "historikk" to "false",
                 "grupper" to listOf("AKTORID")
             )
