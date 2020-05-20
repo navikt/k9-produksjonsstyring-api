@@ -79,9 +79,14 @@ data class OppgaveKø(
             return false
         }
 
+        if (filtreringAndreKriterierType.none { it.inkluder }) {
+            return true
+        }
+               
         if (inkluderer(oppgave)) {
             return true
         }
+        
         return false
     }
 
