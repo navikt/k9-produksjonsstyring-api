@@ -191,7 +191,6 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
     KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans");
-
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
     companion object {
