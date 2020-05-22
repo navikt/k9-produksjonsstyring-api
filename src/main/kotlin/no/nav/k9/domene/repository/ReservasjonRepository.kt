@@ -41,6 +41,20 @@ class ReservasjonRepository(private val dataSource: DataSource) {
         return objectMapper().readValue(json!!, Reservasjon::class.java)
     }
 
+    fun hentMedHistorikk(id: UUID): List<Reservasjon> {
+        val json: List<String> = using(sessionOf(dataSource)) {
+            it.run(
+                    queryOf(
+                            "select (data ::jsonb -> 'reservasjoner') as data from reservasjon where id = :id",
+                            mapOf("id" to id.toString())
+                    ).map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        return json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
+    }
+
     fun finnes(id: UUID): Boolean {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
@@ -76,7 +90,7 @@ class ReservasjonRepository(private val dataSource: DataSource) {
                 }
                 reservasjon = data
                 val json = objectMapper().writeValueAsString(data)
-            
+
                 tx.run(
                     queryOf(
                         """
@@ -85,7 +99,7 @@ class ReservasjonRepository(private val dataSource: DataSource) {
                     on conflict (id) do update
                     set data = jsonb_set(k.data, '{reservasjoner,999999}', :data :: jsonb, true)
                  """, mapOf("id" to uuid.toString(),
-                            "dataInitial" to "{\"reservasjoner\": [$json]}", 
+                            "dataInitial" to "{\"reservasjoner\": [$json]}",
                             "data" to json)
                     ).asUpdate
                 )

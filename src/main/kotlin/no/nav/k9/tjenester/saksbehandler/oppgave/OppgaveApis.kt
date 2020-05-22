@@ -169,6 +169,16 @@ internal fun Route.OppgaveApis(
         )
     }
 
+    @Location("/flytt-til-forrige-saksbehandler")
+    class flyttReservasjonTilForrigeSaksbehandler
+
+    post { _: flyttReservasjonTilForrigeSaksbehandler ->
+        val params = call.receive<OppgaveId>()
+        call.respond(
+                oppgaveTjeneste.flyttReservasjonTilForrigeSakbehandler(UUID.fromString(params.oppgaveId))
+        )
+    }
+
     @Location("/flytt/sok")
     class søkSaksbehandler
 
