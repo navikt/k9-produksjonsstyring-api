@@ -86,7 +86,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     internal suspend fun person(aktorId: String): PersonPdl? {
-        if (configuration.erLokalt) {
+        if (!configuration.erIProd) {
             return PersonPdl(
                 data = PersonPdl.Data(
                     hentPerson = PersonPdl.Data.HentPerson(
