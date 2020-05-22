@@ -1,18 +1,18 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
 
-open class DateUtil {
-
-    fun forskyvReservasjonsDato(resDato: LocalDateTime): LocalDateTime? {
-        val c = Calendar.getInstance()
-        c.set(resDato.year, resDato.month.value, resDato.dayOfMonth)
-        if (c.get(Calendar.DAY_OF_WEEK) == 6) {
-            return resDato.plusHours(48)
-        } else if (c.get(Calendar.DAY_OF_WEEK) == 7) {
-            return resDato.plusHours(24)
+fun LocalDateTime.forskyvReservasjonsDato(): LocalDateTime {
+    var localDate = this.toLocalDate()
+    var dagerSomSkalLeggesTil = 0L
+    while (localDate != LocalDate.now()) {
+        if (this.dayOfWeek == DayOfWeek.SATURDAY || this.dayOfWeek == DayOfWeek.SUNDAY) {
+            dagerSomSkalLeggesTil += 1L
         }
-        return resDato
+        localDate = localDate.minusDays(1)
     }
+
+    return this.plusDays(dagerSomSkalLeggesTil)
 }

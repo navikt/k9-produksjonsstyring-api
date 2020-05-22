@@ -14,6 +14,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.fagsak.FagsakDto
@@ -67,10 +68,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun reserverOppgave(ident: String, uuid: UUID): Reservasjon {
-
         val reservasjon = Reservasjon(
-                DateUtil.forskyvReservasjonsDato(LocalDateTime.now().plusHours(24),
-            ident, null, null, null, oppgave = uuid
+                LocalDateTime.now().plusHours(24).forskyvReservasjonsDato(),
+                ident, null, null, null, oppgave = uuid
         )
         reservasjonRepository.lagre(uuid) {
             reservasjon
@@ -88,13 +88,28 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
-        val aktørId = pdlService.identifikator(query)
+        var aktørId = pdlService.identifikator(query)
+        if (!configuration.erIProd){
+            aktørId = AktøridPdl(
+                data = AktøridPdl.Data(
+                    hentIdenter = AktøridPdl.Data.HentIdenter(
+                        identer = listOf(
+                            AktøridPdl.Data.HentIdenter.Identer(
+                                gruppe = "AKTORID",
+                                historisk = false,
+                                ident = "2392173967319"
+                            )
+                        )
+                    )
+                )
+            )
+        }
         if (aktørId != null) {
             var aktorId = aktørId.data.hentIdenter.identer[0].ident
             val person = pdlService.person(aktorId)
             if (person != null) {
                 if (!configuration.erIProd){
-                    aktorId = "1172507325105"   
+                    aktorId = "1172507325105"
                 }
                 return oppgaveRepository.hentOppgaverMedAktorId(aktorId).map {
                     FagsakDto(
@@ -163,7 +178,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             oppgave.behandlingType,
             oppgave.fagsakYtelseType,
             oppgave.behandlingStatus,
-            true,
+            oppgave.aktiv,
             oppgave.behandlingOpprettet,
             oppgave.behandlingsfrist,
             oppgave.eksternId,
