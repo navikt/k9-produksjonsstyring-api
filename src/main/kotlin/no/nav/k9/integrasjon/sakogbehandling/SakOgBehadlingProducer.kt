@@ -41,7 +41,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
     )
 
     @KtorExperimentalAPI
-    internal fun opprettetBehandlng(
+    internal fun behandlingOpprettet(
         behandlingOpprettet: BehandlingOpprettet
     ) {
         val melding = objectMapper().writeValueAsString(behandlingOpprettet)
