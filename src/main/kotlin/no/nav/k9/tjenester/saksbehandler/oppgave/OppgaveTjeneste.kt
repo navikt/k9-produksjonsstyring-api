@@ -85,10 +85,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return reservasjon
     }
 
-    fun hentReservasjon(uuid: UUID): Reservasjon {
-        return reservasjonRepository.hent(uuid)
-    }
-
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
         val aktørId = pdlService.identifikator(query)

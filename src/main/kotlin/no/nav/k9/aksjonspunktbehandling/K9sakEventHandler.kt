@@ -2,6 +2,7 @@ package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
@@ -29,6 +30,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     ) {
         val modell = behandlingProsessEventRepository.lagre(event)
         val oppgave = modell.oppgave()
+     
+        fjernReservasjonDersomIkkeOppgavenErAktiv(oppgave)
+     
         oppgaveRepository.lagre(oppgave.eksternId) {
             if (!config.erLokalt()) {
                 if (modell.starterSak()) {
@@ -56,6 +60,17 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             oppgaveKøRepository.lagre(oppgavekø.id) { oppgavekø ->
                 oppgavekø?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                 oppgavekø!!
+            }
+        }
+    }
+
+    private fun fjernReservasjonDersomIkkeOppgavenErAktiv(oppgave: Oppgave) {
+        if (!oppgave.aktiv) {
+            if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
+                    reservasjon!!.aktiv = false
+                    reservasjon
+                }
             }
         }
     }
