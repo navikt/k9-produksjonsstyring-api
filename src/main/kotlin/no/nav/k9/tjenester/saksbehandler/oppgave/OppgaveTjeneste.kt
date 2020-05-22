@@ -22,6 +22,7 @@ import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
@@ -68,7 +69,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun reserverOppgave(ident: String, uuid: UUID): Reservasjon {
 
         val reservasjon = Reservasjon(
-            LocalDateTime.now().plusHours(24),
+                DateUtil.forskyvReservasjonsDato(LocalDateTime.now().plusHours(24),
             ident, null, null, null, oppgave = uuid
         )
         reservasjonRepository.lagre(uuid) {
