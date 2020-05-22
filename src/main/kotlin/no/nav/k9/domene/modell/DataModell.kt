@@ -1,10 +1,13 @@
 package no.nav.k9.domene.modell
 
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
+import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
+import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.statistikk.kontrakter.Aktør
 import no.nav.k9.statistikk.kontrakter.Behandling
@@ -18,6 +21,8 @@ import java.util.*
 data class Modell(
     val eventer: List<BehandlingProsessEventDto>
 ) {
+    private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
+   
     fun oppgave(): Oppgave {
         val event = sisteEvent()
         val eventResultat = sisteEvent().aktiveAksjonspunkt().eventResultat()
@@ -122,6 +127,71 @@ data class Modell(
         )
     }
 
+    @KtorExperimentalAPI
+    fun behandlingOpprettet(
+        modell: Modell
+    ): BehandlingOpprettet {
+        val sisteEvent = modell.sisteEvent()
+        val behandlingOpprettet = BehandlingOpprettet(
+            hendelseType = "behandlingOpprettet",
+            hendelsesId = sisteEvent.eksternId.toString() + "_" + modell.eventer.size,
+            hendelsesprodusentREF = BehandlingOpprettet.HendelsesprodusentREF("", "", "FS39"),
+            hendelsesTidspunkt = sisteEvent.eventTid,
+            behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
+            behandlingstype = BehandlingOpprettet.Behandlingstype(
+                "",
+                "",
+                BehandlingType.fraKode(sisteEvent.behandlingTypeKode).kodeverk
+            ),
+            sakstema = BehandlingOpprettet.Sakstema("", "", "OMS"),
+            behandlingstema = BehandlingOpprettet.Behandlingstema(
+                "ab0149",
+                "ab0149",
+                `Omsorgspenger, Pleiepenger og opplæringspenger`
+            ),
+            aktoerREF = listOf(BehandlingOpprettet.AktoerREF(sisteEvent.aktørId)),
+            ansvarligEnhetREF = "NASJONAL",
+            primaerBehandlingREF = null,
+            sekundaerBehandlingREF = listOf(),
+            applikasjonSakREF = modell.sisteEvent().saksnummer,
+            applikasjonBehandlingREF = modell.sisteEvent().eksternId.toString().replace("-", ""),
+            styringsinformasjonListe = listOf()
+        )
+        return behandlingOpprettet
+    }
+    @KtorExperimentalAPI
+    fun behandlingAvsluttet(
+        modell: Modell
+    ): BehandlingAvsluttet {
+        val sisteEvent = modell.sisteEvent()
+        val behandlingAvsluttet = BehandlingAvsluttet(
+            hendelseType = "behandlingAvsluttet",
+            hendelsesId = """${sisteEvent.eksternId.toString()}_${modell.eventer.size}""",
+            hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", "FS39"),
+            hendelsesTidspunkt = sisteEvent.eventTid,
+            behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
+            behandlingstype = BehandlingAvsluttet.Behandlingstype(
+                "",
+                "",
+                BehandlingType.fraKode(sisteEvent.behandlingTypeKode).kodeverk
+            ),
+            sakstema = BehandlingAvsluttet.Sakstema("", "", "OMS"),
+            behandlingstema = BehandlingAvsluttet.Behandlingstema(
+                "ab0149",
+                "ab0149",
+                `Omsorgspenger, Pleiepenger og opplæringspenger`
+            ),
+            aktoerREF = listOf(BehandlingAvsluttet.AktoerREF(sisteEvent.aktørId)),
+            ansvarligEnhetREF = "NASJONAL",
+            primaerBehandlingREF = null,
+            sekundaerBehandlingREF = listOf(),
+            applikasjonSakREF = modell.sisteEvent().saksnummer,
+            applikasjonBehandlingREF = modell.sisteEvent().eksternId.toString().replace("-", ""),
+            styringsinformasjonListe = listOf(),
+            avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "")
+        )
+        return behandlingAvsluttet
+    }
     fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
@@ -214,3 +284,5 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
         return EventResultat.OPPRETT_OPPGAVE
     }
 }
+
+

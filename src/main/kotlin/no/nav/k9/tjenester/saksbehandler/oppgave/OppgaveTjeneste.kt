@@ -14,6 +14,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.fagsak.FagsakDto
@@ -66,9 +67,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun reserverOppgave(ident: String, uuid: UUID): Reservasjon {
-
         val reservasjon = Reservasjon(
-            LocalDateTime.now().plusHours(24),
+                LocalDateTime.now().plusHours(24).forskyvReservasjonsDato(),
             ident, null, null, null, oppgave = uuid
         )
         reservasjonRepository.lagre(uuid) {
@@ -85,19 +85,31 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return reservasjon
     }
 
-    fun hentReservasjon(uuid: UUID): Reservasjon {
-        return reservasjonRepository.hent(uuid)
-    }
-
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
-        val aktørId = pdlService.identifikator(query)
-         log.info("fant aktør $aktørId")
+        var aktørId = pdlService.identifikator(query)
+        if (!configuration.erIProd){
+            aktørId = AktøridPdl(
+                data = AktøridPdl.Data(
+                    hentIdenter = AktøridPdl.Data.HentIdenter(
+                        identer = listOf(
+                            AktøridPdl.Data.HentIdenter.Identer(
+                                gruppe = "AKTORID",
+                                historisk = false,
+                                ident = "2392173967319"
+                            )
+                        )
+                    )
+                )
+            )
+        }
         if (aktørId != null) {
-            val aktorId = aktørId.data.hentIdenter.identer[0].ident
+            var aktorId = aktørId.data.hentIdenter.identer[0].ident
             val person = pdlService.person(aktorId)
-            log.info("fant person $person")
             if (person != null) {
+                if (!configuration.erIProd){
+                    aktorId = "1172507325105"   
+                }
                 return oppgaveRepository.hentOppgaverMedAktorId(aktorId).map {
                     FagsakDto(
                         it.fagsakSaksnummer,

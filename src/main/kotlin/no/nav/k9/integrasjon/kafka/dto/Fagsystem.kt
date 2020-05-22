@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class Fagsystem(val kode: String, val kodeverk: String) {
-    K9SAK("K9SAK", "FAKSYSTEM");
+    K9SAK("K9SAK", "FAGSYSTEM");
 
     companion object {
         @JsonCreator

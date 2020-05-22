@@ -67,7 +67,7 @@ class RutinerTest {
             )
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
-        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
+        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
         every { config.erLokalt() } returns true

@@ -41,7 +41,7 @@ class K9sakEventHandlerTest {
         val statistikkProducer = mockk<StatistikkProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
-        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
+        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
         every{config.erLokalt()} returns true
@@ -108,7 +108,7 @@ class K9sakEventHandlerTest {
         val statistikkProducer = mockk<StatistikkProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
-        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
+        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
         every{config.erLokalt()} returns true
@@ -171,7 +171,7 @@ class K9sakEventHandlerTest {
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource=dataSource)
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
-        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
+        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()
         every{config.erLokalt()} returns true
@@ -237,7 +237,7 @@ class K9sakEventHandlerTest {
         val statistikkProducer = mockk<StatistikkProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
-        every { sakOgBehadlingProducer.opprettetBehandlng(any()) } just runs
+        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val config = mockk<Configuration>()

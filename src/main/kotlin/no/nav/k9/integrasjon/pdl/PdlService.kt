@@ -86,7 +86,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     internal suspend fun person(aktorId: String): PersonPdl? {
-        if (configuration.erLokalt) {
+        if (!configuration.erIProd) {
             return PersonPdl(
                 data = PersonPdl.Data(
                     hentPerson = PersonPdl.Data.HentPerson(
@@ -202,7 +202,7 @@ class PdlService @KtorExperimentalAPI constructor(
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentIdent.graphql"),
             mapOf(
-                "ident" to getQ2Ident(fnummer, configuration = configuration),
+                "ident" to fnummer,
                 "historikk" to "false",
                 "grupper" to listOf("AKTORID")
             )
