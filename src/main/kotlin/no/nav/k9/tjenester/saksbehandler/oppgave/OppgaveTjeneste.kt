@@ -86,19 +86,16 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return reservasjon
     }
 
-    fun hentReservasjon(uuid: UUID): Reservasjon {
-        return reservasjonRepository.hent(uuid)
-    }
-
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
         val aktørId = pdlService.identifikator(query)
-         log.info("fant aktør $aktørId")
         if (aktørId != null) {
-            val aktorId = aktørId.data.hentIdenter.identer[0].ident
+            var aktorId = aktørId.data.hentIdenter.identer[0].ident
             val person = pdlService.person(aktorId)
-            log.info("fant person $person")
             if (person != null) {
+                if (!configuration.erIProd){
+                    aktorId = "1172507325105"   
+                }
                 return oppgaveRepository.hentOppgaverMedAktorId(aktorId).map {
                     FagsakDto(
                         it.fagsakSaksnummer,

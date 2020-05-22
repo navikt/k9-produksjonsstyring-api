@@ -209,6 +209,14 @@ fun Application.k9Los() {
             for (aktivOppgave in hentAktiveOppgaver) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
+                if (!oppgave.aktiv) {
+                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
+                            reservasjon!!.aktiv = false
+                            reservasjon
+                        }
+                    }
+                }
                 oppgaveRepository.lagre(oppgave.eksternId) {
                     oppgave
                 }
