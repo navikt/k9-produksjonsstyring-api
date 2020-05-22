@@ -29,34 +29,33 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     ) {
         val modell = behandlingProsessEventRepository.lagre(event)
         val oppgave = modell.oppgave()
-        if (!config.erLokalt()) {
-            if (modell.starterSak()) {
-                sakOgBehadlingProducer.behandlingOpprettet( modell.behandlingOpprettet(modell))
-            }
-
-            if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET  ) {
-                sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttet(modell))
-            }
-
-            if (config.erIDevFss) {
-                statistikkProducer.sendSak(modell.dvhSak())
-                statistikkProducer.sendBehandling(
-                    modell.dvhBehandling(
-                        saksbehandlerRepository = saksbehandlerRepository,
-                        reservasjonRepository = reservasjonRepository
-                    )
-                )
-            }
-        }
-        
         oppgaveRepository.lagre(oppgave.eksternId) {
+            if (!config.erLokalt()) {
+                if (modell.starterSak()) {
+                    sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettet(modell))
+                }
+
+                if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
+                    sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttet(modell))
+                }
+
+                if (config.erIDevFss) {
+                    statistikkProducer.sendSak(modell.dvhSak())
+                    statistikkProducer.sendBehandling(
+                        modell.dvhBehandling(
+                            saksbehandlerRepository = saksbehandlerRepository,
+                            reservasjonRepository = reservasjonRepository
+                        )
+                    )
+                }
+            }
             oppgave
         }
 
         for (oppgavekø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                forrige!!
+            oppgaveKøRepository.lagre(oppgavekø.id) { oppgavekø ->
+                oppgavekø?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                oppgavekø!!
             }
         }
     }
