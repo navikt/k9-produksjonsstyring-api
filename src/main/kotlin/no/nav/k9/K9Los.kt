@@ -384,7 +384,7 @@ private fun Route.api(
                 requestContextService = requestContextService,
                 oppgaveKøRepository = oppgaveKøRepository
             )
-            SaksbehandlerNøkkeltallApis()
+            SaksbehandlerNøkkeltallApis(oppgaveTjeneste = oppgaveTjeneste)
         }
         route("avdelingsleder") {
             AvdelingslederApis(
@@ -415,7 +415,6 @@ private fun Route.api(
                 pepClient = pepClient
             )
         }
-        SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis(configuration) }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
     }

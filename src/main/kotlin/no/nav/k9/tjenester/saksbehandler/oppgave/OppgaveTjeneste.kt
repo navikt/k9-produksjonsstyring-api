@@ -5,6 +5,7 @@ import joptsimple.internal.Strings
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
@@ -16,12 +17,15 @@ import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.idToken
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.IdToken
+import no.nav.k9.tjenester.saksbehandler.nøkkeltall.NyeOgFerdigstilteOppgaverDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
@@ -43,7 +47,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            when (oppgaveKø.sortering!!) {
+            when (oppgaveKø.sortering) {
                 KøSortering.OPPRETT_BEHANDLING -> oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver)
                 KøSortering.FORSTE_STONADSDAG -> oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver)
             }
@@ -196,6 +200,31 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun hentOppgaverFraListe(saksnummere: List<String>): List<OppgaveDto> {
         return saksnummere.map { oppgaveRepository.hentOppgaveMedSaksnummer(it) }
             .map { oppgave -> tilOppgaveDto(oppgave!!, reservasjonRepository.hent(oppgave.eksternId)) }.toList()
+    }
+
+    fun hentNyeOgFerdigstilteOppgaver (oppgavekoId: OppgavekøIdDto): List<NyeOgFerdigstilteOppgaverDto> {
+        val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId.id))
+        val køOppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(kø.oppgaver)
+        var liste = mutableListOf<NyeOgFerdigstilteOppgaverDto>()
+        kø.filtreringBehandlingTyper.forEach {
+            liste.add(
+                NyeOgFerdigstilteOppgaverDto(
+                it,
+                tellNyeOppgaver(it, køOppgaver),
+                tellFerdistilteOppgaver(it, køOppgaver),
+                LocalDate.now())
+            ) }
+        return liste
+    }
+
+    fun tellNyeOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
+        return oppgaver.count {
+            it.behandlingType == behandlingType && it.behandlingOpprettet.toLocalDate() == LocalDate.now() }.toLong()
+    }
+
+    fun tellFerdistilteOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
+        return oppgaver.filter { it.oppgaveAvsluttet != null}.count {
+            it.behandlingType == behandlingType && it.oppgaveAvsluttet!!.toLocalDate() == LocalDate.now() }.toLong()
     }
 
     fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
