@@ -31,8 +31,7 @@ internal fun Route.FagsakApis(
 
     post { _: søkFagsaker ->
         val søk = call.receive<QueryString>()
-
-       /* val idToken = call.idToken()
+        val idToken = call.idToken()
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
@@ -41,10 +40,6 @@ internal fun Route.FagsakApis(
         ) {
             call.respond(oppgaveTjeneste.søkFagsaker(søk.searchString))
 
-        }*/
-
-        call.respond(listOf(FagsakDto("1234",
-        PersonDto("fdkshdl", "78696", "KVINNE", null), FagsakYtelseType.OMSORGSPENGER, null, LocalDateTime.now(), true
-        )))
+        }
     }
 }

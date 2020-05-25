@@ -205,35 +205,6 @@ internal fun Route.OppgaveApis(
                     idToken = call.idToken()
                 )
             ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)) }
-        } else {
-            call.respond(listOf(OppgaveDto(
-                    OppgaveStatusDto(
-                            true,
-                            LocalDateTime.now().plusDays(2),
-                            false,
-                            "UUID",
-                            null
-                    ),
-                    832978,
-                    "1234",
-                    "Navnnnnn",
-                    "sys",
-                    "37474397",
-                    BehandlingType.FORSTEGANGSSOKNAD,
-                    FagsakYtelseType.OMSORGSPENGER,
-                    BehandlingStatus.OPPRETTET,
-                    true,
-                    LocalDateTime.now(),
-                    LocalDateTime.now().plusDays(4),
-                    UUID.randomUUID(),
-                    false,
-                    false,
-                    false,
-                    false,
-                    false,
-                    false
-
-            )))
         }
     }
 }
