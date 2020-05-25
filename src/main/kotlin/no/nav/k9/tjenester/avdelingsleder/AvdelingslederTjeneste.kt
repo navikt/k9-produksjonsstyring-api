@@ -54,8 +54,8 @@ class AvdelingslederTjeneste(
                 filtreringYtelseTyper = mutableListOf(),
                 filtreringAndreKriterierType = mutableListOf(),
                 enhet = Enhet.NASJONAL,
-                fomDato = LocalDate.of(2020, 4, 6),
-                tomDato = LocalDate.now().plusYears(10),
+                fomDato = null,
+                tomDato = null,
                 saksbehandlere = mutableListOf()
             )
         }

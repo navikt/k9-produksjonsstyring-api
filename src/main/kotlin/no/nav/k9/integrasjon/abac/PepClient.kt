@@ -15,7 +15,6 @@ import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.rest.NavHeaders
-import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -32,7 +31,7 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
         
     @KtorExperimentalAPI
-    suspend fun erOppgaveStyrer(idToken: IdToken): Boolean {
+    suspend fun erOppgaveStyrer(): Boolean {
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER)
@@ -45,7 +44,7 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
     }
 
     @KtorExperimentalAPI
-    suspend fun harBasisTilgang(idToken: IdToken): Boolean {
+    suspend fun harBasisTilgang(): Boolean {
         
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
@@ -62,7 +61,6 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
 
     @KtorExperimentalAPI
     suspend fun harTilgangTilLesSak(
-        idToken: IdToken,
         fagsakNummer: String
     ): Boolean {
       

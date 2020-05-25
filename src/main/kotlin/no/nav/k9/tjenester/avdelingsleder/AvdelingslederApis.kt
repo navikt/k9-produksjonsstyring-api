@@ -9,10 +9,6 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.withContext
-import no.nav.k9.Configuration
-import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import java.util.*
 
@@ -20,9 +16,7 @@ import java.util.*
 @KtorExperimentalLocationsAPI
 internal fun Route.AvdelingslederApis(
     oppgaveTjeneste: OppgaveTjeneste,
-    avdelingslederTjeneste: AvdelingslederTjeneste,
-    configuration: Configuration,
-    requestContextService: RequestContextService
+    avdelingslederTjeneste: AvdelingslederTjeneste
 ) {
 
     @Location("/oppgaver/antall-totalt")

@@ -18,8 +18,8 @@ data class OppgaveKø(
     var filtreringYtelseTyper: MutableList<FagsakYtelseType>,
     var filtreringAndreKriterierType: MutableList<AndreKriterierDto>,
     val enhet: Enhet,
-    var fomDato: LocalDate,
-    var tomDato: LocalDate,
+    var fomDato: LocalDate?,
+    var tomDato: LocalDate?,
     var saksbehandlere: MutableList<Saksbehandler>,
     var skjermet: Boolean = false,
 //    val tilBeslutter: Boolean,
@@ -82,16 +82,16 @@ data class OppgaveKø(
         if (filtreringAndreKriterierType.none { it.inkluder }) {
             return true
         }
-               
+
         if (inkluderer(oppgave)) {
             return true
         }
-        
+
         return false
     }
 
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {
-        if (oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato.plusDays(1))) {
+        if (oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {
             return false
         }
 

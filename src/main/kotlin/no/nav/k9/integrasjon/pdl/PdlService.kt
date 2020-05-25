@@ -226,14 +226,14 @@ class PdlService @KtorExperimentalAPI constructor(
             )
 
         val json = Retry.retry(
-            operation = "hente-person",
+            operation = "hente-ident",
             initialDelay = Duration.ofMillis(200),
             factor = 2.0,
             logger = log
         ) {
             val (request, _, result) = Operation.monitored(
                 app = "k9-los-api",
-                operation = "hente-person",
+                operation = "hente-ident",
                 resultResolver = { 200 == it.second.statusCode }
             ) { httpRequest.awaitStringResponseResult() }
 
@@ -251,7 +251,12 @@ class PdlService @KtorExperimentalAPI constructor(
         try {
             if (configuration.erIDevFss) {
                 val ident = objectMapper().readValue<AktøridPdl>(json)
-                ident.data.hentIdenter.identer[0].ident = "1671237347458"
+                ident.data.hentIdenter = AktøridPdl.Data.HentIdenter(listOf(
+                    AktøridPdl.Data.HentIdenter.Identer(
+                        gruppe = "AKTORID",
+                        historisk = false,
+                        ident = "1671237347458"
+                    )))                 
             }
             return objectMapper().readValue<AktøridPdl>(json)
         } catch (e: Exception) {           

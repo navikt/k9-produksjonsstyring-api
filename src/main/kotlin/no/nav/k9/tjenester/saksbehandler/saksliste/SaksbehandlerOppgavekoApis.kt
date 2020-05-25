@@ -42,8 +42,8 @@ internal fun Route.SaksbehandlerOppgavekoApis(
                     idToken = idtoken
                 )
             ) {
-                val token = IdToken(idtoken.value)
-                if (pepClient.harBasisTilgang(token)) {
+                IdToken(idtoken.value)
+                if (pepClient.harBasisTilgang()) {
 
                     val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
                     val list = hentOppgaveKøer

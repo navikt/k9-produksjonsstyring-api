@@ -6,14 +6,14 @@ import java.util.regex.Pattern
 class Saksnummer(saksnummer: String) {
     val verdi: String
 
-    override fun equals(obj: Any?): Boolean {
-        if (obj === this) {
+    override fun equals(other: Any?): Boolean {
+        if (other === this) {
             return true
-        } else if (obj == null || javaClass != obj.javaClass) {
+        } else if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val other = obj as Saksnummer
-        return verdi == other.verdi
+        val saksnummer = other as Saksnummer
+        return verdi == saksnummer.verdi
     }
 
     override fun hashCode(): Int {
