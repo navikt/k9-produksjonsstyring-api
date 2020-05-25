@@ -205,6 +205,8 @@ internal fun Route.OppgaveApis(
                     idToken = call.idToken()
                 )
             ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)) }
+        } else {
+            call.respond(emptyList<OppgaveDto>())
         }
     }
 }
