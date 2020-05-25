@@ -388,10 +388,8 @@ private fun Route.api(
         }
         route("avdelingsleder") {
             AvdelingslederApis(
-                avdelingslederTjeneste = avdelingslederTjeneste,
                 oppgaveTjeneste = oppgaveTjeneste,
-                configuration = configuration,
-                requestContextService = requestContextService
+                avdelingslederTjeneste = avdelingslederTjeneste
             )
             route("oppgavekoer") {
                 AvdelingslederOppgavekøApis(

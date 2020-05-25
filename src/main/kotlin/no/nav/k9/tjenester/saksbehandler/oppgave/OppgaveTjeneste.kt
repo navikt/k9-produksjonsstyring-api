@@ -3,7 +3,6 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
 import no.nav.k9.Configuration
-import no.nav.k9.domene.lager.aktør.TpsPersonDto
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.KøSortering
@@ -23,7 +22,6 @@ import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
@@ -105,7 +103,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             )
         }
         if (aktørId != null) {
-            var aktorId = aktørId.data.hentIdenter.identer[0].ident
+            var aktorId = aktørId.data.hentIdenter!!.identer[0].ident
             val person = pdlService.person(aktorId)
             if (person != null) {
                 if (!configuration.erIProd) {
@@ -157,6 +155,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return IdToken(coroutineContext.idToken().value).ident.value == ident
     }
 
+    @KtorExperimentalAPI
     suspend fun tilOppgaveDto(oppgave: Oppgave, reservasjon: Reservasjon?): OppgaveDto {
 
         val oppgaveStatus = if (reservasjon == null) OppgaveStatusDto(false, null, false, null, null)
@@ -192,6 +191,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
 
+    @KtorExperimentalAPI
     suspend fun hentOppgaverFraListe(saksnummere: List<String>): List<OppgaveDto> {
         return saksnummere.map { oppgaveRepository.hentOppgaveMedSaksnummer(it) }
                 .map { oppgave -> tilOppgaveDto(oppgave!!, null) }.toList()
@@ -231,7 +231,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun flyttReservasjonTilForrigeSakbehandler(uuid: UUID) {
-        var reservasjoner = reservasjonRepository.hentMedHistorikk(uuid).reversed()
+        val reservasjoner = reservasjonRepository.hentMedHistorikk(uuid).reversed()
         for (reservasjon in reservasjoner) {
             if (reservasjoner[0].reservertAv != reservasjon.reservertAv) {
                 reservasjonRepository.lagre(uuid) { it!!.reservertAv = reservasjon.reservertAv
@@ -240,16 +240,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 return
             }
         }
-    }
-
-    fun hentAlleOppgaveKøer(ident: String): List<OppgaveKø> {
-        return oppgaveKøRepository.hent().filter { oppgaveKø ->
-            oppgaveKø.saksbehandlere.any { saksbehandler -> saksbehandler.brukerIdent == ident }
-        }
-    }
-
-    fun hentPersonInfoOptional(aktørId: Long): Optional<TpsPersonDto> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     fun hentAntallOppgaver(oppgavekøId: UUID): Int {
@@ -261,9 +251,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun hentNesteOppgaverIKø(idToken: IdToken? = null, kø: UUID): List<OppgaveDto> {
+    suspend fun hentNesteOppgaverIKø(kø: UUID): List<OppgaveDto> {
         if (configuration.erIkkeLokalt) {
-            if (pepClient.harBasisTilgang(idToken!!)) {
+            if (pepClient.harBasisTilgang()) {
                 val list = mutableListOf<OppgaveDto>()
                 val oppgaver = hentOppgaver(kø)
                 for (oppgave in oppgaver) {
@@ -271,9 +261,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         break
                     }
                     if (!pepClient.harTilgangTilLesSak(
-                                    idToken = idToken!!,
-                                    fagsakNummer = oppgave.fagsakSaksnummer
-                            )
+                            fagsakNummer = oppgave.fagsakSaksnummer
+                        )
                     ) {
                         settSkjermet(oppgave)
                         continue
@@ -423,14 +412,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun sokSaksbehandlerMedIdent(ident: BrukerIdentDto): Saksbehandler? {
         return saksbehandlerRepository.finnSaksbehandlerMedIdent(ident.brukerIdent)
-    }
-
-    fun hentNavnHvisReservertAvAnnenSaksbehandler(reservasjon: Reservasjon): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    fun hentNavnHvisFlyttetAvSaksbehandler(flyttetAv: String): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     fun hentOppgaveKøer(): List<OppgaveKø> {

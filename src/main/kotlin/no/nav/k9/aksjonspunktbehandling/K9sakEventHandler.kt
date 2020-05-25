@@ -57,9 +57,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
 
         for (oppgavekø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgavekø.id) { oppgavekø ->
-                oppgavekø?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                oppgavekø!!
+            oppgaveKøRepository.lagre(oppgavekø.id) { o ->
+                o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                o!!
             }
         }
     }

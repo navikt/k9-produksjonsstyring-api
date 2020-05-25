@@ -42,7 +42,7 @@ internal fun Route.OppgaveApis(
                 )
             ) {
                 call.respond(
-                    oppgaveTjeneste.hentNesteOppgaverIKø(call.idToken(), UUID.fromString(queryParameter))
+                    oppgaveTjeneste.hentNesteOppgaverIKø(UUID.fromString(queryParameter))
                 )
             }
         } else {

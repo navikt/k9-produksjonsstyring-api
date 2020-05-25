@@ -44,13 +44,13 @@ internal fun Route.NavAnsattApis(
                 val innloggetNavAnsattDto = InnloggetNavAnsattDto(
                     token.getUsername(),
                     token.getName(),
-                    kanSaksbehandle = pepClient.harBasisTilgang(token),
-                    kanVeilede = pepClient.harBasisTilgang(token),
-                    kanBeslutte = pepClient.harBasisTilgang(token),
-                    kanBehandleKodeEgenAnsatt = pepClient.harBasisTilgang(token),
-                    kanBehandleKode6 = pepClient.harBasisTilgang(token),
-                    kanBehandleKode7 = pepClient.harBasisTilgang(token),
-                    kanOppgavestyre = pepClient.erOppgaveStyrer(token)
+                    kanSaksbehandle = pepClient.harBasisTilgang(),
+                    kanVeilede = pepClient.harBasisTilgang(),
+                    kanBeslutte = pepClient.harBasisTilgang(),
+                    kanBehandleKodeEgenAnsatt = pepClient.harBasisTilgang(),
+                    kanBehandleKode6 = pepClient.harBasisTilgang(),
+                    kanBehandleKode7 = pepClient.harBasisTilgang(),
+                    kanOppgavestyre = pepClient.erOppgaveStyrer()
                 )
                 if (saksbehandlerRepository.finnSaksbehandlerMedEpost(token.getUsername()) != null) {
                     saksbehandlerRepository.addSaksbehandler(
