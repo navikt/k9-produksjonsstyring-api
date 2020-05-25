@@ -43,7 +43,7 @@ class GosysOppgaveGateway @KtorExperimentalAPI constructor(
         val gosysOppgaver: MutableList<GosysOppgave> = ArrayList()
         oppgaver.forEach { oppgave ->
             val id = (oppgave as JSONObject).getInt("id")
-            val versjon = (oppgave as JSONObject).getInt("versjon")
+            val versjon = oppgave.getInt("versjon")
             gosysOppgaver.add(
                 GosysOppgave(id,versjon )
             )
@@ -52,6 +52,7 @@ class GosysOppgaveGateway @KtorExperimentalAPI constructor(
         return gosysOppgaver
     }
 
+    @KtorExperimentalAPI
     private fun addHeaders(httpRequestBase: HttpRequestBase) {
         val accessToken = accessTokenClientResolver.naisSts().getAccessToken(emptySet())
         httpRequestBase.setHeaders(mapOf(

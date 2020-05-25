@@ -188,7 +188,7 @@ data class Modell(
             applikasjonSakREF = modell.sisteEvent().saksnummer,
             applikasjonBehandlingREF = modell.sisteEvent().eksternId.toString().replace("-", ""),
             styringsinformasjonListe = listOf(),
-            avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "")
+            avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "ok")
         )
         return behandlingAvsluttet
     }

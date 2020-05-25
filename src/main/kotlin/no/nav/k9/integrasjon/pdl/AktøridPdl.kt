@@ -5,7 +5,7 @@ data class AktøridPdl(
     val `data`: Data
 ) {
     data class Data(
-        val hentIdenter: HentIdenter
+        var hentIdenter: HentIdenter?
     ) {
         data class HentIdenter(
             val identer: List<Identer>
