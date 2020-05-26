@@ -200,7 +200,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     suspend fun hentOppgaverFraListe(saksnummere: List<String>): List<OppgaveDto> {
         return saksnummere.map { oppgaveRepository.hentOppgaveMedSaksnummer(it) }
-            .map { oppgave -> tilOppgaveDto(oppgave!!, reservasjonRepository.hent(oppgave.eksternId)) }.toList()
+            .map { oppgave ->
+                tilOppgaveDto(oppgave!!, if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                    reservasjonRepository.hent(oppgave.eksternId) 
+                } else {
+                    null
+                }
+                ) }.toList()
     }
 
     fun hentNyeOgFerdigstilteOppgaver (oppgavekoId: OppgavekøIdDto): List<NyeOgFerdigstilteOppgaverDto> {
