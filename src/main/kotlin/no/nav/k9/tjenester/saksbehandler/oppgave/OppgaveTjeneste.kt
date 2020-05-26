@@ -16,6 +16,7 @@ import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
+import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
 import no.nav.k9.tjenester.fagsak.FagsakDto
@@ -118,7 +119,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         FagsakDto(
                             it.fagsakSaksnummer,
                             PersonDto(
-                                person.data.hentPerson.navn[0].forkortetNavn,
+                                person.navn(),
                                 person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                                 person.data.hentPerson.kjoenn[0].kjoenn,
                                 null
@@ -140,7 +141,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 FagsakDto(
                     oppgave.fagsakSaksnummer,
                     PersonDto(
-                        person.data.hentPerson.navn[0].forkortetNavn,
+                        person.navn(),
                         person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                         person.data.hentPerson.kjoenn[0].kjoenn,
                         null
@@ -176,7 +177,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             oppgaveStatus,
             oppgave.behandlingId,
             oppgave.fagsakSaksnummer,
-            person.data.hentPerson.navn[0].forkortetNavn,
+            person.navn(),
             oppgave.system,
             person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
             oppgave.behandlingType,
@@ -311,7 +312,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             ", "
                         )
                     } else {
-                        person!!.data.hentPerson.navn[0].forkortetNavn
+                        person!!.navn()
                     }
 
                     list.add(
@@ -421,7 +422,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     status = status,
                     behandlingId = oppgave.behandlingId,
                     saksnummer = oppgave.fagsakSaksnummer,
-                    navn = person.data.hentPerson.navn[0].forkortetNavn,
+                    navn = person.navn(),
                     system = oppgave.system,
                     personnummer = person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
                     behandlingstype = oppgave.behandlingType,
