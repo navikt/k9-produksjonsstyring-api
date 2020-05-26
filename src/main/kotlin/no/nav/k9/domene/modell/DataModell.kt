@@ -97,6 +97,10 @@ data class Modell(
         return this.eventer[this.eventer.lastIndex]
     }
 
+    fun førsteEvent(): BehandlingProsessEventDto {
+        return this.eventer[0]
+    }
+    
     fun starterSak(): Boolean {
         return this.eventer.size == 1
     }
