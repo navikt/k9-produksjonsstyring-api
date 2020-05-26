@@ -22,7 +22,7 @@ import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.IdToken
-import no.nav.k9.tjenester.saksbehandler.nøkkeltall.NyeOgFerdigstilteOppgaverDto
+import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
