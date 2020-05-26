@@ -23,9 +23,9 @@ data class Modell(
 ) {
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
    
-    fun oppgave(): Oppgave {
-        val event = sisteEvent()
-        val eventResultat = sisteEvent().aktiveAksjonspunkt().eventResultat()
+    fun oppgave(sisteEvent: BehandlingProsessEventDto = sisteEvent()): Oppgave {
+        val event = sisteEvent
+        val eventResultat = sisteEvent.aktiveAksjonspunkt().eventResultat()
         var aktiv = true
         var oppgaveAvsluttet: LocalDateTime? = null
         var beslutterOppgave = false
@@ -97,6 +97,10 @@ data class Modell(
         return this.eventer[this.eventer.lastIndex]
     }
 
+    fun førsteEvent(): BehandlingProsessEventDto {
+        return this.eventer[0]
+    }
+    
     fun starterSak(): Boolean {
         return this.eventer.size == 1
     }

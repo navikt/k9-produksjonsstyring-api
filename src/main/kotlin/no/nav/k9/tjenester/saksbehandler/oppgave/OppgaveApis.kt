@@ -11,7 +11,9 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
@@ -203,6 +205,8 @@ internal fun Route.OppgaveApis(
                     idToken = call.idToken()
                 )
             ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)) }
+        } else {
+            call.respond(emptyList<OppgaveDto>())
         }
     }
 }

@@ -31,7 +31,6 @@ internal fun Route.FagsakApis(
 
     post { _: søkFagsaker ->
         val søk = call.receive<QueryString>()
-
         val idToken = call.idToken()
         withContext(
             requestContextService.getCoroutineContext(

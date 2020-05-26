@@ -55,7 +55,7 @@ import no.nav.k9.tjenester.konfig.KonfigApis
 import no.nav.k9.tjenester.mock.MockGrensesnitt
 import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
 import no.nav.k9.tjenester.saksbehandler.TestApis
-import no.nav.k9.tjenester.saksbehandler.nøkkeltall.SaksbehandlerNøkkeltallApis
+import no.nav.k9.tjenester.saksbehandler.nokkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
@@ -384,7 +384,7 @@ private fun Route.api(
                 requestContextService = requestContextService,
                 oppgaveKøRepository = oppgaveKøRepository
             )
-            SaksbehandlerNøkkeltallApis()
+            SaksbehandlerNøkkeltallApis(oppgaveTjeneste = oppgaveTjeneste)
         }
         route("avdelingsleder") {
             AvdelingslederApis(
@@ -415,7 +415,6 @@ private fun Route.api(
                 pepClient = pepClient
             )
         }
-        SaksbehandlerNøkkeltallApis()
         route("konfig") { KonfigApis(configuration) }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
     }

@@ -9,6 +9,7 @@ import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import org.slf4j.LoggerFactory
+import reportMetrics
 
 
 class K9sakEventHandler @KtorExperimentalAPI constructor(
@@ -29,8 +30,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         event: BehandlingProsessEventDto
     ) {
         val modell = behandlingProsessEventRepository.lagre(event)
+        
         val oppgave = modell.oppgave()
-     
+        
         fjernReservasjonDersomIkkeOppgavenErAktiv(oppgave)
      
         oppgaveRepository.lagre(oppgave.eksternId) {
@@ -55,7 +57,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             }
             oppgave
         }
-
+        modell.reportMetrics(reservasjonRepository)
         for (oppgavekø in oppgaveKøRepository.hent()) {
             oppgaveKøRepository.lagre(oppgavekø.id) { o ->
                 o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)

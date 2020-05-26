@@ -35,10 +35,14 @@ data class PersonPdl(
 
             data class Navn(
                 val etternavn: String,
-                val forkortetNavn: String,
+                val forkortetNavn: String?,
                 val fornavn: String,
                 val mellomnavn: String?
             )
         }
     }
 }
+internal fun PersonPdl.navn(): String{
+   return data.hentPerson.navn[0].forkortetNavn?:data.hentPerson.navn[0].fornavn + " " +data.hentPerson.navn[0].etternavn
+}
+
