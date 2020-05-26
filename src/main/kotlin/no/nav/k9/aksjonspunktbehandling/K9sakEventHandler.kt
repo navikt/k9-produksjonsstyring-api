@@ -57,7 +57,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             }
             oppgave
         }
-        modell.reportMetrics()
+        modell.reportMetrics(reservasjonRepository)
         for (oppgavekø in oppgaveKøRepository.hent()) {
             oppgaveKøRepository.lagre(oppgavekø.id) { o ->
                 o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)

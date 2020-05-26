@@ -3,6 +3,7 @@ import io.prometheus.client.Counter
 import io.prometheus.client.Histogram
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.Modell
+import no.nav.k9.domene.repository.ReservasjonRepository
 import java.time.Duration
 
 private val oppgaveOpprettet = Counter.build()
@@ -15,20 +16,47 @@ private val oppgaveAvsluttet = Counter.build()
     .help("Teller for antall avsluttede oppgaver")
     .register()
 
+private val oppgaveAutomatisk = Counter.build()
+    .name("oppgaveAutomatisk_counter")
+    .help("Teller for antall automaiske avsluttede oppgaver")
+    .register()
+
+private val oppgaveDelvisAutomatisk = Counter.build()
+    .name("oppgaveDelvisAutomatisk_counter")
+    .help("Teller for antall delvis automaiske avsluttede oppgaver")
+    .register()
+
+private val oppgaveBeslutter = Counter.build()
+    .name("oppgaveBeslutter_counter")
+    .help("Teller for antall beslutter avsluttede oppgaver")
+    .register()
+
 private val ledetid = Histogram.build()
     .name("ledetid_behandling_av_oppgave")
     .help("Ledetid behandling av oppgaver")
     .register()
 
-internal fun Modell.reportMetrics() {
+internal fun Modell.reportMetrics(reservasjonRepository: ReservasjonRepository) {
     val oppgave = oppgave()
     if (starterSak()) {
-        oppgaveOpprettet.inc()    
+        oppgaveOpprettet.inc()
     }
-    
+
     if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
         oppgaveAvsluttet.inc()
-        val between = Duration.between(førsteEvent().eventTid, sisteEvent().eventTid)
-        ledetid.observe(between.toDays().toDouble())
+
+        ledetid.observe(Duration.between(førsteEvent().eventTid, sisteEvent().eventTid).toHours().toDouble())
+
+        val varInnomBeslutter = eventer.map { oppgave(it) }.any { it.tilBeslutter }
+        if (varInnomBeslutter) {
+            oppgaveBeslutter.inc()
+        }
+        if (reservasjonRepository.finnes(sisteEvent().eksternId!!) && !varInnomBeslutter) {
+            oppgaveDelvisAutomatisk.inc()
+        }
+
+        if (!reservasjonRepository.finnes(sisteEvent().eksternId!!)) {
+            oppgaveAutomatisk.inc()
+        }        
     }
 }
