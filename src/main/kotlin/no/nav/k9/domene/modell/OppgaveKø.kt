@@ -91,11 +91,11 @@ data class OppgaveKø(
     }
 
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {
-        if (oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {
+        if (fomDato != null && oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {
             return false
         }
 
-        if (oppgave.behandlingOpprettet.toLocalDate().isAfter(tomDato)) {
+        if (tomDato != null && oppgave.behandlingOpprettet.toLocalDate().isAfter(tomDato)) {
             return false
         }
 
