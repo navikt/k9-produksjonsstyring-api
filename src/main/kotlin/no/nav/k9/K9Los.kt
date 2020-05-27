@@ -405,7 +405,7 @@ private fun Route.api(
             azureGraphService = azureGraphService,
             saksbehandlerRepository = saksbehhandlerRepository
         )
-        if (!configuration.erIProd) {
+        if (true) {
             TestApis(
                 requestContextService = requestContextService,
                 pdlService = pdlService,
