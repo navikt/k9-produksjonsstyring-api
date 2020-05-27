@@ -72,8 +72,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun reserverOppgave(ident: String, uuid: UUID): Reservasjon {
         val reservasjon = Reservasjon(
-            LocalDateTime.now().plusHours(24).forskyvReservasjonsDato(),
-            ident, null, null, null, oppgave = uuid
+            reservertTil = LocalDateTime.now().plusHours(24).forskyvReservasjonsDato(),
+            reservertAv = ident, flyttetAv = null, flyttetTidspunkt = null, begrunnelse = null, oppgave = uuid
         )
         reservasjonRepository.lagre(uuid) {
             reservasjon
@@ -201,7 +201,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun hentOppgaverFraListe(saksnummere: List<String>): List<OppgaveDto> {
         return saksnummere.map { oppgaveRepository.hentOppgaveMedSaksnummer(it) }
             .map { oppgave ->
-                tilOppgaveDto(oppgave!!, if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                tilOppgaveDto(oppgave!!, if (reservasjonRepository.finnes(oppgave.eksternId)
+                    && reservasjonRepository.hent(oppgave.eksternId).erAktiv() ) {
                     reservasjonRepository.hent(oppgave.eksternId) 
                 } else {
                     null
@@ -212,7 +213,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun hentNyeOgFerdigstilteOppgaver (oppgavekoId: OppgavekøIdDto): List<NyeOgFerdigstilteOppgaverDto> {
         val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId.id))
         val køOppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(kø.oppgaver)
-        var liste = mutableListOf<NyeOgFerdigstilteOppgaverDto>()
+        val liste = mutableListOf<NyeOgFerdigstilteOppgaverDto>()
         kø.filtreringBehandlingTyper.forEach {
             liste.add(
                 NyeOgFerdigstilteOppgaverDto(
@@ -237,7 +238,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
         val reservasjon = reservasjonRepository.lagre(uuid) {
             it!!.begrunnelse = begrunnelse
-            it.aktiv = false
+            it.reservertTil = null
             it
         }
         val oppgave = oppgaveRepository.hent(uuid)
@@ -396,7 +397,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     suspend fun hentSisteReserverteOppgaver(username: String): List<OppgaveDto> {
         val list = mutableListOf<OppgaveDto>()
-        for (reservasjon in reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }
+        for (reservasjon in reservasjonRepository.hent().filter { it.erAktiv() }
             .filter { saksbehandlerRepository.finnSaksbehandlerMedEpost(username) != null && it.reservertAv == saksbehandlerRepository.finnSaksbehandlerMedEpost(username)!!.brukerIdent }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             val person = pdlService.person(oppgave.aktorId)
