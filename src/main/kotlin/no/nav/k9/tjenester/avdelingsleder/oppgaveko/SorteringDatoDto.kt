@@ -4,6 +4,6 @@ import java.time.LocalDate
 
 data class SorteringDatoDto (
     val id: String,
-    val fomDato: LocalDate,
-    val tomDato: LocalDate
+    var fomDato: LocalDate?,
+    var tomDato: LocalDate?
 )
