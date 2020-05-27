@@ -7,8 +7,10 @@ import io.ktor.locations.get
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import java.time.LocalDate
 
 @KtorExperimentalLocationsAPI
 fun Route.SaksbehandlerNøkkeltallApis(
