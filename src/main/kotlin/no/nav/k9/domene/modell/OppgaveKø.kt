@@ -91,14 +91,25 @@ data class OppgaveKø(
     }
 
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {
-        if (fomDato != null && oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {
-            return false
-        }
+        if (sortering == KøSortering.OPPRETT_BEHANDLING) {
+            if (fomDato != null && oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {
+                return false
+            }
 
-        if (tomDato != null && oppgave.behandlingOpprettet.toLocalDate().isAfter(tomDato)) {
-            return false
+            if (tomDato != null && oppgave.behandlingOpprettet.toLocalDate().isAfter(tomDato)) {
+                return false
+            }
         }
+        
+        if (sortering == KøSortering.FORSTE_STONADSDAG) {
+            if (fomDato != null && oppgave.forsteStonadsdag.isBefore(fomDato!!.plusDays(1))) {
+                return false
+            }
 
+            if (tomDato != null && oppgave.forsteStonadsdag.isAfter(tomDato)) {
+                return false
+            }
+        }
         return true
     }
 
