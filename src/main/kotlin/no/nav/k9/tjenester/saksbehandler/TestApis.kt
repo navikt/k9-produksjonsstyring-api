@@ -64,16 +64,16 @@ internal fun Route.TestApis(
               val erOppgaveStyrer = pepClient.erOppgaveStyrer()
 
               val harbasistilgang = pepClient.harBasisTilgang()
-
+    
             val accessToken =
                 accessTokenClient.getAccessToken(
                     setOf("https://graph.microsoft.com/.default"),
                     kotlin.coroutines.coroutineContext.idToken().value
                 )
-            val harTilgangTilLesSak = pepClient.harTilgangTilLesSak("60HFW")
+            val harTilgangTilLesSak = pepClient.harTilgangTilLesSak("6GBFC")
             
             call.respond(
-                "${call.idToken().getUsername()} erOppgavestyrer: $erOppgaveStyrer, harBasistilgang: $harbasistilgang, har tilgang til 60HFW:$harTilgangTilLesSak"
+                "${call.idToken().getUsername()} erOppgavestyrer: $erOppgaveStyrer, harBasistilgang: $harbasistilgang, har tilgang til 6GBFC:$harTilgangTilLesSak"
             )
         }
     }
