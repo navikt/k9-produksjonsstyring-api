@@ -70,7 +70,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         if (!oppgave.aktiv) {
             if (reservasjonRepository.finnes(oppgave.eksternId)) {
                 reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
-                    reservasjon!!.aktiv = false
+                    reservasjon!!.reservertTil = null
                     reservasjon
                 }
             }

@@ -269,7 +269,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     }
 
     fun tilBeslutter(): Boolean {
-        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any { it.defaultTotrinnBehandling }
+        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any { it == AksjonspunktDefinisjon.FATTER_VEDTAK }
     }
 
     fun eventResultat(): EventResultat {

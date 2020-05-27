@@ -91,14 +91,25 @@ data class OppgaveKø(
     }
 
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {
-        if (fomDato != null && oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {
-            return false
-        }
+        if (sortering == KøSortering.OPPRETT_BEHANDLING) {
+            if (fomDato != null && oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {
+                return false
+            }
 
-        if (tomDato != null && oppgave.behandlingOpprettet.toLocalDate().isAfter(tomDato)) {
-            return false
+            if (tomDato != null && oppgave.behandlingOpprettet.toLocalDate().isAfter(tomDato)) {
+                return false
+            }
         }
+        
+        if (sortering == KøSortering.FORSTE_STONADSDAG) {
+            if (fomDato != null && oppgave.forsteStonadsdag.isBefore(fomDato!!.plusDays(1))) {
+                return false
+            }
 
+            if (tomDato != null && oppgave.forsteStonadsdag.isAfter(tomDato)) {
+                return false
+            }
+        }
         return true
     }
 
@@ -113,15 +124,18 @@ data class OppgaveKø(
     }
 
     private fun sjekkOppgavensKriterier(oppgave: Oppgave, kriterier: List<AndreKriterierDto>): Boolean {
-        if (oppgave.tilBeslutter && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.TIL_BESLUTTER)) {
+        if (oppgave.tilBeslutter && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.TIL_BESLUTTER)) {
             return true
         }
 
-        if (oppgave.registrerPapir && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.PAPIRSØKNAD)) {
+        if (oppgave.registrerPapir && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.PAPIRSØKNAD)) {
             return true
         }
 
-        if (oppgave.utbetalingTilBruker && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.UTBETALING_TIL_BRUKER)) {
+        if (oppgave.utbetalingTilBruker && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.UTBETALING_TIL_BRUKER)) {
             return true
         }
 
@@ -129,11 +143,13 @@ data class OppgaveKø(
             return true
         }
 
-        if (oppgave.søktGradering && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.SOKT_GRADERING)) {
+        if (oppgave.søktGradering && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.SOKT_GRADERING)) {
             return true
         }
 
-        if (oppgave.selvstendigFrilans && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.SELVSTENDIG_FRILANS)) {
+        if (oppgave.selvstendigFrilans && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.SELVSTENDIG_FRILANS)) {
             return true
         }
 
@@ -146,8 +162,14 @@ data class OppgaveKø(
     private fun erOppgavenReservert(
         reservasjonRepository: ReservasjonRepository,
         oppgave: Oppgave
-    ) = reservasjonRepository.hent().filter { it.erAktiv(reservasjonRepository) }
-        .any() { it.oppgave == oppgave.eksternId }
+    ): Boolean {
+        if (reservasjonRepository.finnes(oppgave.eksternId)) {
+            val reservasjon = reservasjonRepository.hent(oppgave.eksternId)
+            return reservasjon.erAktiv()
+        }
+        return false
+    }
+
 }
 
 class Saksbehandler(
@@ -196,6 +218,7 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
     KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans");
+
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
     companion object {
@@ -237,9 +260,10 @@ enum class FagsakStatus(override val kode: String, override val navn: String) : 
 }
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum class BehandlingType(override val kode: String, override val navn: String,override val kodeverk : String) : Kodeverdi {
+enum class BehandlingType(override val kode: String, override val navn: String, override val kodeverk: String) :
+    Kodeverdi {
     FORSTEGANGSSOKNAD("BT-002", "Førstegangsbehandling", "ae0034"),
-    KLAGE("BT-003", "Klage","ae0058" ),
+    KLAGE("BT-003", "Klage", "ae0058"),
     REVURDERING("BT-004", "Revurdering", "ae0028"),
     INNSYN("BT-006", "Innsyn", "ae0042"),
     ANKE("BT-008", "Anke", "ae0046");
