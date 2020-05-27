@@ -433,6 +433,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     fagsakNummer = oppgave.fagsakSaksnummer
                 )
             ) {
+                val innloggetBruker = pepClient.hentIdentTilInnloggetBruker()
+                reservasjonRepository.lagre(oppgave.eksternId) {
+                    if (innloggetBruker == it?.reservertAv) {
+                        it.reservertTil = null
+                    }
+                    it!!
+                }
                 settSkjermet(oppgave)
                 continue
             }
