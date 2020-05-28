@@ -36,11 +36,11 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
         oppgaveRepository.lagre(oppgave.eksternId) {
             if (modell.starterSak()) {
-                sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettet(modell))
+                sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
             }
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
-                sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttet(modell))
+                sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
             statistikkProducer.send(modell)

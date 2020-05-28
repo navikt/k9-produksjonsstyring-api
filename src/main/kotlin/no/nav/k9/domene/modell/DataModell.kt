@@ -9,6 +9,9 @@ import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
+import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktKodeDefinisjon.AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE
+import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktKodeDefinisjon.MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE
+import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktStatus
 import no.nav.k9.statistikk.kontrakter.Aktør
 import no.nav.k9.statistikk.kontrakter.Behandling
 import no.nav.k9.statistikk.kontrakter.Sak
@@ -22,7 +25,7 @@ data class Modell(
     val eventer: List<BehandlingProsessEventDto>
 ) {
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
-   
+
     fun oppgave(sisteEvent: BehandlingProsessEventDto = sisteEvent()): Oppgave {
         val event = sisteEvent
         val eventResultat = sisteEvent.aktiveAksjonspunkt().eventResultat()
@@ -58,7 +61,7 @@ data class Modell(
         if (event.eventHendelse == EventHendelse.AKSJONSPUNKT_AVBRUTT || event.eventHendelse == EventHendelse.AKSJONSPUNKT_UTFØRT) {
             aktiv = false
         }
-        if ( FagsakYtelseType.fraKode(event.ytelseTypeKode) == FagsakYtelseType.FRISINN) {
+        if (FagsakYtelseType.fraKode(event.ytelseTypeKode) == FagsakYtelseType.FRISINN) {
             aktiv = false
         }
         var behandlingStatus = event.behandlingStatus
@@ -82,7 +85,10 @@ data class Modell(
             system = event.fagsystem.name,
             oppgaveEgenskap = emptyList(),
             aksjonspunkter = event.aktiveAksjonspunkt(),
-            utenlands = event.aktiveAksjonspunkt().liste.any { entry -> (entry.key == "5068" || entry.key == "6068") && entry.value != "AVBR" },
+            utenlands = event.aktiveAksjonspunkt().liste.any { entry ->
+                (entry.key == AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE
+                        || entry.key == MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE) && entry.value != AksjonspunktStatus.AVBRUTT.kode
+            },
             tilBeslutter = beslutterOppgave,
             kombinert = false,
             registrerPapir = registrerPapir,
@@ -100,7 +106,7 @@ data class Modell(
     fun førsteEvent(): BehandlingProsessEventDto {
         return this.eventer[0]
     }
-    
+
     fun starterSak(): Boolean {
         return this.eventer.size == 1
     }
@@ -132,13 +138,13 @@ data class Modell(
     }
 
     @KtorExperimentalAPI
-    fun behandlingOpprettet(
-        modell: Modell
+    fun behandlingOpprettetSakOgBehandling(
+
     ): BehandlingOpprettet {
-        val sisteEvent = modell.sisteEvent()
+        val sisteEvent = sisteEvent()
         val behandlingOpprettet = BehandlingOpprettet(
             hendelseType = "behandlingOpprettet",
-            hendelsesId = sisteEvent.eksternId.toString() + "_" + modell.eventer.size,
+            hendelsesId = sisteEvent.eksternId.toString() + "_" + eventer.size,
             hendelsesprodusentREF = BehandlingOpprettet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
@@ -157,20 +163,20 @@ data class Modell(
             ansvarligEnhetREF = "NASJONAL",
             primaerBehandlingREF = null,
             sekundaerBehandlingREF = listOf(),
-            applikasjonSakREF = modell.sisteEvent().saksnummer,
-            applikasjonBehandlingREF = modell.sisteEvent().eksternId.toString().replace("-", ""),
+            applikasjonSakREF = sisteEvent().saksnummer,
+            applikasjonBehandlingREF = sisteEvent().eksternId.toString().replace("-", ""),
             styringsinformasjonListe = listOf()
         )
         return behandlingOpprettet
     }
+
     @KtorExperimentalAPI
-    fun behandlingAvsluttet(
-        modell: Modell
+    fun behandlingAvsluttetSakOgBehandling(
     ): BehandlingAvsluttet {
-        val sisteEvent = modell.sisteEvent()
+        val sisteEvent = sisteEvent()
         val behandlingAvsluttet = BehandlingAvsluttet(
             hendelseType = "behandlingAvsluttet",
-            hendelsesId = """${sisteEvent.eksternId.toString()}_${modell.eventer.size}""",
+            hendelsesId = """${sisteEvent.eksternId.toString()}_${eventer.size}""",
             hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
             behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
@@ -189,21 +195,23 @@ data class Modell(
             ansvarligEnhetREF = "NASJONAL",
             primaerBehandlingREF = null,
             sekundaerBehandlingREF = listOf(),
-            applikasjonSakREF = modell.sisteEvent().saksnummer,
-            applikasjonBehandlingREF = modell.sisteEvent().eksternId.toString().replace("-", ""),
+            applikasjonSakREF = sisteEvent().saksnummer,
+            applikasjonBehandlingREF = sisteEvent().eksternId.toString().replace("-", ""),
             styringsinformasjonListe = listOf(),
             avslutningsstatus = BehandlingAvsluttet.Avslutningsstatus("", "", "ok")
         )
         return behandlingAvsluttet
     }
+
     fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
     ): Behandling {
         val oppgave = oppgave()
-        val beslutter = if (oppgave.tilBeslutter 
-            && reservasjonRepository.finnes(oppgave.eksternId)&& reservasjonRepository.finnes(oppgave.eksternId)
-            && reservasjonRepository.hent(oppgave.eksternId).reservertAv != null) {
+        val beslutter = if (oppgave.tilBeslutter
+            && reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.finnes(oppgave.eksternId)
+            && reservasjonRepository.hent(oppgave.eksternId).reservertAv != null
+        ) {
             val saksbehandler =
                 saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjonRepository.hent(oppgave.eksternId).reservertAv!!)
             saksbehandler?.brukerIdent
@@ -269,7 +277,8 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     }
 
     fun tilBeslutter(): Boolean {
-        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any { it == AksjonspunktDefinisjon.FATTER_VEDTAK }
+        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }
+            .any { it == AksjonspunktDefinisjon.FATTER_VEDTAK }
     }
 
     fun eventResultat(): EventResultat {

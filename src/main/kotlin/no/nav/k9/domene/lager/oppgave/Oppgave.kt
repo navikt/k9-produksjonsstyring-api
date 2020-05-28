@@ -35,5 +35,4 @@ data class Oppgave(
     var skjermet: Boolean,
     val utenlands: Boolean
 
-) {
-}
+)
