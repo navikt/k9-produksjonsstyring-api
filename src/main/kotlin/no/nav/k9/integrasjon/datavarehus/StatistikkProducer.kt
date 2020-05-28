@@ -1,12 +1,17 @@
 package no.nav.k9.integrasjon.datavarehus
 
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
 import no.nav.helse.dusseldorf.ktor.health.Healthy
 import no.nav.helse.dusseldorf.ktor.health.Result
 import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.domene.modell.Modell
+import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.kafka.KafkaConfig
 import no.nav.k9.integrasjon.kafka.TopicEntry
 import no.nav.k9.integrasjon.kafka.TopicUse
@@ -21,6 +26,9 @@ import org.slf4j.LoggerFactory
 
 class StatistikkProducer @KtorExperimentalAPI constructor(
     val kafkaConfig: KafkaConfig,
+    val saksbehandlerRepository: SaksbehandlerRepository,
+    val reservasjonRepository: ReservasjonRepository,
+    val pepClient: PepClient,
     val config: Configuration
 ) : HealthCheck {
     @KtorExperimentalAPI
@@ -28,15 +36,17 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
         name = config.getStatistikkSakTopic(),
         valueSerializer = Serializer()
     )
+
     @KtorExperimentalAPI
     private val TOPIC_USE_STATISTIKK_BEHANDLING = TopicUse(
         name = config.getStatistikkBehandlingTopic(),
         valueSerializer = Serializer()
     )
+
     private companion object {
         private val NAME = "StatistikkProducer"
-      
-        private val logger = LoggerFactory.getLogger(StatistikkProducer::class.java)
+
+        private val log = LoggerFactory.getLogger(StatistikkProducer::class.java)
     }
 
     private val producer: KafkaProducer<String, String> = KafkaProducer(
@@ -45,25 +55,55 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
         StringSerializer()
     )
 
-    @KtorExperimentalAPI
-    internal fun sendSak(
-        sak: Sak
-    ) {
-        val melding = objectMapper().writeValueAsString(sak)
-        val recordMetaData = producer.send(
-           ProducerRecord(
-                TOPIC_USE_STATISTIKK_SAK.name,
-               melding
-            )
-        ).get()
-        logger.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        logger.info("Statistikk sak: $melding")
+    fun send(modell: Modell) {
+        runBlocking {
+            if (pepClient.kanSendeSakTilStatistikk(modell.sisteEvent().saksnummer)) {
+                sendSak(modell.dvhSak())
+                sendBehandling(
+                    modell.dvhBehandling(
+                        saksbehandlerRepository = saksbehandlerRepository,
+                        reservasjonRepository = reservasjonRepository
+                    )
+                )
+            }
+        }
     }
 
     @KtorExperimentalAPI
-    internal fun sendBehandling(
+    private fun sendSak(
+        sak: Sak
+    ) {
+        if (config.erLokalt()) {
+            log.info("Lokal kjøring, sender ikke melding til statistikk")
+            return
+        }
+        if (config.erIProd) {
+            log.info("Featuretogglet av i prod")
+            return
+        }
+        val melding = objectMapper().writeValueAsString(sak)
+        val recordMetaData = producer.send(
+            ProducerRecord(
+                TOPIC_USE_STATISTIKK_SAK.name,
+                melding
+            )
+        ).get()
+        log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        log.info("Statistikk sak: $melding")
+    }
+
+    @KtorExperimentalAPI
+    private fun sendBehandling(
         behandling: Behandling
     ) {
+        if (config.erLokalt()) {
+            log.info("Lokal kjøring, sender ikke melding til statistikk")
+            return
+        }
+        if (config.erIProd) {
+            log.info("Featuretogglet av i prod")
+            return
+        }
         val melding = objectMapper().writeValueAsString(behandling)
         val recordMetaData = producer.send(
             ProducerRecord(
@@ -71,27 +111,28 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
                 melding
             )
         ).get()
-        logger.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        logger.info("Statistikk behanlding: $melding")
+        log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        log.info("Statistikk behanlding: $melding")
     }
 
 
     internal fun stop() = producer.close()
+
     @KtorExperimentalAPI
     override suspend fun check(): Result {
         val result = try {
             producer.partitionsFor(TOPIC_USE_STATISTIKK_SAK.name)
             Healthy(NAME, "Tilkobling til Kafka OK!")
         } catch (cause: Throwable) {
-            logger.error("Feil ved tilkobling til Kafka", cause)
+            log.error("Feil ved tilkobling til Kafka", cause)
             UnHealthy(NAME, "Feil ved tilkobling mot Kafka. ${cause.message}")
         }
 
-       try {
+        try {
             producer.partitionsFor(TOPIC_USE_STATISTIKK_BEHANDLING.name)
             Healthy(NAME, "Tilkobling til Kafka OK!")
         } catch (cause: Throwable) {
-            logger.error("Feil ved tilkobling til Kafka", cause)
+            log.error("Feil ved tilkobling til Kafka", cause)
             return UnHealthy(NAME, "Feil ved tilkobling mot Kafka. ${cause.message}")
         }
         return result

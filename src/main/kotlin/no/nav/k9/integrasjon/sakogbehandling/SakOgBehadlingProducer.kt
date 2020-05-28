@@ -31,7 +31,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
     private companion object {
         private val NAME = "SakOgBehadlingProducer"
       
-        private val logger = LoggerFactory.getLogger(SakOgBehadlingProducer::class.java)
+        private val log = LoggerFactory.getLogger(SakOgBehadlingProducer::class.java)
     }
 
     private val producer: KafkaProducer<String, String> = KafkaProducer(
@@ -44,6 +44,10 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
     internal fun behandlingOpprettet(
         behandlingOpprettet: BehandlingOpprettet
     ) {
+        if (config.erLokalt()) {
+            log.info("Lokal kjøring, sender ikke melding til sak og behandling")
+            return
+        }
         val melding = objectMapper().writeValueAsString(behandlingOpprettet)
         val recordMetaData = producer.send(
            ProducerRecord(
@@ -51,15 +55,17 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
                melding
             )
         ).get()
-        logger.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-       // logger.info("StartetBehandling: $melding")
+        log.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
     }
 
     @KtorExperimentalAPI
     internal fun avsluttetBehandling(
         behandlingAvsluttet: BehandlingAvsluttet
     ) {
-
+        if (config.erLokalt()) {
+            log.info("Lokal kjøring, sender ikke melding til sak og behandling")
+            return
+        }
         val melding = objectMapper().writeValueAsString(behandlingAvsluttet)
         val recordMetaData = producer.send(
             ProducerRecord(
@@ -67,7 +73,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
                 melding
             )
         ).get()
-        logger.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+        log.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
        // logger.info("AvsluttetBehandling: $melding")
     }
 
@@ -79,7 +85,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
             producer.partitionsFor(TOPIC_USE_SAK_OG_BEHANDLING.name)
             Healthy(NAME, "Tilkobling til Kafka OK!")
         } catch (cause: Throwable) {
-            logger.error("Feil ved tilkobling til Kafka", cause)
+            log.error("Feil ved tilkobling til Kafka", cause)
             UnHealthy(NAME, "Feil ved tilkobling mot Kafka. ${cause.message}")
         }
     }

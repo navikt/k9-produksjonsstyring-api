@@ -83,7 +83,9 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
     suspend fun kanSendeSakTilStatistikk(
         fagsakNummer: String
     ): Boolean {
-
+        if (config.erLokalt()) {
+            log.info("Lokal kjøring, får alltid true ved sjekk på om sak kan sendes til statistikk")
+        }
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, LESETILGANG_SAK)

@@ -137,17 +137,20 @@ fun Application.k9Los() {
         kafkaConfig = configuration.getKafkaConfig(),
         config = configuration
     )
-
-    val statistikkProducer = StatistikkProducer(
-        kafkaConfig = configuration.getKafkaConfig(),
-        config = configuration
-    )
     val azureGraphService = AzureGraphService(
         accessTokenClient = accessTokenClientResolver.accessTokenClient(),
         configuration = configuration
     )
 
     val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
+
+    val statistikkProducer = StatistikkProducer(
+        kafkaConfig = configuration.getKafkaConfig(),
+        config = configuration,
+        pepClient = pepClient,
+        saksbehandlerRepository = saksbehandlerRepository,
+        reservasjonRepository = reservasjonRepository
+    )
     
     val k9sakEventHandler = K9sakEventHandler(
         oppgaveRepository = oppgaveRepository,
@@ -156,9 +159,7 @@ fun Application.k9Los() {
         sakOgBehadlingProducer = sakOgBehadlingProducer,
         oppgaveKøRepository = oppgaveKøRepository,
         reservasjonRepository = reservasjonRepository,
-        saksbehandlerRepository = saksbehandlerRepository,
-        statistikkProducer = statistikkProducer,
-        pepClient = pepClient
+        statistikkProducer = statistikkProducer
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
