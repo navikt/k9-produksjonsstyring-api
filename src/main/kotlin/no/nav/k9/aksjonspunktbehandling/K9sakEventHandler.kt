@@ -1,10 +1,12 @@
 package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -20,7 +22,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     val oppgaveKøRepository: OppgaveKøRepository,
     val reservasjonRepository: ReservasjonRepository,
     val saksbehandlerRepository: SaksbehandlerRepository,
-    val statistikkProducer: StatistikkProducer
+    val statistikkProducer: StatistikkProducer,
+    val pepClient: PepClient
 //    val gosysOppgaveGateway: GosysOppgaveGateway
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
@@ -46,13 +49,18 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 }
 
                 if (config.erIDevFss) {
-                    statistikkProducer.sendSak(modell.dvhSak())
-                    statistikkProducer.sendBehandling(
-                        modell.dvhBehandling(
-                            saksbehandlerRepository = saksbehandlerRepository,
-                            reservasjonRepository = reservasjonRepository
-                        )
-                    )
+                    runBlocking {
+                        if (pepClient.kanSendeSakTilStatistikk(modell.sisteEvent().saksnummer)) {
+                            statistikkProducer.sendSak(modell.dvhSak())
+                            statistikkProducer.sendBehandling(
+                                modell.dvhBehandling(
+                                    saksbehandlerRepository = saksbehandlerRepository,
+                                    reservasjonRepository = reservasjonRepository
+                                )
+                            )
+                        }
+                    }
+                  
                 }
             }
             oppgave
