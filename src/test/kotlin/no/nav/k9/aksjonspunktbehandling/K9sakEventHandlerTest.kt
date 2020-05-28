@@ -10,6 +10,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.gosys.GosysOppgave
 import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
@@ -39,6 +40,7 @@ class K9sakEventHandlerTest {
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
+        val pepclient = mockk<PepClient>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
@@ -48,13 +50,13 @@ class K9sakEventHandlerTest {
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
-//            gosysOppgaveGateway = gosysOppgaveGateway
             config = config,
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             saksbehandlerRepository = saksbehandlerRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            pepClient = pepclient
         )
 
         @Language("JSON") val json =
@@ -106,6 +108,7 @@ class K9sakEventHandlerTest {
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
+        val pepclient = mockk<PepClient>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
@@ -121,7 +124,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             saksbehandlerRepository = saksbehandlerRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            pepClient = pepclient
         )
 
         @Language("JSON") val json =
@@ -168,6 +172,7 @@ class K9sakEventHandlerTest {
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
+        val pepclient = mockk<PepClient>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource=dataSource)
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
@@ -184,7 +189,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             saksbehandlerRepository = saksbehandlerRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            pepClient = pepclient
         )
 
         @Language("JSON") val json =
@@ -235,6 +241,7 @@ class K9sakEventHandlerTest {
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource=dataSource)
         val statistikkProducer = mockk<StatistikkProducer>()
+        val pepclient = mockk<PepClient>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
@@ -250,7 +257,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             saksbehandlerRepository = saksbehandlerRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            pepClient = pepclient
         )
 
         @Language("JSON") val json =

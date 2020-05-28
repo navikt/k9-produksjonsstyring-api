@@ -18,6 +18,7 @@ import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -67,6 +68,7 @@ class RutinerTest {
             )
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val pepclient = mockk<PepClient>()
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
@@ -79,7 +81,8 @@ class RutinerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             saksbehandlerRepository = saksbehandlerRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            pepClient = pepclient
         )
 
         @Language("JSON") val json =
