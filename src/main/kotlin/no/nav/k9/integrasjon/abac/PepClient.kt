@@ -78,7 +78,23 @@ class PepClient @KtorExperimentalAPI constructor(private val azureGraphService: 
         val decision =  evaluate(requestBuilder)
         return decision
     }
+    
+    @KtorExperimentalAPI
+    suspend fun kanSendeSakTilStatistikk(
+        fagsakNummer: String
+    ): Boolean {
 
+        val requestBuilder = XacmlRequestBuilder()
+            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+            .addResourceAttribute(RESOURCE_TYPE, LESETILGANG_SAK)
+            .addActionAttribute(ACTION_ID, "read")
+            .addAccessSubjectAttribute(SUBJECT_TYPE, KAFKATOPIC)
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+            .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
+
+        val decision =  evaluate(requestBuilder)
+        return decision
+    }
 
     @KtorExperimentalAPI
     private suspend fun evaluate(xacmlRequestBuilder: XacmlRequestBuilder): Boolean {
