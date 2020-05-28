@@ -52,7 +52,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
             )
         ).get()
         logger.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        logger.info("StartetBehandling: $melding")
+       // logger.info("StartetBehandling: $melding")
     }
 
     @KtorExperimentalAPI
@@ -68,7 +68,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
             )
         ).get()
         logger.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        logger.info("AvsluttetBehandling: $melding")
+       // logger.info("AvsluttetBehandling: $melding")
     }
 
 
