@@ -5,6 +5,7 @@ import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
 import no.nav.k9.kodeverk.behandling.BehandlingStegType
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
+import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktKodeDefinisjon
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktStatus
 import org.junit.Test
 import java.time.LocalDate
@@ -147,5 +148,63 @@ class ModellTest {
 
         val oppgave = modell.oppgave()
         assertFalse(oppgave.tilBeslutter)
+    }
+
+    @Test
+    fun `Oppgave til skal ha utenlandstildnitt automatisk`() {
+        val eventDto = BehandlingProsessEventDto(
+            eksternId = uuid,
+            fagsystem = Fagsystem.K9SAK,
+            saksnummer = "624QM",
+            aktørId = "1442456610368",
+            behandlingId = 1050437,
+            behandlingstidFrist = LocalDate.now().plusDays(1),
+            eventTid = LocalDateTime.now(),
+            eventHendelse = EventHendelse.BEHANDLINGSKONTROLL_EVENT,
+            behandlingStatus = BehandlingStatus.UTREDES.kode,
+            behandlinStatus = BehandlingStatus.UTREDES.kode,
+            behandlingSteg = BehandlingStegType.INNHENT_REGISTEROPP.kode,
+            ytelseTypeKode = FagsakYtelseType.OMSORGSPENGER.kode,
+            behandlingTypeKode = BehandlingType.FORSTEGANGSSOKNAD.kode,
+            opprettetBehandling = LocalDateTime.now(),
+            aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE to AksjonspunktStatus.OPPRETTET.kode)
+        )
+        val modell = Modell(
+            eventer = listOf(
+                eventDto
+            )
+        )
+
+        val oppgave = modell.oppgave()
+        assertTrue(oppgave.utenlands)
+    }
+
+    @Test
+    fun `Oppgave til skal ha utenlandstildnitt manuell`() {
+        val eventDto = BehandlingProsessEventDto(
+            eksternId = uuid,
+            fagsystem = Fagsystem.K9SAK,
+            saksnummer = "624QM",
+            aktørId = "1442456610368",
+            behandlingId = 1050437,
+            behandlingstidFrist = LocalDate.now().plusDays(1),
+            eventTid = LocalDateTime.now(),
+            eventHendelse = EventHendelse.BEHANDLINGSKONTROLL_EVENT,
+            behandlingStatus = BehandlingStatus.UTREDES.kode,
+            behandlinStatus = BehandlingStatus.UTREDES.kode,
+            behandlingSteg = BehandlingStegType.INNHENT_REGISTEROPP.kode,
+            ytelseTypeKode = FagsakYtelseType.OMSORGSPENGER.kode,
+            behandlingTypeKode = BehandlingType.FORSTEGANGSSOKNAD.kode,
+            opprettetBehandling = LocalDateTime.now(),
+            aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE to AksjonspunktStatus.OPPRETTET.kode)
+        )
+        val modell = Modell(
+            eventer = listOf(
+                eventDto
+            )
+        )
+
+        val oppgave = modell.oppgave()
+        assertTrue(oppgave.utenlands)
     }
 }
