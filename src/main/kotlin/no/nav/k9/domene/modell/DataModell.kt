@@ -85,10 +85,7 @@ data class Modell(
             system = event.fagsystem.name,
             oppgaveEgenskap = emptyList(),
             aksjonspunkter = event.aktiveAksjonspunkt(),
-            utenlands = event.aktiveAksjonspunkt().liste.any { entry ->
-                (entry.key == AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE
-                        || entry.key == MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE) && entry.value != AksjonspunktStatus.AVBRUTT.kode
-            },
+            utenlands = erUtenlands(event),
             tilBeslutter = beslutterOppgave,
             kombinert = false,
             registrerPapir = registrerPapir,
@@ -97,6 +94,13 @@ data class Modell(
             utbetalingTilBruker = false,
             skjermet = false
         )
+    }
+
+    private fun erUtenlands(event: BehandlingProsessEventDto): Boolean {
+        return event.aktiveAksjonspunkt().liste.any { entry ->
+            (entry.key == AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE
+                    || entry.key == MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE) && entry.value != AksjonspunktStatus.AVBRUTT.kode
+        }
     }
 
     fun sisteEvent(): BehandlingProsessEventDto {
