@@ -108,6 +108,7 @@ data class Configuration(private val config: ApplicationConfig) {
         erIProd = if (clustername.isNullOrBlank()) {
             false
         } else clustername == "prod-fss"
+        
     }
 
 
@@ -126,6 +127,19 @@ data class Configuration(private val config: ApplicationConfig) {
     fun azureClientSecret(): String {
         return config.getOptionalString("nav.auth.azure_client_secret", secret = true)!!
     }
+    
+    
+    fun auditEnabled(): Boolean {
+        return config.getRequiredString("nav.audit.enabled", secret = false).toBoolean()
+    }
+    fun auditVendor(): String {
+        return config.getRequiredString("nav.audit.vendor", secret = false)
+    }
+    fun auditProduct(): String {
+        return config.getRequiredString("nav.audit.vendor", secret = false)
+    }
+    
+    
     
     
 }

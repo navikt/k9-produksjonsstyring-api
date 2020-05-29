@@ -62,6 +62,7 @@ dependencies {
 
     // Div
     implementation("info.debatty:java-string-similarity:1.2.1")
+    implementation("com.papertrailapp:logback-syslog4j:1.0.0")
 
     // Test
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
