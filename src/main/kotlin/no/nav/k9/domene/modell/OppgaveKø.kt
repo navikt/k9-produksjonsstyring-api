@@ -47,12 +47,14 @@ data class OppgaveKø(
 
     fun tilhørerOppgaveTilKø(
         oppgave: Oppgave,
-        reservasjonRepository: ReservasjonRepository
+        reservasjonRepository: ReservasjonRepository,
+        taHensynTilReservasjon : Boolean = true
     ): Boolean {
         if (!oppgave.aktiv) {
             return false
         }
-        if (erOppgavenReservert(reservasjonRepository, oppgave)) {
+        
+        if (taHensynTilReservasjon && erOppgavenReservert(reservasjonRepository, oppgave) ) {
             return false
         }
         if (!erInnenforOppgavekøensPeriode(oppgave)) {

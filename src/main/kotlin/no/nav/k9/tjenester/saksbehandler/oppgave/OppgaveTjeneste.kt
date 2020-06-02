@@ -307,7 +307,16 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentAntallOppgaver(oppgavekøId: UUID): Int {
-        return oppgaveKøRepository.hentOppgavekø(oppgavekøId).oppgaver.size
+        val reservasjoner = reservasjonRepository.hent().filter { reservasjon -> reservasjon.erAktiv() }
+        val oppgavekø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
+        var reserverteOppgaverSomHørerTilKø = 0
+        for (oppgave in oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(reservasjoner.map { it.oppgave })) {
+            if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
+                reserverteOppgaverSomHørerTilKø++
+            }
+        }
+
+        return oppgavekø.oppgaver.size + reserverteOppgaverSomHørerTilKø
     }
 
     fun hentAntallOppgaverTotalt(): Int {
