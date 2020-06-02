@@ -9,7 +9,10 @@ import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.db.runMigration
-import no.nav.k9.domene.repository.*
+import no.nav.k9.domene.repository.BehandlingProsessEventRepository
+import no.nav.k9.domene.repository.OppgaveKøRepository
+import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.gosys.GosysOppgave
 import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
@@ -35,7 +38,6 @@ class K9sakEventHandlerTest {
         val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource=dataSource)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
@@ -43,17 +45,16 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
+        every { statistikkProducer.send(any()) } just runs
         val config = mockk<Configuration>()
         every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
-//            gosysOppgaveGateway = gosysOppgaveGateway
             config = config,
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            saksbehandlerRepository = saksbehandlerRepository,
             statistikkProducer = statistikkProducer
         )
 
@@ -101,7 +102,6 @@ class K9sakEventHandlerTest {
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource=dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -110,17 +110,16 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
+        every { statistikkProducer.send(any()) } just runs
         val config = mockk<Configuration>()
         every{config.erLokalt()} returns true
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource),
             BehandlingProsessEventRepository(dataSource = dataSource),
-//            gosysOppgaveGateway = gosysOppgaveGateway
             config = config,
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            saksbehandlerRepository = saksbehandlerRepository,
             statistikkProducer = statistikkProducer
         )
 
@@ -168,22 +167,22 @@ class K9sakEventHandlerTest {
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource=dataSource)
+        val config = mockk<Configuration>()
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val config = mockk<Configuration>()
+        every { statistikkProducer.send(any()) } just runs
         every{config.erLokalt()} returns true
+        
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
-//            gosysOppgaveGateway = gosysOppgaveGateway
             config = config,
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            saksbehandlerRepository = saksbehandlerRepository,
             statistikkProducer = statistikkProducer
         )
 
@@ -233,15 +232,16 @@ class K9sakEventHandlerTest {
         val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource=dataSource)
         val statistikkProducer = mockk<StatistikkProducer>()
+        val config = mockk<Configuration>()
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
-
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val config = mockk<Configuration>()
+        every { statistikkProducer.send(any()) } just runs
         every{config.erLokalt()} returns true
+
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -249,7 +249,6 @@ class K9sakEventHandlerTest {
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            saksbehandlerRepository = saksbehandlerRepository,
             statistikkProducer = statistikkProducer
         )
 

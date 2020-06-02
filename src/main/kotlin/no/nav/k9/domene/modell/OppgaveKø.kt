@@ -47,12 +47,14 @@ data class OppgaveKø(
 
     fun tilhørerOppgaveTilKø(
         oppgave: Oppgave,
-        reservasjonRepository: ReservasjonRepository
+        reservasjonRepository: ReservasjonRepository,
+        taHensynTilReservasjon : Boolean = true
     ): Boolean {
         if (!oppgave.aktiv) {
             return false
         }
-        if (erOppgavenReservert(reservasjonRepository, oppgave)) {
+        
+        if (taHensynTilReservasjon && erOppgavenReservert(reservasjonRepository, oppgave) ) {
             return false
         }
         if (!erInnenforOppgavekøensPeriode(oppgave)) {
@@ -131,6 +133,16 @@ data class OppgaveKø(
 
         if (oppgave.registrerPapir && kriterier.map { it.andreKriterierType }
                 .contains(AndreKriterierType.PAPIRSØKNAD)) {
+            return true
+        }
+        
+        if (oppgave.årskvantum && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.AARSKVANTUM)) {
+            return true
+        }
+        
+        if (oppgave.avklarMedlemskap && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.AARSKVANTUM)) {
             return true
         }
 
@@ -217,8 +229,10 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     UTLANDSSAK("UTLANDSSAK", "Utland"),
     SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
-    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans");
-
+    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
+    AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
+    AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap");
+    
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
     companion object {

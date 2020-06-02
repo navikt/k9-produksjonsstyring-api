@@ -21,6 +21,9 @@ object TestConfiguration {
             Pair("nav.register_urls.pdl_url", "$tpsProxyBaseUrl")
         )
 
+        map["nav.audit.enabled"] = "false"
+        map["nav.audit.vendor"] = "test"
+        map["nav.audit.product"] = "test"
         map["nav.auth.trustore.path"] = "vtp"
         map["nav.auth.trustore.password"] = "vtp"
         map["nav.abac.system_user"] = "very"

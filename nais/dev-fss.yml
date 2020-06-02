@@ -95,4 +95,12 @@ spec:
     - name: APPDYNAMICS_CONTROLLER_SSL_ENABLED
       value: "true"
     - name: APPDYNAMICS_AGENT_ACCOUNT_NAME
-      value: NON-PROD  
+      value: NON-PROD
+
+      # Audit logging
+    - name: AUDITLOGGER_ENABLED
+      value: "true"
+    - name: AUDITLOGGER_VENDOR
+      value: "k9"
+    - name: AUDITLOGGER_PRODUCT
+      value: "k9-los-api"

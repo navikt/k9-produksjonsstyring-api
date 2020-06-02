@@ -18,7 +18,9 @@ const val SAKSSTATUS = "no.nav.abac.attributter.resource.k9.sak.saksstatus"
 const val OPPGAVESTYRER = "no.nav.abac.attributter.k9.oppgavestyring"
 const val BASIS_TILGANG = "no.nav.abac.attributter.k9"
 const val LESETILGANG_SAK = "no.nav.abac.attributter.k9.fagsak"
+const val KAFKATOPIC_STATISTIKK = "privat-k9statistikk-sak-v1"
 const val INTERNBRUKER = "InternBruker"
+const val KAFKATOPIC = "KafkaTopic"
 const val RESOURCE_SAKSNR = "no.nav.abac.attributter.resource.k9.saksnr"
 
 enum class Category {

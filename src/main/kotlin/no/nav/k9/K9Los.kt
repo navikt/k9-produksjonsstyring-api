@@ -36,6 +36,7 @@ import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.audit.Auditlogger
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
@@ -111,7 +112,7 @@ fun Application.k9Los() {
         accessTokenClient = accessTokenClientResolver.naisSts(),
         configuration = configuration
     )
-
+    val auditlogger=  Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
 
     val dataSource = hikariConfig(configuration)
@@ -129,20 +130,28 @@ fun Application.k9Los() {
             channel = oppgaveKøOppdatert,
             reservasjonRepository = reservasjonRepository
         )
-
-
+    
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
     val sakOgBehadlingProducer = SakOgBehadlingProducer(
         kafkaConfig = configuration.getKafkaConfig(),
         config = configuration
     )
+    val azureGraphService = AzureGraphService(
+        accessTokenClient = accessTokenClientResolver.accessTokenClient(),
+        configuration = configuration
+    )
+
+    val pepClient = PepClient(azureGraphService = azureGraphService,auditlogger = auditlogger, config = configuration)
 
     val statistikkProducer = StatistikkProducer(
         kafkaConfig = configuration.getKafkaConfig(),
-        config = configuration
+        config = configuration,
+        pepClient = pepClient,
+        saksbehandlerRepository = saksbehandlerRepository,
+        reservasjonRepository = reservasjonRepository
     )
-
+    
     val k9sakEventHandler = K9sakEventHandler(
         oppgaveRepository = oppgaveRepository,
         behandlingProsessEventRepository = behandlingProsessEventRepository,
@@ -150,7 +159,6 @@ fun Application.k9Los() {
         sakOgBehadlingProducer = sakOgBehadlingProducer,
         oppgaveKøRepository = oppgaveKøRepository,
         reservasjonRepository = reservasjonRepository,
-        saksbehandlerRepository = saksbehandlerRepository,
         statistikkProducer = statistikkProducer
     )
 
@@ -159,13 +167,6 @@ fun Application.k9Los() {
         configuration = configuration,
         k9sakEventHandler = k9sakEventHandler
     )
-    val azureGraphService = AzureGraphService(
-        accessTokenClient = accessTokenClientResolver.accessTokenClient(),
-        configuration = configuration
-    )
-
-    val pepClient = PepClient(azureGraphService = azureGraphService, config = configuration)
-
 
     val oppgaveTjeneste = OppgaveTjeneste(
         oppgaveRepository = oppgaveRepository,
