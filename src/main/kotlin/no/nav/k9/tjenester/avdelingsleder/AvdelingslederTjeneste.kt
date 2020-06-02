@@ -36,7 +36,7 @@ class AvdelingslederTjeneste(
                 andreKriterier = it.filtreringAndreKriterierType,
                 sistEndret = it.sistEndret,
                 skjermet = it.skjermet,
-                antallBehandlinger = it.oppgaver.size,
+                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id),
                 saksbehandlere = it.saksbehandlere
             )
         }
