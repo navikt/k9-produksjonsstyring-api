@@ -57,8 +57,8 @@ class RutinerTest {
                 filtreringYtelseTyper = mutableListOf(FagsakYtelseType.PLEIEPENGER_SYKT_BARN),
                 filtreringAndreKriterierType = mutableListOf(),
                 enhet = Enhet.NASJONAL,
-                fomDato = LocalDate.now().minusDays(100),
-                tomDato = LocalDate.now().plusDays(100),
+                fomDato = null,
+                tomDato = null,
                 saksbehandlere = mutableListOf()
             )
         }
