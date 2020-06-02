@@ -142,7 +142,7 @@ data class OppgaveKø(
         }
         
         if (oppgave.avklarMedlemskap && kriterier.map { it.andreKriterierType }
-                .contains(AndreKriterierType.AARSKVANTUM)) {
+                .contains(AndreKriterierType.AVKLAR_MEDLEMSKAP)) {
             return true
         }
 
