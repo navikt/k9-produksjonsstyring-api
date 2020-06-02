@@ -11,6 +11,7 @@ data class Reservasjon(
     var begrunnelse: String?,
     val oppgave: UUID
 ) {
+    //Skriv om til å hente direkte slik det er nå kommer det dobbelt opp
     fun erAktiv(): Boolean {
         return reservertTil !=null &&  reservertTil!!.isAfter(LocalDateTime.now())
     }

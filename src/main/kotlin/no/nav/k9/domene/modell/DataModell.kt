@@ -9,8 +9,7 @@ import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
-import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktKodeDefinisjon.AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE
-import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktKodeDefinisjon.MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE
+import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktKodeDefinisjon.*
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktStatus
 import no.nav.k9.statistikk.kontrakter.Aktør
 import no.nav.k9.statistikk.kontrakter.Behandling
@@ -92,10 +91,24 @@ data class Modell(
             selvstendigFrilans = false,
             søktGradering = false,
             utbetalingTilBruker = false,
-            skjermet = false
+            skjermet = false,
+            årskvantum = erÅrskvantum(event),
+            avklarMedlemskap = avklarMedlemskap(event)
         )
     }
 
+    private fun avklarMedlemskap(event: BehandlingProsessEventDto): Boolean {
+        return event.aktiveAksjonspunkt().liste.any { entry ->
+            (entry.key == AVKLAR_FORTSATT_MEDLEMSKAP_KODE)
+        }
+    }
+    
+    private fun erÅrskvantum(event: BehandlingProsessEventDto): Boolean {
+        return event.aktiveAksjonspunkt().liste.any { entry ->
+            (entry.key == VURDER_ÅRSKVANTUM_KVOTE)
+        }
+    }
+    
     private fun erUtenlands(event: BehandlingProsessEventDto): Boolean {
         return event.aktiveAksjonspunkt().liste.any { entry ->
             (entry.key == AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE

@@ -32,6 +32,8 @@ data class Oppgave(
     val kombinert: Boolean,
     val søktGradering: Boolean,
     val registrerPapir: Boolean,
+    val årskvantum: Boolean,
+    val avklarMedlemskap: Boolean,
     var skjermet: Boolean,
     val utenlands: Boolean
 
