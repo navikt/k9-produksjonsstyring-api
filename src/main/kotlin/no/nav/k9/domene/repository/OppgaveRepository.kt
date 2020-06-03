@@ -136,7 +136,7 @@ class OppgaveRepository(
                                 0,
                                 oppgaveiderList.size - 1
                             ).map { t -> ":p$t" }.joinToString()}) " +
-                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag' limit 100)",
+                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag') limit 100",
                     IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
                 )
                     .map { row ->
