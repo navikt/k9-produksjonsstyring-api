@@ -102,13 +102,13 @@ data class Modell(
             (entry.key == AVKLAR_FORTSATT_MEDLEMSKAP_KODE)
         }
     }
-    
+
     private fun erÅrskvantum(event: BehandlingProsessEventDto): Boolean {
         return event.aktiveAksjonspunkt().liste.any { entry ->
             (entry.key == VURDER_ÅRSKVANTUM_KVOTE)
         }
     }
-    
+
     private fun erUtenlands(event: BehandlingProsessEventDto): Boolean {
         return event.aktiveAksjonspunkt().liste.any { entry ->
             (entry.key == AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE
@@ -118,6 +118,14 @@ data class Modell(
 
     fun sisteEvent(): BehandlingProsessEventDto {
         return this.eventer[this.eventer.lastIndex]
+    }
+
+    fun forrigeEvent(): BehandlingProsessEventDto? {
+        return if (this.eventer.lastIndex > 0) {
+            this.eventer[this.eventer.lastIndex - 1]
+        } else {
+            null
+        }
     }
 
     fun førsteEvent(): BehandlingProsessEventDto {
@@ -272,6 +280,12 @@ data class Modell(
             avsender = "K9sak",
             versjon = 1
         )
+    }
+
+    fun bleBeslutter(): Boolean {
+        val forrigeEvent = forrigeEvent()
+        return forrigeEvent != null && !forrigeEvent.aktiveAksjonspunkt()
+                .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
     }
 
 }

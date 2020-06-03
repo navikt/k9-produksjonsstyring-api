@@ -33,22 +33,34 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         val modell = behandlingProsessEventRepository.lagre(event)
 
         val oppgave = modell.oppgave()
-
+        if (modell.bleBeslutter()){
+            fjernReservasjon(oppgave)
+        }
         oppgaveRepository.lagre(oppgave.eksternId) {
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
             }
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
+                fjernReservasjon(oppgave)
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
             statistikkProducer.send(modell)
-            
+
             oppgave
         }
         modell.reportMetrics(reservasjonRepository)
         oppdaterOppgavekøer(oppgave)
+    }
+
+    private fun fjernReservasjon(oppgave: Oppgave) {
+        if (reservasjonRepository.finnes(oppgave.eksternId)) {
+            reservasjonRepository.lagre(oppgave.eksternId) {
+                it!!.aktiv = false
+                it
+            }
+        }
     }
 
     private fun oppdaterOppgavekøer(oppgave: Oppgave) {
@@ -60,7 +72,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             }
         }
     }
-    
+
     private fun fjernReservasjonDersomIkkeOppgavenErAktiv(oppgave: Oppgave) {
         if (!oppgave.aktiv) {
             if (reservasjonRepository.finnes(oppgave.eksternId)) {
