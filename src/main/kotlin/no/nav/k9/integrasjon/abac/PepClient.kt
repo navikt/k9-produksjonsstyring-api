@@ -94,7 +94,7 @@ class PepClient @KtorExperimentalAPI constructor(
                     name = "ABAC Sporingslogg",
                     severity = "INFO"
                 ), fields = setOf(
-                    CefField(CefFieldName.EVENT_TIME, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)),
+                    CefField(CefFieldName.EVENT_TIME, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)*1000L),
                     CefField(CefFieldName.REQUEST, "read"),
                     CefField(CefFieldName.ABAC_RESOURCE_TYPE, LESETILGANG_SAK),
                     CefField(CefFieldName.ABAC_ACTION, "read"),
