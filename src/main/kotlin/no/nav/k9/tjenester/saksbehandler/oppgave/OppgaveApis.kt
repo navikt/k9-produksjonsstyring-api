@@ -56,17 +56,7 @@ internal fun Route.OppgaveApis(
         }
 
     }
-
-    @Location("/resultat")
-    class getOppgaverTilBehandling
-
-    get { _: getOppgaverTilBehandling ->
-//        val sakslisteId: SakslisteIdDto =
-//            ObjectMapper().readValue(call.request.queryParameters["sakslisteId"], SakslisteIdDto::class.java)
-//        val nesteOppgaver = oppgaveTjeneste.hentNesteOppgaver(sakslisteId.verdi)
-
-    }
-
+    
     @Location("/behandlede")
     class getBehandledeOppgaver
 
@@ -102,34 +92,7 @@ internal fun Route.OppgaveApis(
                 call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
-            //call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
-            call.respond(listOf(OppgaveDto(
-                OppgaveStatusDto(
-                true,
-                LocalDateTime.now().plusDays(4),
-                true,
-                    null,
-                    null),
-                3245,
-                "904380",
-                "lkdjfsjg",
-                "sys",
-                "04938540034",
-                BehandlingType.KLAGE,
-                FagsakYtelseType.OMSORGSPENGER,
-                BehandlingStatus.OPPRETTET,
-                true,
-                LocalDateTime.now(),
-                LocalDateTime.now().plusDays(5),
-                UUID.randomUUID(),
-                false,
-                false,
-                false,
-                false,
-                false,
-                false
-            )
-            ))
+            call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
         }
     }
 
