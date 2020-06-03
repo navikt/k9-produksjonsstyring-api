@@ -17,7 +17,7 @@ class ReservasjonRepository(private val dataSource: DataSource) {
             it.run(
                 queryOf(
                     "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon \n" +
-                            "where not (data ::jsonb -> 'reservasjoner' -> -1 ? 'aktiv')::BOOLEAN\n" +
+                            "where not (data ::jsonb -> 'reservasjoner' -> -1 ?? 'aktiv')::BOOLEAN\n" +
                             "   or (data ::jsonb -> 'reservasjoner' -> -1 -> 'aktiv')::BOOLEAN",
                     mapOf()
                 )
