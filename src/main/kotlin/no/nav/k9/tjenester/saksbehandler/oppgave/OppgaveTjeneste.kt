@@ -237,10 +237,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         kø.filtreringBehandlingTyper.forEach {
             liste.add(
                 NyeOgFerdigstilteOppgaverDto(
-                    it,
-                    tellNyeOppgaver(it, køOppgaver),
-                    tellFerdistilteOppgaver(it, køOppgaver),
-                    LocalDate.now()
+                    behandlingType = it,
+                    antallNye = tellNyeOppgaver(it, køOppgaver),
+                    antallFerdigstilte = tellFerdigstilteOppgaver(it, køOppgaver),
+                    dato = LocalDate.now()
                 )
             )
         }
@@ -253,7 +253,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }.toLong()
     }
 
-    fun tellFerdistilteOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
+    fun tellFerdigstilteOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
         return oppgaver.filter { it.oppgaveAvsluttet != null }.count {
             it.behandlingType == behandlingType && it.oppgaveAvsluttet!!.toLocalDate() == LocalDate.now()
         }.toLong()
@@ -355,9 +355,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             ", "
                         )
                     } else {
-                        person!!.navn()
+                        person?.navn() ?: "Uten navn"
                     }
-
+                   
                     list.add(
                         OppgaveDto(
                             status = OppgaveStatusDto(
@@ -371,7 +371,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             saksnummer = oppgave.fagsakSaksnummer,
                             navn = navn,
                             system = oppgave.system,
-                            personnummer = person!!.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                            personnummer =  if (person == null) {
+                                "Ukent fnummer"
+                            } else {
+                                person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                            },
                             behandlingstype = oppgave.behandlingType,
                             fagsakYtelseType = oppgave.fagsakYtelseType,
                             behandlingStatus = oppgave.behandlingStatus,
