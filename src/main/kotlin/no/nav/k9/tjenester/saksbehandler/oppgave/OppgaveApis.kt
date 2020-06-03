@@ -102,7 +102,34 @@ internal fun Route.OppgaveApis(
                 call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
-            call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
+            //call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
+            call.respond(listOf(OppgaveDto(
+                OppgaveStatusDto(
+                true,
+                LocalDateTime.now().plusDays(4),
+                true,
+                    null,
+                    null),
+                3245,
+                "904380",
+                "lkdjfsjg",
+                "sys",
+                "04938540034",
+                BehandlingType.KLAGE,
+                FagsakYtelseType.OMSORGSPENGER,
+                BehandlingStatus.OPPRETTET,
+                true,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusDays(5),
+                UUID.randomUUID(),
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+            )
+            ))
         }
     }
 
@@ -170,6 +197,16 @@ internal fun Route.OppgaveApis(
                 params.brukerIdent,
                 params.begrunnelse
             )
+        )
+    }
+
+    @Location("/reservasjon/endre")
+    class endreReservasjon
+
+    post { _: endreReservasjon ->
+        val params = call.receive<ReservasjonEndringDto>()
+        call.respond(
+            oppgaveTjeneste.endreReservasjonPåOppgave(params)
         )
     }
 

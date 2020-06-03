@@ -282,6 +282,19 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
+    fun endreReservasjonPåOppgave(resEndring: ReservasjonEndringDto): Reservasjon {
+        return reservasjonRepository.lagre(UUID.fromString(resEndring.oppgaveId)) {
+            it!!.reservertTil = LocalDateTime.of(
+                resEndring.reservetTil.year,
+                resEndring.reservetTil.month,
+                it!!.reservertTil!!.dayOfMonth,
+                23,
+                59,
+                59)
+            it
+        }
+    }
+
     fun flyttReservasjon(uuid: UUID, ident: String, begrunnelse: String): Reservasjon {
         return reservasjonRepository.lagre(uuid) {
             it!!.reservertTil = it.reservertTil?.plusHours(24)!!.forskyvReservasjonsDato()
