@@ -307,7 +307,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentAntallOppgaver(oppgavekøId: UUID): Int {
-        val reservasjoner = reservasjonRepository.hent().filter { reservasjon -> reservasjon.erAktiv() }
+        val reservasjoner = reservasjonRepository.hent(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository
+        )
         val oppgavekø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
         var reserverteOppgaverSomHørerTilKø = 0
         for (oppgave in oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(reservasjoner.map { it.oppgave })) {
@@ -431,7 +434,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     suspend fun hentSisteReserverteOppgaver(username: String): List<OppgaveDto> {
         val list = mutableListOf<OppgaveDto>()
-        for (reservasjon in reservasjonRepository.hent().filter { it.erAktiv() }
+        for (reservasjon in reservasjonRepository.hent(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository
+        )
             .filter {
                 saksbehandlerRepository.finnSaksbehandlerMedEpost(username) != null && it.reservertAv == saksbehandlerRepository.finnSaksbehandlerMedEpost(
                     username

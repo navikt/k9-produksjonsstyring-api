@@ -136,10 +136,6 @@ data class Configuration(private val config: ApplicationConfig) {
         return config.getRequiredString("nav.audit.vendor", secret = false)
     }
     fun auditProduct(): String {
-        return config.getRequiredString("nav.audit.vendor", secret = false)
+        return config.getRequiredString("nav.audit.product", secret = false)
     }
-    
-    
-    
-    
 }

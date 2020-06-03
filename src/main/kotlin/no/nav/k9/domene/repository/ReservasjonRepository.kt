@@ -12,11 +12,13 @@ import javax.sql.DataSource
 
 class ReservasjonRepository(private val dataSource: DataSource) {
     private val log: Logger = LoggerFactory.getLogger(ReservasjonRepository::class.java)
-    fun hent(): List<Reservasjon> {
+    fun hent(oppgaveKøRepository: OppgaveKøRepository, oppgaveRepository: OppgaveRepository): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon",
+                    "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon \n" +
+                            "where not (data ::jsonb -> 'reservasjoner' -> -1 ?? 'aktiv')::BOOLEAN\n" +
+                            "   or (data ::jsonb -> 'reservasjoner' -> -1 -> 'aktiv')::BOOLEAN",
                     mapOf()
                 )
                     .map { row ->
@@ -24,7 +26,21 @@ class ReservasjonRepository(private val dataSource: DataSource) {
                     }.asList
             )
         }
-        return json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
+        val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
+        reservasjoner.forEach { reservasjon ->
+            if (!reservasjon.erAktiv()){
+                lagre(reservasjon.oppgave){
+                    it!!.aktiv = false
+                    it
+                }
+                oppgaveKøRepository.hent().forEach{
+                    it.leggOppgaveTilEllerFjernFraKø(oppgave = oppgaveRepository.hent(reservasjon.oppgave),
+                        reservasjonRepository = this
+                    )
+                }
+            }
+        }
+        return reservasjoner.filter { it.erAktiv() }
     }
 
     fun hent(id: UUID): Reservasjon {
