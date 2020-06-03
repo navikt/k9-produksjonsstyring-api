@@ -287,7 +287,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             it!!.reservertTil = LocalDateTime.of(
                 resEndring.reserverTil.year,
                 resEndring.reserverTil.month,
-                it!!.reservertTil!!.dayOfMonth,
+                resEndring.reserverTil.dayOfMonth,
                 23,
                 59,
                 59)
