@@ -3,6 +3,7 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
 import no.nav.k9.Configuration
+import no.nav.k9.domene.lager.oppgave.BehandletOppgave
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.BehandlingType
@@ -54,18 +55,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    fun hentOppgaverForSaksnummer(fagsakSaksnummer: Long): List<Oppgave> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    fun hentAktiveOppgaverForSaksnummer(fagsakSaksnummerListe: Collection<Long>): List<Oppgave> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    fun hentReservasjonerTilknyttetAktiveOppgaver(): List<Reservasjon> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     fun reserverOppgave(ident: String, uuid: UUID): Reservasjon {
         val reservasjon = Reservasjon(
             reservertTil = LocalDateTime.now().plusHours(24).forskyvReservasjonsDato(),
@@ -81,6 +70,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 it
             }
         }
+
+        oppgaveRepository.lagreBehandling(ident){BehandletOppgave(
+            oppgave.behandlingId,
+            oppgave.fagsakSaksnummer,
+            oppgave.eksternId,
+            oppgave.aktorId
+        )}
 
         return reservasjon
     }
@@ -285,6 +281,21 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             it.reservertAv = ident
             it.begrunnelse = begrunnelse
             it
+        }
+    }
+
+    @KtorExperimentalAPI
+   suspend fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgaveDto> {
+        return oppgaveRepository.hentBehandlinger(ident).map {
+            val person = pdlService.person(it.aktørId)
+            val navn = person?.navn() ?: "Ukjent navn"
+            val fnummer = if(person == null) "Ukjent nummer" else person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+            BehandletOppgaveDto(
+                it.behandlingId,
+                it.saksnummer,
+                it.eksternId,
+                fnummer,
+                navn)
         }
     }
 

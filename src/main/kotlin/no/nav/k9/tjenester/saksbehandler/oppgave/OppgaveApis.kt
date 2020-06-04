@@ -53,17 +53,7 @@ internal fun Route.OppgaveApis(
         }
 
     }
-
-    @Location("/resultat")
-    class getOppgaverTilBehandling
-
-    get { _: getOppgaverTilBehandling ->
-//        val sakslisteId: SakslisteIdDto =
-//            ObjectMapper().readValue(call.request.queryParameters["sakslisteId"], SakslisteIdDto::class.java)
-//        val nesteOppgaver = oppgaveTjeneste.hentNesteOppgaver(sakslisteId.verdi)
-
-    }
-
+    
     @Location("/behandlede")
     class getBehandledeOppgaver
 
@@ -77,10 +67,10 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
+                call.respond(oppgaveTjeneste.hentSisteBehandledeOppgaver(idToken.getUsername()))
             }
         } else {
-            call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
+            call.respond(oppgaveTjeneste.hentSisteBehandledeOppgaver("saksbehandler@nav.no"))
         }
     }
 
@@ -205,7 +195,7 @@ internal fun Route.OppgaveApis(
         } else {
             withContext(
                 Dispatchers.Unconfined
-            ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(listOf( "Saksnummer"))) }
+            ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(listOf("Saksnummer"))) }
         }
     }
 }
