@@ -436,39 +436,37 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun hentSisteReserverteOppgaver(username: String): List<OppgaveDto> {
+    suspend fun hentSisteReserverteOppgaver(epost: String): List<OppgaveDto> {
         val list = mutableListOf<OppgaveDto>()
+        //Hent reservasjoner for en gitt bruker skriv om til å hente med ident direkte i tabellen
+        val saksbehandlerMedEpost = saksbehandlerRepository.finnSaksbehandlerMedEpost(epost)
         for (reservasjon in reservasjonRepository.hent(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository
         )
             .filter {
-                saksbehandlerRepository.finnSaksbehandlerMedEpost(username) != null && it.reservertAv == saksbehandlerRepository.finnSaksbehandlerMedEpost(
-                    username
-                )!!.brukerIdent
+                saksbehandlerMedEpost != null && it.reservertAv == saksbehandlerMedEpost.brukerIdent
             }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             if (!pepClient.harTilgangTilLesSak(
                     fagsakNummer = oppgave.fagsakSaksnummer
                 )
             ) {
-                val innloggetBruker = pepClient.hentIdentTilInnloggetBruker()
                 reservasjonRepository.lagre(oppgave.eksternId) {
-                    if (innloggetBruker == it?.reservertAv) {
+                    if (saksbehandlerMedEpost!!.brukerIdent == it!!.reservertAv) {
                         it.reservertTil = null
                     }
                     it!!
                 }
                 settSkjermet(oppgave)
+                oppgaveKøRepository.oppdaterKøMedOppgaver(oppgave.eksternId)
                 continue
             }
+            
             val person = pdlService.person(oppgave.aktorId)
-            if (person == null) {
-                settSkjermet(oppgave = oppgave)
-                log.info("Ikke tilgang til bruker: ${oppgave.aktorId}")
-                continue
-            }
-            val status = if (username == "saksbehandler@nav.no") {
+           
+            
+            val status=
                 OppgaveStatusDto(
                     true,
                     reservasjon.reservertTil,
@@ -476,24 +474,20 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     reservasjon.reservertAv,
                     null
                 )
-            } else {
-                OppgaveStatusDto(
-                    true,
-                    reservasjon.reservertTil,
-                    true,
-                    reservasjon.reservertAv,
-                    null
-                )
+            var personNavn = "Ukjent navn"
+            var personFnummer = "Ukjent fnummer"
+            if (person != null) {
+                personNavn = person.navn()
+                personFnummer = person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
             }
-
             list.add(
                 OppgaveDto(
                     status = status,
                     behandlingId = oppgave.behandlingId,
                     saksnummer = oppgave.fagsakSaksnummer,
-                    navn = person.navn(),
+                    navn = personNavn,
                     system = oppgave.system,
-                    personnummer = person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                    personnummer = personFnummer,
                     behandlingstype = oppgave.behandlingType,
                     fagsakYtelseType = oppgave.fagsakYtelseType,
                     behandlingStatus = oppgave.behandlingStatus,

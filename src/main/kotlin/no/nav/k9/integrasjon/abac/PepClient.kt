@@ -73,7 +73,9 @@ class PepClient @KtorExperimentalAPI constructor(
     suspend fun harTilgangTilLesSak(
         fagsakNummer: String
     ): Boolean {
-
+        if (config.erLokalt) {
+            return true
+        }
         val identTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)

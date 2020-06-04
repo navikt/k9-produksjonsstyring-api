@@ -9,17 +9,14 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 import java.util.*
 
 private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
@@ -195,7 +192,7 @@ internal fun Route.OppgaveApis(
     class oppgaverForFagsaker
 
     get { _: oppgaverForFagsaker ->
-        var saker = call.request.queryParameters["saksnummerListe"]
+        val saker = call.request.queryParameters["saksnummerListe"]
         val saksnummerliste = saker?.split(",") ?: emptyList()
 
         if (configuration.erIkkeLokalt) {
@@ -206,7 +203,9 @@ internal fun Route.OppgaveApis(
                 )
             ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)) }
         } else {
-            call.respond(emptyList<OppgaveDto>())
+            withContext(
+                Dispatchers.Unconfined
+            ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(listOf( "Saksnummer"))) }
         }
     }
 }
