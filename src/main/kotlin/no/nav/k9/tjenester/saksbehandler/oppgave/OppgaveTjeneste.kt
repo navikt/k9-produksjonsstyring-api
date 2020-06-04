@@ -47,7 +47,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            oppgaveRepository.hentOppgaver(oppgaveKø.oppgaver)
+            oppgaveRepository.hentOppgaver(oppgaveKø.oppgaver.take(50))
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -302,19 +302,20 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    fun hentAntallOppgaver(oppgavekøId: UUID): Int {
+    fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false): Int {
         val reservasjoner = reservasjonRepository.hent(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository
         )
         val oppgavekø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
         var reserverteOppgaverSomHørerTilKø = 0
-        for (oppgave in oppgaveRepository.hentOppgaver(reservasjoner.map { it.oppgave })) {
-            if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
-                reserverteOppgaverSomHørerTilKø++
+        if (taMedReserverte) {
+            for (oppgave in oppgaveRepository.hentOppgaver(reservasjoner.map { it.oppgave })) {
+                if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
+                    reserverteOppgaverSomHørerTilKø++
+                }
             }
         }
-
         return oppgavekø.oppgaver.size + reserverteOppgaverSomHørerTilKø
     }
 
