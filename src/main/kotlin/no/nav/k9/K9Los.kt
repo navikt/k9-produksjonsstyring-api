@@ -221,8 +221,11 @@ fun Application.k9Los() {
                 oppgaveRepository.lagre(oppgave.eksternId) {
                     oppgave
                 }
-                for (oppgavekø in oppgaveKøRepository.hent()) {
-                    // sjekker om dette utgjør noen reel endring
+            }
+            
+            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
+            for (oppgavekø in oppgaveKøRepository.hent()) {
+                for (oppgave in oppgaver) {
                     if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
                         oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
                             forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
