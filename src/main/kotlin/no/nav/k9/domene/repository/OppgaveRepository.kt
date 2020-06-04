@@ -57,7 +57,7 @@ class OppgaveRepository(
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select (data ::jsonb -> 'siste_behandlinger') as data from siste_behandlinger where id = :id",
+                    "select jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data from siste_behandlinger where id = :id",
                     mapOf("id" to ident)
                 )
                     .map { row ->
