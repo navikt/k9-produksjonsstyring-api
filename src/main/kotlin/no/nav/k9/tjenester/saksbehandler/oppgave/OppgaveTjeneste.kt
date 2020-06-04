@@ -60,6 +60,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             reservertTil = LocalDateTime.now().plusHours(24).forskyvReservasjonsDato(),
             reservertAv = ident, flyttetAv = null, flyttetTidspunkt = null, begrunnelse = null, oppgave = uuid
         )
+        log.info("reserverer oppgave med $ident $uuid")
         reservasjonRepository.lagre(uuid) {
             reservasjon
         }
@@ -453,6 +454,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             oppgaveRepository = oppgaveRepository
         )
             .filter {
+                log.info("Prøver å hente reservert oppgave " + it.reservertAv + " " + saksbehandlerMedEpost?.brukerIdent)
                 saksbehandlerMedEpost != null && it.reservertAv == saksbehandlerMedEpost.brukerIdent
             }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
@@ -467,7 +469,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     it
                 }
                 settSkjermet(oppgave)
-                oppgaveKøRepository.oppdaterKøMedOppgaver(oppgave.eksternId)
+                oppgaveKøRepository.hent().forEach{oppgaveKøRepository.oppdaterKøMedOppgaver(it.id)}
                 continue
             }
 
