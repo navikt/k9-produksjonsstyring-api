@@ -6,7 +6,7 @@ import java.util.*
 data class BehandletOppgave(
     val behandlingId: Long,
     val saksnummer: String,
-    val eksternId: UUID,
+    val eksternId: String,
     val aktørId: String
 )
 

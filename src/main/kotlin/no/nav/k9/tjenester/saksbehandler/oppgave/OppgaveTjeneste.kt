@@ -74,7 +74,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         oppgaveRepository.lagreBehandling(ident){BehandletOppgave(
             oppgave.behandlingId,
             oppgave.fagsakSaksnummer,
-            oppgave.eksternId,
+            oppgave.eksternId.toString(),
             oppgave.aktorId
         )}
 
@@ -293,7 +293,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             BehandletOppgaveDto(
                 it.behandlingId,
                 it.saksnummer,
-                it.eksternId,
+                UUID.fromString(it.eksternId),
                 fnummer,
                 navn)
         }
