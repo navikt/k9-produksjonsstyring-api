@@ -149,19 +149,19 @@ class PdlService @KtorExperimentalAPI constructor(
             result.fold(
                 { success -> success },
                 { error ->
-                    log.error(
+                    log.warn(
                         "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
                     )
-                    log.error(error.toString())
-                    throw IllegalStateException("Feil ved henting av person.")
+                    log.warn(error.toString())
+                    null
                 }
             )
         }
         return try {
-            return objectMapper().readValue<PersonPdl>(json)
+            return objectMapper().readValue<PersonPdl>(json!!)
         } catch (e: Exception) {
-            log.error(
-                "Feilet deserialisering", e
+            log.warn(
+                "Feilet deserialisering", e.message
             )
             null
         }
@@ -240,17 +240,17 @@ class PdlService @KtorExperimentalAPI constructor(
             result.fold(
                 { success -> success },
                 { error ->
-                    log.error(
+                    log.warn(
                         "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
                     )
-                    log.error(error.toString())
-                    throw IllegalStateException("Feil ved henting av person.")
+                    log.warn(error.toString())
+                    null
                 }
             )
         }
         try {
             if (configuration.erIDevFss) {
-                val ident = objectMapper().readValue<AktøridPdl>(json)
+                val ident = objectMapper().readValue<AktøridPdl>(json!!)
                 ident.data.hentIdenter = AktøridPdl.Data.HentIdenter(listOf(
                     AktøridPdl.Data.HentIdenter.Identer(
                         gruppe = "AKTORID",
@@ -258,11 +258,9 @@ class PdlService @KtorExperimentalAPI constructor(
                         ident = "1671237347458"
                     )))                 
             }
-            return objectMapper().readValue<AktøridPdl>(json)
+            return objectMapper().readValue<AktøridPdl>(json!!)
         } catch (e: Exception) {           
-            log.error( objectMapper().writeValueAsString(
-                queryRequest
-            ), e)
+            log.warn( "",  e.message)
             return null
         }
     }
