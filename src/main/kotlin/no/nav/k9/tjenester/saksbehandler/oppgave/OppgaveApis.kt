@@ -56,17 +56,7 @@ internal fun Route.OppgaveApis(
         }
 
     }
-
-    @Location("/resultat")
-    class getOppgaverTilBehandling
-
-    get { _: getOppgaverTilBehandling ->
-//        val sakslisteId: SakslisteIdDto =
-//            ObjectMapper().readValue(call.request.queryParameters["sakslisteId"], SakslisteIdDto::class.java)
-//        val nesteOppgaver = oppgaveTjeneste.hentNesteOppgaver(sakslisteId.verdi)
-
-    }
-
+    
     @Location("/behandlede")
     class getBehandledeOppgaver
 
@@ -170,6 +160,16 @@ internal fun Route.OppgaveApis(
                 params.brukerIdent,
                 params.begrunnelse
             )
+        )
+    }
+
+    @Location("/reservasjon/endre")
+    class endreReservasjon
+
+    post { _: endreReservasjon ->
+        val params = call.receive<ReservasjonEndringDto>()
+        call.respond(
+            oppgaveTjeneste.endreReservasjonPåOppgave(params)
         )
     }
 

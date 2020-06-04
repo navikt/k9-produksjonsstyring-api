@@ -282,6 +282,19 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
+    fun endreReservasjonPåOppgave(resEndring: ReservasjonEndringDto): Reservasjon {
+        return reservasjonRepository.lagre(UUID.fromString(resEndring.oppgaveId)) {
+            it!!.reservertTil = LocalDateTime.of(
+                resEndring.reserverTil.year,
+                resEndring.reserverTil.month,
+                resEndring.reserverTil.dayOfMonth,
+                23,
+                59,
+                59)
+            it
+        }
+    }
+
     fun flyttReservasjon(uuid: UUID, ident: String, begrunnelse: String): Reservasjon {
         return reservasjonRepository.lagre(uuid) {
             it!!.reservertTil = it.reservertTil?.plusHours(24)!!.forskyvReservasjonsDato()
@@ -357,7 +370,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     } else {
                         person?.navn() ?: "Uten navn"
                     }
-                   
+
                     list.add(
                         OppgaveDto(
                             status = OppgaveStatusDto(
