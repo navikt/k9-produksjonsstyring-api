@@ -454,7 +454,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             oppgaveRepository = oppgaveRepository
         )
             .filter {
-                log.info("Prøver å hente reservert oppgave " + it.reservertAv + " " + saksbehandlerMedEpost?.brukerIdent)
+                log.info("Prøver å hente reservert oppgave " + it.reservertAv + " " + saksbehandlerMedEpost?.brukerIdent +" "+ it.oppgave)
                 saksbehandlerMedEpost != null && it.reservertAv == saksbehandlerMedEpost.brukerIdent
             }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
