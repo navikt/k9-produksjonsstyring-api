@@ -6,6 +6,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -14,7 +15,8 @@ import javax.sql.DataSource
 
 class OppgaveKøRepository(
     private val dataSource: DataSource,
-    private val oppgaveKøOppdatert: Channel<UUID>
+    private val oppgaveKøOppdatert: Channel<UUID>,
+    private val oppgaveRepository: OppgaveRepository
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
     fun hent(): List<OppgaveKø> {
@@ -66,6 +68,13 @@ class OppgaveKøRepository(
                     f(null)
                 }
                 val json = objectMapper().writeValueAsString(oppgaveKø)
+                //Sorter oppgaver
+                if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
+                    oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver).map { oppgave -> oppgave.eksternId }.toMutableList()
+                }
+                if (oppgaveKø.sortering == KøSortering.OPPRETT_BEHANDLING) {
+                    oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver).map { oppgave -> oppgave.eksternId }.toMutableList()
+                }
                 tx.run(
                     queryOf(
                         """

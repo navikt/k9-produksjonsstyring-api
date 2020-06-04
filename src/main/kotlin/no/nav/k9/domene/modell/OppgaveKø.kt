@@ -32,7 +32,7 @@ data class OppgaveKø(
 //    val erOmsorgspenger: Boolean,
 //    val opprettBehandling: Boolean,
 //    val førsteStønadsdag: Boolean
-    var oppgaver: MutableSet<UUID> = mutableSetOf()
+    var oppgaver: MutableList<UUID> = mutableListOf()
 ) {
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,

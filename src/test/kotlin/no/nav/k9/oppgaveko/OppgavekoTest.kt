@@ -36,7 +36,8 @@ class OppgavekoTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
-            oppgaveKøOppdatert = oppgaveKøOppdatert
+            oppgaveKøOppdatert = oppgaveKøOppdatert,
+            oppgaveRepository = oppgaveRepository
         )
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()

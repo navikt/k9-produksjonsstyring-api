@@ -21,7 +21,6 @@ import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -43,7 +42,8 @@ class RutinerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
-            oppgaveKøOppdatert = oppgaveKøOppdatert
+            oppgaveKøOppdatert = oppgaveKøOppdatert,
+            oppgaveRepository = oppgaveRepository
         )
         every { statistikkProducer.send(any()) } just runs
         val uuid = UUID.randomUUID()
@@ -71,7 +71,6 @@ class RutinerTest {
             )
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
-        val pepclient = mockk<PepClient>()
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()

@@ -104,7 +104,7 @@ class OppgaveRepository(
                                 0,
                                 oppgaveiderList.size - 1
                             ).map { t -> ":p$t" }.joinToString()}) " +
-                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet') limit 100",
+                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet')",
                     IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
                 )
                     .map { row ->
@@ -117,6 +117,36 @@ class OppgaveRepository(
         val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
 
         log.info("Henter oppgaver basert på opprettetDato: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
+        return list
+    }
+    fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
+        val oppgaveiderList = oppgaveider.toList()
+        if (oppgaveider.isEmpty()) {
+            return emptyList()
+        }
+        var spørring = System.currentTimeMillis()
+        val session = sessionOf(dataSource)
+        val json: List<String> = using(session) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave " +
+                            "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
+                                0,
+                                oppgaveiderList.size - 1
+                            ).map { t -> ":p$t" }.joinToString()}) ",
+                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        val serialisering = System.currentTimeMillis()
+        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
+
+        log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list
     }
 
@@ -136,7 +166,7 @@ class OppgaveRepository(
                                 0,
                                 oppgaveiderList.size - 1
                             ).map { t -> ":p$t" }.joinToString()}) " +
-                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag') limit 100",
+                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag')",
                     IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
                 )
                     .map { row ->

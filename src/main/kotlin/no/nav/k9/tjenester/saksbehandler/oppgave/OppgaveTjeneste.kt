@@ -6,7 +6,6 @@ import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -48,10 +47,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            when (oppgaveKø.sortering!!) {
-                KøSortering.OPPRETT_BEHANDLING -> oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver)
-                KøSortering.FORSTE_STONADSDAG -> oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver)
-            }
+            oppgaveRepository.hentOppgaver(oppgaveKø.oppgaver)
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -313,7 +309,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         )
         val oppgavekø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
         var reserverteOppgaverSomHørerTilKø = 0
-        for (oppgave in oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(reservasjoner.map { it.oppgave })) {
+        for (oppgave in oppgaveRepository.hentOppgaver(reservasjoner.map { it.oppgave })) {
             if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
                 reserverteOppgaverSomHørerTilKø++
             }
@@ -357,7 +353,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     } else {
                         person?.navn() ?: "Uten navn"
                     }
-                   
+
                     list.add(
                         OppgaveDto(
                             status = OppgaveStatusDto(
@@ -371,7 +367,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             saksnummer = oppgave.fagsakSaksnummer,
                             navn = navn,
                             system = oppgave.system,
-                            personnummer =  if (person == null) {
+                            personnummer = if (person == null) {
                                 "Ukent fnummer"
                             } else {
                                 person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
@@ -456,17 +452,17 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     if (saksbehandlerMedEpost!!.brukerIdent == it!!.reservertAv) {
                         it.reservertTil = null
                     }
-                    it!!
+                    it
                 }
                 settSkjermet(oppgave)
                 oppgaveKøRepository.oppdaterKøMedOppgaver(oppgave.eksternId)
                 continue
             }
-            
+
             val person = pdlService.person(oppgave.aktorId)
-           
-            
-            val status=
+
+
+            val status =
                 OppgaveStatusDto(
                     true,
                     reservasjon.reservertTil,

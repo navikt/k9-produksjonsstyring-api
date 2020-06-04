@@ -120,7 +120,8 @@ fun Application.k9Los() {
     val reservasjonRepository = ReservasjonRepository(dataSource)
     val oppgaveKøRepository = OppgaveKøRepository(
         dataSource = dataSource,
-        oppgaveKøOppdatert = oppgaveKøOppdatert
+        oppgaveKøOppdatert = oppgaveKøOppdatert,
+        oppgaveRepository = oppgaveRepository
     )
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val job =
@@ -198,7 +199,6 @@ fun Application.k9Los() {
     launch {
         log.info("Starter oppgavesynkronisering")
         val measureTimeMillis = measureTimeMillis {
-            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
@@ -207,7 +207,7 @@ fun Application.k9Los() {
                 }
             }
 
-            for (aktivOppgave in hentAktiveOppgaver) {
+            for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
                 if (!oppgave.aktiv) {
