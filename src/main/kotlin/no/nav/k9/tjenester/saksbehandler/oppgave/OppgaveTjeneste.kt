@@ -26,7 +26,6 @@ import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.IllegalArgumentException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -231,7 +230,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: OppgavekøIdDto): List<NyeOgFerdigstilteOppgaverDto> {
         val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId.id))
-        val køOppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(kø.oppgaver)
+        val køOppgaver = oppgaveRepository.hentOppgaver(kø.oppgaver)
         val liste = mutableListOf<NyeOgFerdigstilteOppgaverDto>()
         kø.filtreringBehandlingTyper.forEach {
             liste.add(

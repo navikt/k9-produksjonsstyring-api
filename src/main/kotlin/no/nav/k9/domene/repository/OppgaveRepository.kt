@@ -137,7 +137,7 @@ class OppgaveRepository(
         }
     }
 
-    fun hentOppgaverSortertPåOpprettetDato(oppgaveider: Collection<UUID>): List<Oppgave> {
+    fun hentOppgaverSortertPåOpprettetDato(oppgaveider: Collection<UUID>): List<String> {
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
             return emptyList()
@@ -164,10 +164,9 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         val serialisering = System.currentTimeMillis()
-        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
 
-        log.info("Henter oppgaver basert på opprettetDato: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
-        return list
+        log.info("Henter oppgaver basert på opprettetDato: " + json.size + " oppgaver" + " spørring: " + spørring)
+        return json
     }
     fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
         val oppgaveiderList = oppgaveider.toList()
@@ -200,7 +199,7 @@ class OppgaveRepository(
         return list
     }
 
-    fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: Collection<UUID>): List<Oppgave> {
+    fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: Collection<UUID>): List<String> {
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
             return emptyList()
@@ -211,7 +210,7 @@ class OppgaveRepository(
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave " +
+                    "select id as data from oppgave " +
                             "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
                                 0,
                                 oppgaveiderList.size - 1
@@ -226,10 +225,9 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         val serialisering = System.currentTimeMillis()
-        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
 
-        log.info("Henter oppgaver basert på forsteStonadsdag: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
-        return list
+        log.info("Henter oppgaver basert på forsteStonadsdag: " + json.size + " oppgaver" +" spørring: " + spørring)
+        return json
     }
 
     fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
