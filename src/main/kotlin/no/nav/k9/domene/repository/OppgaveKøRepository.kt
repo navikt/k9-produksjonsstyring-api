@@ -67,7 +67,6 @@ class OppgaveKøRepository(
                 } else {
                     f(null)
                 }
-                val json = objectMapper().writeValueAsString(oppgaveKø)
                 if (sorter) {
                     //Sorter oppgaver
                     if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
@@ -88,7 +87,7 @@ class OppgaveKøRepository(
                         values (:id, :data :: jsonb)
                         on conflict (id) do update
                         set data = :data :: jsonb
-                     """, mapOf("id" to uuid.toString(), "data" to json)
+                     """, mapOf("id" to uuid.toString(), "data" to objectMapper().writeValueAsString(oppgaveKø))
                     ).asUpdate
                 )
             }
