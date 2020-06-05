@@ -250,9 +250,10 @@ class OppgaveRepository(
 
     fun hentOppgaveMedSaksnummer(saksnummer: String): Oppgave? {
         val json: String = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where (data ::jsonb -> 'oppgaver' -> -1 ->> 'fagsakSaksnummer') = :saksnummer",
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where lower(data ::jsonb -> 'oppgaver' -> -1 ->> 'fagsakSaksnummer') = lower(:saksnummer)",
                     mapOf("saksnummer" to saksnummer)
                 )
                     .map { row ->
