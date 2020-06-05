@@ -26,6 +26,7 @@ import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.lang.IllegalArgumentException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -62,6 +63,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         )
         log.info("reserverer oppgave med $ident $uuid")
         reservasjonRepository.lagre(uuid) {
+            if (it != null && it.erAktiv()) {
+                throw IllegalArgumentException("Oppgaven er allerede reservert")
+            }
             reservasjon
         }
         val oppgave = oppgaveRepository.hent(uuid)
