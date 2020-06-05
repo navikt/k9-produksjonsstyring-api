@@ -134,15 +134,16 @@ class OppgavekoTest {
             avklarMedlemskap = false, skjermet = false, utenlands = false
         )
 
-        oppgaveRepository.lagre(UUID.randomUUID()) { oppgave1 }
-        oppgaveRepository.lagre(UUID.randomUUID()) { oppgave2 }
+        oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
+        oppgaveRepository.lagre(oppgave2.eksternId) { oppgave2 }
 
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository)
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository)
-        oppgaveKøRepository.lagre(oppgaveko.id) { oppgaveko }
+        oppgaveKøRepository.lagre(oppgaveko.id) { 
+             oppgaveko
+        }
         every { config.erLokalt() } returns true
-
-        val hent = oppgaveTjeneste.hentOppgaver(uuid)
+        val hent = oppgaveTjeneste.hentOppgaver(oppgaveko.id)
         assert(hent.size == 1)
         assert(hent[0].registrerPapir)
         assert(!hent[0].selvstendigFrilans)
