@@ -71,12 +71,12 @@ class OppgaveKøRepository(
                     //Sorter oppgaver
                     if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
                         oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver)
-                            .map { UUID.fromString(it) }.toMutableList()
+                            .map { id -> UUID.fromString(id) }.toMutableList()
                     }
                     if (oppgaveKø.sortering == KøSortering.OPPRETT_BEHANDLING) {
                         oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver)
-                            .map { 
-                                UUID.fromString(it)
+                            .map { id ->
+                                UUID.fromString(id)
                             }.toMutableList()
                     }
                 }
