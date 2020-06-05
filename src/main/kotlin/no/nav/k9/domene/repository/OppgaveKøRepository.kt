@@ -49,7 +49,7 @@ class OppgaveKøRepository(
 
     }
 
-    fun lagre(uuid: UUID, f: (OppgaveKø?) -> OppgaveKø) {
+    fun lagre(uuid: UUID, sorter: Boolean = true, f: (OppgaveKø?) -> OppgaveKø) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -68,12 +68,16 @@ class OppgaveKøRepository(
                     f(null)
                 }
                 val json = objectMapper().writeValueAsString(oppgaveKø)
-                //Sorter oppgaver
-                if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
-                    oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver).map { oppgave -> oppgave.eksternId }.toMutableList()
-                }
-                if (oppgaveKø.sortering == KøSortering.OPPRETT_BEHANDLING) {
-                    oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver).map { oppgave -> oppgave.eksternId }.toMutableList()
+                if (sorter) {
+                    //Sorter oppgaver
+                    if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
+                        oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver)
+                            .map { oppgave -> oppgave.eksternId }.toMutableList()
+                    }
+                    if (oppgaveKø.sortering == KøSortering.OPPRETT_BEHANDLING) {
+                        oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver)
+                            .map { oppgave -> oppgave.eksternId }.toMutableList()
+                    }
                 }
                 tx.run(
                     queryOf(
