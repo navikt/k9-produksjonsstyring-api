@@ -76,7 +76,9 @@ class OppgaveKøRepository(
                     }
                     if (oppgaveKø.sortering == KøSortering.OPPRETT_BEHANDLING) {
                         oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver)
-                            .map { UUID.fromString(it)}.toMutableList()
+                            .map { 
+                                UUID.fromString(it)
+                            }.toMutableList()
                     }
                 }
                 tx.run(

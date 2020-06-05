@@ -149,7 +149,7 @@ class OppgaveRepository(
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave " +
+                    "select id as data from oppgave " +
                             "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
                                 0,
                                 oppgaveiderList.size - 1
