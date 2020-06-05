@@ -51,6 +51,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             oppgave
         }
         modell.reportMetrics(reservasjonRepository)
+        if (!oppgave.aktiv) {
+            fjernReservasjon(oppgave)
+        }
         oppdaterOppgavekøer(oppgave)
     }
 
@@ -64,23 +67,12 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun oppdaterOppgavekøer(oppgave: Oppgave) {
-        fjernReservasjonDersomIkkeOppgavenErAktiv(oppgave)
         for (oppgavekø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgavekø.id) { o ->
+            oppgaveKøRepository.lagre(oppgavekø.id, sorter = oppgave.aktiv) { o ->
                 o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                 o!!
             }
         }
     }
 
-    private fun fjernReservasjonDersomIkkeOppgavenErAktiv(oppgave: Oppgave) {
-        if (!oppgave.aktiv) {
-            if (reservasjonRepository.finnes(oppgave.eksternId)) {
-                reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
-                    reservasjon!!.reservertTil = null
-                    reservasjon
-                }
-            }
-        }
-    }
 }
