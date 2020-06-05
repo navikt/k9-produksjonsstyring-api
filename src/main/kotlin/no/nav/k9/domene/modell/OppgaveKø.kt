@@ -45,7 +45,7 @@ data class OppgaveKø(
             }
 
         } else {
-            if (!this.oppgaver.contains(oppgave.eksternId)) {
+            if (this.oppgaver.contains(oppgave.eksternId)) {
                 this.oppgaver.remove(oppgave.eksternId)
                 return true
             }
