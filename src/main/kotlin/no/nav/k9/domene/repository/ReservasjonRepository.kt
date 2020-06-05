@@ -37,7 +37,7 @@ class ReservasjonRepository(private val oppgaveKøRepository: OppgaveKøReposito
                     "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon \n" +
                             "where (not (data ::jsonb -> 'reservasjoner' -> -1 ?? 'aktiv')::BOOLEAN\n" +
                             "or (data ::jsonb -> 'reservasjoner' -> -1 -> 'aktiv')::BOOLEAN) " +
-                            "and (data ::jsonb -> 'reservasjoner' -> -1 --> 'reservertAv') = :saksbehandlersIdent",
+                            "and (data ::jsonb -> 'reservasjoner' -> -1 ->> 'reservertAv') = :saksbehandlersIdent",
                     mapOf("saksbehandlersIdent" to saksbehandlersIdent)
                 )
                     .map { row ->
