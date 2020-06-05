@@ -72,12 +72,14 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
         }
 
-        oppgaveRepository.lagreBehandling(ident){BehandletOppgave(
-            oppgave.behandlingId,
-            oppgave.fagsakSaksnummer,
-            oppgave.eksternId.toString(),
-            oppgave.aktorId
-        )}
+        oppgaveRepository.lagreBehandling(ident) {
+            BehandletOppgave(
+                oppgave.behandlingId,
+                oppgave.fagsakSaksnummer,
+                oppgave.eksternId.toString(),
+                oppgave.aktorId
+            )
+        }
 
         return reservasjon
     }
@@ -286,17 +288,19 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-   suspend fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgaveDto> {
+    suspend fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgaveDto> {
         return oppgaveRepository.hentBehandlinger(ident).map {
             val person = pdlService.person(it.aktørId)
             val navn = person?.navn() ?: "Ukjent navn"
-            val fnummer = if(person == null) "Ukjent nummer" else person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+            val fnummer =
+                if (person == null) "Ukjent nummer" else person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
             BehandletOppgaveDto(
                 it.behandlingId,
                 it.saksnummer,
                 UUID.fromString(it.eksternId),
                 fnummer,
-                navn)
+                navn
+            )
         }
     }
 
@@ -449,32 +453,15 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         val list = mutableListOf<OppgaveDto>()
         //Hent reservasjoner for en gitt bruker skriv om til å hente med ident direkte i tabellen
         val saksbehandlerMedEpost = saksbehandlerRepository.finnSaksbehandlerMedEpost(epost)
-        for (reservasjon in reservasjonRepository.hent(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository
-        )
+        val brukerIdent = saksbehandlerMedEpost?.brukerIdent ?: return emptyList()
+        for (reservasjon in reservasjonRepository.hent(brukerIdent)
             .filter {
-                log.info("Prøver å hente reservert oppgave " + it.reservertAv + " " + saksbehandlerMedEpost?.brukerIdent +" "+ it.oppgave)
-                saksbehandlerMedEpost != null && it.reservertAv == saksbehandlerMedEpost.brukerIdent
+                it.reservertAv == saksbehandlerMedEpost.brukerIdent
             }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
-            if (!pepClient.harTilgangTilLesSak(
-                    fagsakNummer = oppgave.fagsakSaksnummer
-                )
-            ) {
-                reservasjonRepository.lagre(oppgave.eksternId) {
-                    if (saksbehandlerMedEpost!!.brukerIdent == it!!.reservertAv) {
-                        it.reservertTil = null
-                    }
-                    it
-                }
-                settSkjermet(oppgave)
-                oppgaveKøRepository.hent().forEach{oppgaveKøRepository.oppdaterKøMedOppgaver(it.id)}
-                continue
-            }
+            if (!tilgangTilSak(oppgave)) continue
 
             val person = pdlService.person(oppgave.aktorId)
-
 
             val status =
                 OppgaveStatusDto(
@@ -515,6 +502,27 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             )
         }
         return list
+    }
+
+    private suspend fun tilgangTilSak(oppgave: Oppgave): Boolean {
+        if (!pepClient.harTilgangTilLesSak(
+                fagsakNummer = oppgave.fagsakSaksnummer
+            )
+        ) {
+            reservasjonRepository.lagre(oppgave.eksternId) {
+                it!!.reservertTil = null
+                it
+            }
+            settSkjermet(oppgave)
+            oppgaveKøRepository.hent().forEach { oppgaveKø ->
+                oppgaveKøRepository.lagre(oppgaveKø.id) {
+                    it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                    it
+                }
+            }
+            return false
+        }
+        return true
     }
 
     fun sokSaksbehandlerMedIdent(ident: BrukerIdentDto): Saksbehandler? {

@@ -117,11 +117,16 @@ fun Application.k9Los() {
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
-    val reservasjonRepository = ReservasjonRepository(dataSource)
+  
     val oppgaveKøRepository = OppgaveKøRepository(
         dataSource = dataSource,
         oppgaveKøOppdatert = oppgaveKøOppdatert,
         oppgaveRepository = oppgaveRepository
+    )
+    val reservasjonRepository = ReservasjonRepository(
+        oppgaveRepository = oppgaveRepository,
+        oppgaveKøRepository =oppgaveKøRepository,
+        dataSource = dataSource
     )
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val job =

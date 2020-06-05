@@ -38,13 +38,13 @@ class RutinerTest {
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val statistikkProducer = mockk<StatistikkProducer>()
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             oppgaveRepository = oppgaveRepository
         )
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
         every { statistikkProducer.send(any()) } just runs
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(uuid) {

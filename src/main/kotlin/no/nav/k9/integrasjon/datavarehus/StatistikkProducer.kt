@@ -55,6 +55,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
         StringSerializer()
     )
 
+    @KtorExperimentalAPI
     fun send(modell: Modell) {
         runBlocking {
             if (pepClient.kanSendeSakTilStatistikk(modell.sisteEvent().saksnummer)) {

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import javax.sql.DataSource
 
-class ReservasjonRepository(private val dataSource: DataSource) {
+class ReservasjonRepository(private val oppgaveKøRepository: OppgaveKøRepository, private val oppgaveRepository: OppgaveRepository,private val dataSource: DataSource) {
     private val log: Logger = LoggerFactory.getLogger(ReservasjonRepository::class.java)
     fun hent(oppgaveKøRepository: OppgaveKøRepository, oppgaveRepository: OppgaveRepository): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
@@ -27,16 +27,47 @@ class ReservasjonRepository(private val dataSource: DataSource) {
             )
         }
         val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
+        return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
+    }
+    
+    fun hent(saksbehandlersIdent: String): List<Reservasjon> {
+        val json: List<String> = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon \n" +
+                            "where (not (data ::jsonb -> 'reservasjoner' -> -1 ?? 'aktiv')::BOOLEAN\n" +
+                            "or (data ::jsonb -> 'reservasjoner' -> -1 -> 'aktiv')::BOOLEAN) " +
+                            "and (data ::jsonb -> 'reservasjoner' -> -1 --> 'reservertAv') = :saksbehandlersIdent",
+                    mapOf("saksbehandlersIdent" to saksbehandlersIdent)
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
+        return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
+    }
+
+    private fun fjernReservasjonerSomIkkeLengerErAktive(
+        reservasjoner: List<Reservasjon>,
+        oppgaveKøRepository: OppgaveKøRepository,
+        oppgaveRepository: OppgaveRepository
+    ): List<Reservasjon> {
         reservasjoner.forEach { reservasjon ->
-            if (!reservasjon.erAktiv()){
-                lagre(reservasjon.oppgave){
+            if (!reservasjon.erAktiv()) {
+                lagre(reservasjon.oppgave) {
                     it!!.aktiv = false
                     it
                 }
-                oppgaveKøRepository.hent().forEach{
-                    it.leggOppgaveTilEllerFjernFraKø(oppgave = oppgaveRepository.hent(reservasjon.oppgave),
-                        reservasjonRepository = this
-                    )
+                oppgaveKøRepository.hent().forEach { oppgaveKø ->
+                    oppgaveKøRepository.lagre(oppgaveKø.id) {
+                        it!!.leggOppgaveTilEllerFjernFraKø(
+                            oppgave = oppgaveRepository.hent(reservasjon.oppgave),
+                            reservasjonRepository = this
+                        )
+                        it
+                    }
                 }
             }
         }

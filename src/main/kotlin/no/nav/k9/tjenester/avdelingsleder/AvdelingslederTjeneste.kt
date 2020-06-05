@@ -132,7 +132,7 @@ class AvdelingslederTjeneste(
             if (kriteriumDto.checked) {
                 oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
                     it.andreKriterierType != kriteriumDto.andreKriterierType}.toMutableList()
-                oppgaveKø!!.filtreringAndreKriterierType.add(kriteriumDto)
+                oppgaveKø.filtreringAndreKriterierType.add(kriteriumDto)
             }
             else oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
                 it.andreKriterierType != kriteriumDto.andreKriterierType
