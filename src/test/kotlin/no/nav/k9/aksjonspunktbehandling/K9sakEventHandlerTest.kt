@@ -35,9 +35,9 @@ class K9sakEventHandlerTest {
         runMigration(dataSource)
 
         val oppgaveKøOppdatert = Channel<UUID>(1)
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository)
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
@@ -101,8 +101,9 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository)
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
@@ -162,13 +163,13 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository)
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
         val config = mockk<Configuration>()
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
@@ -228,13 +229,13 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository)
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
         val config = mockk<Configuration>()
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)

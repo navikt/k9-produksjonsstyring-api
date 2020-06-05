@@ -4,6 +4,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.domene.lager.oppgave.BehandletOppgave
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -52,6 +53,21 @@ class OppgaveRepository(
 
     }
 
+    fun hentBehandlinger(ident: String): List<BehandletOppgave> {
+        val json = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data from siste_behandlinger where id = :id",
+                    mapOf("id" to ident)
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        return json.map { objectMapper().readValue(it, BehandletOppgave::class.java) }.takeLast(10)
+    }
+
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
@@ -87,6 +103,40 @@ class OppgaveRepository(
 
     }
 
+    fun lagreBehandling(brukerIdent: String, f: (BehandletOppgave?) -> BehandletOppgave) {
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                val run = tx.run(
+                    queryOf(
+                        "select (data ::jsonb -> 'siste_behandlinger' -> -1) as data from siste_behandlinger where id = :id for update",
+                        mapOf("id" to brukerIdent)
+                    )
+                        .map { row ->
+                            row.string("data")
+                        }.asSingle
+                )
+
+                val oppgave = if (!run.isNullOrEmpty()) {
+                    f(objectMapper().readValue(run, BehandletOppgave::class.java))
+                } else {
+                    f(null)
+                }
+                val json = objectMapper().writeValueAsString(oppgave)
+
+                tx.run(
+                    queryOf(
+                        """
+                    insert into siste_behandlinger as k (id, data)
+                    values (:id, :dataInitial :: jsonb)
+                    on conflict (id) do update
+                    set data = jsonb_set(k.data, '{siste_behandlinger,999999}', :data :: jsonb, true)
+                 """, mapOf("id" to brukerIdent, "dataInitial" to "{\"siste_behandlinger\": [$json]}", "data" to json)
+                    ).asUpdate
+                )
+            }
+        }
+    }
+
     fun hentOppgaverSortertPåOpprettetDato(oppgaveider: Collection<UUID>): List<Oppgave> {
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
@@ -104,7 +154,7 @@ class OppgaveRepository(
                                 0,
                                 oppgaveiderList.size - 1
                             ).map { t -> ":p$t" }.joinToString()}) " +
-                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet') limit 100",
+                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet')",
                     IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
                 )
                     .map { row ->
@@ -117,6 +167,36 @@ class OppgaveRepository(
         val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
 
         log.info("Henter oppgaver basert på opprettetDato: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
+        return list
+    }
+    fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
+        val oppgaveiderList = oppgaveider.toList()
+        if (oppgaveider.isEmpty()) {
+            return emptyList()
+        }
+        var spørring = System.currentTimeMillis()
+        val session = sessionOf(dataSource)
+        val json: List<String> = using(session) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave " +
+                            "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
+                                0,
+                                oppgaveiderList.size - 1
+                            ).map { t -> ":p$t" }.joinToString()}) ",
+                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        val serialisering = System.currentTimeMillis()
+        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
+
+        log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list
     }
 
@@ -136,7 +216,7 @@ class OppgaveRepository(
                                 0,
                                 oppgaveiderList.size - 1
                             ).map { t -> ":p$t" }.joinToString()}) " +
-                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag') limit 100",
+                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag')",
                     IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
                 )
                     .map { row ->

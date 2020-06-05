@@ -10,7 +10,7 @@ import no.nav.k9.Configuration
 fun createHikariConfig(jdbcUrl: String, username: String? = null, password: String? = null) =
     HikariConfig().apply {
         this.jdbcUrl = jdbcUrl
-        maximumPoolSize = 3
+        maximumPoolSize = 8
         minimumIdle = 1
         idleTimeout = 10001
         connectionTimeout = 1000

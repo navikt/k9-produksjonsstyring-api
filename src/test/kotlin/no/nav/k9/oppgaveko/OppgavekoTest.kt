@@ -32,12 +32,13 @@ class OppgavekoTest {
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
 
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
-            oppgaveKøOppdatert = oppgaveKøOppdatert
+            oppgaveKøOppdatert = oppgaveKøOppdatert,
+            oppgaveRepository = oppgaveRepository
         )
+        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)

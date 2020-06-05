@@ -36,7 +36,7 @@ class AvdelingslederTjeneste(
                 andreKriterier = it.filtreringAndreKriterierType,
                 sistEndret = it.sistEndret,
                 skjermet = it.skjermet,
-                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id),
+                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id, true),
                 saksbehandlere = it.saksbehandlere
             )
         }
@@ -132,7 +132,7 @@ class AvdelingslederTjeneste(
             if (kriteriumDto.checked) {
                 oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
                     it.andreKriterierType != kriteriumDto.andreKriterierType}.toMutableList()
-                oppgaveKø!!.filtreringAndreKriterierType.add(kriteriumDto)
+                oppgaveKø.filtreringAndreKriterierType.add(kriteriumDto)
             }
             else oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
                 it.andreKriterierType != kriteriumDto.andreKriterierType

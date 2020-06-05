@@ -112,15 +112,21 @@ fun Application.k9Los() {
         accessTokenClient = accessTokenClientResolver.naisSts(),
         configuration = configuration
     )
-    val auditlogger=  Auditlogger(configuration)
+    val auditlogger = Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
-    val reservasjonRepository = ReservasjonRepository(dataSource)
+  
     val oppgaveKøRepository = OppgaveKøRepository(
         dataSource = dataSource,
-        oppgaveKøOppdatert = oppgaveKøOppdatert
+        oppgaveKøOppdatert = oppgaveKøOppdatert,
+        oppgaveRepository = oppgaveRepository
+    )
+    val reservasjonRepository = ReservasjonRepository(
+        oppgaveRepository = oppgaveRepository,
+        oppgaveKøRepository =oppgaveKøRepository,
+        dataSource = dataSource
     )
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val job =
@@ -130,7 +136,7 @@ fun Application.k9Los() {
             channel = oppgaveKøOppdatert,
             reservasjonRepository = reservasjonRepository
         )
-    
+
     val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
 
     val sakOgBehadlingProducer = SakOgBehadlingProducer(
@@ -142,7 +148,7 @@ fun Application.k9Los() {
         configuration = configuration
     )
 
-    val pepClient = PepClient(azureGraphService = azureGraphService,auditlogger = auditlogger, config = configuration)
+    val pepClient = PepClient(azureGraphService = azureGraphService, auditlogger = auditlogger, config = configuration)
 
     val statistikkProducer = StatistikkProducer(
         kafkaConfig = configuration.getKafkaConfig(),
@@ -151,7 +157,7 @@ fun Application.k9Los() {
         saksbehandlerRepository = saksbehandlerRepository,
         reservasjonRepository = reservasjonRepository
     )
-    
+
     val k9sakEventHandler = K9sakEventHandler(
         oppgaveRepository = oppgaveRepository,
         behandlingProsessEventRepository = behandlingProsessEventRepository,
@@ -198,7 +204,6 @@ fun Application.k9Los() {
     launch {
         log.info("Starter oppgavesynkronisering")
         val measureTimeMillis = measureTimeMillis {
-            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
@@ -207,7 +212,7 @@ fun Application.k9Los() {
                 }
             }
 
-            for (aktivOppgave in hentAktiveOppgaver) {
+            for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
                 if (!oppgave.aktiv) {
@@ -221,11 +226,20 @@ fun Application.k9Los() {
                 oppgaveRepository.lagre(oppgave.eksternId) {
                     oppgave
                 }
-                for (oppgavekø in oppgaveKøRepository.hent()) {
-                    oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                        forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                        forrige!!
+            }
+            
+            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
+            for (oppgavekø in oppgaveKøRepository.hent()) {
+                for (oppgave in oppgaver) {
+                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
+                        oppgaveKøRepository.lagre(oppgavekø.id, sorter = false) { forrige ->
+                            forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                            forrige!!
+                        }
                     }
+                }
+                oppgaveKøRepository.lagre(oppgavekø.id, sorter = true) { forrige ->
+                    forrige!!
                 }
             }
         }

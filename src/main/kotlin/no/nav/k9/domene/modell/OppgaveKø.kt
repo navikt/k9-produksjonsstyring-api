@@ -32,29 +32,37 @@ data class OppgaveKø(
 //    val erOmsorgspenger: Boolean,
 //    val opprettBehandling: Boolean,
 //    val førsteStønadsdag: Boolean
-    var oppgaver: MutableSet<UUID> = mutableSetOf()
+    var oppgaver: MutableList<UUID> = mutableListOf()
 ) {
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository
-    ) {
+    ): Boolean {
         if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
-            this.oppgaver.add(oppgave.eksternId)
+            if (!this.oppgaver.contains(oppgave.eksternId)) {
+                this.oppgaver.add(oppgave.eksternId)
+                return true
+            }
+
         } else {
-            this.oppgaver.remove(oppgave.eksternId)
+            if (this.oppgaver.contains(oppgave.eksternId)) {
+                this.oppgaver.remove(oppgave.eksternId)
+                return true
+            }
         }
+        return false
     }
 
     fun tilhørerOppgaveTilKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository,
-        taHensynTilReservasjon : Boolean = true
+        taHensynTilReservasjon: Boolean = true
     ): Boolean {
         if (!oppgave.aktiv) {
             return false
         }
-        
-        if (taHensynTilReservasjon && erOppgavenReservert(reservasjonRepository, oppgave) ) {
+
+        if (taHensynTilReservasjon && erOppgavenReservert(reservasjonRepository, oppgave)) {
             return false
         }
         if (!erInnenforOppgavekøensPeriode(oppgave)) {
@@ -102,7 +110,7 @@ data class OppgaveKø(
                 return false
             }
         }
-        
+
         if (sortering == KøSortering.FORSTE_STONADSDAG) {
             if (fomDato != null && oppgave.forsteStonadsdag.isBefore(fomDato!!.plusDays(1))) {
                 return false
@@ -135,12 +143,12 @@ data class OppgaveKø(
                 .contains(AndreKriterierType.PAPIRSØKNAD)) {
             return true
         }
-        
+
         if (oppgave.årskvantum && kriterier.map { it.andreKriterierType }
                 .contains(AndreKriterierType.AARSKVANTUM)) {
             return true
         }
-        
+
         if (oppgave.avklarMedlemskap && kriterier.map { it.andreKriterierType }
                 .contains(AndreKriterierType.AVKLAR_MEDLEMSKAP)) {
             return true
@@ -232,7 +240,7 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
     AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
     AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap");
-    
+
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
     companion object {

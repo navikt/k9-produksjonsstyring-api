@@ -7,18 +7,12 @@ import io.ktor.locations.post
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.domene.modell.BehandlingStatus
-
-import no.nav.k9.domene.modell.FagsakStatus
-import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
-
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 @KtorExperimentalLocationsAPI
 internal fun Route.FagsakApis(
@@ -31,15 +25,22 @@ internal fun Route.FagsakApis(
 
     post { _: søkFagsaker ->
         val søk = call.receive<QueryString>()
-        val idToken = call.idToken()
-        withContext(
-            requestContextService.getCoroutineContext(
-                context = coroutineContext,
-                idToken = idToken
-            )
-        ) {
-            call.respond(oppgaveTjeneste.søkFagsaker(søk.searchString))
-
+        if (configuration.erLokalt) {
+            withContext(
+                Dispatchers.Unconfined
+            ) {
+                call.respond(oppgaveTjeneste.søkFagsaker("Saksnummer"))
+            }
+        } else {
+            val idToken = call.idToken()
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    idToken = idToken
+                )
+            ) {
+                call.respond(oppgaveTjeneste.søkFagsaker(søk.searchString))
+            }
         }
     }
 }
