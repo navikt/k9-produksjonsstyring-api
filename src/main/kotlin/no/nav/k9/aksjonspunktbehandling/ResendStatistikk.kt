@@ -27,12 +27,10 @@ class ResendStatistikk @KtorExperimentalAPI constructor(
     fun prosesser(
        
     ) {
-
         for (eventId in behandlingProsessEventRepository.hentAlleEventerIder()) {
-            val modell = behandlingProsessEventRepository.hent(UUID.fromString(eventId))
-            modell.alleVersjoner()
-            statistikkProducer.send(modell)
+            for (modell in behandlingProsessEventRepository.hent(UUID.fromString(eventId)).alleVersjoner()) {
+             statistikkProducer.send(modell)
+            }
         }
-
     }
 }
