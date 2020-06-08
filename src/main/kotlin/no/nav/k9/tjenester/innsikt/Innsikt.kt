@@ -38,9 +38,8 @@ fun Route.InnsiktGrensesnitt(
                     }
 
                     val inaktiveOppgaverTotalt = oppgaveRepository.hentInaktiveOppgaverTotalt()
-
+                    //oppgaveRepository.
                     val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-                                       
                     val aksjonspunkter =  Aksjonspunkter().aksjonspunkter()
                     
                     p {
