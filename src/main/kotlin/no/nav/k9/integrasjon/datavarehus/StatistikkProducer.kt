@@ -57,6 +57,9 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     fun send(modell: Modell) {
+        if (config.erLokalt) {
+            return
+        }
         runBlocking {
             if (pepClient.kanSendeSakTilStatistikk(modell.sisteEvent().saksnummer)) {
                 sendSak(modell.dvhSak())

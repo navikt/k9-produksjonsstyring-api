@@ -285,7 +285,18 @@ data class Modell(
     fun bleBeslutter(): Boolean {
         val forrigeEvent = forrigeEvent()
         return forrigeEvent != null && !forrigeEvent.aktiveAksjonspunkt()
-                .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
+            .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
+    }
+
+    // Array med alle versjoner av modell basert på eventene, brukes når man skal spille av eventer
+    fun alleVersjoner(): MutableList<Modell> {
+        val eventListe = mutableListOf<BehandlingProsessEventDto>()
+        val modeller = mutableListOf<Modell>()
+        for (behandlingProsessEventDto in eventer) {
+            eventListe.add(behandlingProsessEventDto)
+            modeller.add(Modell(eventListe.toMutableList()))
+        }
+        return modeller
     }
 
 }

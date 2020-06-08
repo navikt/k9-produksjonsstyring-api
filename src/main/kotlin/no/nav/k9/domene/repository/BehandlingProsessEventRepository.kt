@@ -63,4 +63,24 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
 
     }
 
+    fun hentAlleEventerIder(
+    ): List<String> {
+
+        val ider = using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                tx.run(
+                    queryOf(
+                        "select id from behandling_prosess_events_k9",
+                        mapOf()
+                    )
+                        .map { row ->
+                            row.string("id")
+                   }.asList
+                )
+            }
+
+        }
+        return ider
+
+    }
 }

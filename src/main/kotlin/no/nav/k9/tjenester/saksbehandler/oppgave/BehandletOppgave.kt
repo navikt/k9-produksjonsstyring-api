@@ -2,7 +2,7 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import java.util.*
 
-data class BehandletOppgaveDto(
+data class BehandletOppgave(
     val behandlingId: Long,
     val saksnummer: String,
     val eksternId: UUID,
