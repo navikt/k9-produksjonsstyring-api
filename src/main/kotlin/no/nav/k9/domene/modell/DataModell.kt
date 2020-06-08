@@ -288,6 +288,12 @@ data class Modell(
                 .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
     }
 
+    // Array med alle versjoner av modell basert på eventene, brukes når man skal spille av eventer
+    fun alleVersjoner() {
+        
+        
+    }
+
 }
 
 fun BehandlingProsessEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
