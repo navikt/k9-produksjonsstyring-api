@@ -527,15 +527,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun leggTilBehandletOppgave(ident: String, oppgave: OppgaveDto) {
+    suspend fun leggTilBehandletOppgave(ident: String, oppgave: BehandletOppgave) {
         return oppgaveRepository.lagreBehandling(ident) {
-            BehandletOppgave(
-                    oppgave.behandlingId,
-                    oppgave.saksnummer,
-                    oppgave.eksternId,
-                    oppgave.personnummer,
-                    oppgave.navn
-            )
+            oppgave
         }
     }
 

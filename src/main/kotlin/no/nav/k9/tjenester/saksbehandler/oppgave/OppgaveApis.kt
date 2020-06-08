@@ -142,7 +142,7 @@ internal fun Route.OppgaveApis(
     class leggTilBehandletSak
 
     post { _: leggTilBehandletSak ->
-        val params = call.receive<OppgaveDto>()
+        val params = call.receive<BehandletOppgave>()
         if (configuration.erIkkeLokalt) {
             val idToken = call.idToken()
             withContext(
