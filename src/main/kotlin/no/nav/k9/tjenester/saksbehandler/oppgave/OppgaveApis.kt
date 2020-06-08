@@ -53,7 +53,7 @@ internal fun Route.OppgaveApis(
         }
 
     }
-    
+
     @Location("/behandlede")
     class getBehandledeOppgaver
 
@@ -136,6 +136,31 @@ internal fun Route.OppgaveApis(
     post { _: opphevReservasjon ->
         val params = call.receive<OpphevReservasjonId>()
         call.respond(oppgaveTjeneste.frigiReservasjon(UUID.fromString(params.oppgaveId), params.begrunnelse))
+    }
+
+    @Location("/legg-til-behandlet-sak")
+    class leggTilBehandletSak
+
+    post { _: leggTilBehandletSak ->
+        val params = call.receive<OppgaveDto>()
+        if (configuration.erIkkeLokalt) {
+            val idToken = call.idToken()
+            withContext(
+                    requestContextService.getCoroutineContext(
+                            context = coroutineContext,
+                            idToken = idToken
+                    )
+            ) {
+                call.respond(
+                        oppgaveTjeneste.leggTilBehandletOppgave(
+                                idToken.getUsername(),
+                                params
+                        )
+                )
+            }
+        } else {
+            call.respond(oppgaveTjeneste.leggTilBehandletOppgave("saksbehandler@nav.no", params))
+        }
     }
 
     @Location("/forleng")

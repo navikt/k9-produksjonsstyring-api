@@ -4,8 +4,8 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.lager.oppgave.BehandletOppgave
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*

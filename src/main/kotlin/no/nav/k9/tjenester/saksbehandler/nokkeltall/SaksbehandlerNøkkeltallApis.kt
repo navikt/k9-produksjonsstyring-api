@@ -7,8 +7,10 @@ import io.ktor.locations.get
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import java.time.LocalDate
 
 @KtorExperimentalLocationsAPI
 fun Route.SaksbehandlerNøkkeltallApis(
@@ -19,6 +21,18 @@ fun Route.SaksbehandlerNøkkeltallApis(
 
     get { _: getNyeOgFerdigstilteOppgaver ->
         val param = call.receive<OppgavekøIdDto>()
-        call.respond(oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(param))
+        //call.respond(oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(param))
+        call.respond(listOf(
+            NyeOgFerdigstilteOppgaverDto(
+                BehandlingType.FORSTEGANGSSOKNAD,
+        38,
+    56,
+        LocalDate.now()),
+        NyeOgFerdigstilteOppgaverDto(
+            BehandlingType.REVURDERING,
+            46,
+            78,
+            LocalDate.now()
+        )))
     }
 }

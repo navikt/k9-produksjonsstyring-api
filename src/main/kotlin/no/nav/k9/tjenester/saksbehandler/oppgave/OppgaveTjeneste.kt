@@ -3,7 +3,6 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
 import no.nav.k9.Configuration
-import no.nav.k9.domene.lager.oppgave.BehandletOppgave
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.BehandlingType
@@ -73,15 +72,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                 it
             }
-        }
-
-        oppgaveRepository.lagreBehandling(ident) {
-            BehandletOppgave(
-                oppgave.behandlingId,
-                oppgave.fagsakSaksnummer,
-                oppgave.eksternId.toString(),
-                oppgave.aktorId
-            )
         }
 
         return reservasjon
@@ -303,21 +293,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    @KtorExperimentalAPI
-    suspend fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgaveDto> {
-        return oppgaveRepository.hentBehandlinger(ident).map {
-            val person = pdlService.person(it.aktørId)
-            val navn = person?.navn() ?: "Ukjent navn"
-            val fnummer =
-                if (person == null) "Ukjent nummer" else person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
-            BehandletOppgaveDto(
-                it.behandlingId,
-                it.saksnummer,
-                UUID.fromString(it.eksternId),
-                fnummer,
-                navn
-            )
-        }
+    fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgave> {
+        return oppgaveRepository.hentBehandlinger(ident).takeLast(10)
     }
 
     fun flyttReservasjonTilForrigeSakbehandler(uuid: UUID) {
@@ -547,6 +524,19 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun hentOppgaveKøer(): List<OppgaveKø> {
         return oppgaveKøRepository.hent()
+    }
+
+    @KtorExperimentalAPI
+    suspend fun leggTilBehandletOppgave(ident: String, oppgave: OppgaveDto) {
+        return oppgaveRepository.lagreBehandling(ident) {
+            BehandletOppgave(
+                    oppgave.behandlingId,
+                    oppgave.saksnummer,
+                    oppgave.eksternId,
+                    oppgave.personnummer,
+                    oppgave.navn
+            )
+        }
     }
 
     fun settSkjermet(oppgave: Oppgave) {
