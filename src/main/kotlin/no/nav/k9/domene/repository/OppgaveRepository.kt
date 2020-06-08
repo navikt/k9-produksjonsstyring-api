@@ -282,6 +282,24 @@ class OppgaveRepository(
         return count!!
     }
 
+    internal fun hentInaktiveOppgaverTotalt(): Int {
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select count(*) as count from oppgave where not (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        log.info("Teller inaktive oppgaver: $spørring ms")
+        return count!!
+    }
+
     internal fun hentAktiveOppgaver(): List<Oppgave> {
         var spørring = System.currentTimeMillis()
         val json: List<String> = using(sessionOf(dataSource)) {
