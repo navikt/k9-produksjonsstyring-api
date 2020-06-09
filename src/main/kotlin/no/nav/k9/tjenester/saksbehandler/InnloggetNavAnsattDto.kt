@@ -9,5 +9,6 @@ data class InnloggetNavAnsattDto(
     val kanBehandleKodeEgenAnsatt: Boolean,
     val kanBehandleKode6: Boolean,
     val kanBehandleKode7: Boolean,
-    val kanOppgavestyre: Boolean
+    val kanOppgavestyre: Boolean,
+    val kanReservere: Boolean
 )
