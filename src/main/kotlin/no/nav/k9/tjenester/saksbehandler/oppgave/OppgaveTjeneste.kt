@@ -5,6 +5,7 @@ import joptsimple.internal.Strings
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
@@ -218,21 +219,17 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }.toList()
     }
 
-    fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: OppgavekøIdDto): List<NyeOgFerdigstilteOppgaverDto> {
-        val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId.id))
+    fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
+        val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId))
         val køOppgaver = oppgaveRepository.hentOppgaver(kø.oppgaver)
-        val liste = mutableListOf<NyeOgFerdigstilteOppgaverDto>()
-        kø.filtreringBehandlingTyper.forEach {
-            liste.add(
+        return kø.filtreringBehandlingTyper.map {
                 NyeOgFerdigstilteOppgaverDto(
                     behandlingType = it,
                     antallNye = tellNyeOppgaver(it, køOppgaver),
                     antallFerdigstilte = tellFerdigstilteOppgaver(it, køOppgaver),
                     dato = LocalDate.now()
                 )
-            )
         }
-        return liste
     }
 
     fun tellNyeOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
@@ -242,7 +239,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun tellFerdigstilteOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
-        return oppgaver.filter { it.oppgaveAvsluttet != null }.count {
+        return oppgaver.filter { it.behandlingStatus == BehandlingStatus.AVSLUTTET && it.oppgaveAvsluttet != null }.count {
             it.behandlingType == behandlingType && it.oppgaveAvsluttet!!.toLocalDate() == LocalDate.now()
         }.toLong()
     }
