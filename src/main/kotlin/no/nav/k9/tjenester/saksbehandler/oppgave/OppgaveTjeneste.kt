@@ -218,8 +218,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }.toList()
     }
 
-    fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: OppgavekøIdDto): List<NyeOgFerdigstilteOppgaverDto> {
-        val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId.id))
+    fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
+        val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId))
         val køOppgaver = oppgaveRepository.hentOppgaver(kø.oppgaver)
         val liste = mutableListOf<NyeOgFerdigstilteOppgaverDto>()
         kø.filtreringBehandlingTyper.forEach {

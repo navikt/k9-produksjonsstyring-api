@@ -20,19 +20,7 @@ fun Route.SaksbehandlerNøkkeltallApis(
     class getNyeOgFerdigstilteOppgaver
 
     get { _: getNyeOgFerdigstilteOppgaver ->
-        val param = call.receive<OppgavekøIdDto>()
-        //call.respond(oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(param))
-        call.respond(listOf(
-            NyeOgFerdigstilteOppgaverDto(
-                BehandlingType.FORSTEGANGSSOKNAD,
-        38,
-    56,
-        LocalDate.now()),
-        NyeOgFerdigstilteOppgaverDto(
-            BehandlingType.REVURDERING,
-            46,
-            78,
-            LocalDate.now()
-        )))
+        val queryParameter = call.request.queryParameters["id"]
+        call.respond(oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(queryParameter!!))
     }
 }
