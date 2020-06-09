@@ -306,7 +306,7 @@ class OppgaveRepository(
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select count(*) as count from oppgave o left join reservasjon r using (id) where not (o.data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean and r.id is null",
+                    "select count(*) as count from oppgave o left join reservasjon r using (id) where (o.data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingStatus' ->> 'kode' = 'AVSLU') and r.id is null",
                     mapOf()
                 )
                     .map { row ->
