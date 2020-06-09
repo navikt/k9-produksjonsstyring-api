@@ -326,10 +326,10 @@ class OppgaveRepository(
             it.run(
                 queryOf(
                     "select count(*) as count from oppgave o left join reservasjon r using (id)\n" +
-                            "where not (data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN') and (o.data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingStatus' ->> 'kode' = 'AVSLU') and r.id is not null and exists(\n" +
+                            "where not (o.data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN') and (o.data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingStatus' ->> 'kode' = 'AVSLU') and r.id is not null and exists(\n" +
                             "    select 1 from jsonb_array_elements(o.data -> 'oppgaver') elem\n" +
                             "    where (elem -> 'tilBeslutter') :: BOOLEAN\n" +
-                            "    );",
+                            "    )",
                     mapOf()
                 )
                     .map { row ->
