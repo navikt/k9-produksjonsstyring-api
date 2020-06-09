@@ -42,7 +42,7 @@ fun Route.InnsiktGrensesnitt(
                     val beslutterOppgaver = oppgaveRepository.hentBeslutterTotalt()
                     val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
                     val aksjonspunkter =  Aksjonspunkter().aksjonspunkter()
-                    val delvisAutomatiske = automatiskProsesserteTotalt - beslutterOppgaver
+                    val delvisAutomatiske = inaktiveOppgaverTotalt- (automatiskProsesserteTotalt + beslutterOppgaver)
                     p {
                         +"Det er nå ${aktiveOppgaver.size} åpne oppgaver og $inaktiveOppgaverTotalt inaktive oppgaver, $automatiskProsesserteTotalt er prosessert automatisk, hvor av $beslutterOppgaver beslutter oppgaver og $delvisAutomatiske delvis automatiske (innom saksbehandler men ikke beslutter)"
                     }
