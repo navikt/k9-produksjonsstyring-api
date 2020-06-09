@@ -287,7 +287,7 @@ class OppgaveRepository(
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select count(*) as count from oppgave where not (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean",
+                    "select count(*) as count from oppgave where not (o.data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (o.data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingStatus' ->> 'kode' = 'AVSLU') ::boolean",
                     mapOf()
                 )
                     .map { row ->
@@ -300,6 +300,48 @@ class OppgaveRepository(
         return count!!
     }
 
+    internal fun hentAutomatiskProsesserteTotalt(): Int {
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select count(*) as count from oppgave o left join reservasjon r using (id) where not (o.data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (o.data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingStatus' ->> 'kode' = 'AVSLU') and r.id is null",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        log.info("Teller autmatiske oppgaver: $spørring ms")
+        return count!!
+    }
+
+    internal fun hentBeslutterTotalt(): Int {
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select count(*) as count from oppgave o left join reservasjon r using (id)\n" +
+                            "where not (o.data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN') and (o.data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingStatus' ->> 'kode' = 'AVSLU') and r.id is not null and exists(\n" +
+                            "    select 1 from jsonb_array_elements(o.data -> 'oppgaver') elem\n" +
+                            "    where (elem -> 'tilBeslutter') :: BOOLEAN\n" +
+                            "    )",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        log.info("Teller autmatiske oppgaver: $spørring ms")
+        return count!!
+    }
+    
     internal fun hentAktiveOppgaver(): List<Oppgave> {
         var spørring = System.currentTimeMillis()
         val json: List<String> = using(sessionOf(dataSource)) {
