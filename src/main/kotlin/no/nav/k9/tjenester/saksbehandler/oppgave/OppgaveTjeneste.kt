@@ -294,7 +294,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgave> {
-        return oppgaveRepository.hentBehandlinger(ident).distinct().takeLast(10)
+        return oppgaveRepository.hentBehandlinger(ident).takeLast(10)
     }
 
     fun flyttReservasjonTilForrigeSakbehandler(uuid: UUID) {
