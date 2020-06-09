@@ -38,12 +38,13 @@ fun Route.InnsiktGrensesnitt(
                     }
 
                     val inaktiveOppgaverTotalt = oppgaveRepository.hentInaktiveOppgaverTotalt()
-                    //oppgaveRepository.
+                    val automatiskProsesserteTotalt = oppgaveRepository.hentAutomatiskProsesserteTotalt()
+                    val beslutterOppgaver = oppgaveRepository.hentBeslutterTotalt()
                     val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
                     val aksjonspunkter =  Aksjonspunkter().aksjonspunkter()
-                    
+                    val delvisAutomatiske = inaktiveOppgaverTotalt- (automatiskProsesserteTotalt + beslutterOppgaver)
                     p {
-                        +"Det er nå ${aktiveOppgaver.size} åpne oppgaver og $inaktiveOppgaverTotalt inaktive oppgaver "
+                        +"Det er nå ${aktiveOppgaver.size} åpne oppgaver og $inaktiveOppgaverTotalt inaktive oppgaver, $automatiskProsesserteTotalt er prosessert automatisk, hvorav $beslutterOppgaver beslutter oppgaver og $delvisAutomatiske delvis automatiske (innom saksbehandler men ikke beslutter)"
                     }
 
                     val ukjenteAksjonspunkter =

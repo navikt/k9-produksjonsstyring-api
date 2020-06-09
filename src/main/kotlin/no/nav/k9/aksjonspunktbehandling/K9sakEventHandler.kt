@@ -33,16 +33,18 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         val modell = behandlingProsessEventRepository.lagre(event)
 
         val oppgave = modell.oppgave()
-        if (modell.bleBeslutter()){
-            fjernReservasjon(oppgave)
-        }
+        
+        fjernReservasjon(oppgave)
+//        if (modell.bleBeslutter()) {
+//            fjernReservasjon(oppgave)
+//        }
         oppgaveRepository.lagre(oppgave.eksternId) {
+            
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
             }
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
-                fjernReservasjon(oppgave)
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
