@@ -18,19 +18,15 @@ import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.navn
-import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
-import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.coroutines.coroutineContext
 import kotlin.streams.toList
 
 private val log: Logger =
@@ -474,9 +470,25 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 )
             var personNavn = "Ukjent navn"
             var personFnummer = "Ukjent fnummer"
+            val navn = if (configuration.erIDevFss) {
+                "${oppgave.fagsakSaksnummer} " + Strings.join(
+                    oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                        val a = Aksjonspunkter().aksjonspunkter()
+                            .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                        "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                    }.toList(),
+                    ", "
+                )
+            } else {
+                person?.navn() ?: "Uten navn"
+            }
             if (person != null) {
-                personNavn = person.navn()
-                personFnummer = person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                personNavn = navn
+                personFnummer = if (person == null) {
+                    "Ukent fnummer"
+                } else {
+                    person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                }
             }
             list.add(
                 OppgaveDto(
