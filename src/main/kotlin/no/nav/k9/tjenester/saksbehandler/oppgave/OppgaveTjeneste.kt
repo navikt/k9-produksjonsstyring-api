@@ -14,6 +14,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.navn
@@ -42,6 +43,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val pdlService: PdlService,
     private val reservasjonRepository: ReservasjonRepository,
     private val configuration: Configuration,
+    private val azureGraphService: AzureGraphService,
     private val pepClient: PepClient
 ) {
 
@@ -78,7 +80,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return OppgaveStatusDto(
                 true,
                 reservasjon.reservertTil,
-                true,
+                reservertAvMeg(ident),
                 null,
                 null
         )
@@ -170,7 +172,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     suspend fun reservertAvMeg(ident: String?): Boolean {
-        return IdToken(coroutineContext.idToken().value).ident.value == ident
+        return azureGraphService.hentIdentTilInnloggetBruker() == ident
     }
 
     @KtorExperimentalAPI
