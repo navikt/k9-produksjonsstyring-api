@@ -14,7 +14,6 @@ import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktStatus
 import no.nav.k9.statistikk.kontrakter.Aktør
 import no.nav.k9.statistikk.kontrakter.Behandling
 import no.nav.k9.statistikk.kontrakter.Sak
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -36,15 +35,15 @@ data class Modell(
         when (eventResultat) {
             EventResultat.LUKK_OPPGAVE -> {
                 aktiv = false
-                oppgaveAvsluttet = LocalDateTime.now()
+                oppgaveAvsluttet = event.eventTid
             }
             EventResultat.LUKK_OPPGAVE_VENT -> {
                 aktiv = false
-                oppgaveAvsluttet = LocalDateTime.now()
+                oppgaveAvsluttet = event.eventTid
             }
             EventResultat.LUKK_OPPGAVE_MANUELT_VENT -> {
                 aktiv = false
-                oppgaveAvsluttet = LocalDateTime.now()
+                oppgaveAvsluttet = event.eventTid
             }
             EventResultat.GJENÅPNE_OPPGAVE -> TODO()
             EventResultat.OPPRETT_BESLUTTER_OPPGAVE -> {
@@ -74,9 +73,9 @@ data class Modell(
             behandlingType = BehandlingType.fraKode(event.behandlingTypeKode),
             fagsakYtelseType = FagsakYtelseType.fraKode(event.ytelseTypeKode),
             aktiv = aktiv,
-            forsteStonadsdag = LocalDate.now(),
+            forsteStonadsdag = event.eventTid.toLocalDate(),
             utfortFraAdmin = false,
-            behandlingsfrist = LocalDateTime.now().plusDays(1),
+            behandlingsfrist = event.eventTid.plusDays(1),
             behandlingStatus = BehandlingStatus.fraKode(behandlingStatus),
             eksternId = event.eksternId ?: UUID.randomUUID(),
             behandlingOpprettet = event.opprettetBehandling,
