@@ -196,7 +196,7 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         val serialisering = System.currentTimeMillis()
-        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
+        val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList().sortedBy { oppgave -> oppgave.behandlingOpprettet }
 
         log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list

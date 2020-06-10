@@ -53,9 +53,6 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             oppgave
         }
         modell.reportMetrics(reservasjonRepository)
-        if (!oppgave.aktiv) {
-            fjernReservasjon(oppgave)
-        }
         oppdaterOppgavekøer(oppgave)
     }
 
