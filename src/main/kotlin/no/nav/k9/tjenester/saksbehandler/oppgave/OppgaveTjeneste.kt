@@ -76,9 +76,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
 
         return OppgaveStatusDto(
-                reservasjon.erAktiv(),
+                true,
                 reservasjon.reservertTil,
-                reservertAvMeg(reservasjon.reservertAv),
+                true,
                 null,
                 null
         )
