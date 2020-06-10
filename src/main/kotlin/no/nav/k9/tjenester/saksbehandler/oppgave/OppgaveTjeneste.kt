@@ -18,7 +18,6 @@ import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.tjenester.avdelingsleder.oppgaveko.OppgavekøIdDto
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
@@ -48,7 +47,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            oppgaveRepository.hentOppgaver(oppgaveKø.oppgaver.take(50))
+            oppgaveRepository.hentOppgaver(oppgaveKø.oppgaver.take(10))
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -444,10 +443,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         //Hent reservasjoner for en gitt bruker skriv om til å hente med ident direkte i tabellen
         val saksbehandlerMedEpost = saksbehandlerRepository.finnSaksbehandlerMedEpost(epost)
         val brukerIdent = saksbehandlerMedEpost?.brukerIdent ?: return emptyList()
-        for (reservasjon in reservasjonRepository.hent(brukerIdent)
-            .filter {
-                it.reservertAv == saksbehandlerMedEpost.brukerIdent
-            }) {
+        for (reservasjon in reservasjonRepository.hent(brukerIdent).sortedBy { reservasjon -> reservasjon.reservertTil }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             if (!tilgangTilSak(oppgave)) continue
 
