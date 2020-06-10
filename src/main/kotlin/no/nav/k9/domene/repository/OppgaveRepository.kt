@@ -58,7 +58,7 @@ class OppgaveRepository(
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select distinct jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data, timestamp from siste_behandlinger where id = :id order by timestamp ASC",
+                    "select distinct jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data, timestamp from siste_behandlinger where id = :id order by timestamp DESC",
                     mapOf("id" to ident)
                 )
                     .map { row ->
@@ -66,7 +66,7 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { objectMapper().readValue(it, BehandletOppgave::class.java) }.takeLast(10)
+        return json.map { objectMapper().readValue(it, BehandletOppgave::class.java) }.take(10)
     }
 
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {

@@ -60,28 +60,37 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             reservertAv = ident, flyttetAv = null, flyttetTidspunkt = null, begrunnelse = null, oppgave = uuid
         )
         log.info("reserverer oppgave med $ident $uuid")
-        reservasjonRepository.lagre(uuid) {
-            if (it != null && it.erAktiv()) {
-                val oppgave = oppgaveRepository.hent(uuid)
-                throw IllegalArgumentException("Oppgaven er allerede reservert $uuid ${oppgave.fagsakSaksnummer}, $ident prøvde å reservere saken")
-            }
-            reservasjon
-        }
-        val oppgave = oppgaveRepository.hent(uuid)
-        for (oppgaveKø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgaveKø.id, sorter = false) {
-                it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                it
-            }
-        }
 
-        return OppgaveStatusDto(
-            true,
-            reservasjon.reservertTil,
-            reservertAvMeg(ident),
-            null,
-            null
-        )
+        try {
+            reservasjonRepository.lagre(uuid) {
+                if (it != null && it.erAktiv()) {
+                    val oppgave = oppgaveRepository.hent(uuid)
+                    throw IllegalArgumentException("Oppgaven er allerede reservert $uuid ${oppgave.fagsakSaksnummer}, $ident prøvde å reservere saken")
+                }
+                reservasjon
+            }
+            val oppgave = oppgaveRepository.hent(uuid)
+            for (oppgaveKø in oppgaveKøRepository.hent()) {
+                oppgaveKøRepository.lagre(oppgaveKø.id, sorter = false) {
+                    it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                    it
+                }
+            }
+            return OppgaveStatusDto(
+                true,
+                reservasjon.reservertTil,
+                reservertAvMeg(ident),
+                null,
+                null)
+        } catch (e: java.lang.IllegalArgumentException) {
+            log.warn(e.message)
+            return OppgaveStatusDto(
+                    true,
+                    reservasjon.reservertTil,
+                    false,
+                     reservasjon.reservertAv,
+                    null)
+        }
     }
 
     @KtorExperimentalAPI
@@ -377,7 +386,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                                 erReservert = false,
                                 reservertTilTidspunkt = null,
                                 erReservertAvInnloggetBruker = false,
-                                reservertAvUid = null,
+                                reservertAv = null,
                                 flyttetReservasjon = null
                             ),
                             behandlingId = oppgave.behandlingId,
@@ -420,7 +429,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             erReservert = false,
                             reservertTilTidspunkt = null,
                             erReservertAvInnloggetBruker = false,
-                            reservertAvUid = null,
+                            reservertAv = null,
                             flyttetReservasjon = null
                         ),
                         behandlingId = oppgave.behandlingId,
