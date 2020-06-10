@@ -52,6 +52,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             emptyList()
         }
     }
+
     @KtorExperimentalAPI
     suspend fun reserverOppgave(ident: String, uuid: UUID): OppgaveStatusDto {
         val reservasjon = Reservasjon(
@@ -75,11 +76,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
 
         return OppgaveStatusDto(
-                true,
-                reservasjon.reservertTil,
-                reservertAvMeg(ident),
-                null,
-                null
+            true,
+            reservasjon.reservertTil,
+            reservertAvMeg(ident),
+            null,
+            null
         )
     }
 
@@ -482,13 +483,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             } else {
                 person?.navn() ?: "Uten navn"
             }
-            if (person != null) {
-                personNavn = navn
-                personFnummer = if (person == null) {
-                    "Ukent fnummer"
-                } else {
-                    person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
-                }
+            personNavn = navn
+            personFnummer = if (person == null) {
+                "Ukent fnummer"
+            } else {
+                person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
             }
             list.add(
                 OppgaveDto(
