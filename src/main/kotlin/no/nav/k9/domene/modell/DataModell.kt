@@ -75,7 +75,7 @@ data class Modell(
             aktiv = aktiv,
             forsteStonadsdag = event.eventTid.toLocalDate(),
             utfortFraAdmin = false,
-            behandlingsfrist = event.eventTid.plusDays(1),
+            behandlingsfrist = event.eventTid.plusDays(21),
             behandlingStatus = BehandlingStatus.fraKode(behandlingStatus),
             eksternId = event.eksternId ?: UUID.randomUUID(),
             behandlingOpprettet = event.opprettetBehandling,
