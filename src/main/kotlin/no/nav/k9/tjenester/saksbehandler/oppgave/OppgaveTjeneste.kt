@@ -54,8 +54,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             emptyList()
         }
     }
-
-    fun reserverOppgave(ident: String, uuid: UUID): Reservasjon {
+    @KtorExperimentalAPI
+    suspend fun reserverOppgave(ident: String, uuid: UUID): OppgaveStatusDto {
         val reservasjon = Reservasjon(
             reservertTil = LocalDateTime.now().plusHours(24).forskyvReservasjonsDato(),
             reservertAv = ident, flyttetAv = null, flyttetTidspunkt = null, begrunnelse = null, oppgave = uuid
@@ -75,7 +75,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
         }
 
-        return reservasjon
+        return OppgaveStatusDto(
+                reservasjon.erAktiv(),
+                reservasjon.reservertTil,
+                reservertAvMeg(reservasjon.reservertAv),
+                null,
+                null
+        )
     }
 
     @KtorExperimentalAPI
