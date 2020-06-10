@@ -66,7 +66,7 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { objectMapper().readValue(it, BehandletOppgave::class.java) }.takeLast(10)
+        return json.map { objectMapper().readValue(it, BehandletOppgave::class.java) }.take(10)
     }
 
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
