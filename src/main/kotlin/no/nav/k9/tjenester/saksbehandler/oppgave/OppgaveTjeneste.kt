@@ -27,6 +27,7 @@ import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -299,7 +300,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgave> {
-        return oppgaveRepository.hentBehandlinger(ident).takeLast(10)
+        return oppgaveRepository.hentBehandlinger(ident)
     }
 
     fun flyttReservasjonTilForrigeSakbehandler(uuid: UUID) {
@@ -532,7 +533,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun leggTilBehandletOppgave(ident: String, oppgave: BehandletOppgave) {
+    fun leggTilBehandletOppgave(ident: String, oppgave: BehandletOppgave) {
         return oppgaveRepository.lagreBehandling(ident) {
             oppgave
         }
