@@ -81,10 +81,6 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             log.info("Lokal kjøring, sender ikke melding til statistikk")
             return
         }
-        if (config.erIProd) {
-            log.info("Featuretogglet av i prod")
-            return
-        }
         val melding = objectMapper().writeValueAsString(sak)
         val recordMetaData = producer.send(
             ProducerRecord(
