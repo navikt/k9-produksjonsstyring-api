@@ -51,7 +51,7 @@ data class OppgaveKø(
         } else {
             if (this.oppgaver.contains(oppgave.eksternId)) {
                 this.oppgaver.remove(oppgave.eksternId)
-                nyeOgFerdigstilteOppgaverDto(oppgave).antallFerdigstilte -= 1
+                nyeOgFerdigstilteOppgaverDto(oppgave).antallFerdigstilte += 1
                
                 return true
             }
@@ -60,10 +60,9 @@ data class OppgaveKø(
     }
 
     private fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaverDto {
-        val behandlingstypeMap = nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
+        return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
             mutableMapOf()
-        }
-        return behandlingstypeMap.getOrPut(oppgave.behandlingType.kode) {
+        }.getOrPut(oppgave.behandlingType.kode) {
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = oppgave.behandlingType,
                 antallNye = 0,
