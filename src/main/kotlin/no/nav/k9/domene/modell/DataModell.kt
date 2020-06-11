@@ -92,7 +92,8 @@ data class Modell(
             utbetalingTilBruker = false,
             skjermet = false,
             årskvantum = erÅrskvantum(event),
-            avklarMedlemskap = avklarMedlemskap(event)
+            avklarMedlemskap = avklarMedlemskap(event),
+            eventTid = event.eventTid
         )
     }
 

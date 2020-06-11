@@ -19,6 +19,7 @@ data class Oppgave(
     var behandlingStatus: BehandlingStatus,
     val behandlingType: BehandlingType,
     val fagsakYtelseType: FagsakYtelseType,
+    val eventTid: LocalDateTime = LocalDateTime.now(),
     val aktiv: Boolean,
     val system: String,
     val oppgaveAvsluttet: LocalDateTime?,

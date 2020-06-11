@@ -235,31 +235,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
-        val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId))
-        log.info("Henter kø $oppgavekoId som har ${kø.oppgaver.size} oppgaver")
-        val køOppgaver = oppgaveRepository.hentOppgaver(kø.oppgaver)
-        log.info("Henter ${køOppgaver.size} aktive oppgaver")
-        return kø.filtreringBehandlingTyper.map {
-            NyeOgFerdigstilteOppgaverDto(
-                behandlingType = it,
-                antallNye = tellNyeOppgaver(it, køOppgaver),
-                antallFerdigstilte = tellFerdigstilteOppgaver(it, køOppgaver),
-                dato = LocalDate.now()
-            )
-        }
-    }
-
-    fun tellNyeOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
-        return oppgaver.count {
-            it.behandlingType == behandlingType && it.behandlingOpprettet.toLocalDate() == LocalDate.now()
-        }.toLong()
-    }
-
-    fun tellFerdigstilteOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
-        return oppgaver.filter { it.behandlingStatus == BehandlingStatus.AVSLUTTET && it.oppgaveAvsluttet != null }
-            .count {
-                it.behandlingType == behandlingType && it.oppgaveAvsluttet!!.toLocalDate() == LocalDate.now()
-            }.toLong()
+        return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverSisteSyvDager()
     }
 
     fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
