@@ -109,7 +109,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             )
         ).get()
         log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        log.info("Statistikk behanlding: $melding")
+        log.info("Statistikk behandling: $melding")
     }
 
 

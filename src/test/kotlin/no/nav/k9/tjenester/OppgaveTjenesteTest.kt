@@ -15,6 +15,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.junit.Test
@@ -42,12 +43,13 @@ class OppgaveTjenesteTest {
         val pdlService = mockk<PdlService>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val pepClient = mockk<PepClient>()
+        val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(
                 oppgaveRepository,
                 oppgaveKøRepository,
                 saksbehandlerRepository,
                 pdlService,
-                reservasjonRepository, config, pepClient
+                reservasjonRepository, config, azureGraphService, pepClient
         )
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(
@@ -193,9 +195,9 @@ class OppgaveTjenesteTest {
         assert(hent.size == 2)
         assert(hent[0].behandlingType == BehandlingType.FORSTEGANGSSOKNAD)
         assert(hent[0].antallFerdigstilte == 0L)
-        assert(hent[0].antallNye == 1L)
+        assert(hent[0].antallNye == 2L)
         assert(hent[1].behandlingType == BehandlingType.INNSYN)
         assert(hent[1].antallFerdigstilte == 0L)
-        assert(hent[1].antallNye == 0L)
+        assert(hent[1].antallNye == 1L)
     }
 }

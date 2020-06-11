@@ -79,7 +79,7 @@ class PepClient @KtorExperimentalAPI constructor(
         val identTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
-            .addResourceAttribute(RESOURCE_TYPE, LESETILGANG_SAK)
+            .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK)
             .addActionAttribute(ACTION_ID, "read")
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addAccessSubjectAttribute(SUBJECTID, identTilInnloggetBruker)
@@ -98,7 +98,7 @@ class PepClient @KtorExperimentalAPI constructor(
                 ), fields = setOf(
                     CefField(CefFieldName.EVENT_TIME, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)*1000L),
                     CefField(CefFieldName.REQUEST, "read"),
-                    CefField(CefFieldName.ABAC_RESOURCE_TYPE, LESETILGANG_SAK),
+                    CefField(CefFieldName.ABAC_RESOURCE_TYPE, TILGANG_SAK),
                     CefField(CefFieldName.ABAC_ACTION, "read"),
                     CefField(CefFieldName.USER_ID, identTilInnloggetBruker),
                     CefField(CefFieldName.BERORT_BRUKER_ID, "read"),
@@ -115,6 +115,22 @@ class PepClient @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
+    suspend fun harTilgangTilReservingAvOppgaver(): Boolean {
+
+        val requestBuilder = XacmlRequestBuilder()
+            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+            .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK)
+            .addActionAttribute(ACTION_ID, "reserver")
+            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+
+        val decision = evaluate(requestBuilder)
+        return decision
+    }
+    
+
+    @KtorExperimentalAPI
     suspend fun kanSendeSakTilStatistikk(
         fagsakNummer: String
     ): Boolean {
@@ -123,7 +139,7 @@ class PepClient @KtorExperimentalAPI constructor(
         }
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
-            .addResourceAttribute(RESOURCE_TYPE, LESETILGANG_SAK)
+            .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK)
             .addActionAttribute(ACTION_ID, "read")
             .addAccessSubjectAttribute(SUBJECT_TYPE, KAFKATOPIC)
             .addAccessSubjectAttribute(SUBJECTID, KAFKATOPIC_STATISTIKK)

@@ -1,0 +1,1 @@
+alter table SISTE_BEHANDLINGER ADD COLUMN timestamp TIMESTAMP;

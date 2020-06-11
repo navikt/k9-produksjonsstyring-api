@@ -15,6 +15,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
@@ -43,12 +44,13 @@ class OppgavekoTest {
         val pdlService = mockk<PdlService>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val pepClient = mockk<PepClient>()
+        val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(
             oppgaveRepository,
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, pepClient
+            reservasjonRepository, config, azureGraphService, pepClient
         )
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(
@@ -139,7 +141,7 @@ class OppgavekoTest {
 
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository)
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository)
-        oppgaveKøRepository.lagre(oppgaveko.id) { 
+        oppgaveKøRepository.lagre(oppgaveko.id) {
              oppgaveko
         }
         every { config.erLokalt() } returns true

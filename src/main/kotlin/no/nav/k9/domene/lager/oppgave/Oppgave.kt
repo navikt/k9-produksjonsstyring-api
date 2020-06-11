@@ -19,6 +19,7 @@ data class Oppgave(
     var behandlingStatus: BehandlingStatus,
     val behandlingType: BehandlingType,
     val fagsakYtelseType: FagsakYtelseType,
+    val eventTid: LocalDateTime = LocalDateTime.now(),
     val aktiv: Boolean,
     val system: String,
     val oppgaveAvsluttet: LocalDateTime?,
@@ -36,5 +37,8 @@ data class Oppgave(
     val avklarMedlemskap: Boolean,
     var skjermet: Boolean,
     val utenlands: Boolean
-
-)
+){
+    fun avluttet(): Boolean {
+        return behandlingStatus == BehandlingStatus.AVSLUTTET
+    }
+}

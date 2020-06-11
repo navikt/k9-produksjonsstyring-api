@@ -5,7 +5,7 @@ import java.time.LocalDate
 
 data class NyeOgFerdigstilteOppgaverDto(
     val behandlingType: BehandlingType,
-    val antallNye: Long,
-    val antallFerdigstilte: Long,
+    var antallNye: Long,
+    var antallFerdigstilte: Long,
     val dato: LocalDate
 )

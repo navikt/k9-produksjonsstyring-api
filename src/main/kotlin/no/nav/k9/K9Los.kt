@@ -117,7 +117,7 @@ fun Application.k9Los() {
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
-  
+
     val oppgaveKøRepository = OppgaveKøRepository(
         dataSource = dataSource,
         oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -181,7 +181,8 @@ fun Application.k9Los() {
         reservasjonRepository = reservasjonRepository,
         pdlService = pdlService,
         configuration = configuration,
-        pepClient = pepClient
+        pepClient = pepClient,
+        azureGraphService = azureGraphService
     )
 
 
@@ -227,7 +228,7 @@ fun Application.k9Los() {
                     oppgave
                 }
             }
-            
+
             val oppgaver = oppgaveRepository.hentAktiveOppgaver()
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 for (oppgave in oppgaver) {

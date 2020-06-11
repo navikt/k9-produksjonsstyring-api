@@ -50,7 +50,8 @@ internal fun Route.NavAnsattApis(
                     kanBehandleKodeEgenAnsatt = pepClient.harBasisTilgang(),
                     kanBehandleKode6 = pepClient.harBasisTilgang(),
                     kanBehandleKode7 = pepClient.harBasisTilgang(),
-                    kanOppgavestyre = pepClient.erOppgaveStyrer()
+                    kanOppgavestyre = pepClient.erOppgaveStyrer(),
+                    kanReservere = pepClient.harTilgangTilReservingAvOppgaver()
                 )
                 if (saksbehandlerRepository.finnSaksbehandlerMedEpost(token.getUsername()) != null) {
                     saksbehandlerRepository.addSaksbehandler(
@@ -61,6 +62,7 @@ internal fun Route.NavAnsattApis(
                         )
                     )
                 }
+                
                 call.respond(
                     innloggetNavAnsattDto
                 )
@@ -76,7 +78,8 @@ internal fun Route.NavAnsattApis(
                     kanBehandleKodeEgenAnsatt = true,
                     kanBehandleKode6 = true,
                     kanBehandleKode7 = true,
-                    kanOppgavestyre = true
+                    kanOppgavestyre = true,
+                    kanReservere = true
                 )
             )
         }
