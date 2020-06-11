@@ -81,10 +81,6 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             log.info("Lokal kjøring, sender ikke melding til statistikk")
             return
         }
-        if (config.erIProd) {
-            log.info("Featuretogglet av i prod")
-            return
-        }
         val melding = objectMapper().writeValueAsString(sak)
         val recordMetaData = producer.send(
             ProducerRecord(
@@ -104,10 +100,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             log.info("Lokal kjøring, sender ikke melding til statistikk")
             return
         }
-        if (config.erIProd) {
-            log.info("Featuretogglet av i prod")
-            return
-        }
+       
         val melding = objectMapper().writeValueAsString(behandling)
         val recordMetaData = producer.send(
             ProducerRecord(
@@ -116,7 +109,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             )
         ).get()
         log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        log.info("Statistikk behanlding: $melding")
+        log.info("Statistikk behandling: $melding")
     }
 
 
