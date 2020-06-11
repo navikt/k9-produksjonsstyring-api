@@ -37,6 +37,8 @@ suspend fun oppdatereKø(
             val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
             oppgaveKøRepository.lagre(uuid) { oppgaveKø ->
                 oppgaveKø!!.oppgaver.clear()
+                oppgaveKø.nyeOgFerdigstilteOppgaver.clear()
+                
                 for (oppgave in aktiveOppgaver) {
                     oppgaveKø.leggOppgaveTilEllerFjernFraKø(
                         oppgave = oppgave,

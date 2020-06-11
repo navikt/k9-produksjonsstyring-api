@@ -209,6 +209,8 @@ fun Application.k9Los() {
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
                     forrige!!.oppgaver.clear()
+                    forrige.nyeOgFerdigstilteOppgaver.clear()
+                    
                     forrige
                 }
             }
