@@ -31,11 +31,11 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         event: BehandlingProsessEventDto
     ) {
         val modell = behandlingProsessEventRepository.lagre(event)
-        log.info(objectMapper().writeValueAsString(event))
+      //  log.info(objectMapper().writeValueAsString(event))
         val oppgave = modell.oppgave()
         
        // fjernReservasjon(oppgave)
-        if (modell.bleBeslutter()) {
+        if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
         }
         oppgaveRepository.lagre(oppgave.eksternId) {
