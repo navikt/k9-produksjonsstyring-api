@@ -18,6 +18,7 @@ import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
@@ -86,7 +87,11 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
+                val measureTimeMillis = measureTimeMillis {
+                    call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
+                }
+                logger.info("getReserverteOppgaver tok $measureTimeMillis")
+
             }
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
@@ -118,7 +123,7 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                 call.respond(
+                call.respond(
                     oppgaveTjeneste.reserverOppgave(
                         saksbehandlerRepository.finnSaksbehandlerMedEpost(idToken.getUsername())!!.brukerIdent!!,
                         UUID.fromString(oppgaveId.oppgaveId)
@@ -146,16 +151,16 @@ internal fun Route.OppgaveApis(
         if (configuration.erIkkeLokalt) {
             val idToken = call.idToken()
             withContext(
-                    requestContextService.getCoroutineContext(
-                            context = coroutineContext,
-                            idToken = idToken
-                    )
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    idToken = idToken
+                )
             ) {
                 call.respond(
-                        oppgaveTjeneste.leggTilBehandletOppgave(
-                                idToken.getUsername(),
-                                params
-                        )
+                    oppgaveTjeneste.leggTilBehandletOppgave(
+                        idToken.getUsername(),
+                        params
+                    )
                 )
             }
         } else {
@@ -201,7 +206,7 @@ internal fun Route.OppgaveApis(
     post { _: flyttReservasjonTilForrigeSaksbehandler ->
         val params = call.receive<OppgaveId>()
         call.respond(
-                oppgaveTjeneste.flyttReservasjonTilForrigeSakbehandler(UUID.fromString(params.oppgaveId))
+            oppgaveTjeneste.flyttReservasjonTilForrigeSakbehandler(UUID.fromString(params.oppgaveId))
         )
     }
 
