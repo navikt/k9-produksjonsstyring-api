@@ -58,9 +58,10 @@ class OppgaveRepository(
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    """ select distinct on (data) * from (
+                    """ select distinct on (ekstern_id) * from (
                                        select jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data,
-                                              data ->> 'timestamp' as timestamp
+                                              data ->> 'timestamp' as timestamp,
+                                              data ->> 'eksternId' as ekstern_id
                                        from siste_behandlinger where id = :id order by timestamp DESC) as saker limit 10""".trimIndent(),
                     mapOf("id" to ident)
                 )
