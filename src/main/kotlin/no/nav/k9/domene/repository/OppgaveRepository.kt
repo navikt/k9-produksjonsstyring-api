@@ -58,7 +58,7 @@ class OppgaveRepository(
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select distinct jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data, timestamp from siste_behandlinger where id = :id order by timestamp DESC limit 10",
+                    "select distinct jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data where id = :id order by ->> 'timestamp' DESC limit 10",
                     mapOf("id" to ident)
                 )
                     .map { row ->
@@ -127,13 +127,11 @@ class OppgaveRepository(
                 tx.run(
                     queryOf(
                         """
-                    insert into siste_behandlinger as k (id, data, timestamp)
-                    values (:id, :dataInitial :: jsonb, :timestamp)
+                    insert into siste_behandlinger as k (id, data)
+                    values (:id, :dataInitial :: jsonb)
                     on conflict (id) do update
-                    set data = jsonb_set(k.data, '{siste_behandlinger,999999}', :data :: jsonb, true),
-                    timestamp = :timestamp
-                 """, mapOf("id" to brukerIdent, "dataInitial" to "{\"siste_behandlinger\": [$json]}", "data" to json,
-                    "timestamp" to LocalDateTime.now())
+                    set data = jsonb_set(k.data, '{siste_behandlinger,999999}', :data :: jsonb, true)
+                 """, mapOf("id" to brukerIdent, "dataInitial" to "{\"siste_behandlinger\": [$json]}", "data" to json)
                     ).asUpdate
                 )
             }

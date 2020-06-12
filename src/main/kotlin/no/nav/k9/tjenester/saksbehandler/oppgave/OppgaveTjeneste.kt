@@ -532,6 +532,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     fun leggTilBehandletOppgave(ident: String, oppgave: BehandletOppgave) {
+        oppgave.timestamp = LocalDateTime.now()
         return oppgaveRepository.lagreBehandling(ident) {
             oppgave
         }
