@@ -58,7 +58,7 @@ class OppgaveRepository(
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select distinct jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data where id = :id order by (data ->> 'timestamp') DESC limit 10",
+                    "select distinct jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data from siste_behandlinger where id = :id order by (data ->> 'timestamp') DESC limit 10",
                     mapOf("id" to ident)
                 )
                     .map { row ->
