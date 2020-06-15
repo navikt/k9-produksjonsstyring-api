@@ -30,6 +30,7 @@ class PdlService @KtorExperimentalAPI constructor(
     private val henteNavnScopes: Set<String> = setOf("openid")
 ) {
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
+    private val cache = Cache()
 
     companion object {
         fun getQ2Ident(string: String): String {
@@ -42,25 +43,6 @@ class PdlService @KtorExperimentalAPI constructor(
                 "27078522688",
                 "19128521618",
                 "21078525115"
-//                //kode 6
-//                "24128324204",
-//                "24098322023",
-//                "08018422361",
-//                "12068325232",
-//                "29058323185",
-//                //kode 7
-//                "29058323185",
-//                "12068325232",
-//                "24128324204",
-//                "24098322023",
-//                "08018422361",
-//                //egen ansatt
-//                "13057222861",
-//                "04117326689",
-//                "05128721470",
-//                "08018819865",
-//                "21068720947",
-//                "02128720327"
             )
             val levenshtein = Levenshtein()
             var dist = Integer.MAX_VALUE.toDouble();
@@ -116,72 +98,63 @@ class PdlService @KtorExperimentalAPI constructor(
             getStringFromResource("/pdl/hentPerson.graphql"),
             mapOf("ident" to getQ2Ident(aktorId, configuration = configuration))
         )
-
-        val httpRequest = personUrl
-            .httpPost()
-            .body(
-                objectMapper().writeValueAsString(
-                    queryRequest
+        val query = objectMapper().writeValueAsString(
+            queryRequest
+        )
+        val cachedObject = cache.get(query)
+        if (cachedObject == null) {
+            val httpRequest = personUrl
+                .httpPost()
+                .body(
+                    query
                 )
-            )
-            .header(
-                HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
-                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(henteNavnScopes)
-                    .asAuthoriationHeader(),
-                HttpHeaders.Accept to "application/json",
-                HttpHeaders.ContentType to "application/json",
-                NavHeaders.Tema to "OMS",
-                NavHeaders.CallId to UUID.randomUUID().toString()
-            )
+                .header(
+                    HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
+                    NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(henteNavnScopes)
+                        .asAuthoriationHeader(),
+                    HttpHeaders.Accept to "application/json",
+                    HttpHeaders.ContentType to "application/json",
+                    NavHeaders.Tema to "OMS",
+                    NavHeaders.CallId to UUID.randomUUID().toString()
+                )
 
-        val json = Retry.retry(
-            operation = "hente-person",
-            initialDelay = Duration.ofMillis(200),
-            factor = 2.0,
-            logger = log
-        ) {
-            val (request, _, result) = Operation.monitored(
-                app = "k9-los-api",
+            val json = Retry.retry(
                 operation = "hente-person",
-                resultResolver = { 200 == it.second.statusCode }
-            ) { httpRequest.awaitStringResponseResult() }
+                initialDelay = Duration.ofMillis(200),
+                factor = 2.0,
+                logger = log
+            ) {
+                val (request, _, result) = Operation.monitored(
+                    app = "k9-los-api",
+                    operation = "hente-person",
+                    resultResolver = { 200 == it.second.statusCode }
+                ) { httpRequest.awaitStringResponseResult() }
 
-            result.fold(
-                { success -> success },
-                { error ->
-                    log.warn(
-                        "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
-                    )
-                    log.warn(error.toString())
-                    null
-                }
-            )
-        }
-        return try {
-            return objectMapper().readValue<PersonPdl>(json!!)
-        } catch (e: Exception) {
-            log.warn(
-                "Feilet deserialisering", e.message
-            )
-            null
-        }
-    }
-
-    /*
-    * {
-      "data": {
-        "hentIdenter": {
-          "identer": [
-            {
-              "ident": "2392173967319",
-              "historisk": false,
-              "gruppe": "AKTORID"
+                result.fold(
+                    { success -> success },
+                    { error ->
+                        log.warn(
+                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+                        )
+                        log.warn(error.toString())
+                        null
+                    }
+                )
             }
-          ]
+            return try {
+                cache.set(query, CacheObject(json!!))
+                return objectMapper().readValue<PersonPdl>(json)
+            } catch (e: Exception) {
+                log.warn(
+                    "Feilet deserialisering", e.message
+                )
+                null
+            }
+        } else {
+            return objectMapper().readValue<PersonPdl>(cachedObject.value)
         }
-      }
     }
-    * */
+
     @KtorExperimentalAPI
     internal suspend fun identifikator(fnummer: String): AktøridPdl? {
         if (configuration.erLokalt) {
@@ -207,61 +180,71 @@ class PdlService @KtorExperimentalAPI constructor(
                 "grupper" to listOf("AKTORID")
             )
         )
+        val query = objectMapper().writeValueAsString(
+            queryRequest
+        )
+        val cachedObject = cache.get(query)
+        if (cachedObject == null) {
 
-        val httpRequest = personUrl
-            .httpPost()
-            .body(
-                objectMapper().writeValueAsString(
-                    queryRequest
+            val httpRequest = personUrl
+                .httpPost()
+                .body(
+                    query
                 )
-            )
-            .header(
-                HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
-                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(henteNavnScopes)
-                    .asAuthoriationHeader(),
-                HttpHeaders.Accept to "application/json",
-                HttpHeaders.ContentType to "application/json",
-                NavHeaders.Tema to "OMS",
-                NavHeaders.CallId to UUID.randomUUID().toString()
-            )
+                .header(
+                    HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
+                    NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(henteNavnScopes)
+                        .asAuthoriationHeader(),
+                    HttpHeaders.Accept to "application/json",
+                    HttpHeaders.ContentType to "application/json",
+                    NavHeaders.Tema to "OMS",
+                    NavHeaders.CallId to UUID.randomUUID().toString()
+                )
 
-        val json = Retry.retry(
-            operation = "hente-ident",
-            initialDelay = Duration.ofMillis(200),
-            factor = 2.0,
-            logger = log
-        ) {
-            val (request, _, result) = Operation.monitored(
-                app = "k9-los-api",
+            val json = Retry.retry(
                 operation = "hente-ident",
-                resultResolver = { 200 == it.second.statusCode }
-            ) { httpRequest.awaitStringResponseResult() }
+                initialDelay = Duration.ofMillis(200),
+                factor = 2.0,
+                logger = log
+            ) {
+                val (request, _, result) = Operation.monitored(
+                    app = "k9-los-api",
+                    operation = "hente-ident",
+                    resultResolver = { 200 == it.second.statusCode }
+                ) { httpRequest.awaitStringResponseResult() }
 
-            result.fold(
-                { success -> success },
-                { error ->
-                    log.warn(
-                        "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
-                    )
-                    log.warn(error.toString())
-                    null
-                }
-            )
-        }
-        try {
-            if (configuration.erIDevFss) {
-                val ident = objectMapper().readValue<AktøridPdl>(json!!)
-                ident.data.hentIdenter = AktøridPdl.Data.HentIdenter(listOf(
-                    AktøridPdl.Data.HentIdenter.Identer(
-                        gruppe = "AKTORID",
-                        historisk = false,
-                        ident = "1671237347458"
-                    )))                 
+                result.fold(
+                    { success -> success },
+                    { error ->
+                        log.warn(
+                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+                        )
+                        log.warn(error.toString())
+                        null
+                    }
+                )
             }
-            return objectMapper().readValue<AktøridPdl>(json!!)
-        } catch (e: Exception) {           
-            log.warn( "",  e.message)
-            return null
+            try {
+                if (configuration.erIDevFss) {
+                    val ident = objectMapper().readValue<AktøridPdl>(json!!)
+                    ident.data.hentIdenter = AktøridPdl.Data.HentIdenter(
+                        listOf(
+                            AktøridPdl.Data.HentIdenter.Identer(
+                                gruppe = "AKTORID",
+                                historisk = false,
+                                ident = "1671237347458"
+                            )
+                        )
+                    )
+                }
+                cache.set(query, CacheObject(json!!))
+                return objectMapper().readValue<AktøridPdl>(json)
+            } catch (e: Exception) {
+                log.warn("", e.message)
+                return null
+            }
+        } else {
+            return objectMapper().readValue<AktøridPdl>(cachedObject.value)
         }
     }
 
