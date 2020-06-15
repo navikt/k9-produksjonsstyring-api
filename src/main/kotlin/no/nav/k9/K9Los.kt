@@ -205,16 +205,7 @@ fun Application.k9Los() {
     launch {
         log.info("Starter oppgavesynkronisering")
         val measureTimeMillis = measureTimeMillis {
-
-            for (oppgavekø in oppgaveKøRepository.hent()) {
-                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!.oppgaver.clear()
-                    forrige.nyeOgFerdigstilteOppgaver.clear()
-                    
-                    forrige
-                }
-            }
-
+            
             for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
@@ -230,8 +221,15 @@ fun Application.k9Los() {
                     oppgave
                 }
             }
-
             val oppgaver = oppgaveRepository.hentAktiveOppgaver()
+            for (oppgavekø in oppgaveKøRepository.hent()) {
+                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                    forrige!!.oppgaver.clear()
+                    forrige.clearNyeOppgaverForIDag()
+
+                    forrige
+                }
+            }
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 for (oppgave in oppgaver) {
                     if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {

@@ -122,6 +122,10 @@ data class OppgaveKø(
        return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
     }
     
+    fun clearNyeOppgaverForIDag(){
+        nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.filter { it.dato == LocalDate.now()}.forEach{it.antallNye = 0}
+    }
+    
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {
         if (sortering == KøSortering.OPPRETT_BEHANDLING) {
             if (fomDato != null && oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {

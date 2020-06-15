@@ -287,6 +287,17 @@ data class Modell(
         return forrigeEvent != null && !forrigeEvent.aktiveAksjonspunkt()
             .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
     }
+    fun fikkEndretAksjonspunkt(): Boolean {
+        val forrigeEvent = forrigeEvent()
+        if (forrigeEvent == null) {
+            return false
+        }
+
+        val forrigeAksjonspunkter = forrigeEvent.aktiveAksjonspunkt()
+            .liste
+        val nåværendeAksjonspunkter = sisteEvent().aktiveAksjonspunkt().liste
+        return forrigeAksjonspunkter != nåværendeAksjonspunkter
+    }
 
     // Array med alle versjoner av modell basert på eventene, brukes når man skal spille av eventer
     fun alleVersjoner(): MutableList<Modell> {

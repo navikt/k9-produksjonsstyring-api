@@ -36,7 +36,7 @@ class PepClient @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     private val url = config.abacEndpointUrl
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
-
+    private val cache = Cache()
     @KtorExperimentalAPI
     suspend fun erOppgaveStyrer(): Boolean {
         val requestBuilder = XacmlRequestBuilder()
@@ -63,10 +63,6 @@ class PepClient @KtorExperimentalAPI constructor(
 
         val decision = evaluate(requestBuilder)
         return decision
-    }
-
-    suspend fun hentIdentTilInnloggetBruker(): String {
-        return azureGraphService.hentIdentTilInnloggetBruker()
     }
 
     @KtorExperimentalAPI
@@ -96,7 +92,7 @@ class PepClient @KtorExperimentalAPI constructor(
                     name = "ABAC Sporingslogg",
                     severity = "INFO"
                 ), fields = setOf(
-                    CefField(CefFieldName.EVENT_TIME, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)*1000L),
+                    CefField(CefFieldName.EVENT_TIME, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000L),
                     CefField(CefFieldName.REQUEST, "read"),
                     CefField(CefFieldName.ABAC_RESOURCE_TYPE, TILGANG_SAK),
                     CefField(CefFieldName.ABAC_ACTION, "read"),
@@ -154,52 +150,58 @@ class PepClient @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     private suspend fun evaluate(xacmlRequestBuilder: XacmlRequestBuilder): Boolean {
         val xacmlJson = gson.toJson(xacmlRequestBuilder.build())
-        return withContext(Dispatchers.IO) {
-            val httpRequest = url
-                .httpPost()
-                .authentication()
-                .basic(config.abacUsername, config.abacPassword)
-                .body(
-                    xacmlJson
-                )
-                .header(
-                    HttpHeaders.Accept to "application/json",
-                    HttpHeaders.ContentType to XACML_CONTENT_TYPE,
-                    NavHeaders.CallId to UUID.randomUUID().toString()
-                )
-            val json = Retry.retry(
-                operation = "evaluer abac",
-                initialDelay = Duration.ofMillis(200),
-                factor = 2.0,
-                logger = log
-            ) {
-                val (request, _, result) = Operation.monitored(
-                    app = "k9-los-api",
-                    operation = "evaluate abac",
-                    resultResolver = { 200 == it.second.statusCode }
-                ) { httpRequest.awaitStringResponseResult() }
+        val get = cache.get(xacmlJson)
+        if (get == null) {
+            val result = withContext(Dispatchers.IO) {
+                val httpRequest = url
+                    .httpPost()
+                    .authentication()
+                    .basic(config.abacUsername, config.abacPassword)
+                    .body(
+                        xacmlJson
+                    )
+                    .header(
+                        HttpHeaders.Accept to "application/json",
+                        HttpHeaders.ContentType to XACML_CONTENT_TYPE,
+                        NavHeaders.CallId to UUID.randomUUID().toString()
+                    )
+                val json = Retry.retry(
+                    operation = "evaluer abac",
+                    initialDelay = Duration.ofMillis(200),
+                    factor = 2.0,
+                    logger = log
+                ) {
+                    val (request, _, result) = Operation.monitored(
+                        app = "k9-los-api",
+                        operation = "evaluate abac",
+                        resultResolver = { 200 == it.second.statusCode }
+                    ) { httpRequest.awaitStringResponseResult() }
 
-                result.fold(
-                    { success -> success },
-                    { error ->
-                        log.error(
-                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
-                        )
-                        log.error(error.toString())
-                        throw IllegalStateException("Feil ved evaluering av abac.")
-                    }
-                )
+                    result.fold(
+                        { success -> success },
+                        { error ->
+                            log.error(
+                                "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+                            )
+                            log.error(error.toString())
+                            throw IllegalStateException("Feil ved evaluering av abac.")
+                        }
+                    )
+                }
+                // log.info("abac result: $json \n\n $xacmlJson\n\n" + httpRequest.toString())
+                try {
+                    objectMapper().readValue<Response>(json).response[0].decision == "Permit"
+                } catch (e: Exception) {
+                    log.error(
+                        "Feilet deserialisering", e
+                    )
+                    false
+                }
             }
-            // log.info("abac result: $json \n\n $xacmlJson\n\n" + httpRequest.toString())
-            try {
-                objectMapper().readValue<Response>(json).response[0].decision == "Permit"
-            } catch (e: Exception) {
-                log.error(
-                    "Feilet deserialisering", e
-                )
-                false
-            }
+            cache.set(xacmlJson,CacheObject( result))
+            return result
+        }else {
+            return get.value
         }
     }
-
 }
