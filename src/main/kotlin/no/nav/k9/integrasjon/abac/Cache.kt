@@ -7,11 +7,7 @@ class Cache {
         object : LinkedHashMap<String, CacheObject>(
         ) {
             override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CacheObject>): Boolean {
-                val tooManyCachedItems = size > 1000
-                if (tooManyCachedItems) {
-                    this.remove(eldest.key)
-                }
-                return tooManyCachedItems
+                return size > 1000
             }
         }
 
