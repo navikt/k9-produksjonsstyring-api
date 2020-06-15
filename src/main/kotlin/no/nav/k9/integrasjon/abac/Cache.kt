@@ -18,9 +18,9 @@ class Cache {
     fun remove(key: String) = map.remove(key)
 
     fun get(key: String): CacheObject? {
-
         val cacheObject = map[key] ?: return null
         if (cacheObject.expire.isBefore(LocalDateTime.now())) {
+            remove(key)
             return null
         }
         return cacheObject
