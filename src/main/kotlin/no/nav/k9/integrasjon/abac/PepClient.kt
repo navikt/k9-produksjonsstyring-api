@@ -65,10 +65,6 @@ class PepClient @KtorExperimentalAPI constructor(
         return decision
     }
 
-    suspend fun hentIdentTilInnloggetBruker(): String {
-        return azureGraphService.hentIdentTilInnloggetBruker()
-    }
-
     @KtorExperimentalAPI
     suspend fun harTilgangTilLesSak(
         fagsakNummer: String
