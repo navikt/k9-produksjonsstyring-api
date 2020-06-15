@@ -4,7 +4,8 @@ import java.time.LocalDateTime
 
 class Cache {
     private val map =
-        object : LinkedHashMap<String, CacheObject>(initialCapacity = 1000, loadFactor = .75f, accessOrder = true) {
+        object : LinkedHashMap<String, CacheObject>(
+        ) {
             override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CacheObject>): Boolean {
                 val tooManyCachedItems = size > 1000
                 if (tooManyCachedItems) {
