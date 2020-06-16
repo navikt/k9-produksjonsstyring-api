@@ -24,7 +24,7 @@ import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
-import no.nav.k9.tjenester.sse.OppgaverOppdatertEvent
+import no.nav.k9.tjenester.sse.SseEvent
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 import java.time.LocalDate
@@ -38,7 +38,7 @@ class RutinerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
-        val refreshKlienter = Channel<OppgaverOppdatertEvent>(100)
+        val refreshKlienter = Channel<SseEvent>(100)
         val statistikkProducer = mockk<StatistikkProducer>()
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(

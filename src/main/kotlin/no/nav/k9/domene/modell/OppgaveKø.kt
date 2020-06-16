@@ -34,25 +34,29 @@ data class OppgaveKø(
 //    val opprettBehandling: Boolean,
 //    val førsteStønadsdag: Boolean
     var oppgaver: MutableList<UUID> = mutableListOf(),
-    
+
     var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaverDto>> = mutableMapOf()
 ) {
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
-        reservasjonRepository: ReservasjonRepository
+        reservasjonRepository: ReservasjonRepository,
+        oppdaterFerdigstilteOppgaver: Boolean = false
     ): Boolean {
         if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
             if (!this.oppgaver.contains(oppgave.eksternId)) {
                 this.oppgaver.add(oppgave.eksternId)
-                nyeOgFerdigstilteOppgaverDto(oppgave).antallNye += 1
+                if (oppdaterFerdigstilteOppgaver) {
+                    nyeOgFerdigstilteOppgaverDto(oppgave).antallNye += 1
+                }
                 return true
             }
 
         } else {
             if (this.oppgaver.contains(oppgave.eksternId)) {
                 this.oppgaver.remove(oppgave.eksternId)
-                nyeOgFerdigstilteOppgaverDto(oppgave).antallFerdigstilte += 1
-               
+                if (oppdaterFerdigstilteOppgaver) {
+                    nyeOgFerdigstilteOppgaverDto(oppgave).antallFerdigstilte += 1
+                }
                 return true
             }
         }
@@ -118,14 +122,16 @@ data class OppgaveKø(
 
         return false
     }
+
     fun nyeOgFerdigstilteOppgaverSisteSyvDager(): List<NyeOgFerdigstilteOppgaverDto> {
-       return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
+        return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
     }
-    
-    fun clearNyeOppgaverForIDag(){
-        nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.filter { it.dato == LocalDate.now()}.forEach{it.antallNye = 0}
+
+    fun clearNyeOppgaverForIDag() {
+        nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.filter { it.dato == LocalDate.now() }
+            .forEach { it.antallNye = 0 }
     }
-    
+
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {
         if (sortering == KøSortering.OPPRETT_BEHANDLING) {
             if (fomDato != null && oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {

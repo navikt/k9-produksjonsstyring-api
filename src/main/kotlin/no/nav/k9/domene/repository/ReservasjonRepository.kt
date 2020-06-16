@@ -7,7 +7,7 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Reservasjon
-import no.nav.k9.tjenester.sse.OppgaverOppdatertEvent
+import no.nav.k9.tjenester.sse.SseEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -17,7 +17,7 @@ class ReservasjonRepository(
     private val oppgaveKøRepository: OppgaveKøRepository,
     private val oppgaveRepository: OppgaveRepository,
     private val dataSource: DataSource,
-    private val refreshKlienter: Channel<OppgaverOppdatertEvent>
+    private val refreshKlienter: Channel<SseEvent>
 ) {
     private val log: Logger = LoggerFactory.getLogger(ReservasjonRepository::class.java)
     fun hent(oppgaveKøRepository: OppgaveKøRepository, oppgaveRepository: OppgaveRepository): List<Reservasjon> {
@@ -69,7 +69,7 @@ class ReservasjonRepository(
                     it
                 }
                 oppgaveKøRepository.hent().forEach { oppgaveKø ->
-                    oppgaveKøRepository.lagre(oppgaveKø.id) {
+                    oppgaveKøRepository.lagre(oppgaveKø.id, true, refresh = true) {
                         it!!.leggOppgaveTilEllerFjernFraKø(
                             oppgave = oppgaveRepository.hent(reservasjon.oppgave),
                             reservasjonRepository = this
@@ -161,7 +161,7 @@ class ReservasjonRepository(
             }
         }
         if  (refresh) {
-            runBlocking { refreshKlienter.send(OppgaverOppdatertEvent("oppdaterReserverte")) }
+            runBlocking { refreshKlienter.send(SseEvent("oppdaterReserverte")) }
         }
         return reservasjon!!
     }
