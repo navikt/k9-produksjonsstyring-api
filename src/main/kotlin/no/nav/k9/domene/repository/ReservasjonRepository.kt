@@ -124,7 +124,7 @@ class ReservasjonRepository(
         return json!= null
     }
 
-    fun lagre(uuid: UUID, f: (Reservasjon?) -> Reservasjon): Reservasjon {
+    fun lagre(uuid: UUID, refresh: Boolean = false, f: (Reservasjon?) -> Reservasjon): Reservasjon {
         var reservasjon : Reservasjon? = null
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
@@ -160,7 +160,9 @@ class ReservasjonRepository(
                 )
             }
         }
-        runBlocking { refreshKlienter.send(OppgaverOppdatertEvent("oppdaterReserverte")) }
+        if  (refresh) {
+            runBlocking { refreshKlienter.send(OppgaverOppdatertEvent("oppdaterReserverte")) }
+        }
         return reservasjon!!
     }
 }

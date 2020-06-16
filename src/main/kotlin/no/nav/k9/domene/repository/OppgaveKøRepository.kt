@@ -51,7 +51,7 @@ class OppgaveKøRepository(
 
     }
 
-    fun lagre(uuid: UUID, sorter: Boolean = true, f: (OppgaveKø?) -> OppgaveKø) {
+    fun lagre(uuid: UUID, sorter: Boolean = true, refresh: Boolean = false, f: (OppgaveKø?) -> OppgaveKø) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -94,8 +94,10 @@ class OppgaveKøRepository(
                 )
             }
         }
-        runBlocking {
-            refreshKlienter.send(OppgaverOppdatertEvent("oppdaterTilBehandling"))
+        if (refresh) {
+            runBlocking {
+                refreshKlienter.send(OppgaverOppdatertEvent("oppdaterTilBehandling"))
+            }
         }
     }
 
