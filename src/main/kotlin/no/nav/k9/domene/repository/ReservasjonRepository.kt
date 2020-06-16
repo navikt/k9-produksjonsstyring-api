@@ -69,7 +69,7 @@ class ReservasjonRepository(
                     it
                 }
                 oppgaveKøRepository.hent().forEach { oppgaveKø ->
-                    oppgaveKøRepository.lagre(oppgaveKø.id) {
+                    oppgaveKøRepository.lagre(oppgaveKø.id, true, refresh = true) {
                         it!!.leggOppgaveTilEllerFjernFraKø(
                             oppgave = oppgaveRepository.hent(reservasjon.oppgave),
                             reservasjonRepository = this
