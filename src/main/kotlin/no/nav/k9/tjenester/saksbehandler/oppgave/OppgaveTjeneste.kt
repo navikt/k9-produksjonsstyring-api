@@ -436,7 +436,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         //Hent reservasjoner for en gitt bruker skriv om til å hente med ident direkte i tabellen
         val saksbehandlerMedEpost = saksbehandlerRepository.finnSaksbehandlerMedEpost(epost)
         val brukerIdent = saksbehandlerMedEpost?.brukerIdent ?: return emptyList()
-        for (reservasjon in reservasjonRepository.hent(brukerIdent)
+        val hent = reservasjonRepository.hent(brukerIdent)
+        for (reservasjon in hent
             .sortedBy { reservasjon -> reservasjon.reservertTil }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             if (!tilgangTilSak(oppgave)) continue
