@@ -33,7 +33,7 @@ fun Route.KonfigApis(configuration: Configuration
         } else if (configuration.erIDevFss) {
             call.respond(Konfig(sseUrlDev))
         }
-        call.respond(sseUrlLocal)
+        call.respond(Konfig(sseUrlLocal))
         }
 }
 
