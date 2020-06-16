@@ -24,7 +24,7 @@ internal fun Route.Sse(
     sseChannel: BroadcastChannel<SseEvent>
 ) {
     val log = LoggerFactory.getLogger("Route.Sse")
-    @Location("/sse")
+    @Location("/")
     class sse
     get { _:  sse->
         val events = sseChannel.openSubscription()
@@ -36,7 +36,7 @@ internal fun Route.Sse(
     }
 
     @Location("/sse2")
-    class sse2    
+    class sse2
     get {_:  sse2->
         call.respondText(
             """
@@ -74,7 +74,7 @@ internal fun Route.Sse(
             contentType = ContentType.Text.Html
         )
     }
-    
+
 }
 
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {

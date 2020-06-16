@@ -294,6 +294,9 @@ fun Application.k9Los() {
             route("mock") {
                 MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
             }
+            route("sse") {
+                Sse(sseChannel = sseChannel)
+            }
         }
         route("innsikt") {
             InnsiktGrensesnitt(oppgaveRepository)
@@ -393,6 +396,11 @@ private fun Route.api(
     reservasjonRepository: ReservasjonRepository,
     sseChannel: BroadcastChannel<SseEvent>
 ) {
+
+    route("/sse") {
+        Sse(sseChannel = sseChannel)
+    }
+
     route("api") {
         AdminApis(
             behandlingProsessEventRepository = eventRepository,
@@ -446,7 +454,7 @@ private fun Route.api(
             azureGraphService = azureGraphService,
             saksbehandlerRepository = saksbehhandlerRepository
         )
-        Sse(sseChannel = sseChannel)
+
 
         if (true) {
             TestApis(

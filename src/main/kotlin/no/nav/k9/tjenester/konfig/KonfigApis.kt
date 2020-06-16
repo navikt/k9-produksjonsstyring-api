@@ -13,8 +13,8 @@ fun Route.KonfigApis(configuration: Configuration
 ) {
     val k9sakUrlDev = "https://app-q1.adeo.no/k9/web"
     val k9sakUrlProd = "https://app.adeo.no/k9/web"
-    val sseUrlDev = "https://k9-los-oidc-auth-proxy.nais.preprod.local/api/k9-los-api/sse"
-    val sseUrlProd = "https://k9-los-oidc-auth-proxy.nais.adeo.no/api/k9-los-api/sse"
+    val sseUrlDev = "https://k9-los-api.nais.preprod.local/sse"
+    val sseUrlProd = "https://k9-los-api.nais.adeo.no/sse"
     val sseUrlLocal = "api/sse"
 
     @Location("/k9-sak-url")
