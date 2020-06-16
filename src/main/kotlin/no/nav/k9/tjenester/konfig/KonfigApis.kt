@@ -15,6 +15,7 @@ fun Route.KonfigApis(configuration: Configuration
     val k9sakUrlProd = "https://app.adeo.no/k9/web"
     val sseUrlDev = "https://k9-los-oidc-auth-proxy.nais.preprod.local/api/k9-los-api/sse"
     val sseUrlProd = "https://k9-los-oidc-auth-proxy.nais.adeo.no/api/k9-los-api/sse"
+    val sseUrlLocal = "api/sse"
 
     @Location("/k9-sak-url")
     class hentK9SakUrl
@@ -27,8 +28,13 @@ fun Route.KonfigApis(configuration: Configuration
     class hentSseUrl
 
     get { _: hentSseUrl ->
-        if (configuration.erIDevFss) call.respond(Konfig(sseUrlDev)) else call.respond(Konfig(sseUrlProd))
-    }
+        if (configuration.erIProd) {
+            call.respond(Konfig(sseUrlProd))
+        } else if (configuration.erIDevFss) {
+            call.respond(Konfig(sseUrlDev))
+        }
+        call.respond(sseUrlLocal)
+        }
 }
 
 class Konfig(val verdi: String)
