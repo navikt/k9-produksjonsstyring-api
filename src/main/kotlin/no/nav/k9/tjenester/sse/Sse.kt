@@ -29,8 +29,10 @@ internal fun Route.Sse(
     get { _:  sse->
         val events = sseChannel.openSubscription()
         try {
+            log.info("Calling sse")
             call.respondSse(events)
         } finally {
+            log.info("removing sse")
             events.cancel()
         }
     }
