@@ -8,6 +8,7 @@ import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.tjenester.sse.OppgaverOppdatertEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -16,7 +17,8 @@ import javax.sql.DataSource
 class OppgaveKøRepository(
     private val dataSource: DataSource,
     private val oppgaveKøOppdatert: Channel<UUID>,
-    private val oppgaveRepository: OppgaveRepository
+    private val oppgaveRepository: OppgaveRepository,
+    private val refreshKlienter: Channel<OppgaverOppdatertEvent>
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
     fun hent(): List<OppgaveKø> {
@@ -91,6 +93,9 @@ class OppgaveKøRepository(
                     ).asUpdate
                 )
             }
+        }
+        runBlocking {
+            refreshKlienter.send(OppgaverOppdatertEvent("oppdaterTilBehandling", uuid.toString()))
         }
     }
 

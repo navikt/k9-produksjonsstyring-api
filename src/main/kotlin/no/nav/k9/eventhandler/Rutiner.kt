@@ -33,6 +33,7 @@ suspend fun oppdatereKø(
 ) {
     val log = LoggerFactory.getLogger("behandleOppgave")
     for (uuid in channel) {
+        
         val measureTimeMillis = measureTimeMillis {
             val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
             oppgaveKøRepository.lagre(uuid) { oppgaveKø ->

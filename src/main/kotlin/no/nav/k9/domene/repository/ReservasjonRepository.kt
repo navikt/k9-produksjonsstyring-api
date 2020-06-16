@@ -1,16 +1,24 @@
 package no.nav.k9.domene.repository
 
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.tjenester.sse.OppgaverOppdatertEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 import javax.sql.DataSource
 
-class ReservasjonRepository(private val oppgaveKøRepository: OppgaveKøRepository, private val oppgaveRepository: OppgaveRepository,private val dataSource: DataSource) {
+class ReservasjonRepository(
+    private val oppgaveKøRepository: OppgaveKøRepository,
+    private val oppgaveRepository: OppgaveRepository,
+    private val dataSource: DataSource,
+    private val refreshKlienter: Channel<OppgaverOppdatertEvent>
+) {
     private val log: Logger = LoggerFactory.getLogger(ReservasjonRepository::class.java)
     fun hent(oppgaveKøRepository: OppgaveKøRepository, oppgaveRepository: OppgaveRepository): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
@@ -152,6 +160,7 @@ class ReservasjonRepository(private val oppgaveKøRepository: OppgaveKøReposito
                 )
             }
         }
+        runBlocking { refreshKlienter.send(OppgaverOppdatertEvent("oppdaterReserverte", reservasjon?.reservertAv)) }
         return reservasjon!!
     }
 }

@@ -18,7 +18,11 @@ import io.ktor.routing.Routing
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.broadcast
+import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.launch
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
@@ -60,12 +64,15 @@ import no.nav.k9.tjenester.saksbehandler.nokkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
+import no.nav.k9.tjenester.sse.OppgaverOppdatertEvent
+import no.nav.k9.tjenester.sse.Sse
 import java.time.Duration
 import java.util.*
 import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
+@ExperimentalCoroutinesApi
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 fun Application.k9Los() {
@@ -114,6 +121,7 @@ fun Application.k9Los() {
     )
     val auditlogger = Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
+    val refreshKlienter = Channel<OppgaverOppdatertEvent>()
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
@@ -121,12 +129,14 @@ fun Application.k9Los() {
     val oppgaveKøRepository = OppgaveKøRepository(
         dataSource = dataSource,
         oppgaveKøOppdatert = oppgaveKøOppdatert,
-        oppgaveRepository = oppgaveRepository
+        oppgaveRepository = oppgaveRepository,
+        refreshKlienter = refreshKlienter
     )
     val reservasjonRepository = ReservasjonRepository(
         oppgaveRepository = oppgaveRepository,
-        oppgaveKøRepository =oppgaveKøRepository,
-        dataSource = dataSource
+        oppgaveKøRepository = oppgaveKøRepository,
+        dataSource = dataSource,
+        refreshKlienter = refreshKlienter
     )
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val job =
@@ -201,11 +211,20 @@ fun Application.k9Los() {
         azureGraphService,
         oppgaveTjeneste
     )
+
+
+    // Server side events
+    val sseChannel = produce {
+        for (oppgaverOppdatertEvent in refreshKlienter) {
+            send(oppgaverOppdatertEvent)
+        }
+    }.broadcast()
+
     // Synkroniser oppgaver
     launch {
         log.info("Starter oppgavesynkronisering")
         val measureTimeMillis = measureTimeMillis {
-            
+
             for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
@@ -293,7 +312,8 @@ fun Application.k9Los() {
                     oppgaveKøRepository = oppgaveKøRepository,
                     oppgaveRepository = oppgaveRepository,
                     reservasjonRepository = reservasjonRepository,
-                    eventRepository = behandlingProsessEventRepository
+                    eventRepository = behandlingProsessEventRepository,
+                    sseChannel = sseChannel
                 )
             }
         } else {
@@ -316,7 +336,8 @@ fun Application.k9Los() {
                 oppgaveKøRepository = oppgaveKøRepository,
                 oppgaveRepository = oppgaveRepository,
                 reservasjonRepository = reservasjonRepository,
-                eventRepository = behandlingProsessEventRepository
+                eventRepository = behandlingProsessEventRepository,
+                sseChannel = sseChannel
             )
         }
         static("static") {
@@ -350,6 +371,7 @@ fun Application.k9Los() {
     }
 }
 
+@ExperimentalCoroutinesApi
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 private fun Route.api(
@@ -366,7 +388,8 @@ private fun Route.api(
     eventRepository: BehandlingProsessEventRepository,
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
-    reservasjonRepository: ReservasjonRepository
+    reservasjonRepository: ReservasjonRepository,
+    sseChannel: BroadcastChannel<OppgaverOppdatertEvent>
 ) {
     route("api") {
         AdminApis(
@@ -421,6 +444,8 @@ private fun Route.api(
             azureGraphService = azureGraphService,
             saksbehandlerRepository = saksbehhandlerRepository
         )
+        Sse(sseChannel = sseChannel)
+
         if (true) {
             TestApis(
                 requestContextService = requestContextService,
