@@ -160,7 +160,7 @@ class ReservasjonRepository(
                 )
             }
         }
-        runBlocking { refreshKlienter.send(OppgaverOppdatertEvent("oppdaterReserverte", reservasjon?.reservertAv)) }
+        runBlocking { refreshKlienter.send(OppgaverOppdatertEvent("oppdaterReserverte")) }
         return reservasjon!!
     }
 }

@@ -95,7 +95,7 @@ class OppgaveKøRepository(
             }
         }
         runBlocking {
-            refreshKlienter.send(OppgaverOppdatertEvent("oppdaterTilBehandling", uuid.toString()))
+            refreshKlienter.send(OppgaverOppdatertEvent("oppdaterTilBehandling"))
         }
     }
 

@@ -80,10 +80,10 @@ internal fun Route.Sse(
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<OppgaverOppdatertEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
     respondTextWriter(contentType = ContentType.Text.EventStream) {
+        write("data: open\n")
+        write("\n")
+        flush()
         for (event in events) {
-            if (event.gjelder != null) {
-                write("gjelder: ${event.gjelder}\n")
-            }
             for (dataLine in event.data.lines()) {
                 write("data: $dataLine\n")
             }
