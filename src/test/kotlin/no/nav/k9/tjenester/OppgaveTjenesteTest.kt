@@ -191,10 +191,10 @@ class OppgaveTjenesteTest {
         oppgaveRepository.lagre(oppgave3.eksternId) { oppgave3 }
         oppgaveRepository.lagre(oppgave4.eksternId) { oppgave4 }
 
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave3, reservasjonRepository)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave3, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
         oppgaveKøRepository.lagre(oppgaveko.id) {
             oppgaveko
         }
