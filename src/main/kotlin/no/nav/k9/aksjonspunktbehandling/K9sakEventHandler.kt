@@ -69,7 +69,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     private fun oppdaterOppgavekøer(oppgave: Oppgave) {
         for (oppgavekø in oppgaveKøRepository.hent()) {
             oppgaveKøRepository.lagre(oppgavekø.id, sorter = oppgave.aktiv, refresh = oppgave.aktiv || oppgave.avluttet()) { o ->
-                o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
                 o!!
             }
         }
