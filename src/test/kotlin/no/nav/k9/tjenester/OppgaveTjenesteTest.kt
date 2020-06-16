@@ -18,7 +18,7 @@ import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
-import no.nav.k9.tjenester.sse.OppgaverOppdatertEvent
+import no.nav.k9.tjenester.sse.SseEvent
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -32,7 +32,7 @@ class OppgaveTjenesteTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
-        val refreshKlienter = Channel<OppgaverOppdatertEvent>(1000)
+        val refreshKlienter = Channel<SseEvent>(1000)
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(

@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.Sse(
-    sseChannel: BroadcastChannel<OppgaverOppdatertEvent>
+    sseChannel: BroadcastChannel<SseEvent>
 ) {
     val log = LoggerFactory.getLogger("Route.Sse")
     @Location("/sse")
@@ -77,7 +77,7 @@ internal fun Route.Sse(
     
 }
 
-suspend fun ApplicationCall.respondSse(events: ReceiveChannel<OppgaverOppdatertEvent>) {
+suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
     respondTextWriter(contentType = ContentType.Text.EventStream) {
         write("data: open\n")

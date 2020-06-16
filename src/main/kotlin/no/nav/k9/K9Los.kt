@@ -67,8 +67,8 @@ import no.nav.k9.tjenester.saksbehandler.nokkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
-import no.nav.k9.tjenester.sse.OppgaverOppdatertEvent
 import no.nav.k9.tjenester.sse.Sse
+import no.nav.k9.tjenester.sse.SseEvent
 import java.time.Duration
 import java.util.*
 import kotlin.system.measureTimeMillis
@@ -124,7 +124,7 @@ fun Application.k9Los() {
     )
     val auditlogger = Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
-    val refreshKlienter = Channel<OppgaverOppdatertEvent>()
+    val refreshKlienter = Channel<SseEvent>()
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
@@ -391,7 +391,7 @@ private fun Route.api(
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
     reservasjonRepository: ReservasjonRepository,
-    sseChannel: BroadcastChannel<OppgaverOppdatertEvent>
+    sseChannel: BroadcastChannel<SseEvent>
 ) {
     route("api") {
         AdminApis(
