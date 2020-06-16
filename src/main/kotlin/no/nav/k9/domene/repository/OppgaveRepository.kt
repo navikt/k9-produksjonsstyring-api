@@ -5,10 +5,10 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaver
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
 
@@ -58,7 +58,10 @@ class OppgaveRepository(
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select distinct jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data, timestamp from siste_behandlinger where id = :id order by timestamp DESC limit 10",
+                    """select data, timestamp from (
+                            select distinct on (eksternId) (data ::jsonb -> 'eksternId') as eksternId , (data ::jsonb -> 'timestamp') as timestamp, data from (
+                            select jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data
+                            from siste_behandlinger where id = :id) as saker order by eksternId desc ) as s order by timestamp desc limit 10""".trimIndent(),
                     mapOf("id" to ident)
                 )
                     .map { row ->
@@ -127,13 +130,11 @@ class OppgaveRepository(
                 tx.run(
                     queryOf(
                         """
-                    insert into siste_behandlinger as k (id, data, timestamp)
-                    values (:id, :dataInitial :: jsonb, :timestamp)
+                    insert into siste_behandlinger as k (id, data)
+                    values (:id, :dataInitial :: jsonb)
                     on conflict (id) do update
-                    set data = jsonb_set(k.data, '{siste_behandlinger,999999}', :data :: jsonb, true),
-                    timestamp = :timestamp
-                 """, mapOf("id" to brukerIdent, "dataInitial" to "{\"siste_behandlinger\": [$json]}", "data" to json,
-                    "timestamp" to LocalDateTime.now())
+                    set data = jsonb_set(k.data, '{siste_behandlinger,999999}', :data :: jsonb, true)
+                 """, mapOf("id" to brukerIdent, "dataInitial" to "{\"siste_behandlinger\": [$json]}", "data" to json)
                     ).asUpdate
                 )
             }
@@ -320,6 +321,29 @@ class OppgaveRepository(
         spørring = System.currentTimeMillis() - spørring
         log.info("Teller autmatiske oppgaver: $spørring ms")
         return count!!
+    }
+
+    fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaver> {
+        val json: List<String> = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """
+                    select (data ::jsonb -> 'oppgaver' -> -1 ->> 'fagsakYtelseType') as fagsakYtelseType,
+                    (data ::jsonb -> 'oppgaver' -> -1 ->> 'behandlingType') as behandlingType,
+                    (data ::jsonb -> 'oppgaver' -> -1 ->> 'tilBeslutter') as tilBeslutter,
+                    count(*) as antall
+                    from oppgave where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean """.trimIndent(),
+                    mapOf()
+                )
+                    .map { row ->
+                        row.string("fagsakYtelseType");
+                        row.string("behandlingType");
+                        row.string("tilBeslutter");
+                        row.string("antall")
+                    }.asList
+            )
+        }
+        return json.map { s -> objectMapper().readValue(s, AlleOppgaver::class.java) }.toList()
     }
 
     internal fun hentBeslutterTotalt(): Int {

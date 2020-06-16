@@ -195,9 +195,9 @@ class OppgaveTjenesteTest {
         assert(hent.size == 2)
         assert(hent[0].behandlingType == BehandlingType.FORSTEGANGSSOKNAD)
         assert(hent[0].antallFerdigstilte == 0L)
-        assert(hent[0].antallNye == 1L)
+        assert(hent[0].antallNye == 2L)
         assert(hent[1].behandlingType == BehandlingType.INNSYN)
         assert(hent[1].antallFerdigstilte == 0L)
-        assert(hent[1].antallNye == 0L)
+        assert(hent[1].antallNye == 1L)
     }
 }

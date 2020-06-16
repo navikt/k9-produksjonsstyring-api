@@ -6,6 +6,7 @@ import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
+import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
 import java.time.LocalDate
 import java.util.*
 
@@ -32,7 +33,9 @@ data class OppgaveKø(
 //    val erOmsorgspenger: Boolean,
 //    val opprettBehandling: Boolean,
 //    val førsteStønadsdag: Boolean
-    var oppgaver: MutableList<UUID> = mutableListOf()
+    var oppgaver: MutableList<UUID> = mutableListOf(),
+    
+    var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaverDto>> = mutableMapOf()
 ) {
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
@@ -41,18 +44,32 @@ data class OppgaveKø(
         if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
             if (!this.oppgaver.contains(oppgave.eksternId)) {
                 this.oppgaver.add(oppgave.eksternId)
+                nyeOgFerdigstilteOppgaverDto(oppgave).antallNye += 1
                 return true
             }
 
         } else {
             if (this.oppgaver.contains(oppgave.eksternId)) {
                 this.oppgaver.remove(oppgave.eksternId)
-                oppgave.avluttet()
-                
+                nyeOgFerdigstilteOppgaverDto(oppgave).antallFerdigstilte += 1
+               
                 return true
             }
         }
         return false
+    }
+
+    private fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaverDto {
+        return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
+            mutableMapOf()
+        }.getOrPut(oppgave.behandlingType.kode) {
+            NyeOgFerdigstilteOppgaverDto(
+                behandlingType = oppgave.behandlingType,
+                antallNye = 0,
+                antallFerdigstilte = 0,
+                dato = oppgave.eventTid.toLocalDate()
+            )
+        }
     }
 
     fun tilhørerOppgaveTilKø(
@@ -101,7 +118,14 @@ data class OppgaveKø(
 
         return false
     }
-
+    fun nyeOgFerdigstilteOppgaverSisteSyvDager(): List<NyeOgFerdigstilteOppgaverDto> {
+       return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
+    }
+    
+    fun clearNyeOppgaverForIDag(){
+        nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.filter { it.dato == LocalDate.now()}.forEach{it.antallNye = 0}
+    }
+    
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {
         if (sortering == KøSortering.OPPRETT_BEHANDLING) {
             if (fomDato != null && oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {

@@ -46,7 +46,8 @@ import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
-import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.fagsak.FagsakApis
 import no.nav.k9.tjenester.innsikt.InnsiktGrensesnitt
@@ -206,13 +207,6 @@ fun Application.k9Los() {
         log.info("Starter oppgavesynkronisering")
         val measureTimeMillis = measureTimeMillis {
 
-            for (oppgavekø in oppgaveKøRepository.hent()) {
-                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!.oppgaver.clear()
-                    forrige
-                }
-            }
-
             for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
@@ -228,8 +222,15 @@ fun Application.k9Los() {
                     oppgave
                 }
             }
-
             val oppgaver = oppgaveRepository.hentAktiveOppgaver()
+            for (oppgavekø in oppgaveKøRepository.hent()) {
+                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                    forrige!!.oppgaver.clear()
+                    forrige.clearNyeOppgaverForIDag()
+
+                    forrige
+                }
+            }
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 for (oppgave in oppgaver) {
                     if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
@@ -256,6 +257,7 @@ fun Application.k9Los() {
     install(Routing) {
 
         val kodeverkTjeneste = HentKodeverkTjeneste()
+        val nokkeltallTjeneste = NokkeltallTjeneste(oppgaveRepository)
 
         MetricsRoute()
         DefaultProbeRoutes()
@@ -293,7 +295,8 @@ fun Application.k9Los() {
                     oppgaveKøRepository = oppgaveKøRepository,
                     oppgaveRepository = oppgaveRepository,
                     reservasjonRepository = reservasjonRepository,
-                    eventRepository = behandlingProsessEventRepository
+                    eventRepository = behandlingProsessEventRepository,
+                    nokkeltallTjeneste = nokkeltallTjeneste
                 )
             }
         } else {
@@ -316,7 +319,8 @@ fun Application.k9Los() {
                 oppgaveKøRepository = oppgaveKøRepository,
                 oppgaveRepository = oppgaveRepository,
                 reservasjonRepository = reservasjonRepository,
-                eventRepository = behandlingProsessEventRepository
+                eventRepository = behandlingProsessEventRepository,
+                nokkeltallTjeneste = nokkeltallTjeneste
             )
         }
         static("static") {
@@ -366,7 +370,8 @@ private fun Route.api(
     eventRepository: BehandlingProsessEventRepository,
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
-    reservasjonRepository: ReservasjonRepository
+    reservasjonRepository: ReservasjonRepository,
+    nokkeltallTjeneste: NokkeltallTjeneste
 ) {
     route("api") {
         AdminApis(
@@ -382,7 +387,6 @@ private fun Route.api(
                 configuration = configuration
             )
         }
-        NøkkeltallApis()
         route("saksbehandler") {
             route("oppgaver") {
                 OppgaveApis(
@@ -411,6 +415,9 @@ private fun Route.api(
                 AvdelingslederOppgavekøApis(
                     avdelingslederTjeneste
                 )
+            }
+            route("nokkeltall") {
+                NokkeltallApis(nokkeltallTjeneste)
             }
         }
 

@@ -5,8 +5,6 @@ import joptsimple.internal.Strings
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
-import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -24,7 +22,6 @@ import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.streams.toList
@@ -235,31 +232,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
-        val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId))
-        log.info("Henter kø $oppgavekoId som har ${kø.oppgaver.size} oppgaver")
-        val køOppgaver = oppgaveRepository.hentOppgaver(kø.oppgaver)
-        log.info("Henter ${køOppgaver.size} aktive oppgaver")
-        return kø.filtreringBehandlingTyper.map {
-            NyeOgFerdigstilteOppgaverDto(
-                behandlingType = it,
-                antallNye = tellNyeOppgaver(it, køOppgaver),
-                antallFerdigstilte = tellFerdigstilteOppgaver(it, køOppgaver),
-                dato = LocalDate.now()
-            )
-        }
-    }
-
-    fun tellNyeOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
-        return oppgaver.count {
-            it.behandlingType == behandlingType && it.behandlingOpprettet.toLocalDate() == LocalDate.now()
-        }.toLong()
-    }
-
-    fun tellFerdigstilteOppgaver(behandlingType: BehandlingType, oppgaver: List<Oppgave>): Long {
-        return oppgaver.filter { it.behandlingStatus == BehandlingStatus.AVSLUTTET && it.oppgaveAvsluttet != null }
-            .count {
-                it.behandlingType == behandlingType && it.oppgaveAvsluttet!!.toLocalDate() == LocalDate.now()
-            }.toLong()
+        return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverSisteSyvDager()
     }
 
     fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
