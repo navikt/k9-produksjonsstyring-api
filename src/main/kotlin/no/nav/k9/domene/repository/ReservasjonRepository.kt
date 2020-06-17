@@ -7,6 +7,7 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.tjenester.sse.Melding
 import no.nav.k9.tjenester.sse.SseEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -160,7 +161,7 @@ class ReservasjonRepository(
                 )
                 log.info("Refresh "+ refresh + " ulik reservasjon " + (forrigeReservasjon != json))
                 if(refresh && forrigeReservasjon != json) {
-                    runBlocking { refreshKlienter.send(SseEvent("oppdaterReserverte")) }
+                    runBlocking { refreshKlienter.send((SseEvent(objectMapper().writeValueAsString(Melding("oppdaterReserverte"))))) }
                 }
             }
         }       

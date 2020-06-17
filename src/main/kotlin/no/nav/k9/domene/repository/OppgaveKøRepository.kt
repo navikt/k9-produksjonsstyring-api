@@ -8,6 +8,7 @@ import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.tjenester.sse.Melding
 import no.nav.k9.tjenester.sse.SseEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -97,7 +98,7 @@ class OppgaveKøRepository(
                 log.info("Refresh "+ refresh + " ulik kø " +  (forrigeOppgavekø != json))
                 if (refresh && forrigeOppgavekø != json) {
                     runBlocking {
-                        refreshKlienter.send(SseEvent("oppdaterTilBehandling"))
+                        refreshKlienter.send(SseEvent(objectMapper().writeValueAsString(Melding("oppdaterTilBehandling", uuid.toString()))))
                     }
                 }
             }
