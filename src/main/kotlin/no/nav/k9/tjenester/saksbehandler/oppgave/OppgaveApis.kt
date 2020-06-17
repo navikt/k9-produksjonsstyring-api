@@ -137,7 +137,6 @@ internal fun Route.OppgaveApis(
 
     @Location("/opphev")
     class opphevReservasjon
-
     post { _: opphevReservasjon ->
         val params = call.receive<OpphevReservasjonId>()
         call.respond(oppgaveTjeneste.frigiReservasjon(UUID.fromString(params.oppgaveId), params.begrunnelse))

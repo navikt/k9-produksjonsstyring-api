@@ -137,14 +137,14 @@ class ReservasjonRepository(
                             row.string("data")
                         }.asSingle
                 )
-
-                val data = if (!run.isNullOrEmpty()) {
-                    f(objectMapper().readValue(run, Reservasjon::class.java))
+                var forrigeReservasjon : Reservasjon ? =  null
+                reservasjon = if (!run.isNullOrEmpty()) {
+                     forrigeReservasjon = objectMapper().readValue(run, Reservasjon::class.java)
+                    f(forrigeReservasjon)
                 } else {
                     f(null)
                 }
-                reservasjon = data
-                val json = objectMapper().writeValueAsString(data)
+                val json = objectMapper().writeValueAsString(reservasjon)
 
                 tx.run(
                     queryOf(
@@ -158,11 +158,11 @@ class ReservasjonRepository(
                             "data" to json)
                     ).asUpdate
                 )
+                if(refresh && forrigeReservasjon != reservasjon) {
+                    runBlocking { refreshKlienter.send(SseEvent("oppdaterReserverte")) }
+                }
             }
-        }
-        if  (refresh) {
-            runBlocking { refreshKlienter.send(SseEvent("oppdaterReserverte")) }
-        }
+        }       
         return reservasjon!!
     }
 }

@@ -63,9 +63,10 @@ class OppgaveKøRepository(
                             row.string("data")
                         }.asSingle
                 )
-
+                var forrigeOppgavekø: OppgaveKø? = null
                 val oppgaveKø = if (!run.isNullOrEmpty()) {
-                    f(objectMapper().readValue(run, OppgaveKø::class.java))
+                    forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
+                    f(forrigeOppgavekø)
                 } else {
                     f(null)
                 }
@@ -92,11 +93,11 @@ class OppgaveKøRepository(
                      """, mapOf("id" to uuid.toString(), "data" to objectMapper().writeValueAsString(oppgaveKø))
                     ).asUpdate
                 )
-            }
-        }
-        if (refresh) {
-            runBlocking {
-                refreshKlienter.send(SseEvent("oppdaterTilBehandling"))
+                if (refresh && forrigeOppgavekø != oppgaveKø) {
+                    runBlocking {
+                        refreshKlienter.send(SseEvent("oppdaterTilBehandling"))
+                    }
+                }
             }
         }
     }
