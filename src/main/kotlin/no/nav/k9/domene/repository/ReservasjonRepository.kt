@@ -137,10 +137,10 @@ class ReservasjonRepository(
                             row.string("data")
                         }.asSingle
                 )
-                var forrigeReservasjon : Reservasjon ? =  null
+                var forrigeReservasjon : String ? =  null
                 reservasjon = if (!run.isNullOrEmpty()) {
-                     forrigeReservasjon = objectMapper().readValue(run, Reservasjon::class.java)
-                    f(forrigeReservasjon)
+                    forrigeReservasjon = run
+                    f(objectMapper().readValue(run, Reservasjon::class.java))
                 } else {
                     f(null)
                 }
@@ -158,8 +158,8 @@ class ReservasjonRepository(
                             "data" to json)
                     ).asUpdate
                 )
-                log.info("Refresh "+ refresh + "ulik reservasjon" + (forrigeReservasjon != reservasjon))
-                if(refresh && forrigeReservasjon != reservasjon) {
+                log.info("Refresh "+ refresh + "ulik reservasjon" + (forrigeReservasjon != json))
+                if(refresh && forrigeReservasjon != json) {
                     runBlocking { refreshKlienter.send(SseEvent("oppdaterReserverte")) }
                 }
             }

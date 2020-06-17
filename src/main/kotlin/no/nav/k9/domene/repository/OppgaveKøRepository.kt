@@ -63,10 +63,10 @@ class OppgaveKøRepository(
                             row.string("data")
                         }.asSingle
                 )
-                var forrigeOppgavekø: OppgaveKø? = null
+                var forrigeOppgavekø: String? = null
                 val oppgaveKø = if (!run.isNullOrEmpty()) {
-                    forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
-                    f(forrigeOppgavekø)
+                    forrigeOppgavekø = run
+                    f(objectMapper().readValue(run, OppgaveKø::class.java))
                 } else {
                     f(null)
                 }
@@ -83,6 +83,7 @@ class OppgaveKøRepository(
                             }.toMutableList()
                     }
                 }
+                val json = objectMapper().writeValueAsString(oppgaveKø)
                 tx.run(
                     queryOf(
                         """
@@ -90,11 +91,11 @@ class OppgaveKøRepository(
                         values (:id, :data :: jsonb)
                         on conflict (id) do update
                         set data = :data :: jsonb
-                     """, mapOf("id" to uuid.toString(), "data" to objectMapper().writeValueAsString(oppgaveKø))
+                     """, mapOf("id" to uuid.toString(), "data" to json)
                     ).asUpdate
                 )
-                log.info("Refresh "+ refresh + "ulik kø" +  (forrigeOppgavekø != oppgaveKø))
-                if (refresh && forrigeOppgavekø != oppgaveKø) {
+                log.info("Refresh "+ refresh + "ulik kø" +  (forrigeOppgavekø != json))
+                if (refresh && forrigeOppgavekø != json) {
                     runBlocking {
                         refreshKlienter.send(SseEvent("oppdaterTilBehandling"))
                     }
