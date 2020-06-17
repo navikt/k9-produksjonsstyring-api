@@ -219,6 +219,7 @@ fun Application.k9Los() {
     // Server side events
     val sseChannel = produce(capacity = 100) {
         for (oppgaverOppdatertEvent in refreshKlienter) {
+            log.info("Refresh $oppgaverOppdatertEvent")
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
