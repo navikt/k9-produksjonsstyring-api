@@ -94,7 +94,7 @@ class OppgaveKøRepository(
                      """, mapOf("id" to uuid.toString(), "data" to json)
                     ).asUpdate
                 )
-                log.info("Refresh "+ refresh + "ulik kø" +  (forrigeOppgavekø != json))
+                log.info("Refresh "+ refresh + " ulik kø " +  (forrigeOppgavekø != json))
                 if (refresh && forrigeOppgavekø != json) {
                     runBlocking {
                         refreshKlienter.send(SseEvent("oppdaterTilBehandling"))
