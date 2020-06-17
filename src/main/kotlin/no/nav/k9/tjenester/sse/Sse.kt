@@ -81,7 +81,7 @@ internal fun Route.Sse(
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
     respondTextWriter(contentType = ContentType.Text.EventStream) {
-        write("data: open\n")
+        write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
         write("\n")
         flush()
         for (event in events) {
