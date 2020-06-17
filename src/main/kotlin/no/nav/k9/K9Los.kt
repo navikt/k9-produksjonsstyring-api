@@ -124,7 +124,7 @@ fun Application.k9Los() {
     )
     val auditlogger = Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
-    val refreshKlienter = Channel<SseEvent>(10000)
+    val refreshKlienter = Channel<SseEvent>(100)
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)

@@ -167,7 +167,6 @@ class OppgaveRepository(
             )
         }
         spørring = System.currentTimeMillis() - spørring
-        val serialisering = System.currentTimeMillis()
 
         log.info("Henter oppgaver basert på opprettetDato: " + json.size + " oppgaver" + " spørring: " + spørring)
         return json
@@ -228,7 +227,6 @@ class OppgaveRepository(
             )
         }
         spørring = System.currentTimeMillis() - spørring
-        val serialisering = System.currentTimeMillis()
 
         log.info("Henter oppgaver basert på forsteStonadsdag: " + json.size + " oppgaver" +" spørring: " + spørring)
         return json
