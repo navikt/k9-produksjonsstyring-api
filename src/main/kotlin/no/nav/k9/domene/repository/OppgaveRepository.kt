@@ -5,7 +5,9 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaver
+import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -323,27 +325,30 @@ class OppgaveRepository(
         return count!!
     }
 
-    fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaver> {
-        val json: List<String> = using(sessionOf(dataSource)) {
+    fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
+        val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     """
-                    select (data ::jsonb -> 'oppgaver' -> -1 ->> 'fagsakYtelseType') as fagsakYtelseType,
-                    (data ::jsonb -> 'oppgaver' -> -1 ->> 'behandlingType') as behandlingType,
-                    (data ::jsonb -> 'oppgaver' -> -1 ->> 'tilBeslutter') as tilBeslutter,
-                    count(*) as antall
-                    from oppgave where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean """.trimIndent(),
+                        select count(*) as antall,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode') as fagsakYtelseType,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingType' ->> 'kode') as behandlingType,
+                        not (data ::jsonb -> 'oppgaver' -> -1 -> 'tilBeslutter') ::boolean as tilBehandling
+                        from oppgave o where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean
+                        group by  behandlingType, fagsakYtelseType, tilBehandling
+                    """.trimIndent(),
                     mapOf()
                 )
                     .map { row ->
-                        row.string("fagsakYtelseType");
-                        row.string("behandlingType");
-                        row.string("tilBeslutter");
-                        row.string("antall")
+                        AlleOppgaverDto(
+                        FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                        BehandlingType.fraKode(row.string("behandlingType")),
+                        row.boolean("tilBehandling"),
+                        row.int("antall"))
                     }.asList
             )
         }
-        return json.map { s -> objectMapper().readValue(s, AlleOppgaver::class.java) }.toList()
+        return json
     }
 
     internal fun hentBeslutterTotalt(): Int {

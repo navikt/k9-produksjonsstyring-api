@@ -10,10 +10,10 @@ private val log: Logger =
     LoggerFactory.getLogger(NokkeltallTjeneste::class.java)
 
 class NokkeltallTjeneste @KtorExperimentalAPI constructor(
-    oppgaveRepository: OppgaveRepository
+    private val oppgaveRepository: OppgaveRepository
 ) {
 
     fun hentOppgaverUnderArbeid(): List<AlleOppgaverDto> {
-        return emptyList()
+        return oppgaveRepository.hentAlleOppgaverUnderArbeid()
     }
 }
