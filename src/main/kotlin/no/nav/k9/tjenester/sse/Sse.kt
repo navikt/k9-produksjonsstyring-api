@@ -24,7 +24,7 @@ internal fun Route.Sse(
     sseChannel: BroadcastChannel<SseEvent>
 ) {
     val log = LoggerFactory.getLogger("Route.Sse")
-    @Location("/")
+    @Location("/sse")
     class sse
     get { _:  sse->
         val events = sseChannel.openSubscription()

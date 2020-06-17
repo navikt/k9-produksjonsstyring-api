@@ -294,9 +294,6 @@ fun Application.k9Los() {
             route("mock") {
                 MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
             }
-            route("sse") {
-                Sse(sseChannel = sseChannel)
-            }
         }
         route("innsikt") {
             InnsiktGrensesnitt(oppgaveRepository)
@@ -397,10 +394,6 @@ private fun Route.api(
     sseChannel: BroadcastChannel<SseEvent>
 ) {
 
-    route("/sse") {
-        Sse(sseChannel = sseChannel)
-    }
-
     route("api") {
         AdminApis(
             behandlingProsessEventRepository = eventRepository,
@@ -468,6 +461,7 @@ private fun Route.api(
         }
         route("konfig") { KonfigApis(configuration) }
         KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
+        Sse(sseChannel = sseChannel)
     }
 }
 
