@@ -9,7 +9,8 @@ import io.ktor.routing.Route
 import no.nav.k9.Configuration
 
 @KtorExperimentalLocationsAPI
-fun Route.KonfigApis(configuration: Configuration
+fun Route.KonfigApis(
+    configuration: Configuration
 ) {
     val k9sakUrlDev = "https://app-q1.adeo.no/k9/web"
     val k9sakUrlProd = "https://app.adeo.no/k9/web"
@@ -28,13 +29,18 @@ fun Route.KonfigApis(configuration: Configuration
     class hentSseUrl
 
     get { _: hentSseUrl ->
-        if (configuration.erIProd) {
-            call.respond(Konfig(sseUrlProd))
-        } else if (configuration.erIDevFss) {
-            call.respond(Konfig(sseUrlDev))
+        when {
+            configuration.erIProd -> {
+                call.respond(Konfig(sseUrlProd))
+            }
+            configuration.erIDevFss -> {
+                call.respond(Konfig(sseUrlDev))
+            }
+            else -> {
+                call.respond(Konfig(sseUrlLocal))
+            }
         }
-        call.respond(Konfig(sseUrlLocal))
-        }
+    }
 }
 
 class Konfig(val verdi: String)
