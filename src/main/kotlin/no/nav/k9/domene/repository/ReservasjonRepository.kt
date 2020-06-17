@@ -158,6 +158,7 @@ class ReservasjonRepository(
                             "data" to json)
                     ).asUpdate
                 )
+                log.info("Refresh "+ refresh + "ulik reservasjon" + (forrigeReservasjon != reservasjon))
                 if(refresh && forrigeReservasjon != reservasjon) {
                     runBlocking { refreshKlienter.send(SseEvent("oppdaterReserverte")) }
                 }

@@ -93,6 +93,7 @@ class OppgaveKøRepository(
                      """, mapOf("id" to uuid.toString(), "data" to objectMapper().writeValueAsString(oppgaveKø))
                     ).asUpdate
                 )
+                log.info("Refresh "+ refresh + "ulik kø" +  (forrigeOppgavekø != oppgaveKø))
                 if (refresh && forrigeOppgavekø != oppgaveKø) {
                     runBlocking {
                         refreshKlienter.send(SseEvent("oppdaterTilBehandling"))

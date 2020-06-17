@@ -17,16 +17,17 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
 import org.slf4j.LoggerFactory
 
+val log = LoggerFactory.getLogger("Route.Sse")
+
 @ExperimentalCoroutinesApi
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.Sse(
     sseChannel: BroadcastChannel<SseEvent>
 ) {
-    val log = LoggerFactory.getLogger("Route.Sse")
     @Location("/sse")
     class sse
-    get { _:  sse->
+    get { _: sse ->
         val events = sseChannel.openSubscription()
         try {
             log.info("Calling sse")
@@ -39,7 +40,7 @@ internal fun Route.Sse(
 
     @Location("/sse2")
     class sse2
-    get {_:  sse2->
+    get { _: sse2 ->
         call.respondText(
             """
                         <html>
@@ -88,6 +89,7 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
         for (event in events) {
             for (dataLine in event.data.lines()) {
                 write("data: $dataLine\n")
+                log.info("data: $dataLine")
             }
             write("\n")
             flush()
