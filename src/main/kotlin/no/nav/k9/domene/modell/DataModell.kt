@@ -93,6 +93,7 @@ data class Modell(
             skjermet = false,
             årskvantum = erÅrskvantum(event),
             avklarMedlemskap = avklarMedlemskap(event),
+            vurderopptjeningsvilkåret = vurderopptjeningsvilkåret(event),
             eventTid = event.eventTid
         )
     }
@@ -100,6 +101,12 @@ data class Modell(
     private fun avklarMedlemskap(event: BehandlingProsessEventDto): Boolean {
         return event.aktiveAksjonspunkt().liste.any { entry ->
             (entry.key == AVKLAR_FORTSATT_MEDLEMSKAP_KODE)
+        }
+    }
+
+    private fun vurderopptjeningsvilkåret(event: BehandlingProsessEventDto): Boolean {
+        return event.aktiveAksjonspunkt().liste.any { entry ->
+            (entry.key == VURDER_OPPTJENINGSVILKÅRET_KODE)
         }
     }
 
