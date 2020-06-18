@@ -95,10 +95,12 @@ class OppgaveKøRepository(
                      """, mapOf("id" to uuid.toString(), "data" to json)
                     ).asUpdate
                 )
-                if (refresh ) {
+                if (refresh) {
+                    log.info(refreshKlienter.toString())
                     runBlocking {
                         refreshKlienter.send(SseEvent(objectMapper().writeValueAsString(Melding("oppdaterTilBehandling", uuid.toString()))))
                     }
+                    log.info(refreshKlienter.toString())
                 }
             }
         }

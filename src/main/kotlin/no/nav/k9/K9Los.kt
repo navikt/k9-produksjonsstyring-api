@@ -124,7 +124,7 @@ fun Application.k9Los() {
     )
     val auditlogger = Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
-    val refreshKlienter = Channel<SseEvent>(100)
+    val refreshKlienter = Channel<SseEvent>()
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
@@ -217,7 +217,7 @@ fun Application.k9Los() {
 
 
     // Server side events
-    val sseChannel = produce(capacity = 100) {
+    val sseChannel = produce {
         for (oppgaverOppdatertEvent in refreshKlienter) {
             log.info("Refresh $oppgaverOppdatertEvent $refreshKlienter "+ toString() )
             send(oppgaverOppdatertEvent)
