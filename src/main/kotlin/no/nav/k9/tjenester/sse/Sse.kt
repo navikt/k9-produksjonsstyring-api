@@ -87,7 +87,6 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
         for (event in events) {
             for (dataLine in event.data.lines()) {
                 write("data: $dataLine\n")
-                log.info("data: $dataLine")
             }
             write("\n")
             flush()

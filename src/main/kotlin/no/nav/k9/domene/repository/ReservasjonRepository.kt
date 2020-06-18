@@ -21,7 +21,7 @@ class ReservasjonRepository(
     private val refreshKlienter: Channel<SseEvent>
 ) {
     private val log: Logger = LoggerFactory.getLogger(ReservasjonRepository::class.java)
-    fun hent(oppgaveKøRepository: OppgaveKøRepository, oppgaveRepository: OppgaveRepository): List<Reservasjon> {
+   suspend fun hent(oppgaveKøRepository: OppgaveKøRepository, oppgaveRepository: OppgaveRepository): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -39,7 +39,7 @@ class ReservasjonRepository(
         return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
     }
     
-    fun hent(saksbehandlersIdent: String): List<Reservasjon> {
+   suspend fun hent(saksbehandlersIdent: String): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -58,7 +58,7 @@ class ReservasjonRepository(
         return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
     }
 
-    private fun fjernReservasjonerSomIkkeLengerErAktive(
+    private suspend fun fjernReservasjonerSomIkkeLengerErAktive(
         reservasjoner: List<Reservasjon>,
         oppgaveKøRepository: OppgaveKøRepository,
         oppgaveRepository: OppgaveRepository
