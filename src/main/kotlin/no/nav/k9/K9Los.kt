@@ -40,8 +40,10 @@ import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.auth.IdTokenProvider
 import no.nav.k9.db.hikariConfig
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
+import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.audit.Auditlogger
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
@@ -124,6 +126,7 @@ fun Application.k9Los() {
     )
     val auditlogger = Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
+    val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(10000)
     val refreshKlienter = Channel<SseEvent>()
 
     val dataSource = hikariConfig(configuration)
@@ -142,11 +145,17 @@ fun Application.k9Los() {
         refreshKlienter = refreshKlienter
     )
     val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
-    val job =
+    val køOppdatertProsessorJob =
         køOppdatertProsessor(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             channel = oppgaveKøOppdatert,
+            reservasjonRepository = reservasjonRepository
+        )
+    val oppdatereKøerMedOppgaveProsessorJob =
+        oppdatereKøerMedOppgaveProsessor(
+            oppgaveKøRepository = oppgaveKøRepository,
+            channel = oppgaverSomSkalInnPåKøer,
             reservasjonRepository = reservasjonRepository
         )
 
@@ -178,7 +187,8 @@ fun Application.k9Los() {
         sakOgBehadlingProducer = sakOgBehadlingProducer,
         oppgaveKøRepository = oppgaveKøRepository,
         reservasjonRepository = reservasjonRepository,
-        statistikkProducer = statistikkProducer
+        statistikkProducer = statistikkProducer,
+        oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
@@ -206,7 +216,8 @@ fun Application.k9Los() {
         statistikkProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
-        job.cancel()
+        køOppdatertProsessorJob.cancel()
+        oppdatereKøerMedOppgaveProsessorJob.cancel()
     }
     val avdelingslederTjeneste = AvdelingslederTjeneste(
         oppgaveKøRepository,
@@ -219,7 +230,6 @@ fun Application.k9Los() {
     // Server side events
     val sseChannel = produce {
         for (oppgaverOppdatertEvent in refreshKlienter) {
-            log.info("Refresh $refreshKlienter ")
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()

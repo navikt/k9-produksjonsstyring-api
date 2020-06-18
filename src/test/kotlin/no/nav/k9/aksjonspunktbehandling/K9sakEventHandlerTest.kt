@@ -9,6 +9,7 @@ import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.db.runMigration
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
@@ -36,6 +37,7 @@ class K9sakEventHandlerTest {
         runMigration(dataSource)
 
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository,refreshKlienter = refreshKlienter)
@@ -62,7 +64,8 @@ class K9sakEventHandlerTest {
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
         )
 
         @Language("JSON") val json =
@@ -108,6 +111,7 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository, refreshKlienter = refreshKlienter)
@@ -134,7 +138,8 @@ class K9sakEventHandlerTest {
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
         )
 
         @Language("JSON") val json =
@@ -176,6 +181,7 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository, refreshKlienter = refreshKlienter)
@@ -203,7 +209,8 @@ class K9sakEventHandlerTest {
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
         )
 
         @Language("JSON") val json =
@@ -248,6 +255,7 @@ class K9sakEventHandlerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository, refreshKlienter = refreshKlienter)
@@ -275,7 +283,8 @@ class K9sakEventHandlerTest {
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
         )
 
         @Language("JSON") val json =
