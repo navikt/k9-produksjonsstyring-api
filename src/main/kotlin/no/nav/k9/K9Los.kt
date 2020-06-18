@@ -219,7 +219,7 @@ fun Application.k9Los() {
     // Server side events
     val sseChannel = produce {
         for (oppgaverOppdatertEvent in refreshKlienter) {
-            log.info("Refresh $oppgaverOppdatertEvent $refreshKlienter "+ toString() )
+            log.info("Refresh $refreshKlienter ")
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
@@ -248,7 +248,6 @@ fun Application.k9Los() {
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
                     forrige!!.oppgaver.clear()
-
                     forrige
                 }
             }

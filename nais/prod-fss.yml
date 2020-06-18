@@ -20,11 +20,11 @@ spec:
     timeout: 1
   resources:
     limits:
-      cpu: 2000m
-      memory: 2048Mi
+      cpu: "4000m"
+      memory: "2048Mi"
     requests:
-      cpu: 200m
-      memory: 1024Mi
+      cpu: "500m"
+      memory: "1024Mi"
   ingresses:
     - https://k9-los-api.nais.adeo.no
     - https://k9-los-api.prod-fss.nais.io

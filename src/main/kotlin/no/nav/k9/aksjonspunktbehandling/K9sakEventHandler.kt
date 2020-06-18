@@ -1,6 +1,7 @@
 package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
@@ -33,13 +34,13 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         val modell = behandlingProsessEventRepository.lagre(event)
         // log.info(objectMapper().writeValueAsString(event))
         val oppgave = modell.oppgave()
-        
+
         // fjernReservasjon(oppgave)
         if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
         }
         oppgaveRepository.lagre(oppgave.eksternId) {
-            
+
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
             }
@@ -54,7 +55,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             oppgave
         }
         modell.reportMetrics(reservasjonRepository)
-        oppdaterOppgavekøer(oppgave)
+        runBlocking {
+            oppdaterOppgavekøer(oppgave)
+        }
     }
 
     private fun fjernReservasjon(oppgave: Oppgave) {
@@ -66,9 +69,13 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
     }
 
-    private fun oppdaterOppgavekøer(oppgave: Oppgave) {
+    private suspend fun oppdaterOppgavekøer(oppgave: Oppgave) {
         for (oppgavekø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgavekø.id, sorter = oppgave.aktiv, refresh = oppgave.aktiv || oppgave.avluttet()) { o ->
+            oppgaveKøRepository.lagre(
+                oppgavekø.id,
+                sorter = oppgave.aktiv,
+                refresh = oppgave.aktiv || oppgave.avluttet()
+            ) { o ->
                 o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                 o!!
             }

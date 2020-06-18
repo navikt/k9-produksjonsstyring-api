@@ -52,7 +52,7 @@ class OppgaveKøRepository(
 
     }
 
-    fun lagre(uuid: UUID, sorter: Boolean = true, refresh: Boolean = false, f: (OppgaveKø?) -> OppgaveKø) {
+    suspend fun lagre(uuid: UUID, sorter: Boolean = true, refresh: Boolean = false, f: (OppgaveKø?) -> OppgaveKø) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -64,7 +64,7 @@ class OppgaveKøRepository(
                             row.string("data")
                         }.asSingle
                 )
-                var forrigeOppgavekø: OppgaveKø? = null
+                var forrigeOppgavekø: OppgaveKø?
                 val oppgaveKø = if (!run.isNullOrEmpty()) {
                     forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
                     f(forrigeOppgavekø)
@@ -95,14 +95,13 @@ class OppgaveKøRepository(
                      """, mapOf("id" to uuid.toString(), "data" to json)
                     ).asUpdate
                 )
-                if (refresh) {
-                    log.info(refreshKlienter.toString())
-                    runBlocking {
-                        refreshKlienter.send(SseEvent(objectMapper().writeValueAsString(Melding("oppdaterTilBehandling", uuid.toString()))))
-                    }
-                    log.info(refreshKlienter.toString())
-                }
+               
             }
+        }
+        if (refresh) {
+            log.info(refreshKlienter.toString())
+            refreshKlienter.send(SseEvent(objectMapper().writeValueAsString(Melding("oppdaterTilBehandling", uuid.toString()))))
+            log.info(refreshKlienter.toString())
         }
     }
 

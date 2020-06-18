@@ -235,7 +235,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverSisteSyvDager()
     }
 
-    fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
+    suspend   fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
         val reservasjon = reservasjonRepository.lagre(uuid, true) {
             it!!.begrunnelse = begrunnelse
             it.reservertTil = null
@@ -300,7 +300,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false): Int {
+  suspend  fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false): Int {
         val reservasjoner = reservasjonRepository.hent(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository

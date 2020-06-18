@@ -21,7 +21,7 @@ class AvdelingslederTjeneste(
     private val oppgaveTjeneste: OppgaveTjeneste
 ) {
 
-    fun hentOppgaveKøer(): List<OppgavekøDto> {
+    suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
         return oppgaveKøRepository.hent().map {
             OppgavekøDto(
                 id = it.id,
@@ -42,7 +42,7 @@ class AvdelingslederTjeneste(
         }
     }
 
-    fun opprettOppgaveKø(): OppgavekøIdDto {
+    suspend fun opprettOppgaveKø(): OppgavekøIdDto {
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(uuid) {
             OppgaveKø(
@@ -78,7 +78,7 @@ class AvdelingslederTjeneste(
         return saksbehandler
     }
 
-    fun fjernSaksbehandler(epost: String) {
+    suspend fun fjernSaksbehandler(epost: String) {
         saksbehandlerRepository.slettSaksbehandler(epost)
         oppgaveKøRepository.hent().forEach { t: OppgaveKø ->
             oppgaveKøRepository.lagre(t.id) { oppgaveKø ->
@@ -94,7 +94,7 @@ class AvdelingslederTjeneste(
         return saksbehandlerRepository.hentAlleSaksbehandlere()
     }
 
-    fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
+    suspend  fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
         oppgaveKøRepository.lagre(UUID.fromString(behandling.id)) { oppgaveKø ->
             if (behandling.checked) oppgaveKø!!.filtreringBehandlingTyper.add(behandling.behandlingType)
             else oppgaveKø!!.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
@@ -105,7 +105,7 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
     }
 
-    fun endreSkjerming(skjermet: SkjermetDto) {
+    suspend fun endreSkjerming(skjermet: SkjermetDto) {
         oppgaveKøRepository.lagre(UUID.fromString(skjermet.id)) { oppgaveKø ->
             oppgaveKø!!.skjermet = skjermet.skjermet
             oppgaveKø
@@ -113,7 +113,7 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(skjermet.id))
     }
 
-    fun endreYtelsesType(ytelse: YtelsesTypeDto) {
+    suspend  fun endreYtelsesType(ytelse: YtelsesTypeDto) {
         oppgaveKøRepository.lagre(UUID.fromString(ytelse.id))
         { oppgaveKø ->
             oppgaveKø!!.filtreringYtelseTyper = mutableListOf()
@@ -126,15 +126,15 @@ class AvdelingslederTjeneste(
 
     }
 
-    fun endreKriterium(kriteriumDto: AndreKriterierDto) {
+    suspend  fun endreKriterium(kriteriumDto: AndreKriterierDto) {
         oppgaveKøRepository.lagre(UUID.fromString(kriteriumDto.id))
         { oppgaveKø ->
             if (kriteriumDto.checked) {
                 oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
-                    it.andreKriterierType != kriteriumDto.andreKriterierType}.toMutableList()
+                    it.andreKriterierType != kriteriumDto.andreKriterierType
+                }.toMutableList()
                 oppgaveKø.filtreringAndreKriterierType.add(kriteriumDto)
-            }
-            else oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
+            } else oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
                 it.andreKriterierType != kriteriumDto.andreKriterierType
             }.toMutableList()
             oppgaveKø
@@ -142,14 +142,14 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(kriteriumDto.id))
     }
 
-    fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
+    suspend  fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
         oppgaveKøRepository.lagre(UUID.fromString(køNavn.id)) { oppgaveKø ->
             oppgaveKø!!.navn = køNavn.navn
             oppgaveKø
         }
     }
 
-    fun endreKøSortering(køSortering: KøSorteringDto) {
+    suspend fun endreKøSortering(køSortering: KøSorteringDto) {
         oppgaveKøRepository.lagre(UUID.fromString(køSortering.id)) { oppgaveKø ->
             oppgaveKø!!.sortering = køSortering.oppgavekoSorteringValg
             oppgaveKø
@@ -158,7 +158,7 @@ class AvdelingslederTjeneste(
 
     }
 
-    fun endreKøSorteringDato(datoSortering: SorteringDatoDto) {
+    suspend  fun endreKøSorteringDato(datoSortering: SorteringDatoDto) {
         oppgaveKøRepository.lagre(UUID.fromString(datoSortering.id)) { oppgaveKø ->
             oppgaveKø!!.fomDato = datoSortering.fomDato
             oppgaveKø.tomDato = datoSortering.tomDato
@@ -167,13 +167,13 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(datoSortering.id))
     }
 
-    fun leggFjernSaksbehandlerOppgavekø(saksbehandlerKø: SaksbehandlerOppgavekoDto) {
+    suspend fun leggFjernSaksbehandlerOppgavekø(saksbehandlerKø: SaksbehandlerOppgavekoDto) {
         val saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedEpost(
             saksbehandlerKø.epost
         )!!
         oppgaveKøRepository.lagre(UUID.fromString(saksbehandlerKø.id))
         { oppgaveKø ->
-            if (saksbehandlerKø.checked && !oppgaveKø!!.saksbehandlere.any{ it.epost == saksbehandler.epost }) {
+            if (saksbehandlerKø.checked && !oppgaveKø!!.saksbehandlere.any { it.epost == saksbehandler.epost }) {
                 oppgaveKø.saksbehandlere.add(
                     saksbehandler
                 )
