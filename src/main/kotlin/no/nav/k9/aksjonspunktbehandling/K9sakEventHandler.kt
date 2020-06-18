@@ -31,10 +31,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         event: BehandlingProsessEventDto
     ) {
         val modell = behandlingProsessEventRepository.lagre(event)
-      //  log.info(objectMapper().writeValueAsString(event))
+        // log.info(objectMapper().writeValueAsString(event))
         val oppgave = modell.oppgave()
         
-       // fjernReservasjon(oppgave)
+        // fjernReservasjon(oppgave)
         if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
         }
@@ -69,7 +69,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     private fun oppdaterOppgavekøer(oppgave: Oppgave) {
         for (oppgavekø in oppgaveKøRepository.hent()) {
             oppgaveKøRepository.lagre(oppgavekø.id, sorter = oppgave.aktiv, refresh = oppgave.aktiv || oppgave.avluttet()) { o ->
-                o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
+                o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                 o!!
             }
         }
