@@ -191,10 +191,10 @@ class OppgaveTjenesteTest {
         oppgaveRepository.lagre(oppgave3.eksternId) { oppgave3 }
         oppgaveRepository.lagre(oppgave4.eksternId) { oppgave4 }
 
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave3, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave3, reservasjonRepository)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository)
         oppgaveKøRepository.lagre(oppgaveko.id) {
             oppgaveko
         }
@@ -202,10 +202,10 @@ class OppgaveTjenesteTest {
         val hent = oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(oppgaveko.id.toString())
         assert(hent.size == 2)
         assert(hent[0].behandlingType == BehandlingType.FORSTEGANGSSOKNAD)
-        assert(hent[0].antallFerdigstilte == 0L)
-        assert(hent[0].antallNye == 2L)
+        assert(hent[0].antallFerdigstilte == 0)
+        assert(hent[0].antallNye == 2)
         assert(hent[1].behandlingType == BehandlingType.INNSYN)
-        assert(hent[1].antallFerdigstilte == 0L)
-        assert(hent[1].antallNye == 1L)
+        assert(hent[1].antallFerdigstilte == 0)
+        assert(hent[1].antallNye == 1)
     }
 }
