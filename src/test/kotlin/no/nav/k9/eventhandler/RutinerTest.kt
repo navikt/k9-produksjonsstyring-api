@@ -123,7 +123,11 @@ class RutinerTest {
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
         k9sakEventHandler.prosesser(event)
         launch.cancelAndJoin()
-        val hent = oppgaveKøRepository.hent()
+        
+        var hent = oppgaveKøRepository.hent()
+        while (hent.isEmpty() || hent[0].oppgaver.toList().isEmpty()) {
+            hent = oppgaveKøRepository.hent()
+        }
         assert(hent[0].oppgaver.toList()[0] == UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
     }
 
