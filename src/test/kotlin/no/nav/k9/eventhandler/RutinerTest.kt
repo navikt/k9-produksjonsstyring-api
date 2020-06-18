@@ -8,6 +8,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -72,7 +73,7 @@ class RutinerTest {
                 saksbehandlere = mutableListOf()
             )
         }
-        val launch = launch {
+        val launch = GlobalScope.launch {
             oppdatereKø(
                 channel = oppgaveKøOppdatert,
                 oppgaveKøRepository = oppgaveKøRepository,
@@ -80,7 +81,7 @@ class RutinerTest {
                 reservasjonRepository = reservasjonRepository
             )
         }
-        val launch2 = launch {
+        val launch2 = GlobalScope.launch {
             oppdatereKøerMedOppgave(
                 channel = oppgaverSomSkalInnPåKøer,
                 oppgaveKøRepository = oppgaveKøRepository,
@@ -103,35 +104,11 @@ class RutinerTest {
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
         )
 
-        @Language("JSON") val json =
-            """{
-              "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
-              "fagsystem": {
-                "kode": "K9SAK",
-                "kodeverk": "FAGSYSTEM"
-              },
-              "saksnummer": "5YC4K",
-              "aktørId": "9906098522415",
-              "behandlingId": 1000001,
-              "eventTid": "2020-02-20T07:38:49",
-              "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
-              "behandlinStatus": "UTRED",
-               "behandlingstidFrist": "2020-03-31",
-              "behandlingStatus": "UTRED",
-              "behandlingSteg": "INREG_AVSL",
-              "behandlendeEnhet": "0300",
-              "ytelseTypeKode": "PSB",
-              "behandlingTypeKode": "BT-002",
-              "opprettetBehandling": "2020-02-20T07:38:49",
-              "aksjonspunktKoderMedStatusListe": {
-                "5020": "OPPR"
-              }
-            }"""
-        val objectMapper = jacksonObjectMapper()
-            .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
-
-        val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
-        k9sakEventHandler.prosesser(event)
+        k9sakEventHandler.prosesser(getEvent("5YC4K"))
+        k9sakEventHandler.prosesser(getEvent("5YC4K1"))
+        k9sakEventHandler.prosesser(getEvent("5YC4K2"))
+        k9sakEventHandler.prosesser(getEvent("5YC4K3"))
+        k9sakEventHandler.prosesser(getEvent("5YC4K4"))
         launch.cancelAndJoin()
         launch2.cancelAndJoin()
         var hent = oppgaveKøRepository.hent()
@@ -139,6 +116,37 @@ class RutinerTest {
             hent = oppgaveKøRepository.hent()
         }
         assert(hent[0].oppgaver.toList()[0] == UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+    }
+
+    private fun getEvent(id: String): BehandlingProsessEventDto {
+        @Language("JSON") val json =
+            """{
+                  "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+                  "fagsystem": {
+                    "kode": "K9SAK",
+                    "kodeverk": "FAGSYSTEM"
+                  },
+                  "saksnummer": "${id}",
+                  "aktørId": "9906098522415",
+                  "behandlingId": 1000001,
+                  "eventTid": "2020-02-20T07:38:49",
+                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+                  "behandlinStatus": "UTRED",
+                   "behandlingstidFrist": "2020-03-31",
+                  "behandlingStatus": "UTRED",
+                  "behandlingSteg": "INREG_AVSL",
+                  "behandlendeEnhet": "0300",
+                  "ytelseTypeKode": "PSB",
+                  "behandlingTypeKode": "BT-002",
+                  "opprettetBehandling": "2020-02-20T07:38:49",
+                  "aksjonspunktKoderMedStatusListe": {
+                    "5020": "OPPR"
+                  }
+                }"""
+        val objectMapper = jacksonObjectMapper()
+            .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+
+        return objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
     }
 
 }
