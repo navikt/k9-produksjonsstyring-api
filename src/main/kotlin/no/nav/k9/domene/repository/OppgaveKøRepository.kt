@@ -8,6 +8,8 @@ import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.tjenester.sse.Melding
+import no.nav.k9.tjenester.sse.SseEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -16,7 +18,8 @@ import javax.sql.DataSource
 class OppgaveKøRepository(
     private val dataSource: DataSource,
     private val oppgaveKøOppdatert: Channel<UUID>,
-    private val oppgaveRepository: OppgaveRepository
+    private val oppgaveRepository: OppgaveRepository,
+    private val refreshKlienter: Channel<SseEvent>
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
     fun hent(): List<OppgaveKø> {
@@ -49,7 +52,7 @@ class OppgaveKøRepository(
 
     }
 
-    fun lagre(uuid: UUID, sorter: Boolean = true, f: (OppgaveKø?) -> OppgaveKø) {
+    fun lagre(uuid: UUID, sorter: Boolean = true, refresh: Boolean = false, f: (OppgaveKø?) -> OppgaveKø) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -61,9 +64,10 @@ class OppgaveKøRepository(
                             row.string("data")
                         }.asSingle
                 )
-
+                var forrigeOppgavekø: OppgaveKø? = null
                 val oppgaveKø = if (!run.isNullOrEmpty()) {
-                    f(objectMapper().readValue(run, OppgaveKø::class.java))
+                    forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
+                    f(forrigeOppgavekø)
                 } else {
                     f(null)
                 }
@@ -80,6 +84,7 @@ class OppgaveKøRepository(
                             }.toMutableList()
                     }
                 }
+                val json = objectMapper().writeValueAsString(oppgaveKø)
                 tx.run(
                     queryOf(
                         """
@@ -87,9 +92,14 @@ class OppgaveKøRepository(
                         values (:id, :data :: jsonb)
                         on conflict (id) do update
                         set data = :data :: jsonb
-                     """, mapOf("id" to uuid.toString(), "data" to objectMapper().writeValueAsString(oppgaveKø))
+                     """, mapOf("id" to uuid.toString(), "data" to json)
                     ).asUpdate
                 )
+                if (refresh ) {
+                    runBlocking {
+                        refreshKlienter.send(SseEvent(objectMapper().writeValueAsString(Melding("oppdaterTilBehandling", uuid.toString()))))
+                    }
+                }
             }
         }
     }

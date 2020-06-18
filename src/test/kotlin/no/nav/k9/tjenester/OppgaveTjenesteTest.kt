@@ -18,6 +18,7 @@ import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import no.nav.k9.tjenester.sse.SseEvent
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -31,14 +32,21 @@ class OppgaveTjenesteTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val refreshKlienter = Channel<SseEvent>(1000)
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
                 dataSource = dataSource,
                 oppgaveKøOppdatert = oppgaveKøOppdatert,
-                oppgaveRepository = oppgaveRepository
+                oppgaveRepository = oppgaveRepository,
+            refreshKlienter = refreshKlienter
         )
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
+        val reservasjonRepository = ReservasjonRepository(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository,
+            dataSource = dataSource,
+            refreshKlienter = refreshKlienter
+        )
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
@@ -183,10 +191,10 @@ class OppgaveTjenesteTest {
         oppgaveRepository.lagre(oppgave3.eksternId) { oppgave3 }
         oppgaveRepository.lagre(oppgave4.eksternId) { oppgave4 }
 
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave3, reservasjonRepository)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave3, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository, oppdaterFerdigstilteOppgaver = true)
         oppgaveKøRepository.lagre(oppgaveko.id) {
             oppgaveko
         }

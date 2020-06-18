@@ -25,7 +25,7 @@ class AzureGraphService @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     internal suspend fun hentIdentTilInnloggetBruker(): String {
         if (configuration.erLokalt) {
-            return ""
+            return "saksbehandler@nav.no"
         }
         val accessToken =
             cachedAccessTokenClient.getAccessToken(

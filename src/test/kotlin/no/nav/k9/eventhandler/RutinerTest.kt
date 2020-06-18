@@ -24,6 +24,7 @@ import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.tjenester.sse.SseEvent
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 import java.time.LocalDate
@@ -37,14 +38,21 @@ class RutinerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val refreshKlienter = Channel<SseEvent>(100)
         val statistikkProducer = mockk<StatistikkProducer>()
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            oppgaveRepository = oppgaveRepository
+            oppgaveRepository = oppgaveRepository,
+            refreshKlienter = refreshKlienter
         )
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
+        val reservasjonRepository = ReservasjonRepository(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository,
+            dataSource = dataSource,
+            refreshKlienter = refreshKlienter
+        )
         every { statistikkProducer.send(any()) } just runs
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(uuid) {
@@ -64,10 +72,10 @@ class RutinerTest {
         }
         val launch = launch {
             oppdatereKø(
-                oppgaveKøRepository = oppgaveKøRepository,
                 channel = oppgaveKøOppdatert,
-                reservasjonRepository = reservasjonRepository,
-                oppgaveRepository = oppgaveRepository
+                oppgaveKøRepository = oppgaveKøRepository,
+                oppgaveRepository = oppgaveRepository,
+                reservasjonRepository = reservasjonRepository
             )
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()

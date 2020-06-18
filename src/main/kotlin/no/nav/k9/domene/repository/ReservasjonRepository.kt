@@ -1,16 +1,25 @@
 package no.nav.k9.domene.repository
 
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.tjenester.sse.Melding
+import no.nav.k9.tjenester.sse.SseEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 import javax.sql.DataSource
 
-class ReservasjonRepository(private val oppgaveKøRepository: OppgaveKøRepository, private val oppgaveRepository: OppgaveRepository,private val dataSource: DataSource) {
+class ReservasjonRepository(
+    private val oppgaveKøRepository: OppgaveKøRepository,
+    private val oppgaveRepository: OppgaveRepository,
+    private val dataSource: DataSource,
+    private val refreshKlienter: Channel<SseEvent>
+) {
     private val log: Logger = LoggerFactory.getLogger(ReservasjonRepository::class.java)
     fun hent(oppgaveKøRepository: OppgaveKøRepository, oppgaveRepository: OppgaveRepository): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
@@ -61,7 +70,7 @@ class ReservasjonRepository(private val oppgaveKøRepository: OppgaveKøReposito
                     it
                 }
                 oppgaveKøRepository.hent().forEach { oppgaveKø ->
-                    oppgaveKøRepository.lagre(oppgaveKø.id) {
+                    oppgaveKøRepository.lagre(oppgaveKø.id, true, refresh = true) {
                         it!!.leggOppgaveTilEllerFjernFraKø(
                             oppgave = oppgaveRepository.hent(reservasjon.oppgave),
                             reservasjonRepository = this
@@ -116,7 +125,7 @@ class ReservasjonRepository(private val oppgaveKøRepository: OppgaveKøReposito
         return json!= null
     }
 
-    fun lagre(uuid: UUID, f: (Reservasjon?) -> Reservasjon): Reservasjon {
+    fun lagre(uuid: UUID, refresh: Boolean = false, f: (Reservasjon?) -> Reservasjon): Reservasjon {
         var reservasjon : Reservasjon? = null
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
@@ -129,14 +138,14 @@ class ReservasjonRepository(private val oppgaveKøRepository: OppgaveKøReposito
                             row.string("data")
                         }.asSingle
                 )
-
-                val data = if (!run.isNullOrEmpty()) {
+                var forrigeReservasjon : String ? =  null
+                reservasjon = if (!run.isNullOrEmpty()) {
+                    forrigeReservasjon = run
                     f(objectMapper().readValue(run, Reservasjon::class.java))
                 } else {
                     f(null)
                 }
-                reservasjon = data
-                val json = objectMapper().writeValueAsString(data)
+                val json = objectMapper().writeValueAsString(reservasjon)
 
                 tx.run(
                     queryOf(
@@ -150,8 +159,11 @@ class ReservasjonRepository(private val oppgaveKøRepository: OppgaveKøReposito
                             "data" to json)
                     ).asUpdate
                 )
+                if(refresh && forrigeReservasjon != json) {
+                    runBlocking { refreshKlienter.send((SseEvent(objectMapper().writeValueAsString(Melding("oppdaterReserverte"))))) }
+                }
             }
-        }
+        }       
         return reservasjon!!
     }
 }

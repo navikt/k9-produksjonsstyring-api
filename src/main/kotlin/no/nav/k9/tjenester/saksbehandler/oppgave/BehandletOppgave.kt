@@ -7,7 +7,7 @@ data class BehandletOppgave(
         val behandlingId: Long,
         val saksnummer: String,
         val eksternId: UUID,
-        val personnummer: String,
-        val navn: String,
+        val personnummer: String?,
+        val navn: String?,
         var timestamp: LocalDateTime = LocalDateTime.now())
 

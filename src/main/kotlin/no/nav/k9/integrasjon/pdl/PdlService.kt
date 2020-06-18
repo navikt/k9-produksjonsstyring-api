@@ -146,7 +146,7 @@ class PdlService @KtorExperimentalAPI constructor(
                 return objectMapper().readValue<PersonPdl>(json)
             } catch (e: Exception) {
                 log.warn(
-                    "Feilet deserialisering", e.message
+                    "Feilet deserialisering ved oppslag av $aktorId", e.message
                 )
                 null
             }
