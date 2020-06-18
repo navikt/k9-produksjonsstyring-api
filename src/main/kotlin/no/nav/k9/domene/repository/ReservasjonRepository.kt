@@ -160,9 +160,7 @@ class ReservasjonRepository(
                     ).asUpdate
                 )
                 if(refresh && forrigeReservasjon != json) {
-                    log.info("Res start" + refreshKlienter.toString())
                     runBlocking { refreshKlienter.send((SseEvent(objectMapper().writeValueAsString(Melding("oppdaterReserverte"))))) }
-                    log.info("Res sttop" + refreshKlienter.toString())
                 }
             }
         }       

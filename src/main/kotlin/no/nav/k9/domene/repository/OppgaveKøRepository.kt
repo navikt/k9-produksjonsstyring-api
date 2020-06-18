@@ -99,9 +99,7 @@ class OppgaveKøRepository(
             }
         }
         if (refresh) {
-            log.info(refreshKlienter.toString())
             refreshKlienter.send(SseEvent(objectMapper().writeValueAsString(Melding("oppdaterTilBehandling", uuid.toString()))))
-            log.info(refreshKlienter.toString())
         }
     }
 
