@@ -16,6 +16,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -38,6 +39,7 @@ class RutinerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(100)
         val statistikkProducer = mockk<StatistikkProducer>()
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
@@ -78,6 +80,13 @@ class RutinerTest {
                 reservasjonRepository = reservasjonRepository
             )
         }
+        val launch2 = launch {
+            oppdatereKøerMedOppgave(
+                channel = oppgaverSomSkalInnPåKøer,
+                oppgaveKøRepository = oppgaveKøRepository,
+                reservasjonRepository = reservasjonRepository
+            )
+        }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
@@ -90,7 +99,8 @@ class RutinerTest {
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
         )
 
         @Language("JSON") val json =
@@ -123,7 +133,7 @@ class RutinerTest {
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
         k9sakEventHandler.prosesser(event)
         launch.cancelAndJoin()
-        
+        launch2.cancelAndJoin()
         var hent = oppgaveKøRepository.hent()
         while (hent.isEmpty() || hent[0].oppgaver.toList().isEmpty()) {
             hent = oppgaveKøRepository.hent()

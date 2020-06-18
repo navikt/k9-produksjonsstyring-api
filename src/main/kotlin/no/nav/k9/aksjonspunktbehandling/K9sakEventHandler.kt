@@ -1,6 +1,7 @@
 package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -23,7 +24,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     val sakOgBehadlingProducer: SakOgBehadlingProducer,
     val oppgaveKøRepository: OppgaveKøRepository,
     val reservasjonRepository: ReservasjonRepository,
-    val statistikkProducer: StatistikkProducer
+    val statistikkProducer: StatistikkProducer,
+    val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
@@ -56,7 +58,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
         modell.reportMetrics(reservasjonRepository)
         runBlocking {
-            oppdaterOppgavekøer(oppgave)
+            oppgaverSomSkalInnPåKøer.send(oppgave)
         }
     }
 
@@ -65,19 +67,6 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             reservasjonRepository.lagre(oppgave.eksternId) {
                 it!!.aktiv = false
                 it
-            }
-        }
-    }
-
-    private suspend fun oppdaterOppgavekøer(oppgave: Oppgave) {
-        for (oppgavekø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(
-                oppgavekø.id,
-                sorter = oppgave.aktiv,
-                refresh = oppgave.aktiv || oppgave.avluttet()
-            ) { o ->
-                o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                o!!
             }
         }
     }
