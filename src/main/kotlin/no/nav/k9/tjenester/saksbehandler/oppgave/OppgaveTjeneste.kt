@@ -328,7 +328,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 val list = mutableListOf<OppgaveDto>()
                 val oppgaver = hentOppgaver(kø)
                 for (oppgave in oppgaver) {
-                    if (list.size == 3) {
+                    if (list.size == 10) {
                         break
                     }
                     if (!pepClient.harTilgangTilLesSak(
