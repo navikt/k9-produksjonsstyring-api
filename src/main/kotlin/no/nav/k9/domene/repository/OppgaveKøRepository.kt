@@ -74,14 +74,7 @@ class OppgaveKøRepository(
                 if (sorter) {
                     //Sorter oppgaver
                     if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
-                        oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver)
-                            .map { id -> UUID.fromString(id) }.toMutableList()
-                    }
-                    if (oppgaveKø.sortering == KøSortering.OPPRETT_BEHANDLING) {
-                        oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver)
-                            .map { id ->
-                                UUID.fromString(id)
-                            }.toMutableList()
+                        oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
                     }
                 }
                 val json = objectMapper().writeValueAsString(oppgaveKø)

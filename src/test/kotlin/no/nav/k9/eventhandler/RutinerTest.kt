@@ -112,10 +112,10 @@ class RutinerTest {
         launch.cancelAndJoin()
         launch2.cancelAndJoin()
         var hent = oppgaveKøRepository.hent()
-        while (hent.isEmpty() || hent[0].oppgaver.toList().isEmpty()) {
+        while (hent.isEmpty() || hent[0].oppgaverOgDatoer.toList().isEmpty()) {
             hent = oppgaveKøRepository.hent()
         }
-        assert(hent[0].oppgaver.toList()[0] == UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        assert(hent[0].oppgaverOgDatoer[0].id == UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
     }
 
     private fun getEvent(id: String): BehandlingProsessEventDto {

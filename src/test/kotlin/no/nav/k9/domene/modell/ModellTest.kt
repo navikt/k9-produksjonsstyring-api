@@ -56,7 +56,7 @@ class ModellTest {
         assertFalse(oppgave.skjermet)
         assertFalse(oppgave.aktiv)
         assertEquals("1442456610368", oppgave.aktorId)
-        assertEquals("event.behandlendeEnhet", oppgave.behandlendeEnhet)
+        assertEquals("", oppgave.behandlendeEnhet)
         assertEquals(1050437, oppgave.behandlingId)
         assertNotEquals(null, oppgave.oppgaveAvsluttet)
         assertEquals(emptyList(), oppgave.oppgaveEgenskap)
