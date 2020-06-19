@@ -59,7 +59,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         log.info("reserverer oppgave med $ident $uuid")
 
         try {
-            reservasjonRepository.lagre(uuid) {
+            reservasjonRepository.lagre(uuid, true) {
                 if (it != null && it.erAktiv()) {
                     val oppgave = oppgaveRepository.hent(uuid)
                     throw IllegalArgumentException("Oppgaven er allerede reservert $uuid ${oppgave.fagsakSaksnummer}, $ident prøvde å reservere saken")
@@ -68,7 +68,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
             val oppgave = oppgaveRepository.hent(uuid)
             for (oppgaveKø in oppgaveKøRepository.hent()) {
-                oppgaveKøRepository.lagre(oppgaveKø.id, sorter = false) {
+                oppgaveKøRepository.lagre(oppgaveKø.id, sorter = false, refresh = true) {
                     it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                     it
                 }
@@ -235,15 +235,15 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverSisteSyvDager()
     }
 
-    fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
-        val reservasjon = reservasjonRepository.lagre(uuid) {
+    suspend   fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
+        val reservasjon = reservasjonRepository.lagre(uuid, true) {
             it!!.begrunnelse = begrunnelse
             it.reservertTil = null
             it
         }
         val oppgave = oppgaveRepository.hent(uuid)
         for (oppgaveKø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgaveKø.id) {
+            oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
                 it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                 it
             }
@@ -252,14 +252,14 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun forlengReservasjonPåOppgave(uuid: UUID): Reservasjon {
-        return reservasjonRepository.lagre(uuid) {
+        return reservasjonRepository.lagre(uuid, true) {
             it!!.reservertTil = it.reservertTil?.plusHours(24)!!.forskyvReservasjonsDato()
             it
         }
     }
 
     fun endreReservasjonPåOppgave(resEndring: ReservasjonEndringDto): Reservasjon {
-        return reservasjonRepository.lagre(UUID.fromString(resEndring.oppgaveId)) {
+        return reservasjonRepository.lagre(UUID.fromString(resEndring.oppgaveId), true) {
             it!!.reservertTil = LocalDateTime.of(
                 resEndring.reserverTil.year,
                 resEndring.reserverTil.month,
@@ -273,7 +273,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun flyttReservasjon(uuid: UUID, ident: String, begrunnelse: String): Reservasjon {
-        return reservasjonRepository.lagre(uuid) {
+        return reservasjonRepository.lagre(uuid, true) {
             it!!.reservertTil = it.reservertTil?.plusHours(24)!!.forskyvReservasjonsDato()
             it.flyttetTidspunkt = LocalDateTime.now()
             it.reservertAv = ident
@@ -290,7 +290,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         val reservasjoner = reservasjonRepository.hentMedHistorikk(uuid).reversed()
         for (reservasjon in reservasjoner) {
             if (reservasjoner[0].reservertAv != reservasjon.reservertAv) {
-                reservasjonRepository.lagre(uuid) {
+                reservasjonRepository.lagre(uuid, true) {
                     it!!.reservertAv = reservasjon.reservertAv
                     it.reservertTil = LocalDateTime.now().plusDays(3).forskyvReservasjonsDato()
                     it
@@ -300,7 +300,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false): Int {
+  suspend  fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false): Int {
         val reservasjoner = reservasjonRepository.hent(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository
@@ -328,7 +328,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 val list = mutableListOf<OppgaveDto>()
                 val oppgaver = hentOppgaver(kø)
                 for (oppgave in oppgaver) {
-                    if (list.size == 3) {
+                    if (list.size == 10) {
                         break
                     }
                     if (!pepClient.harTilgangTilLesSak(
@@ -436,7 +436,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         //Hent reservasjoner for en gitt bruker skriv om til å hente med ident direkte i tabellen
         val saksbehandlerMedEpost = saksbehandlerRepository.finnSaksbehandlerMedEpost(epost)
         val brukerIdent = saksbehandlerMedEpost?.brukerIdent ?: return emptyList()
-        for (reservasjon in reservasjonRepository.hent(brukerIdent)
+        val hent = reservasjonRepository.hent(brukerIdent)
+        for (reservasjon in hent
             .sortedBy { reservasjon -> reservasjon.reservertTil }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             if (!tilgangTilSak(oppgave)) continue
@@ -503,7 +504,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 fagsakNummer = oppgave.fagsakSaksnummer
             )
         ) {
-            reservasjonRepository.lagre(oppgave.eksternId) {
+            reservasjonRepository.lagre(oppgave.eksternId, true) {
                 it!!.reservertTil = null
                 it
             }

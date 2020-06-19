@@ -18,6 +18,7 @@ import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import no.nav.k9.tjenester.sse.SseEvent
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -31,14 +32,21 @@ class OppgaveTjenesteTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val refreshKlienter = Channel<SseEvent>(1000)
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
                 dataSource = dataSource,
                 oppgaveKøOppdatert = oppgaveKøOppdatert,
-                oppgaveRepository = oppgaveRepository
+                oppgaveRepository = oppgaveRepository,
+            refreshKlienter = refreshKlienter
         )
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
+        val reservasjonRepository = ReservasjonRepository(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository,
+            dataSource = dataSource,
+            refreshKlienter = refreshKlienter
+        )
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
@@ -92,7 +100,7 @@ class OppgaveTjenesteTest {
                 søktGradering = false,
                 registrerPapir = true,
                 årskvantum = false,
-                avklarMedlemskap = false, skjermet = false, utenlands = false
+                avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         val oppgave2 = Oppgave(
                 behandlingId = 78567,
@@ -119,7 +127,7 @@ class OppgaveTjenesteTest {
                 søktGradering = false,
                 registrerPapir = true,
                 årskvantum = false,
-                avklarMedlemskap = false, skjermet = false, utenlands = false
+                avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         val oppgave3 = Oppgave(
@@ -147,7 +155,7 @@ class OppgaveTjenesteTest {
                 søktGradering = false,
                 registrerPapir = true,
                 årskvantum = false,
-                avklarMedlemskap = false, skjermet = false, utenlands = false
+                avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         val oppgave4 = Oppgave(
@@ -175,7 +183,7 @@ class OppgaveTjenesteTest {
                 søktGradering = false,
                 registrerPapir = true,
                 årskvantum = false,
-                avklarMedlemskap = false, skjermet = false, utenlands = false
+                avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
@@ -194,10 +202,10 @@ class OppgaveTjenesteTest {
         val hent = oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(oppgaveko.id.toString())
         assert(hent.size == 2)
         assert(hent[0].behandlingType == BehandlingType.FORSTEGANGSSOKNAD)
-        assert(hent[0].antallFerdigstilte == 0L)
-        assert(hent[0].antallNye == 2L)
+        assert(hent[0].antallFerdigstilte == 0)
+        assert(hent[0].antallNye == 2)
         assert(hent[1].behandlingType == BehandlingType.INNSYN)
-        assert(hent[1].antallFerdigstilte == 0L)
-        assert(hent[1].antallNye == 1L)
+        assert(hent[1].antallFerdigstilte == 0)
+        assert(hent[1].antallNye == 1)
     }
 }

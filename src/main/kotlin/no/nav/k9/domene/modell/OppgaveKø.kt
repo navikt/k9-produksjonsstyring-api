@@ -44,15 +44,14 @@ data class OppgaveKø(
         if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
             if (!this.oppgaver.contains(oppgave.eksternId)) {
                 this.oppgaver.add(oppgave.eksternId)
-                nyeOgFerdigstilteOppgaverDto(oppgave).antallNye += 1
+                nyeOgFerdigstilteOppgaverDto(oppgave).leggTilNy(oppgave.eksternId.toString())
                 return true
             }
 
         } else {
             if (this.oppgaver.contains(oppgave.eksternId)) {
                 this.oppgaver.remove(oppgave.eksternId)
-                nyeOgFerdigstilteOppgaverDto(oppgave).antallFerdigstilte += 1
-               
+                nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
                 return true
             }
         }
@@ -65,8 +64,6 @@ data class OppgaveKø(
         }.getOrPut(oppgave.behandlingType.kode) {
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = oppgave.behandlingType,
-                antallNye = 0,
-                antallFerdigstilte = 0,
                 dato = oppgave.eventTid.toLocalDate()
             )
         }
@@ -118,14 +115,11 @@ data class OppgaveKø(
 
         return false
     }
+
     fun nyeOgFerdigstilteOppgaverSisteSyvDager(): List<NyeOgFerdigstilteOppgaverDto> {
-       return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
+        return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
     }
-    
-    fun clearNyeOppgaverForIDag(){
-        nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.filter { it.dato == LocalDate.now()}.forEach{it.antallNye = 0}
-    }
-    
+
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {
         if (sortering == KøSortering.OPPRETT_BEHANDLING) {
             if (fomDato != null && oppgave.behandlingOpprettet.toLocalDate().isBefore(fomDato!!.plusDays(1))) {
@@ -177,6 +171,10 @@ data class OppgaveKø(
 
         if (oppgave.avklarMedlemskap && kriterier.map { it.andreKriterierType }
                 .contains(AndreKriterierType.AVKLAR_MEDLEMSKAP)) {
+            return true
+        }
+        if (oppgave.vurderopptjeningsvilkåret && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.VURDER_OPPTJENINGSVILKÅRET)) {
             return true
         }
 
@@ -265,7 +263,8 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
     KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
     AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
-    AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap");
+    AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap"),
+    VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Vurder opptjeningsvilkåret");
 
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 

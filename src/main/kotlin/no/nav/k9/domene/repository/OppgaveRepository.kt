@@ -5,9 +5,10 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverPerDato
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -60,7 +61,7 @@ class OppgaveRepository(
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    """select data, timestamp from (
+                    """select  data , timestamp from (
                             select distinct on (eksternId) (data ::jsonb -> 'eksternId') as eksternId , (data ::jsonb -> 'timestamp') as timestamp, data from (
                             select jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data
                             from siste_behandlinger where id = :id) as saker order by eksternId desc ) as s order by timestamp desc limit 10""".trimIndent(),
@@ -108,7 +109,16 @@ class OppgaveRepository(
         }
 
     }
-
+    fun slettAlleSisteBehandlinger(){
+        val json = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """truncate table siste_behandlinger""".trimIndent(),
+                    mapOf()
+                ).asUpdate
+            )
+        }
+    }
     fun lagreBehandling(brukerIdent: String, f: (BehandletOppgave?) -> BehandletOppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
@@ -169,7 +179,6 @@ class OppgaveRepository(
             )
         }
         spørring = System.currentTimeMillis() - spørring
-        val serialisering = System.currentTimeMillis()
 
         log.info("Henter oppgaver basert på opprettetDato: " + json.size + " oppgaver" + " spørring: " + spørring)
         return json
@@ -205,6 +214,60 @@ class OppgaveRepository(
         return list
     }
 
+    fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
+        val json = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """
+                        select count(*) as antall,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode') as fagsakYtelseType,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingType' ->> 'kode') as behandlingType,
+                        not (data ::jsonb -> 'oppgaver' -> -1 -> 'tilBeslutter') ::boolean as tilBehandling
+                        from oppgave o where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean
+                        group by  behandlingType, fagsakYtelseType, tilBehandling
+                    """.trimIndent(),
+                    mapOf()
+                )
+                    .map { row ->
+                        AlleOppgaverDto(
+                            FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                            BehandlingType.fraKode(row.string("behandlingType")),
+                            row.boolean("tilBehandling"),
+                            row.int("antall"))
+                    }.asList
+            )
+        }
+        return json
+    }
+
+    fun hentAlleOppgaverPerDato(): List<AlleOppgaverPerDato> {
+        val json = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """
+                        select count(*) as antall,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode') as fagsakYtelseType,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingType' ->> 'kode') as behandlingType,
+                        (data ::jsonb -> 'oppgaver' -> -1 ->> 'behandlingOpprettet') ::date as opprettetDato
+                        from oppgave o where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean
+                        and (data ::jsonb -> 'oppgaver' -> -1 ->> 'behandlingOpprettet')::date <= current_date 
+                        and (data ::jsonb -> 'oppgaver' -> -1 ->> 'behandlingOpprettet')::date >= (current_date - '28 days' ::interval)
+                        group by  opprettetDato, behandlingType, fagsakYtelseType
+                    """.trimIndent(),
+                    mapOf()
+                )
+                    .map { row ->
+                        AlleOppgaverPerDato(
+                            FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                            BehandlingType.fraKode(row.string("behandlingType")),
+                            row.localDate("opprettetDato"),
+                            row.int("antall"))
+                    }.asList
+            )
+        }
+        return json
+    }
+
     fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: Collection<UUID>): List<String> {
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
@@ -230,7 +293,6 @@ class OppgaveRepository(
             )
         }
         spørring = System.currentTimeMillis() - spørring
-        val serialisering = System.currentTimeMillis()
 
         log.info("Henter oppgaver basert på forsteStonadsdag: " + json.size + " oppgaver" +" spørring: " + spørring)
         return json
@@ -323,32 +385,6 @@ class OppgaveRepository(
         spørring = System.currentTimeMillis() - spørring
         log.info("Teller autmatiske oppgaver: $spørring ms")
         return count!!
-    }
-
-    fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
-        val json = using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    """
-                        select count(*) as antall,
-                        (data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode') as fagsakYtelseType,
-                        (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingType' ->> 'kode') as behandlingType,
-                        not (data ::jsonb -> 'oppgaver' -> -1 -> 'tilBeslutter') ::boolean as tilBehandling
-                        from oppgave o where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean
-                        group by  behandlingType, fagsakYtelseType, tilBehandling
-                    """.trimIndent(),
-                    mapOf()
-                )
-                    .map { row ->
-                        AlleOppgaverDto(
-                        FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
-                        BehandlingType.fraKode(row.string("behandlingType")),
-                        row.boolean("tilBehandling"),
-                        row.int("antall"))
-                    }.asList
-            )
-        }
-        return json
     }
 
     internal fun hentBeslutterTotalt(): Int {

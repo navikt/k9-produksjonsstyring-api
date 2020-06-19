@@ -8,6 +8,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -16,6 +17,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -24,6 +26,7 @@ import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.tjenester.sse.SseEvent
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 import java.time.LocalDate
@@ -37,14 +40,22 @@ class RutinerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
+        val refreshKlienter = Channel<SseEvent>(100)
         val statistikkProducer = mockk<StatistikkProducer>()
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            oppgaveRepository = oppgaveRepository
+            oppgaveRepository = oppgaveRepository,
+            refreshKlienter = refreshKlienter
         )
-        val reservasjonRepository = ReservasjonRepository(dataSource = dataSource, oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository)
+        val reservasjonRepository = ReservasjonRepository(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository,
+            dataSource = dataSource,
+            refreshKlienter = refreshKlienter
+        )
         every { statistikkProducer.send(any()) } just runs
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(uuid) {
@@ -62,12 +73,19 @@ class RutinerTest {
                 saksbehandlere = mutableListOf()
             )
         }
-        val launch = launch {
+        val launch = GlobalScope.launch {
             oppdatereKø(
-                oppgaveKøRepository = oppgaveKøRepository,
                 channel = oppgaveKøOppdatert,
-                reservasjonRepository = reservasjonRepository,
-                oppgaveRepository = oppgaveRepository
+                oppgaveKøRepository = oppgaveKøRepository,
+                oppgaveRepository = oppgaveRepository,
+                reservasjonRepository = reservasjonRepository
+            )
+        }
+        val launch2 = GlobalScope.launch {
+            oppdatereKøerMedOppgave(
+                channel = oppgaverSomSkalInnPåKøer,
+                oppgaveKøRepository = oppgaveKøRepository,
+                reservasjonRepository = reservasjonRepository
             )
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -82,41 +100,53 @@ class RutinerTest {
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
         )
 
+        k9sakEventHandler.prosesser(getEvent("5YC4K"))
+        k9sakEventHandler.prosesser(getEvent("5YC4K1"))
+        k9sakEventHandler.prosesser(getEvent("5YC4K2"))
+        k9sakEventHandler.prosesser(getEvent("5YC4K3"))
+        k9sakEventHandler.prosesser(getEvent("5YC4K4"))
+        launch.cancelAndJoin()
+        launch2.cancelAndJoin()
+        var hent = oppgaveKøRepository.hent()
+        while (hent.isEmpty() || hent[0].oppgaver.toList().isEmpty()) {
+            hent = oppgaveKøRepository.hent()
+        }
+        assert(hent[0].oppgaver.toList()[0] == UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+    }
+
+    private fun getEvent(id: String): BehandlingProsessEventDto {
         @Language("JSON") val json =
             """{
-              "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
-              "fagsystem": {
-                "kode": "K9SAK",
-                "kodeverk": "FAGSYSTEM"
-              },
-              "saksnummer": "5YC4K",
-              "aktørId": "9906098522415",
-              "behandlingId": 1000001,
-              "eventTid": "2020-02-20T07:38:49",
-              "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
-              "behandlinStatus": "UTRED",
-               "behandlingstidFrist": "2020-03-31",
-              "behandlingStatus": "UTRED",
-              "behandlingSteg": "INREG_AVSL",
-              "behandlendeEnhet": "0300",
-              "ytelseTypeKode": "PSB",
-              "behandlingTypeKode": "BT-002",
-              "opprettetBehandling": "2020-02-20T07:38:49",
-              "aksjonspunktKoderMedStatusListe": {
-                "5020": "OPPR"
-              }
-            }"""
+                  "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+                  "fagsystem": {
+                    "kode": "K9SAK",
+                    "kodeverk": "FAGSYSTEM"
+                  },
+                  "saksnummer": "${id}",
+                  "aktørId": "9906098522415",
+                  "behandlingId": 1000001,
+                  "eventTid": "2020-02-20T07:38:49",
+                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+                  "behandlinStatus": "UTRED",
+                   "behandlingstidFrist": "2020-03-31",
+                  "behandlingStatus": "UTRED",
+                  "behandlingSteg": "INREG_AVSL",
+                  "behandlendeEnhet": "0300",
+                  "ytelseTypeKode": "PSB",
+                  "behandlingTypeKode": "BT-002",
+                  "opprettetBehandling": "2020-02-20T07:38:49",
+                  "aksjonspunktKoderMedStatusListe": {
+                    "5020": "OPPR"
+                  }
+                }"""
         val objectMapper = jacksonObjectMapper()
             .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
 
-        val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
-        k9sakEventHandler.prosesser(event)
-        launch.cancelAndJoin()
-        val hent = oppgaveKøRepository.hent()
-        assert(hent[0].oppgaver.toList()[0] == UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        return objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
     }
 
 }

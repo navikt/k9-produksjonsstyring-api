@@ -1,6 +1,8 @@
 package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
@@ -22,7 +24,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     val sakOgBehadlingProducer: SakOgBehadlingProducer,
     val oppgaveKøRepository: OppgaveKøRepository,
     val reservasjonRepository: ReservasjonRepository,
-    val statistikkProducer: StatistikkProducer
+    val statistikkProducer: StatistikkProducer,
+    val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
@@ -31,15 +34,15 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         event: BehandlingProsessEventDto
     ) {
         val modell = behandlingProsessEventRepository.lagre(event)
-      //  log.info(objectMapper().writeValueAsString(event))
+        // log.info(objectMapper().writeValueAsString(event))
         val oppgave = modell.oppgave()
-        
-       // fjernReservasjon(oppgave)
+
+        // fjernReservasjon(oppgave)
         if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
         }
         oppgaveRepository.lagre(oppgave.eksternId) {
-            
+
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
             }
@@ -54,7 +57,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             oppgave
         }
         modell.reportMetrics(reservasjonRepository)
-        oppdaterOppgavekøer(oppgave)
+        runBlocking {
+            oppgaverSomSkalInnPåKøer.send(oppgave)
+        }
     }
 
     private fun fjernReservasjon(oppgave: Oppgave) {
@@ -62,15 +67,6 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             reservasjonRepository.lagre(oppgave.eksternId) {
                 it!!.aktiv = false
                 it
-            }
-        }
-    }
-
-    private fun oppdaterOppgavekøer(oppgave: Oppgave) {
-        for (oppgavekø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgavekø.id, sorter = oppgave.aktiv) { o ->
-                o?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                o!!
             }
         }
     }

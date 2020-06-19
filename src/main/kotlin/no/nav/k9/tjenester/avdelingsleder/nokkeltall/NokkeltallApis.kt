@@ -22,17 +22,7 @@ fun Route.NokkeltallApis(
     class getAntallOppgaverPerDato
 
     get { _: getAntallOppgaverPerDato ->
+        call.respond(nokkeltallTjeneste.hentOppgaverPerDato())
     }
 
-    @Location("/behandlinger-manuelt-vent-historikk")
-    class getAntallOppgaverSattPåManuellVent
-
-    get { _: getAntallOppgaverSattPåManuellVent ->
-    }
-
-    @Location("/behandlinger-forste-stonadsdag")
-    class getOppgaverPerFørsteStønadsdag
-
-    get { _: getOppgaverPerFørsteStønadsdag ->
-    }
 }

@@ -16,4 +16,8 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
     fun hentOppgaverUnderArbeid(): List<AlleOppgaverDto> {
         return oppgaveRepository.hentAlleOppgaverUnderArbeid()
     }
+
+    fun hentOppgaverPerDato(): List<AlleOppgaverPerDato> {
+        return oppgaveRepository.hentAlleOppgaverPerDato()
+    }
 }
