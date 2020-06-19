@@ -37,7 +37,7 @@ data class Oppgave(
     val avklarMedlemskap: Boolean,
     var skjermet: Boolean,
     val utenlands: Boolean,
-    val vurderopptjeningsvilkåret : Boolean = false
+    val vurderopptjeningsvilkåret : Boolean
 ){
     fun avluttet(): Boolean {
         return behandlingStatus == BehandlingStatus.AVSLUTTET
