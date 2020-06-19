@@ -100,7 +100,7 @@ class OppgaveTjenesteTest {
                 søktGradering = false,
                 registrerPapir = true,
                 årskvantum = false,
-                avklarMedlemskap = false, skjermet = false, utenlands = false
+                avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         val oppgave2 = Oppgave(
                 behandlingId = 78567,
@@ -127,7 +127,7 @@ class OppgaveTjenesteTest {
                 søktGradering = false,
                 registrerPapir = true,
                 årskvantum = false,
-                avklarMedlemskap = false, skjermet = false, utenlands = false
+                avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         val oppgave3 = Oppgave(
@@ -155,7 +155,7 @@ class OppgaveTjenesteTest {
                 søktGradering = false,
                 registrerPapir = true,
                 årskvantum = false,
-                avklarMedlemskap = false, skjermet = false, utenlands = false
+                avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         val oppgave4 = Oppgave(
@@ -183,7 +183,7 @@ class OppgaveTjenesteTest {
                 søktGradering = false,
                 registrerPapir = true,
                 årskvantum = false,
-                avklarMedlemskap = false, skjermet = false, utenlands = false
+                avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }

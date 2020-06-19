@@ -20,9 +20,9 @@ class RekkefølgeJsonBArrayTest {
         val pg = EmbeddedPostgres.start()
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
-     
+
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-          
+
         val eksternId = UUID.randomUUID()
         IntRange(1, 10).forEach {
             lagreOppgave(eksternId, oppgaveRepository, it)
@@ -61,7 +61,7 @@ class RekkefølgeJsonBArrayTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false
+            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
     }
