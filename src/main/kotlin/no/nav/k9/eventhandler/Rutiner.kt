@@ -85,7 +85,7 @@ suspend fun oppdatereKøerMedOppgave(
                     }
                     oppgaveKøRepository.lagre(
                         oppgavekø.id,
-                        sorter = true,
+                        sorter = false,
                         refresh = refresh
                     ) {
                         for (o in oppgaveListe) {
