@@ -68,7 +68,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
             val oppgave = oppgaveRepository.hent(uuid)
             for (oppgaveKø in oppgaveKøRepository.hent()) {
-                oppgaveKøRepository.lagre(oppgaveKø.id, sorter = false, refresh = true) {
+                oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
                     it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                     it
                 }

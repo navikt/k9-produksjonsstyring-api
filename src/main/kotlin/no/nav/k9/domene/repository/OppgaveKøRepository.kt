@@ -52,7 +52,11 @@ class OppgaveKøRepository(
 
     }
 
-    suspend fun lagre(uuid: UUID, sorter: Boolean = true, refresh: Boolean = false, f: (OppgaveKø?) -> OppgaveKø) {
+    suspend fun lagre(
+        uuid: UUID,
+        refresh: Boolean = false,
+        f: (OppgaveKø?) -> OppgaveKø
+    ) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -71,11 +75,9 @@ class OppgaveKøRepository(
                 } else {
                     f(null)
                 }
-                if (sorter) {
-                    //Sorter oppgaver
-                    if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
-                        oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
-                    }
+                //Sorter oppgaver
+                if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
+                    oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
                 }
                 val json = objectMapper().writeValueAsString(oppgaveKø)
                 tx.run(
@@ -88,11 +90,20 @@ class OppgaveKøRepository(
                      """, mapOf("id" to uuid.toString(), "data" to json)
                     ).asUpdate
                 )
-               
+
             }
         }
         if (refresh) {
-            refreshKlienter.send(SseEvent(objectMapper().writeValueAsString(Melding("oppdaterTilBehandling", uuid.toString()))))
+            refreshKlienter.send(
+                SseEvent(
+                    objectMapper().writeValueAsString(
+                        Melding(
+                            "oppdaterTilBehandling",
+                            uuid.toString()
+                        )
+                    )
+                )
+            )
         }
     }
 
