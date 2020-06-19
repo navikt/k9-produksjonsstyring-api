@@ -6,8 +6,8 @@ import java.time.LocalDate
 data class NyeOgFerdigstilteOppgaverDto(
     val behandlingType: BehandlingType,
     val dato: LocalDate,
-    private val antallNyeSet: MutableSet<String> = mutableSetOf(),
-    private val antallFerdigstilteSet: MutableSet<String> = mutableSetOf()
+    val antallNyeSet: MutableSet<String> = mutableSetOf(),
+    val antallFerdigstilteSet: MutableSet<String> = mutableSetOf()
 ) {
     fun leggTilNy(uuid: String) {
         antallNyeSet.add(uuid)
@@ -18,5 +18,5 @@ data class NyeOgFerdigstilteOppgaverDto(
         antallFerdigstilte = antallFerdigstilteSet.size
     }
     var antallNye = 0
-    var antallFerdigstilte =0
+    var antallFerdigstilte = 0
 }
