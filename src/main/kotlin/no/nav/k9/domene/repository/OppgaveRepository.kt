@@ -5,6 +5,7 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.oppslag.Attributt
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -106,7 +107,16 @@ class OppgaveRepository(
         }
 
     }
-
+    fun slettAlleSisteBehandlinger(){
+        val json = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """truncate table siste_behandlinger""".trimIndent(),
+                    mapOf()
+                ).asUpdate
+            )
+        }
+    }
     fun lagreBehandling(brukerIdent: String, f: (BehandletOppgave?) -> BehandletOppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
