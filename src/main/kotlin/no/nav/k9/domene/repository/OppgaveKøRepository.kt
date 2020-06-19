@@ -68,7 +68,7 @@ class OppgaveKøRepository(
                             row.string("data")
                         }.asSingle
                 )
-                var forrigeOppgavekø: OppgaveKø?
+                val forrigeOppgavekø: OppgaveKø?
                 val oppgaveKø = if (!run.isNullOrEmpty()) {
                     forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
                     f(forrigeOppgavekø)
