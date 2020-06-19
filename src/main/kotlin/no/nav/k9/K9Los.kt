@@ -139,8 +139,6 @@ fun Application.k9Los() {
         refreshKlienter = refreshKlienter
     )
     
-    oppgaveRepository.slettAlleSisteBehandlinger()
-    
     val reservasjonRepository = ReservasjonRepository(
         oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
