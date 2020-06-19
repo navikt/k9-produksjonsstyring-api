@@ -106,7 +106,7 @@ data class Modell(
 
     private fun vurderopptjeningsvilkåret(event: BehandlingProsessEventDto): Boolean {
         return event.aktiveAksjonspunkt().liste.any { entry ->
-            (entry.key == VURDER_OPPTJENINGSVILKÅRET_KODE)
+            (entry.key == VURDER_OPPTJENINGSVILKÅRET_KODE || entry.key == VURDER_PERIODER_MED_OPPTJENING_KODE || entry.key == OVERSTYRING_AV_OPPTJENINGSVILKÅRET_KODE)
         }
     }
 
