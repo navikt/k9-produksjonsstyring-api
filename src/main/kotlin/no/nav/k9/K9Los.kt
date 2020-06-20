@@ -258,20 +258,20 @@ fun Application.k9Los() {
             val oppgaver = oppgaveRepository.hentAktiveOppgaver()
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!.oppgaver.clear()
+                    forrige!!.oppgaverOgDatoer.clear()
                     forrige
                 }
             }
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 for (oppgave in oppgaver) {
                     if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
-                        oppgaveKøRepository.lagre(oppgavekø.id, sorter = false) { forrige ->
+                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
                             forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                             forrige!!
                         }
                     }
                 }
-                oppgaveKøRepository.lagre(oppgavekø.id, sorter = true) { forrige ->
+                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
                     forrige!!
                 }
             }

@@ -43,7 +43,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            oppgaveRepository.hentOppgaver(oppgaveKø.oppgaver.take(10))
+            oppgaveRepository.hentOppgaver(oppgaveKø.oppgaverOgDatoer.take(10).map { it.id })
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -68,7 +68,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
             val oppgave = oppgaveRepository.hent(uuid)
             for (oppgaveKø in oppgaveKøRepository.hent()) {
-                oppgaveKøRepository.lagre(oppgaveKø.id, sorter = false, refresh = true) {
+                oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
                     it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                     it
                 }
@@ -314,7 +314,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
             }
         }
-        return oppgavekø.oppgaver.size + reserverteOppgaverSomHørerTilKø
+        return oppgavekø.oppgaverOgDatoer.size + reserverteOppgaverSomHørerTilKø
     }
 
     fun hentAntallOppgaverTotalt(): Int {
