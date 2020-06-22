@@ -56,6 +56,7 @@ import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.fagsak.FagsakApis
@@ -139,8 +140,6 @@ fun Application.k9Los() {
         oppgaveRepository = oppgaveRepository,
         refreshKlienter = refreshKlienter
     )
-
-    oppgaveRepository.slettAlleSisteBehandlinger()
 
     val reservasjonRepository = ReservasjonRepository(
         oppgaveRepository = oppgaveRepository,
@@ -263,20 +262,20 @@ fun Application.k9Los() {
             val oppgaver = oppgaveRepository.hentAktiveOppgaver()
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!.oppgaver.clear()
+                    forrige!!.oppgaverOgDatoer.clear()
                     forrige
                 }
             }
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 for (oppgave in oppgaver) {
                     if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
-                        oppgaveKøRepository.lagre(oppgavekø.id, sorter = false) { forrige ->
+                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
                             forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                             forrige!!
                         }
                     }
                 }
-                oppgaveKøRepository.lagre(oppgavekø.id, sorter = true) { forrige ->
+                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
                     forrige!!
                 }
             }
@@ -427,63 +426,62 @@ private fun Route.api(
                 configuration = configuration
             )
         }
-            route("saksbehandler") {
-                route("oppgaver") {
-                    OppgaveApis(
-                        configuration = configuration,
-                        requestContextService = requestContextService,
-                        oppgaveTjeneste = oppgaveTjeneste,
-                        saksbehandlerRepository = saksbehhandlerRepository
-                    )
-                }
-
-                SaksbehandlerOppgavekoApis(
+        route("saksbehandler") {
+            route("oppgaver") {
+                OppgaveApis(
                     configuration = configuration,
-                    oppgaveTjeneste = oppgaveTjeneste,
-                    pepClient = pepClient,
                     requestContextService = requestContextService,
-                    oppgaveKøRepository = oppgaveKøRepository
-                )
-                SaksbehandlerNøkkeltallApis(oppgaveTjeneste = oppgaveTjeneste)
-            }
-            route("avdelingsleder") {
-                AvdelingslederApis(
                     oppgaveTjeneste = oppgaveTjeneste,
-                    avdelingslederTjeneste = avdelingslederTjeneste
+                    saksbehandlerRepository = saksbehhandlerRepository
                 )
-                route("oppgavekoer") {
-                    AvdelingslederOppgavekøApis(
-                        avdelingslederTjeneste
-                    )
-                }
-                route("nokkeltall") {
-                    NokkeltallApis(nokkeltallTjeneste = nokkeltallTjeneste)
-                }
             }
 
-            NavAnsattApis(
-                requestContextService = requestContextService,
-                pepClient = pepClient,
+            SaksbehandlerOppgavekoApis(
                 configuration = configuration,
-                azureGraphService = azureGraphService,
-                saksbehandlerRepository = saksbehhandlerRepository
+                oppgaveTjeneste = oppgaveTjeneste,
+                pepClient = pepClient,
+                requestContextService = requestContextService,
+                oppgaveKøRepository = oppgaveKøRepository
             )
-
-
-            if (true) {
-                TestApis(
-                    requestContextService = requestContextService,
-                    pdlService = pdlService,
-                    accessTokenClientResolver = accessTokenClientResolver,
-                    configuration = configuration,
-                    accessTokenClient = accessTokenClientResolver.accessTokenClient(),
-                    pepClient = pepClient
+            SaksbehandlerNøkkeltallApis(oppgaveTjeneste = oppgaveTjeneste)
+        }
+        route("avdelingsleder") {
+            AvdelingslederApis(
+                oppgaveTjeneste = oppgaveTjeneste,
+                avdelingslederTjeneste = avdelingslederTjeneste
+            )
+            route("oppgavekoer") {
+                AvdelingslederOppgavekøApis(
+                    avdelingslederTjeneste
                 )
             }
-            route("konfig") { KonfigApis(configuration) }
-            KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
-            Sse(sseChannel = sseChannel)
+            route("nokkeltall") {
+                NokkeltallApis(nokkeltallTjeneste = nokkeltallTjeneste)
+            }
         }
-    }
 
+        NavAnsattApis(
+            requestContextService = requestContextService,
+            pepClient = pepClient,
+            configuration = configuration,
+            azureGraphService = azureGraphService,
+            saksbehandlerRepository = saksbehhandlerRepository
+        )
+
+
+        if (true) {
+            TestApis(
+                requestContextService = requestContextService,
+                pdlService = pdlService,
+                accessTokenClientResolver = accessTokenClientResolver,
+                configuration = configuration,
+                accessTokenClient = accessTokenClientResolver.accessTokenClient(),
+                pepClient = pepClient
+            )
+        }
+        route("konfig") { KonfigApis(configuration) }
+        KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
+        Sse(sseChannel = sseChannel)
+    }
+}
 

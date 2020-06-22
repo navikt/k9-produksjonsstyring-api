@@ -52,7 +52,11 @@ class OppgaveKøRepository(
 
     }
 
-    suspend fun lagre(uuid: UUID, sorter: Boolean = true, refresh: Boolean = false, f: (OppgaveKø?) -> OppgaveKø) {
+    suspend fun lagre(
+        uuid: UUID,
+        refresh: Boolean = false,
+        f: (OppgaveKø?) -> OppgaveKø
+    ) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -64,25 +68,16 @@ class OppgaveKøRepository(
                             row.string("data")
                         }.asSingle
                 )
-                var forrigeOppgavekø: OppgaveKø?
+                val forrigeOppgavekø: OppgaveKø?
                 val oppgaveKø = if (!run.isNullOrEmpty()) {
                     forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
                     f(forrigeOppgavekø)
                 } else {
                     f(null)
                 }
-                if (sorter) {
-                    //Sorter oppgaver
-                    if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
-                        oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåFørsteStønadsdag(oppgaveKø.oppgaver)
-                            .map { id -> UUID.fromString(id) }.toMutableList()
-                    }
-                    if (oppgaveKø.sortering == KøSortering.OPPRETT_BEHANDLING) {
-                        oppgaveKø.oppgaver = oppgaveRepository.hentOppgaverSortertPåOpprettetDato(oppgaveKø.oppgaver)
-                            .map { id ->
-                                UUID.fromString(id)
-                            }.toMutableList()
-                    }
+                //Sorter oppgaver
+                if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
+                    oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
                 }
                 val json = objectMapper().writeValueAsString(oppgaveKø)
                 tx.run(
@@ -95,11 +90,20 @@ class OppgaveKøRepository(
                      """, mapOf("id" to uuid.toString(), "data" to json)
                     ).asUpdate
                 )
-               
+
             }
         }
         if (refresh) {
-            refreshKlienter.send(SseEvent(objectMapper().writeValueAsString(Melding("oppdaterTilBehandling", uuid.toString()))))
+            refreshKlienter.send(
+                SseEvent(
+                    objectMapper().writeValueAsString(
+                        Melding(
+                            "oppdaterTilBehandling",
+                            uuid.toString()
+                        )
+                    )
+                )
+            )
         }
     }
 

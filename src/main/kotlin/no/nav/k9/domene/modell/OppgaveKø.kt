@@ -8,7 +8,10 @@ import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
+
+data class OppgaveIdMedDato(val id: UUID, val dato: LocalDateTime)
 
 data class OppgaveKø(
     val id: UUID,
@@ -33,8 +36,8 @@ data class OppgaveKø(
 //    val erOmsorgspenger: Boolean,
 //    val opprettBehandling: Boolean,
 //    val førsteStønadsdag: Boolean
-    var oppgaver: MutableList<UUID> = mutableListOf(),
-    
+    var oppgaverOgDatoer: MutableList<OppgaveIdMedDato> = mutableListOf(),
+
     var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaverDto>> = mutableMapOf()
 ) {
     fun leggOppgaveTilEllerFjernFraKø(
@@ -42,15 +45,24 @@ data class OppgaveKø(
         reservasjonRepository: ReservasjonRepository
     ): Boolean {
         if (tilhørerOppgaveTilKø(oppgave = oppgave, reservasjonRepository = reservasjonRepository)) {
-            if (!this.oppgaver.contains(oppgave.eksternId)) {
-                this.oppgaver.add(oppgave.eksternId)
+            if (this.oppgaverOgDatoer.none { it.id == oppgave.eksternId }) {
+                this.oppgaverOgDatoer.add(
+                    OppgaveIdMedDato(
+                        oppgave.eksternId,
+                        if (sortering == KøSortering.OPPRETT_BEHANDLING) {
+                            oppgave.behandlingOpprettet
+                        } else {
+                            oppgave.forsteStonadsdag.atStartOfDay()
+                        }
+                    )
+                )
                 nyeOgFerdigstilteOppgaverDto(oppgave).leggTilNy(oppgave.eksternId.toString())
                 return true
             }
 
         } else {
-            if (this.oppgaver.contains(oppgave.eksternId)) {
-                this.oppgaver.remove(oppgave.eksternId)
+            if (this.oppgaverOgDatoer.any { it.id == oppgave.eksternId }) {
+                this.oppgaverOgDatoer.remove(this.oppgaverOgDatoer.first { it.id == oppgave.eksternId })
                 nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
                 return true
             }

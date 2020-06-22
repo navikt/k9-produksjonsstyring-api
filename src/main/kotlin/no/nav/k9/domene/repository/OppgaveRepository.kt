@@ -109,16 +109,7 @@ class OppgaveRepository(
         }
 
     }
-    fun slettAlleSisteBehandlinger(){
-        val json = using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    """truncate table siste_behandlinger""".trimIndent(),
-                    mapOf()
-                ).asUpdate
-            )
-        }
-    }
+    
     fun lagreBehandling(brukerIdent: String, f: (BehandletOppgave?) -> BehandletOppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->

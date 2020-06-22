@@ -69,7 +69,7 @@ data class Modell(
             behandlingId = event.behandlingId,
             fagsakSaksnummer = event.saksnummer,
             aktorId = event.aktørId,
-            behandlendeEnhet = "event.behandlendeEnhet",
+            behandlendeEnhet = event.behandlendeEnhet?:"",
             behandlingType = BehandlingType.fraKode(event.behandlingTypeKode),
             fagsakYtelseType = FagsakYtelseType.fraKode(event.ytelseTypeKode),
             aktiv = aktiv,
