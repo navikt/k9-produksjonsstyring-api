@@ -88,8 +88,8 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
                 melding
             )
         ).get()
-        log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        log.info("Statistikk sak: $melding")
+      //  log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+      //  log.info("Statistikk sak: $melding")
     }
 
     @KtorExperimentalAPI
@@ -108,8 +108,8 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
                 melding
             )
         ).get()
-        log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        log.info("Statistikk behandling: $melding")
+      //  log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+      //  log.info("Statistikk behandling: $melding")
     }
 
 
