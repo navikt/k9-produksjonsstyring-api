@@ -40,7 +40,7 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository,refreshKlienter = refreshKlienter)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, refreshKlienter = refreshKlienter)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -114,7 +114,8 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository, refreshKlienter = refreshKlienter)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, 
+             refreshKlienter = refreshKlienter)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -184,7 +185,8 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val refreshKlienter = Channel<SseEvent>(1)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository, refreshKlienter = refreshKlienter)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, 
+             refreshKlienter = refreshKlienter)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -258,7 +260,8 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, oppgaveRepository = oppgaveRepository, refreshKlienter = refreshKlienter)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
+             refreshKlienter = refreshKlienter)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,

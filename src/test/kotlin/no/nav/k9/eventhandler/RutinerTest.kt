@@ -47,7 +47,6 @@ class RutinerTest {
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            oppgaveRepository = oppgaveRepository,
             refreshKlienter = refreshKlienter
         )
         val reservasjonRepository = ReservasjonRepository(
