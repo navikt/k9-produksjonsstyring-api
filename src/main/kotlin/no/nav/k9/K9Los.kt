@@ -234,7 +234,7 @@ fun Application.k9Los() {
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
-
+    val resendStatistikk = ResendeStatistikk(behandlingProsessEventRepository, statistikkProducer)
     // Synkroniser oppgaver
     launch {
         log.info("Starter oppgavesynkronisering")
@@ -277,10 +277,7 @@ fun Application.k9Los() {
             }
         }
         log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
-    }
 
-    val resendStatistikk = ResendeStatistikk(behandlingProsessEventRepository, statistikkProducer)
-    launch {
         resendStatistikk.resend()
     }
 
