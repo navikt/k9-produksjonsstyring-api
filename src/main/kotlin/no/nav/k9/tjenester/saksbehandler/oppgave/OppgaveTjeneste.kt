@@ -540,11 +540,21 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    fun settSkjermet(oppgave: Oppgave) {
+    suspend fun settSkjermet(oppgave: Oppgave) {
         log.info("Skjermer oppgave")
         oppgaveRepository.lagre(oppgave.eksternId) { it ->
             it?.skjermet = true
             it!!
+        }
+        val oppgaKøer = oppgaveKøRepository.hent()
+        for (oppgaveKø in oppgaKøer) {
+            val skalOppdareKø = oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+            if (skalOppdareKø) {
+                oppgaveKøRepository.lagre(oppgaveKø.id){
+                    it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository) 
+                    it
+                }
+            }
         }
     }
 }
