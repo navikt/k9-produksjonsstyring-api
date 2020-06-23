@@ -18,7 +18,6 @@ import javax.sql.DataSource
 class OppgaveKøRepository(
     private val dataSource: DataSource,
     private val oppgaveKøOppdatert: Channel<UUID>,
-    private val oppgaveRepository: OppgaveRepository,
     private val refreshKlienter: Channel<SseEvent>
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
