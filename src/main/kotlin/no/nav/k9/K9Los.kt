@@ -135,7 +135,6 @@ fun Application.k9Los() {
     val oppgaveKøRepository = OppgaveKøRepository(
         dataSource = dataSource,
         oppgaveKøOppdatert = oppgaveKøOppdatert,
-        oppgaveRepository = oppgaveRepository,
         refreshKlienter = refreshKlienter
     )
     
