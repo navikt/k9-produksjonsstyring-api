@@ -456,7 +456,7 @@ private fun Route.api(
         )
 
 
-        if (true) {
+        if (!configuration.erIProd) {
             TestApis(
                 requestContextService = requestContextService,
                 pdlService = pdlService,
