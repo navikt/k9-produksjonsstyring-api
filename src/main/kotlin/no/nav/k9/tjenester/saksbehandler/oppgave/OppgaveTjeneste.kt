@@ -109,7 +109,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     )
                 )
             }
-            if (aktørId != null) {
+            if (aktørId != null && aktørId.data.hentIdenter != null && aktørId.data.hentIdenter!!.identer.isNotEmpty()) {
                 var aktorId = aktørId.data.hentIdenter!!.identer[0].ident
                 val person = pdlService.person(aktorId)
                 if (person != null) {
