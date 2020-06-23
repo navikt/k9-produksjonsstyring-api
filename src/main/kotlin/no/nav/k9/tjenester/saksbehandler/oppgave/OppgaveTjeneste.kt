@@ -330,8 +330,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             if (pepClient.harBasisTilgang()) {
                 val list = mutableListOf<OppgaveDto>()
                 val ms = measureTimeMillis {
-                    val oppgaver = hentOppgaver(kø)
-                    for (oppgave in oppgaver) {
+                    for (oppgave in hentOppgaver(kø)) {
                         if (list.size == 10) {
                             break
                         }
@@ -371,7 +370,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                                 navn = navn,
                                 system = oppgave.system,
                                 personnummer = if (person == null) {
-                                    "Ukent fnummer"
+                                    "Ukjent fnummer"
                                 } else {
                                     person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
                                 },
@@ -395,7 +394,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 log.info("Hentet ${list.size} $ms")
                 return list
             } else {
-                log.info("har ikke basistilgang")
+                log.warn("har ikke basistilgang")
                 return emptyList()
             }
         } else {
@@ -541,11 +540,21 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    fun settSkjermet(oppgave: Oppgave) {
+    suspend fun settSkjermet(oppgave: Oppgave) {
         log.info("Skjermer oppgave")
-        oppgaveRepository.lagre(oppgave.eksternId, f = { forrigeOppgave ->
-            forrigeOppgave?.skjermet = true
-            forrigeOppgave!!
-        })
+        oppgaveRepository.lagre(oppgave.eksternId) { it ->
+            it?.skjermet = true
+            it!!
+        }
+        val oppgaKøer = oppgaveKøRepository.hent()
+        for (oppgaveKø in oppgaKøer) {
+            val skalOppdareKø = oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+            if (skalOppdareKø) {
+                oppgaveKøRepository.lagre(oppgaveKø.id){
+                    it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository) 
+                    it
+                }
+            }
+        }
     }
 }

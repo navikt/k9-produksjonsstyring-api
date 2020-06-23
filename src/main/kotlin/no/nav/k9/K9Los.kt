@@ -39,6 +39,7 @@ import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.auth.IdTokenProvider
+import no.nav.k9.datavarehus.ResendeStatistikk
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
@@ -137,7 +138,7 @@ fun Application.k9Los() {
         oppgaveKøOppdatert = oppgaveKøOppdatert,
         refreshKlienter = refreshKlienter
     )
-    
+
     val reservasjonRepository = ReservasjonRepository(
         oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
@@ -233,7 +234,7 @@ fun Application.k9Los() {
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
-
+    val resendStatistikk = ResendeStatistikk(behandlingProsessEventRepository, statistikkProducer)
     // Synkroniser oppgaver
     launch {
         log.info("Starter oppgavesynkronisering")
@@ -276,8 +277,9 @@ fun Application.k9Los() {
             }
         }
         log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
-    }
 
+        resendStatistikk.resend()
+    }
 
     val requestContextService = RequestContextService()
     install(CallIdRequired)
