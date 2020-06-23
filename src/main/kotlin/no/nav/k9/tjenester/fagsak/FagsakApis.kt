@@ -26,11 +26,13 @@ internal fun Route.FagsakApis(
     post { _: søkFagsaker ->
         val søk = call.receive<QueryString>()
         if (configuration.erLokalt) {
-            withContext(
+           /* withContext(
                 Dispatchers.Unconfined
             ) {
                 call.respond(oppgaveTjeneste.søkFagsaker("Saksnummer"))
-            }
+
+            }*/
+            call.respond(emptyList<FagsakDto>())
         } else {
             val idToken = call.idToken()
             withContext(

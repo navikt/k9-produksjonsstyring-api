@@ -10,10 +10,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.gosys.GosysOppgave
 import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
@@ -57,6 +54,7 @@ class K9sakEventHandlerTest {
         every { statistikkProducer.send(any()) } just runs
         val config = mockk<Configuration>()
         every{config.erLokalt()} returns true
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -65,7 +63,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+            statistikkRepository = statistikkRepository
         )
 
         @Language("JSON") val json =
@@ -114,7 +113,8 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, 
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
              refreshKlienter = refreshKlienter)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -140,7 +140,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+            statistikkRepository = statistikkRepository
         )
 
         @Language("JSON") val json =
@@ -185,7 +186,8 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val refreshKlienter = Channel<SseEvent>(1)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, 
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
              refreshKlienter = refreshKlienter)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -197,13 +199,13 @@ class K9sakEventHandlerTest {
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
         val config = mockk<Configuration>()
-        
+
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
         every{config.erLokalt()} returns true
-        
+
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -212,7 +214,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+            statistikkRepository = statistikkRepository
         )
 
         @Language("JSON") val json =
@@ -259,6 +262,7 @@ class K9sakEventHandlerTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
              refreshKlienter = refreshKlienter)
@@ -272,7 +276,7 @@ class K9sakEventHandlerTest {
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
         val config = mockk<Configuration>()
-        
+
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
@@ -287,7 +291,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+            statistikkRepository = statistikkRepository
         )
 
         @Language("JSON") val json =

@@ -7,10 +7,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
@@ -38,7 +35,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val reservasjonRepository: ReservasjonRepository,
     private val configuration: Configuration,
     private val azureGraphService: AzureGraphService,
-    private val pepClient: PepClient
+    private val pepClient: PepClient,
+    private val statistikkRepository: StatistikkRepository
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
@@ -286,7 +284,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgave> {
-        return oppgaveRepository.hentBehandlinger(ident)
+        return statistikkRepository.hentBehandlinger(ident)
     }
 
     fun flyttReservasjonTilForrigeSakbehandler(uuid: UUID) {
@@ -535,7 +533,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     fun leggTilBehandletOppgave(ident: String, oppgave: BehandletOppgave) {
-        return oppgaveRepository.lagreBehandling(ident) {
+        return statistikkRepository.lagreBehandling(ident) {
             oppgave
         }
     }

@@ -19,10 +19,7 @@ import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -49,6 +46,7 @@ class RutinerTest {
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter
         )
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -100,7 +98,8 @@ class RutinerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+            statistikkRepository = statistikkRepository
         )
 
         k9sakEventHandler.prosesser(getEvent("5YC4K"))

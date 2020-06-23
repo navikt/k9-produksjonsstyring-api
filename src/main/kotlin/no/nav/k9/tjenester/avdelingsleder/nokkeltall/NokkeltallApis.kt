@@ -25,4 +25,11 @@ fun Route.NokkeltallApis(
         call.respond(nokkeltallTjeneste.hentOppgaverPerDato())
     }
 
+    @Location("/ferdigstilte-behandlinger-historikk")
+    class getFerdigstilteOppgaver
+
+    get { _: getFerdigstilteOppgaver ->
+        call.respond(nokkeltallTjeneste.hentFerdigstilteOppgaver())
+    }
+
 }

@@ -57,24 +57,6 @@ class OppgaveRepository(
 
     }
 
-    fun hentBehandlinger(ident: String): List<BehandletOppgave> {
-        val json = using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    """select  data , timestamp from (
-                            select distinct on (eksternId) (data ::jsonb -> 'eksternId') as eksternId , (data ::jsonb -> 'timestamp') as timestamp, data from (
-                            select jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data
-                            from siste_behandlinger where id = :id) as saker order by eksternId desc ) as s order by timestamp desc limit 10""".trimIndent(),
-                    mapOf("id" to ident)
-                )
-                    .map { row ->
-                        row.string("data")
-                    }.asList
-            )
-        }
-        return json.map { objectMapper().readValue(it, BehandletOppgave::class.java) }
-    }
-
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
@@ -108,40 +90,6 @@ class OppgaveRepository(
             }
         }
 
-    }
-    
-    fun lagreBehandling(brukerIdent: String, f: (BehandletOppgave?) -> BehandletOppgave) {
-        using(sessionOf(dataSource)) {
-            it.transaction { tx ->
-                val run = tx.run(
-                    queryOf(
-                        "select (data ::jsonb -> 'siste_behandlinger' -> -1) as data from siste_behandlinger where id = :id for update",
-                        mapOf("id" to brukerIdent)
-                    )
-                        .map { row ->
-                            row.string("data")
-                        }.asSingle
-                )
-
-                val oppgave = if (!run.isNullOrEmpty()) {
-                    f(objectMapper().readValue(run, BehandletOppgave::class.java))
-                } else {
-                    f(null)
-                }
-                val json = objectMapper().writeValueAsString(oppgave)
-
-                tx.run(
-                    queryOf(
-                        """
-                    insert into siste_behandlinger as k (id, data)
-                    values (:id, :dataInitial :: jsonb)
-                    on conflict (id) do update
-                    set data = jsonb_set(k.data, '{siste_behandlinger,999999}', :data :: jsonb, true)
-                 """, mapOf("id" to brukerIdent, "dataInitial" to "{\"siste_behandlinger\": [$json]}", "data" to json)
-                    ).asUpdate
-                )
-            }
-        }
     }
 
     fun hentOppgaverSortertPåOpprettetDato(oppgaveider: Collection<UUID>): List<String> {

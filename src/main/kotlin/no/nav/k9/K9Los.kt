@@ -172,8 +172,9 @@ fun Application.k9Los() {
         accessTokenClient = accessTokenClientResolver.accessTokenClient(),
         configuration = configuration
     )
+    val statistikkRepository = StatistikkRepository(dataSource)
 
-    val nokkeltallTjeneste = NokkeltallTjeneste(oppgaveRepository)
+    val nokkeltallTjeneste = NokkeltallTjeneste(oppgaveRepository, statistikkRepository)
 
     val pepClient = PepClient(azureGraphService = azureGraphService, auditlogger = auditlogger, config = configuration)
 
@@ -193,7 +194,8 @@ fun Application.k9Los() {
         oppgaveKøRepository = oppgaveKøRepository,
         reservasjonRepository = reservasjonRepository,
         statistikkProducer = statistikkProducer,
-        oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
+        oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+        statistikkRepository = statistikkRepository
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
@@ -210,7 +212,8 @@ fun Application.k9Los() {
         pdlService = pdlService,
         configuration = configuration,
         pepClient = pepClient,
-        azureGraphService = azureGraphService
+        azureGraphService = azureGraphService,
+        statistikkRepository = statistikkRepository
     )
 
 
