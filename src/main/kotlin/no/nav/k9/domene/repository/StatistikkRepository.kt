@@ -86,14 +86,14 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                        select z.behandlingType, jsonb_array_length as antall, antallSyvDager
+                        select z.behandlingType, jsonb_array_length(data) as antall, antallSyvDager
                         from ferdigstilte_behandlinger z
-                        join (select behandlingtype, dato, count(distinct data) as antallSyvDager 
+                        join (select behandlingtype, dato, jsonb_array_length(data) as antallSyvDager
                         from ferdigstilte_behandlinger
                         group by behandlingtype) y
-                        on (y.behandlingtype = z.behandlingtype) where y.dato <= current_date 
-                        and y.dato >= (current_date - '7 days'::interval)
-                        and  z.dato = current_date
+                        on (y.behandlingtype = z.behandlingtype) where y.dato <= current_date
+                                                       and y.dato >= (current_date - '7 days'::interval)
+                                                       and  z.dato = current_date
                         group by z.behandlingType, antallSyvDager 
                     """.trimIndent(),
                     mapOf()
