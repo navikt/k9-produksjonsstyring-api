@@ -39,7 +39,7 @@ class StatistikkRepository(
                     insert into siste_behandlinger as k (id, data)
                     values (:id, :dataInitial :: jsonb)
                     on conflict (id) do update
-                    set data = jsonb_set(k.data, '{siste_behandlinger,999999}', :data, true)
+                    set data = jsonb_set(k.data, '{siste_behandlinger,999999}', :data :: jsonb, true)
                  """, mapOf("id" to brukerIdent, "dataInitial" to "{\"siste_behandlinger\": [$json]}", "data" to json)
                     ).asUpdate
                 )
