@@ -74,7 +74,7 @@ class StatistikkRepository(
                                     values (:behandlingType, current_date, :data)
                                     on conflict (behandlingType, dato) do update
                                     set data = array_cat(k.data, :data)
-                                 """, mapOf("behandlingType" to bt, "data" to eksternId)
+                                 """, mapOf("behandlingType" to bt, "data" to eksternId.toString())
                     ).asUpdate
                 )
             }
