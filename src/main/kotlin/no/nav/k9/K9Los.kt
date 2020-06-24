@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.features.CORS
-import io.ktor.features.CallId
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
+import io.ktor.features.*
 import io.ktor.http.HttpMethod
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
@@ -39,7 +36,6 @@ import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.auth.IdTokenProvider
-import no.nav.k9.datavarehus.ResendeStatistikk
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
@@ -100,8 +96,18 @@ fun Application.k9Los() {
                 .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
         }
     }
-
     val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
+    install(CallLogging) {
+        correlationIdAndRequestIdInMdc()
+        logRequests()
+        mdc("id_token_jti") { call ->
+            try {
+                idTokenProvider.getIdToken(call).getId()
+            } catch (cause: Throwable) {
+                null
+            }
+        }
+    }
 
     install(StatusPages) {
         DefaultStatusPages()
@@ -112,13 +118,6 @@ fun Application.k9Los() {
     val accessTokenClientResolver = AccessTokenClientResolver(
         clients = configuration.clients()
     )
-
-//    val gosysOppgaveGateway =
-//        GosysOppgaveGateway(
-//            httpClient = HttpClients.createSystem(),
-//            uri = configuration.getOppgaveBaseUri(),
-//            accessTokenClientResolver = accessTokenClientResolver
-//        )
 
     val pdlService = PdlService(
         configuration.pdlUrl(),
@@ -234,7 +233,7 @@ fun Application.k9Los() {
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
-    val resendStatistikk = ResendeStatistikk(behandlingProsessEventRepository, statistikkProducer)
+  
     // Synkroniser oppgaver
     launch {
         log.info("Starter oppgavesynkronisering")
@@ -278,7 +277,6 @@ fun Application.k9Los() {
         }
         log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
 
-        resendStatistikk.resend()
     }
 
     val requestContextService = RequestContextService()
@@ -371,18 +369,8 @@ fun Application.k9Los() {
     install(CallId) {
         generated()
     }
-
-//    install(CallLogging) {
-//        correlationIdAndRequestIdInMdc()
-//        logRequests()
-//        mdc("id_token_jti") { call ->
-//            try {
-//                idTokenProvider.getIdToken(call).getId()
-//            } catch (cause: Throwable) {
-//                null
-//            }
-//        }
-//    }
+   
+   
 }
 
 @ExperimentalCoroutinesApi
