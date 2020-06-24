@@ -65,7 +65,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     private fun fjernReservasjon(oppgave: Oppgave) {
         if (reservasjonRepository.finnes(oppgave.eksternId)) {
             reservasjonRepository.lagre(oppgave.eksternId) {
-                it!!.aktiv = false
+                it!!.reservertTil = null
                 it
             }
         }
