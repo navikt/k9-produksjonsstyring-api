@@ -4,12 +4,9 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleFerdigstilteOppgaver
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.BehandlingTypeDato
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
-import java.time.LocalDate
 import java.util.*
 import javax.sql.DataSource
 
@@ -85,7 +82,7 @@ class StatistikkRepository(
     }
 
     fun hentFerdigstilte(): List<AlleFerdigstilteOppgaver> {
-        val liste = using(sessionOf(dataSource)) {
+        return using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     """
@@ -105,12 +102,10 @@ class StatistikkRepository(
                         AlleFerdigstilteOppgaver(
                             BehandlingType.fraKode(row.string("behandlingType")),
                             row.int("antall"),
-                            row.int("antallSyvDager")
-
+                            row.int("antallsyvdager")
                         )
                     }.asList
             )
         }
-        return liste
     }
 }
