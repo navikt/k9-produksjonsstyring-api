@@ -71,7 +71,7 @@ class StatistikkRepository(
                 tx.run(
                     queryOf(
                         """insert into ferdigstilte_behandlinger as k (behandlingType, dato, data)
-                                    values (:behandlingType, dato ::date)
+                                    values (:behandlingType, current_date, :data)
                                     on conflict (behandlingType, dato) do update
                                     set data = array_cat(k.data, :data)
                                  """, mapOf("behandlingType" to bt, "data" to eksternId)
