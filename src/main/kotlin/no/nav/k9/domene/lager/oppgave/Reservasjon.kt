@@ -9,7 +9,6 @@ data class Reservasjon(
     val flyttetAv: String?,
     var flyttetTidspunkt: LocalDateTime?,
     var begrunnelse: String?,
-    var aktiv : Boolean = true,
     val oppgave: UUID
 ) {
     fun erAktiv(): Boolean {

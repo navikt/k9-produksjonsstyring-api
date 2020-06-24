@@ -183,35 +183,35 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     suspend fun tilOppgaveDto(oppgave: Oppgave, reservasjon: Reservasjon?): OppgaveDto {
 
-        val oppgaveStatus = if (reservasjon == null) OppgaveStatusDto(false, null, false, null, null)
+        val oppgaveStatus = if (reservasjon != null && (!reservasjon.erAktiv())) OppgaveStatusDto(false, null, false, null, null)
         else OppgaveStatusDto(
             true,
-            reservasjon.reservertTil,
+            reservasjon!!.reservertTil,
             reservertAvMeg(reservasjon.reservertAv),
             reservasjon.reservertAv,
             null
         )
         val person = pdlService.person(oppgave.aktorId)!!
         return OppgaveDto(
-            oppgaveStatus,
-            oppgave.behandlingId,
-            oppgave.fagsakSaksnummer,
-            person.navn(),
-            oppgave.system,
-            person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-            oppgave.behandlingType,
-            oppgave.fagsakYtelseType,
-            oppgave.behandlingStatus,
-            oppgave.aktiv,
-            oppgave.behandlingOpprettet,
-            oppgave.behandlingsfrist,
-            oppgave.eksternId,
-            oppgave.tilBeslutter,
-            oppgave.utbetalingTilBruker,
-            oppgave.selvstendigFrilans,
-            oppgave.kombinert,
-            oppgave.søktGradering,
-            oppgave.registrerPapir
+            status = oppgaveStatus,
+            behandlingId = oppgave.behandlingId,
+            saksnummer = oppgave.fagsakSaksnummer,
+            navn = person.navn(),
+            system = oppgave.system,
+            personnummer = person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+            behandlingstype = oppgave.behandlingType,
+            fagsakYtelseType = oppgave.fagsakYtelseType,
+            behandlingStatus = oppgave.behandlingStatus,
+            erTilSaksbehandling = oppgave.aktiv,
+            opprettetTidspunkt = oppgave.behandlingOpprettet,
+            behandlingsfrist = oppgave.behandlingsfrist,
+            eksternId = oppgave.eksternId,
+            tilBeslutter = oppgave.tilBeslutter,
+            utbetalingTilBruker = oppgave.utbetalingTilBruker,
+            selvstendigFrilans = oppgave.selvstendigFrilans,
+            kombinert = oppgave.kombinert,
+            søktGradering = oppgave.søktGradering,
+            registrerPapir = oppgave.registrerPapir
         )
     }
 
