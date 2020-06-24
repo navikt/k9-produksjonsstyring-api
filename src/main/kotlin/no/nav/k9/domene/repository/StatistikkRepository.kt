@@ -74,7 +74,7 @@ class StatistikkRepository(
                         """insert into ferdigstilte_behandlinger as k (behandlingType, dato, data)
                                     values (:behandlingType, current_date, :dataInitial ::jsonb)
                                     on conflict (behandlingType, dato) do update
-                                    set data = jsonb_set(k.data, '{ferdigstilte_behandlinger,999999}', :data ::jsonb, true)
+                                    set data = jsonb_set(k.data, '{ferdigstilte_behandlinger,999999}', :data, true)
                                  """, mapOf("behandlingType" to bt, "dataInitial" to "{\"ferdigstilte_behandlinger\": [\"${eksternId}\"]}", "data" to eksternId.toString())
                     ).asUpdate
                 )
