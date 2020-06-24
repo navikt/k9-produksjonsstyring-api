@@ -71,10 +71,10 @@ class StatistikkRepository(
                 tx.run(
                     queryOf(
                         """insert into ferdigstilte_behandlinger as k (behandlingType, dato, data)
-                                    values (:behandlingType, current_date, :data)
+                                    values (:behandlingType, current_date, :dataInitial :: jsonb)
                                     on conflict (behandlingType, dato) do update
-                                    set data = array_cat(k.data, :data)
-                                 """, mapOf("behandlingType" to bt, "data" to eksternId.toString())
+                                    set data = jsonb_set(k.data, '{ferdigstilte_behandlinger,999999}', :data :: jsonb, true)
+                                 """, mapOf("behandlingType" to bt, "dataInitial" to "{\"ferdigstilte_behandlinger\": [\"${eksternId}\"]}", "data" to eksternId.toString())
                     ).asUpdate
                 )
             }
@@ -86,7 +86,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                        select z.behandlingType, count(distinct data) as antall, antallSyvDager
+                        select z.behandlingType, jsonb_array_length as antall, antallSyvDager
                         from ferdigstilte_behandlinger z
                         join (select behandlingtype, dato, count(distinct data) as antallSyvDager 
                         from ferdigstilte_behandlinger
