@@ -47,7 +47,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)
-                statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
+                if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                    statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
+                }
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
