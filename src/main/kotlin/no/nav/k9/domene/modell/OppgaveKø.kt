@@ -6,7 +6,7 @@ import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
-import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
+import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaver
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -26,19 +26,9 @@ data class OppgaveKø(
     var tomDato: LocalDate?,
     var saksbehandlere: MutableList<Saksbehandler>,
     var skjermet: Boolean = false,
-//    val tilBeslutter: Boolean,
-//    val utbetalingTilBruker: Boolean,
-//    val selvstendigFrilans: Boolean,
-//    val kombinert: Boolean,
-//    val søktGradering: Boolean,
-//    val registrerPapir: Boolean,
-//    val erPleiepenger: Boolean,
-//    val erOmsorgspenger: Boolean,
-//    val opprettBehandling: Boolean,
-//    val førsteStønadsdag: Boolean
     var oppgaverOgDatoer: MutableList<OppgaveIdMedDato> = mutableListOf(),
 
-    var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaverDto>> = mutableMapOf()
+    var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaver>> = mutableMapOf()
 ) {
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
@@ -70,11 +60,11 @@ data class OppgaveKø(
         return false
     }
 
-    private fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaverDto {
+    private fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaver {
         return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
             mutableMapOf()
         }.getOrPut(oppgave.behandlingType.kode) {
-            NyeOgFerdigstilteOppgaverDto(
+            NyeOgFerdigstilteOppgaver(
                 behandlingType = oppgave.behandlingType,
                 dato = oppgave.eventTid.toLocalDate()
             )
@@ -128,7 +118,7 @@ data class OppgaveKø(
         return false
     }
 
-    fun nyeOgFerdigstilteOppgaverSisteSyvDager(): List<NyeOgFerdigstilteOppgaverDto> {
+    fun nyeOgFerdigstilteOppgaverSisteSyvDager(): List<NyeOgFerdigstilteOppgaver> {
         return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
     }
 

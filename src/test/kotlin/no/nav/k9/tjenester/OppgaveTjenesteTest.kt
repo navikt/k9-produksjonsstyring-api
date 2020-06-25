@@ -199,10 +199,10 @@ class OppgaveTjenesteTest {
         val hent = oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(oppgaveko.id.toString())
         assert(hent.size == 2)
         assert(hent[0].behandlingType == BehandlingType.FORSTEGANGSSOKNAD)
-        assert(hent[0].antallFerdigstilte == 0)
-        assert(hent[0].antallNye == 2)
+        assert(hent[0].ferdigstilte.size == 0)
+        assert(hent[0].nye.size == 2)
         assert(hent[1].behandlingType == BehandlingType.INNSYN)
-        assert(hent[1].antallFerdigstilte == 0)
-        assert(hent[1].antallNye == 1)
+        assert(hent[1].ferdigstilte.size == 0)
+        assert(hent[1].nye.size == 1)
     }
 }
