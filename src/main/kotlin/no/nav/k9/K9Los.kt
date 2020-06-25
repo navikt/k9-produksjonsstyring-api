@@ -99,17 +99,17 @@ fun Application.k9Los() {
         }
     }
     val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
-    install(CallLogging) {
-        correlationIdAndRequestIdInMdc()
-        logRequests()
-        mdc("id_token_jti") { call ->
-            try {
-                idTokenProvider.getIdToken(call).getId()
-            } catch (cause: Throwable) {
-                null
-            }
-        }
-    }
+//    install(CallLogging) {
+//        correlationIdAndRequestIdInMdc()
+//        logRequests()
+//        mdc("id_token_jti") { call ->
+//            try {
+//                idTokenProvider.getIdToken(call).getId()
+//            } catch (cause: Throwable) {
+//                null
+//            }
+//        }
+//    }
 
     install(StatusPages) {
         DefaultStatusPages()
