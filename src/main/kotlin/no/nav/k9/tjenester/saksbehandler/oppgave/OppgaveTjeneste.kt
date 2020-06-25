@@ -540,6 +540,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     suspend fun settSkjermet(oppgave: Oppgave) {
         log.info("Skjermer oppgave")
+        oppgave.skjermet = true
         oppgaveRepository.lagre(oppgave.eksternId) { it ->
             it?.skjermet = true
             it!!
