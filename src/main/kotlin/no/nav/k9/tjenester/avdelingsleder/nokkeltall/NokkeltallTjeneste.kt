@@ -27,7 +27,7 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
         return statistikkRepository.hentFerdigstilte().groupBy { it.behandlingType }.entries.map { entry ->
             AlleFerdigstilteOppgaverDto(
                 entry.key,
-                entry.value.sortedBy { it.dato }.reversed().first().antall,
+                entry.value.maxBy { it.dato }!!.antall,
                 entry.value.sumBy { it.antall })
         }
     }
