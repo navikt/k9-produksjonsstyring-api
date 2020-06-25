@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.features.CORS
-import io.ktor.features.CallId
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
+import io.ktor.features.*
 import io.ktor.http.HttpMethod
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
@@ -39,7 +36,6 @@ import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.auth.IdTokenProvider
-import no.nav.k9.datavarehus.ResendeStatistikk
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
@@ -56,7 +52,9 @@ import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
-import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.fagsak.FagsakApis
 import no.nav.k9.tjenester.innsikt.InnsiktGrensesnitt
@@ -100,8 +98,18 @@ fun Application.k9Los() {
                 .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
         }
     }
-
     val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
+    install(CallLogging) {
+        correlationIdAndRequestIdInMdc()
+        logRequests()
+        mdc("id_token_jti") { call ->
+            try {
+                idTokenProvider.getIdToken(call).getId()
+            } catch (cause: Throwable) {
+                null
+            }
+        }
+    }
 
     install(StatusPages) {
         DefaultStatusPages()
@@ -112,13 +120,6 @@ fun Application.k9Los() {
     val accessTokenClientResolver = AccessTokenClientResolver(
         clients = configuration.clients()
     )
-
-//    val gosysOppgaveGateway =
-//        GosysOppgaveGateway(
-//            httpClient = HttpClients.createSystem(),
-//            uri = configuration.getOppgaveBaseUri(),
-//            accessTokenClientResolver = accessTokenClientResolver
-//        )
 
     val pdlService = PdlService(
         configuration.pdlUrl(),
@@ -170,6 +171,9 @@ fun Application.k9Los() {
         accessTokenClient = accessTokenClientResolver.accessTokenClient(),
         configuration = configuration
     )
+    val statistikkRepository = StatistikkRepository(dataSource)
+
+    val nokkeltallTjeneste = NokkeltallTjeneste(oppgaveRepository, statistikkRepository)
 
     val pepClient = PepClient(azureGraphService = azureGraphService, auditlogger = auditlogger, config = configuration)
 
@@ -189,7 +193,8 @@ fun Application.k9Los() {
         oppgaveKøRepository = oppgaveKøRepository,
         reservasjonRepository = reservasjonRepository,
         statistikkProducer = statistikkProducer,
-        oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
+        oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+        statistikkRepository = statistikkRepository
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
@@ -206,7 +211,8 @@ fun Application.k9Los() {
         pdlService = pdlService,
         configuration = configuration,
         pepClient = pepClient,
-        azureGraphService = azureGraphService
+        azureGraphService = azureGraphService,
+        statistikkRepository = statistikkRepository
     )
 
 
@@ -234,7 +240,7 @@ fun Application.k9Los() {
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
-    val resendStatistikk = ResendeStatistikk(behandlingProsessEventRepository, statistikkProducer)
+  
     // Synkroniser oppgaver
     launch {
         log.info("Starter oppgavesynkronisering")
@@ -278,7 +284,6 @@ fun Application.k9Los() {
         }
         log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
 
-        resendStatistikk.resend()
     }
 
     val requestContextService = RequestContextService()
@@ -327,7 +332,8 @@ fun Application.k9Los() {
                     oppgaveRepository = oppgaveRepository,
                     reservasjonRepository = reservasjonRepository,
                     eventRepository = behandlingProsessEventRepository,
-                    sseChannel = sseChannel
+                    sseChannel = sseChannel,
+                    nokkeltallTjeneste = nokkeltallTjeneste
                 )
             }
         } else {
@@ -351,7 +357,8 @@ fun Application.k9Los() {
                 oppgaveRepository = oppgaveRepository,
                 reservasjonRepository = reservasjonRepository,
                 eventRepository = behandlingProsessEventRepository,
-                sseChannel = sseChannel
+                sseChannel = sseChannel,
+                nokkeltallTjeneste = nokkeltallTjeneste
             )
         }
         static("static") {
@@ -371,18 +378,8 @@ fun Application.k9Los() {
     install(CallId) {
         generated()
     }
-
-//    install(CallLogging) {
-//        correlationIdAndRequestIdInMdc()
-//        logRequests()
-//        mdc("id_token_jti") { call ->
-//            try {
-//                idTokenProvider.getIdToken(call).getId()
-//            } catch (cause: Throwable) {
-//                null
-//            }
-//        }
-//    }
+   
+   
 }
 
 @ExperimentalCoroutinesApi
@@ -403,7 +400,8 @@ private fun Route.api(
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
     reservasjonRepository: ReservasjonRepository,
-    sseChannel: BroadcastChannel<SseEvent>
+    sseChannel: BroadcastChannel<SseEvent>,
+    nokkeltallTjeneste: NokkeltallTjeneste
 ) {
 
     route("api") {
@@ -420,7 +418,6 @@ private fun Route.api(
                 configuration = configuration
             )
         }
-        NøkkeltallApis()
         route("saksbehandler") {
             route("oppgaver") {
                 OppgaveApis(
@@ -449,6 +446,9 @@ private fun Route.api(
                 AvdelingslederOppgavekøApis(
                     avdelingslederTjeneste
                 )
+            }
+            route("nokkeltall") {
+                NokkeltallApis(nokkeltallTjeneste = nokkeltallTjeneste)
             }
         }
 

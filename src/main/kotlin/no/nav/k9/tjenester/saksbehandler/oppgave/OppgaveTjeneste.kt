@@ -7,10 +7,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
@@ -38,7 +35,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val reservasjonRepository: ReservasjonRepository,
     private val configuration: Configuration,
     private val azureGraphService: AzureGraphService,
-    private val pepClient: PepClient
+    private val pepClient: PepClient,
+    private val statistikkRepository: StatistikkRepository
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
@@ -185,35 +183,35 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     suspend fun tilOppgaveDto(oppgave: Oppgave, reservasjon: Reservasjon?): OppgaveDto {
 
-        val oppgaveStatus = if (reservasjon == null) OppgaveStatusDto(false, null, false, null, null)
+        val oppgaveStatus = if (reservasjon != null && (!reservasjon.erAktiv())) OppgaveStatusDto(false, null, false, null, null)
         else OppgaveStatusDto(
             true,
-            reservasjon.reservertTil,
+            reservasjon!!.reservertTil,
             reservertAvMeg(reservasjon.reservertAv),
             reservasjon.reservertAv,
             null
         )
         val person = pdlService.person(oppgave.aktorId)!!
         return OppgaveDto(
-            oppgaveStatus,
-            oppgave.behandlingId,
-            oppgave.fagsakSaksnummer,
-            person.navn(),
-            oppgave.system,
-            person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-            oppgave.behandlingType,
-            oppgave.fagsakYtelseType,
-            oppgave.behandlingStatus,
-            oppgave.aktiv,
-            oppgave.behandlingOpprettet,
-            oppgave.behandlingsfrist,
-            oppgave.eksternId,
-            oppgave.tilBeslutter,
-            oppgave.utbetalingTilBruker,
-            oppgave.selvstendigFrilans,
-            oppgave.kombinert,
-            oppgave.søktGradering,
-            oppgave.registrerPapir
+            status = oppgaveStatus,
+            behandlingId = oppgave.behandlingId,
+            saksnummer = oppgave.fagsakSaksnummer,
+            navn = person.navn(),
+            system = oppgave.system,
+            personnummer = person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+            behandlingstype = oppgave.behandlingType,
+            fagsakYtelseType = oppgave.fagsakYtelseType,
+            behandlingStatus = oppgave.behandlingStatus,
+            erTilSaksbehandling = oppgave.aktiv,
+            opprettetTidspunkt = oppgave.behandlingOpprettet,
+            behandlingsfrist = oppgave.behandlingsfrist,
+            eksternId = oppgave.eksternId,
+            tilBeslutter = oppgave.tilBeslutter,
+            utbetalingTilBruker = oppgave.utbetalingTilBruker,
+            selvstendigFrilans = oppgave.selvstendigFrilans,
+            kombinert = oppgave.kombinert,
+            søktGradering = oppgave.søktGradering,
+            registrerPapir = oppgave.registrerPapir
         )
     }
 
@@ -235,7 +233,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
-        return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverSisteSyvDager()
+        return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverSisteSyvDager().map { NyeOgFerdigstilteOppgaverDto(it.behandlingType, it.dato, it.nye.size, it.ferdigstilte.size) }
     }
 
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
@@ -286,7 +284,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgave> {
-        return oppgaveRepository.hentBehandlinger(ident)
+        return statistikkRepository.hentBehandlinger(ident)
     }
 
     fun flyttReservasjonTilForrigeSakbehandler(uuid: UUID) {
@@ -535,7 +533,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     fun leggTilBehandletOppgave(ident: String, oppgave: BehandletOppgave) {
-        return oppgaveRepository.lagreBehandling(ident) {
+        return statistikkRepository.lagreBehandling(ident) {
             oppgave
         }
     }

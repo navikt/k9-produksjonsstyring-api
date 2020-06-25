@@ -6,10 +6,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -25,7 +22,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     val oppgaveKøRepository: OppgaveKøRepository,
     val reservasjonRepository: ReservasjonRepository,
     val statistikkProducer: StatistikkProducer,
-    val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
+    val oppgaverSomSkalInnPåKøer: Channel<Oppgave>,
+    val statistikkRepository: StatistikkRepository
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
@@ -49,6 +47,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)
+                statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
@@ -65,7 +64,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     private fun fjernReservasjon(oppgave: Oppgave) {
         if (reservasjonRepository.finnes(oppgave.eksternId)) {
             reservasjonRepository.lagre(oppgave.eksternId) {
-                it!!.aktiv = false
+                it!!.reservertTil = null
                 it
             }
         }

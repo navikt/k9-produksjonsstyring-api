@@ -5,11 +5,13 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.oppslag.Attributt
+import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverPerDato
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
 
@@ -55,24 +57,6 @@ class OppgaveRepository(
 
     }
 
-    fun hentBehandlinger(ident: String): List<BehandletOppgave> {
-        val json = using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    """select  data , timestamp from (
-                            select distinct on (eksternId) (data ::jsonb -> 'eksternId') as eksternId , (data ::jsonb -> 'timestamp') as timestamp, data from (
-                            select jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data
-                            from siste_behandlinger where id = :id) as saker order by eksternId desc ) as s order by timestamp desc limit 10""".trimIndent(),
-                    mapOf("id" to ident)
-                )
-                    .map { row ->
-                        row.string("data")
-                    }.asList
-            )
-        }
-        return json.map { objectMapper().readValue(it, BehandletOppgave::class.java) }
-    }
-
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
@@ -106,40 +90,6 @@ class OppgaveRepository(
             }
         }
 
-    }
-    
-    fun lagreBehandling(brukerIdent: String, f: (BehandletOppgave?) -> BehandletOppgave) {
-        using(sessionOf(dataSource)) {
-            it.transaction { tx ->
-                val run = tx.run(
-                    queryOf(
-                        "select (data ::jsonb -> 'siste_behandlinger' -> -1) as data from siste_behandlinger where id = :id for update",
-                        mapOf("id" to brukerIdent)
-                    )
-                        .map { row ->
-                            row.string("data")
-                        }.asSingle
-                )
-
-                val oppgave = if (!run.isNullOrEmpty()) {
-                    f(objectMapper().readValue(run, BehandletOppgave::class.java))
-                } else {
-                    f(null)
-                }
-                val json = objectMapper().writeValueAsString(oppgave)
-
-                tx.run(
-                    queryOf(
-                        """
-                    insert into siste_behandlinger as k (id, data)
-                    values (:id, :dataInitial :: jsonb)
-                    on conflict (id) do update
-                    set data = jsonb_set(k.data, '{siste_behandlinger,999999}', :data :: jsonb, true)
-                 """, mapOf("id" to brukerIdent, "dataInitial" to "{\"siste_behandlinger\": [$json]}", "data" to json)
-                    ).asUpdate
-                )
-            }
-        }
     }
 
     fun hentOppgaverSortertPåOpprettetDato(oppgaveider: Collection<UUID>): List<String> {
@@ -201,6 +151,60 @@ class OppgaveRepository(
 
         log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list
+    }
+
+    fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
+        val json = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """
+                        select count(*) as antall,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode') as fagsakYtelseType,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingType' ->> 'kode') as behandlingType,
+                        not (data ::jsonb -> 'oppgaver' -> -1 -> 'tilBeslutter') ::boolean as tilBehandling
+                        from oppgave o where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean
+                        group by  behandlingType, fagsakYtelseType, tilBehandling
+                    """.trimIndent(),
+                    mapOf()
+                )
+                    .map { row ->
+                        AlleOppgaverDto(
+                            FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                            BehandlingType.fraKode(row.string("behandlingType")),
+                            row.boolean("tilBehandling"),
+                            row.int("antall"))
+                    }.asList
+            )
+        }
+        return json
+    }
+
+    fun hentAlleOppgaverPerDato(): List<AlleOppgaverPerDato> {
+        val json = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """
+                        select count(*) as antall,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode') as fagsakYtelseType,
+                        (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingType' ->> 'kode') as behandlingType,
+                        (data ::jsonb -> 'oppgaver' -> -1 ->> 'behandlingOpprettet') ::date as opprettetDato
+                        from oppgave o where (data ::jsonb -> 'oppgaver' -> -1 -> 'aktiv') ::boolean
+                        and (data ::jsonb -> 'oppgaver' -> -1 ->> 'behandlingOpprettet')::date <= current_date 
+                        and (data ::jsonb -> 'oppgaver' -> -1 ->> 'behandlingOpprettet')::date >= (current_date - '28 days' ::interval)
+                        group by  opprettetDato, behandlingType, fagsakYtelseType
+                    """.trimIndent(),
+                    mapOf()
+                )
+                    .map { row ->
+                        AlleOppgaverPerDato(
+                            FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                            BehandlingType.fraKode(row.string("behandlingType")),
+                            row.localDate("opprettetDato"),
+                            row.int("antall"))
+                    }.asList
+            )
+        }
+        return json
     }
 
     fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: Collection<UUID>): List<String> {

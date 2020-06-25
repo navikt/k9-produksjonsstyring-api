@@ -6,17 +6,6 @@ import java.time.LocalDate
 data class NyeOgFerdigstilteOppgaverDto(
     val behandlingType: BehandlingType,
     val dato: LocalDate,
-    val antallNyeSet: MutableSet<String> = mutableSetOf(),
-    val antallFerdigstilteSet: MutableSet<String> = mutableSetOf()
-) {
-    fun leggTilNy(uuid: String) {
-        antallNyeSet.add(uuid)
-        antallNye = antallNyeSet.size
-    }
-    fun leggTilFerdigstilt(uuid: String) {
-        antallFerdigstilteSet.add(uuid)
-        antallFerdigstilte = antallFerdigstilteSet.size
-    }
-    var antallNye = 0
-    var antallFerdigstilte = 0
-}
+    val antallNye: Int ,
+    val antallFerdigstilte: Int
+) 

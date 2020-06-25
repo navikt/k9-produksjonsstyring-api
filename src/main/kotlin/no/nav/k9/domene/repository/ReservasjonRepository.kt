@@ -66,7 +66,7 @@ class ReservasjonRepository(
         reservasjoner.forEach { reservasjon ->
             if (!reservasjon.erAktiv()) {
                 lagre(reservasjon.oppgave) {
-                    it!!.aktiv = false
+                    it!!.reservertTil = null
                     it
                 }
                 oppgaveKøRepository.hent().forEach { oppgaveKø ->

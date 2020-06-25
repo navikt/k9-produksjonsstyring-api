@@ -10,10 +10,7 @@ import no.nav.k9.Configuration
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
@@ -49,6 +46,7 @@ class OppgaveTjenesteTest {
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val pepClient = mockk<PepClient>()
         val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(
@@ -56,7 +54,7 @@ class OppgaveTjenesteTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
         )
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(
