@@ -75,9 +75,9 @@ class StatistikkRepository(
                         """insert into ferdigstilte_behandlinger as k (behandlingType, dato, data)
                                     values (:behandlingType, current_date, :dataInitial ::jsonb)
                                     on conflict (behandlingType, dato) do update
-                                    set data = k.data -> 'ferdigstilte_behandlinger' || :data ::jsonb
+                                    set data = k.data || :data ::jsonb
                                  """, mapOf("behandlingType" to bt,
-                                            "dataInitial" to "{\"ferdigstilte_behandlinger\": [\"${eksternId}\"]}", 
+                                            "dataInitial" to "[\"${eksternId}\"]", 
                                             "data" to "[\"$eksternId\"]")
                     ).asUpdate
                 )
@@ -90,7 +90,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                            select behandlingtype, dato, jsonb_array_length(data -> 'ferdigstilte_behandlinger') as antall
+                            select behandlingtype, dato, jsonb_array_length(data) as antall
                             from ferdigstilte_behandlinger  where dato >= current_date - '7 days'::interval
                             group by behandlingtype,dato
                     """.trimIndent(),
