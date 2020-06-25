@@ -6,6 +6,7 @@ import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleFerdigstilteOppgaver
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleFerdigstilteOppgaverDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import java.util.*
 import javax.sql.DataSource
@@ -89,23 +90,17 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                        select z.behandlingType, jsonb_array_length(data) as antall, antallSyvDager
-                        from ferdigstilte_behandlinger z
-                        join (select behandlingtype, dato, jsonb_array_length(data) as antallSyvDager
-                        from ferdigstilte_behandlinger
-                        group by behandlingtype) y
-                        on (y.behandlingtype = z.behandlingtype) where y.dato <= current_date
-                                                       and y.dato >= (current_date - '7 days'::interval)
-                                                       and  z.dato = current_date
-                        group by z.behandlingType, antallSyvDager 
+                            select behandlingtype, dato, jsonb_array_length(data -> 'ferdigstilte_behandlinger') as antall
+                            from ferdigstilte_behandlinger  where dato >= current_date - '7 days'::interval
+                            group by behandlingtype,dato;
                     """.trimIndent(),
                     mapOf()
                 )
                     .map { row ->
                         AlleFerdigstilteOppgaver(
-                            BehandlingType.fraKode(row.string("behandlingType")),
-                            row.int("antall"),
-                            row.int("antallsyvdager")
+                            behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
+                            dato = row.localDate("dato"),
+                            antall = row.int("antall")
                         )
                     }.asList
             )

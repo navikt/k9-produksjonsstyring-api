@@ -1,15 +1,10 @@
 package no.nav.k9.tjenester.avdelingsleder.nokkeltall
 
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.k9.domene.modell.BehandlingType
-import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.StatistikkRepository
-import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 
 private val log: Logger =
     LoggerFactory.getLogger(NokkeltallTjeneste::class.java)
@@ -27,7 +22,13 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
         return oppgaveRepository.hentAlleOppgaverPerDato()
     }
 
-    fun hentFerdigstilteOppgaver(): List<AlleFerdigstilteOppgaver> {
-        return statistikkRepository.hentFerdigstilte()
+
+    fun hentFerdigstilteOppgaver(): List<AlleFerdigstilteOppgaverDto> {
+        return statistikkRepository.hentFerdigstilte().groupBy { it.behandlingType }.entries.map { entry ->
+            AlleFerdigstilteOppgaverDto(
+                entry.key,
+                entry.value.sortedBy { it.dato }.reversed().first().antall,
+                entry.value.sumBy { it.antall })
+        }
     }
 }
