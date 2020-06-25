@@ -42,7 +42,7 @@ spec:
         kvPath: /serviceuser/data/prod/srvk9los
       - mountPath: /var/run/secrets/nais.io/azuread
         kvPath: /azuread/data/prod/creds/k9-los-api
-      - mountPath: /var/run/secrets/nais.io/application
+      - mountPath: /var/run/secrets/nais.io/vault
         kvPath: /kv/prod/fss/k9-los-api/default
   sidecar: true
   webproxy: true
