@@ -90,8 +90,6 @@ internal fun Route.OppgaveApis(
                 val measureTimeMillis = measureTimeMillis {
                     call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
                 }
-                logger.info("getReserverteOppgaver tok $measureTimeMillis")
-
             }
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
