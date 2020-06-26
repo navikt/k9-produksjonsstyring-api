@@ -129,7 +129,7 @@ fun Application.k9Los() {
     val auditlogger = Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
     val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(10000)
-    val refreshKlienter = Channel<SseEvent>()
+    val refreshKlienter = Channel<SseEvent>(10000)
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
@@ -237,6 +237,8 @@ fun Application.k9Los() {
     // Server side events
     val sseChannel = produce {
         for (oppgaverOppdatertEvent in refreshKlienter) {
+            while (refreshKlienter.poll() != null) {
+            }
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
@@ -262,12 +264,6 @@ fun Application.k9Los() {
 //                }
 //            }
 //            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
-//            for (oppgavekø in oppgaveKøRepository.hent()) {
-//                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-//                    forrige!!.oppgaverOgDatoer.clear()
-//                    forrige
-//                }
-//            }
 //            for (oppgavekø in oppgaveKøRepository.hent()) {
 //                for (oppgave in oppgaver) {
 //                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
