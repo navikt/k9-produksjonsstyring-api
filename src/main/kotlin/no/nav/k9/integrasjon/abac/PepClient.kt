@@ -73,6 +73,9 @@ class PepClient @KtorExperimentalAPI constructor(
             return true
         }
         val identTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
+        if (identTilInnloggetBruker.isEmpty()) {
+            return false
+        }
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK)

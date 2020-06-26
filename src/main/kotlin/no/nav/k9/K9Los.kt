@@ -131,7 +131,7 @@ fun Application.k9Los() {
     val auditlogger = Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
     val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(10000)
-    val refreshKlienter = Channel<SseEvent>(10000)
+    val refreshKlienter = Channel<SseEvent>()
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
@@ -239,12 +239,10 @@ fun Application.k9Los() {
     // Server side events
     val sseChannel = produce {
         for (oppgaverOppdatertEvent in refreshKlienter) {
-            while (refreshKlienter.poll() != null) {
-            }
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
-  
+
     // Synkroniser oppgaver
     launch {
         log.info("Starter oppgavesynkronisering")
@@ -376,8 +374,6 @@ fun Application.k9Los() {
     install(CallId) {
         generated()
     }
-   
-   
 }
 
 @ExperimentalCoroutinesApi
