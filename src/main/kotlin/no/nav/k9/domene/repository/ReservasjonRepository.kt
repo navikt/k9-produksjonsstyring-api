@@ -21,7 +21,10 @@ class ReservasjonRepository(
     private val refreshKlienter: Channel<SseEvent>
 ) {
     private val log: Logger = LoggerFactory.getLogger(ReservasjonRepository::class.java)
-   suspend fun hent(oppgaveKøRepository: OppgaveKøRepository, oppgaveRepository: OppgaveRepository): List<Reservasjon> {
+    suspend fun hent(
+        oppgaveKøRepository: OppgaveKøRepository,
+        oppgaveRepository: OppgaveRepository
+    ): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -38,8 +41,8 @@ class ReservasjonRepository(
         val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
         return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
     }
-    
-   suspend fun hent(saksbehandlersIdent: String): List<Reservasjon> {
+
+    suspend fun hent(saksbehandlersIdent: String): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -70,12 +73,15 @@ class ReservasjonRepository(
                     it
                 }
                 oppgaveKøRepository.hent().forEach { oppgaveKø ->
-                    oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
-                        it!!.leggOppgaveTilEllerFjernFraKø(
-                            oppgave = oppgaveRepository.hent(reservasjon.oppgave),
-                            reservasjonRepository = this
-                        )
-                        it
+                    val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
+                    if (oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, this)) {
+                        oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
+                            it!!.leggOppgaveTilEllerFjernFraKø(
+                                oppgave = oppgave,
+                                reservasjonRepository = this
+                            )
+                            it
+                        }
                     }
                 }
             }
@@ -100,12 +106,12 @@ class ReservasjonRepository(
     fun hentMedHistorikk(id: UUID): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
-                    queryOf(
-                            "select (data ::jsonb -> 'reservasjoner') as data from reservasjon where id = :id",
-                            mapOf("id" to id.toString())
-                    ).map { row ->
-                        row.string("data")
-                    }.asList
+                queryOf(
+                    "select (data ::jsonb -> 'reservasjoner') as data from reservasjon where id = :id",
+                    mapOf("id" to id.toString())
+                ).map { row ->
+                    row.string("data")
+                }.asList
             )
         }
         return json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
@@ -122,11 +128,11 @@ class ReservasjonRepository(
                 }.asSingle
             )
         }
-        return json!= null
+        return json != null
     }
 
     fun lagre(uuid: UUID, refresh: Boolean = false, f: (Reservasjon?) -> Reservasjon): Reservasjon {
-        var reservasjon : Reservasjon? = null
+        var reservasjon: Reservasjon? = null
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -138,7 +144,7 @@ class ReservasjonRepository(
                             row.string("data")
                         }.asSingle
                 )
-                var forrigeReservasjon : String ? =  null
+                var forrigeReservasjon: String? = null
                 reservasjon = if (!run.isNullOrEmpty()) {
                     forrigeReservasjon = run
                     f(objectMapper().readValue(run, Reservasjon::class.java))
@@ -154,16 +160,18 @@ class ReservasjonRepository(
                     values (:id, :dataInitial :: jsonb)
                     on conflict (id) do update
                     set data = jsonb_set(k.data, '{reservasjoner,999999}', :data :: jsonb, true)
-                 """, mapOf("id" to uuid.toString(),
+                 """, mapOf(
+                            "id" to uuid.toString(),
                             "dataInitial" to "{\"reservasjoner\": [$json]}",
-                            "data" to json)
+                            "data" to json
+                        )
                     ).asUpdate
                 )
-                if(refresh && forrigeReservasjon != json) {
+                if (refresh && forrigeReservasjon != json) {
                     runBlocking { refreshKlienter.send((SseEvent(objectMapper().writeValueAsString(Melding("oppdaterReserverte"))))) }
                 }
             }
-        }       
+        }
         return reservasjon!!
     }
 }
