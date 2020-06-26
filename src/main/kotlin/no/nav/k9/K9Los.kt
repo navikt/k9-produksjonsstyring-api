@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.features.*
+import io.ktor.features.CORS
+import io.ktor.features.CallId
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
 import io.ktor.http.HttpMethod
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
@@ -52,7 +55,6 @@ import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
@@ -129,7 +131,7 @@ fun Application.k9Los() {
     val auditlogger = Auditlogger(configuration)
     val oppgaveKøOppdatert = Channel<UUID>(10000)
     val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(10000)
-    val refreshKlienter = Channel<SseEvent>()
+    val refreshKlienter = Channel<SseEvent>(10000)
 
     val dataSource = hikariConfig(configuration)
     val oppgaveRepository = OppgaveRepository(dataSource)
@@ -237,6 +239,8 @@ fun Application.k9Los() {
     // Server side events
     val sseChannel = produce {
         for (oppgaverOppdatertEvent in refreshKlienter) {
+            while (refreshKlienter.poll() != null) {
+            }
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
@@ -262,12 +266,6 @@ fun Application.k9Los() {
                 }
             }
             val oppgaver = oppgaveRepository.hentAktiveOppgaver()
-            for (oppgavekø in oppgaveKøRepository.hent()) {
-                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!.oppgaverOgDatoer.clear()
-                    forrige
-                }
-            }
             for (oppgavekø in oppgaveKøRepository.hent()) {
                 for (oppgave in oppgaver) {
                     if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
