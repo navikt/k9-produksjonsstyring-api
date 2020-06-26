@@ -302,13 +302,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     suspend fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false): Int {
-        val reservasjoner = reservasjonRepository.hent(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository
-        )
         val oppgavekø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
         var reserverteOppgaverSomHørerTilKø = 0
         if (taMedReserverte) {
+            val reservasjoner = reservasjonRepository.hent(
+                oppgaveKøRepository = oppgaveKøRepository,
+                oppgaveRepository = oppgaveRepository
+            )
             for (oppgave in oppgaveRepository.hentOppgaver(reservasjoner.map { it.oppgave })) {
                 if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
                     reserverteOppgaverSomHørerTilKø++
