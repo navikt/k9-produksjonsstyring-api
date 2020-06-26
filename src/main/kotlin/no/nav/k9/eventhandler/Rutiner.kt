@@ -49,7 +49,7 @@ suspend fun oppdatereKø(
 
         val measureTimeMillis = measureTimeMillis {
             val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-            oppgaveKøRepository.lagre(uuid, refresh = true) { oppgaveKø ->
+            oppgaveKøRepository.lagre(uuid) { oppgaveKø ->
                 oppgaveKø!!.oppgaverOgDatoer.clear()
 
                 for (oppgave in aktiveOppgaver) {
