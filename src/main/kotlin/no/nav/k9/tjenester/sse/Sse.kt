@@ -78,6 +78,7 @@ internal fun Route.Sse(
 
 }
 
+@ExperimentalCoroutinesApi
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
     respondTextWriter(contentType = ContentType.Text.EventStream) {
@@ -85,8 +86,7 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
         write("\n")
         flush()
         for (event in events) {
-            while (events.poll() != null) {
-                
+            while (events.poll() != null){              
             }
             for (dataLine in event.data.lines()) {
                 write("data: $dataLine\n")
