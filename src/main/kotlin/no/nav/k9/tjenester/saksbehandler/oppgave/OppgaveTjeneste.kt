@@ -389,7 +389,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         )
                     }
                 }
-                log.info("Hentet ${list.size} $ms")
+                log.info("Hentet ${list.size} oppgaver for oppgaveliste tok $ms")
                 return list
             } else {
                 log.warn("har ikke basistilgang")
