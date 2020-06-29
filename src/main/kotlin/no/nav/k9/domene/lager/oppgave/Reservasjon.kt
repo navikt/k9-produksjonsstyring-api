@@ -5,7 +5,7 @@ import java.util.*
 
 data class Reservasjon(
     var reservertTil: LocalDateTime?,
-    var reservertAv: String?,
+    var reservertAv: String,
     val flyttetAv: String?,
     var flyttetTidspunkt: LocalDateTime?,
     var begrunnelse: String?,

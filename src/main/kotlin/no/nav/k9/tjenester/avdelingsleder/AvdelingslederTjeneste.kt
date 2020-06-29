@@ -1,13 +1,17 @@
 package no.nav.k9.tjenester.avdelingsleder
 
+import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.Enhet
 import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.OppgaveKøRepository
+import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.*
+import no.nav.k9.tjenester.avdelingsleder.reservasjoner.ReservasjonDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.OppgavekøDto
 import no.nav.k9.tjenester.saksbehandler.saksliste.SorteringDto
@@ -17,8 +21,9 @@ import java.util.*
 class AvdelingslederTjeneste(
     private val oppgaveKøRepository: OppgaveKøRepository,
     private val saksbehandlerRepository: SaksbehandlerRepository,
-    private val azureGraphService: AzureGraphService,
-    private val oppgaveTjeneste: OppgaveTjeneste
+    private val oppgaveTjeneste: OppgaveTjeneste,
+    private val reservasjonRepository: ReservasjonRepository,
+    private val oppgaveRepository: OppgaveRepository
 ) {
 
     suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
@@ -181,6 +186,21 @@ class AvdelingslederTjeneste(
                 it.epost != saksbehandlerKø.epost
             }.toMutableList()
             oppgaveKø
+        }
+    }
+
+    suspend fun hentAlleReservasjoner(): List<ReservasjonDto> {
+        return reservasjonRepository.hent(oppgaveKøRepository,  oppgaveRepository).map {
+            val oppgave = oppgaveRepository.hent(it.oppgave)
+            val saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedIdent(it.reservertAv)
+            ReservasjonDto(
+                  it.reservertAv,
+                  if (saksbehandler != null) saksbehandler.navn!! else "",
+                  it.reservertTil!!,
+                  it.oppgave,
+                  oppgave.fagsakSaksnummer,
+                  oppgave.behandlingType
+            )
         }
     }
 }
