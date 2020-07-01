@@ -50,9 +50,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 fjernReservasjon(oppgave)
                 if (reservasjonRepository.finnes(oppgave.eksternId)) {
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
-                    oppgaveKøRepository.hent().forEach {
-                        if (it.tilhørerOppgaveTilKø(oppgave, reservasjonRepository))
-                            it.nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
+                    oppgaveKøRepository.hent().forEach {kø ->
+                        if (kø.oppgaverOgDatoer.map { it.id }.contains(oppgave.eksternId)) {
+                            kø.nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
+                        }
                     }
                 }
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
