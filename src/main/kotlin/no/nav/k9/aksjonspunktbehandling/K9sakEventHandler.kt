@@ -6,7 +6,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
@@ -52,6 +51,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                     oppgaveKøRepository.hent().forEach {kø ->
                         if (kø.oppgaverOgDatoer.map { it.id }.contains(oppgave.eksternId)) {
+                            log.info("Legger ferdigstilt oppgave " + oppgave.eksternId.toString() + " til køen " + kø.navn)
                             kø.nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
                         }
                     }
