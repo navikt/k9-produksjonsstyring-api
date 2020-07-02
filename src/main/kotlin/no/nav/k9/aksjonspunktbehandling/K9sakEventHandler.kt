@@ -52,7 +52,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                     oppgaveKøRepository.hent().forEach {kø ->
                         log.info("Sjekker kø " + kø.navn)
-                        if (kø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository)) {
+                        if (kø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
                             log.info("Legger ferdigstilt oppgave " + oppgave.eksternId.toString() + " til køen " + kø.navn)
                             kø.nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
                         }
