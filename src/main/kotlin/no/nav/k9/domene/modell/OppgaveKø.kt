@@ -64,7 +64,7 @@ data class OppgaveKø(
     }
 
     fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaver {
-        log.info("Legger til ferdigstilte på køen $navn med eventTid: ${oppgave.eventTid.toLocalDate()}")
+        log.info("Legger til ferdigstilte på køen $navn med eventTid: ${oppgave.eventTid.toLocalDate()} og behandlingtype ${oppgave.behandlingType}")
         return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
             mutableMapOf()
         }.getOrPut(oppgave.behandlingType.kode) {
