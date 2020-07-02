@@ -57,6 +57,7 @@ data class OppgaveKø(
         } else {
             if (this.oppgaverOgDatoer.any { it.id == oppgave.eksternId }) {
                 this.oppgaverOgDatoer.remove(this.oppgaverOgDatoer.first { it.id == oppgave.eksternId })
+                nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
                 return true
             }
         }
@@ -123,7 +124,7 @@ data class OppgaveKø(
     }
 
     fun nyeOgFerdigstilteOppgaverSisteSyvDager(): List<NyeOgFerdigstilteOppgaver> {
-
+        log.info("Nye og ferdigstilte: " + nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato })
         return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
     }
 
