@@ -77,7 +77,7 @@ class StatistikkRepository(
                                     on conflict (behandlingType, dato) do update
                                     set data = k.data || :data ::jsonb
                                  """, mapOf("behandlingType" to bt,
-                                            "dataInitial" to "[\"${eksternId}\"]", 
+                                            "dataInitial" to "[\"${eksternId}\"]",
                                             "data" to "[\"$eksternId\"]")
                     ).asUpdate
                 )

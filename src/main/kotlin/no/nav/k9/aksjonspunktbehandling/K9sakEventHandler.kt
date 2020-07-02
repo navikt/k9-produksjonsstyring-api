@@ -48,6 +48,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)
                 if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                    log.info("En ny ferdigstilt oppgave " + oppgave.fagsakSaksnummer)
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                     oppgaveKøRepository.hent().forEach {kø ->
                         if (kø.oppgaverOgDatoer.map { it.id }.contains(oppgave.eksternId)) {

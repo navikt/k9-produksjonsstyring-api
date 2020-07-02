@@ -118,6 +118,7 @@ data class OppgaveKø(
     }
 
     fun nyeOgFerdigstilteOppgaverSisteSyvDager(): List<NyeOgFerdigstilteOppgaver> {
+
         return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
     }
 
