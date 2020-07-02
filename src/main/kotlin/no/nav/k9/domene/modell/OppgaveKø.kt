@@ -33,7 +33,7 @@ data class OppgaveKø(
     var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaver>> = mutableMapOf()
 ) {
     private val log = LoggerFactory.getLogger(OppgaveKø::class.java)
-    
+
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository
@@ -64,7 +64,7 @@ data class OppgaveKø(
     }
 
     fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaver {
-        log.info("Legger til ferdigstilte på køen $navn")
+        log.info("Legger til ferdigstilte på køen $navn med eventTid: ${oppgave.eventTid.toLocalDate()}")
         return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
             mutableMapOf()
         }.getOrPut(oppgave.behandlingType.kode) {
