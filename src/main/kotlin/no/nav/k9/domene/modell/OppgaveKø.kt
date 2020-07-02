@@ -2,11 +2,13 @@ package no.nav.k9.domene.modell
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
+import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaver
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -30,6 +32,8 @@ data class OppgaveKø(
 
     var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaver>> = mutableMapOf()
 ) {
+    private val log = LoggerFactory.getLogger(OppgaveKø::class.java)
+    
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository
@@ -60,6 +64,7 @@ data class OppgaveKø(
     }
 
     fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaver {
+        log.info("Legger til ferdigstilte på køen $navn")
         return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
             mutableMapOf()
         }.getOrPut(oppgave.behandlingType.kode) {
