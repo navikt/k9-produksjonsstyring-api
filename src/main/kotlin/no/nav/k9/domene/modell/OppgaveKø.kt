@@ -32,7 +32,6 @@ data class OppgaveKø(
 
     var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaver>> = mutableMapOf()
 ) {
-    private val log = LoggerFactory.getLogger(OppgaveKø::class.java)
 
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
@@ -65,7 +64,6 @@ data class OppgaveKø(
     }
 
     fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaver {
-        log.info("Legger til ferdigstilte på køen $navn med eventTid: ${oppgave.eventTid.toLocalDate()} og behandlingtype ${oppgave.behandlingType}")
         return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
             mutableMapOf()
         }.getOrPut(oppgave.behandlingType.kode) {
@@ -124,7 +122,6 @@ data class OppgaveKø(
     }
 
     fun nyeOgFerdigstilteOppgaverSisteSyvDager(): List<NyeOgFerdigstilteOppgaver> {
-        log.info("Nye og ferdigstilte: " + nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato })
         return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
     }
 

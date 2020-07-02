@@ -48,15 +48,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)
                 if (reservasjonRepository.finnes(oppgave.eksternId)) {
-                    log.info("En ny ferdigstilt oppgave " + oppgave.fagsakSaksnummer)
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
-                    oppgaveKøRepository.hent().forEach {kø ->
-                        log.info("Sjekker kø " + kø.navn)
-                        if (kø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
-                            log.info("Legger ferdigstilt oppgave " + oppgave.eksternId.toString() + " til køen " + kø.navn)
-                            kø.nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
-                        }
-                    }
                 }
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
