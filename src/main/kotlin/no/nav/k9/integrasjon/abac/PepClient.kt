@@ -16,6 +16,8 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.audit.*
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.rest.NavHeaders
+import no.nav.k9.utils.Cache
+import no.nav.k9.utils.CacheObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -36,7 +38,7 @@ class PepClient @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     private val url = config.abacEndpointUrl
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
-    private val cache = Cache()
+    private val cache = Cache<Boolean>()
     @KtorExperimentalAPI
     suspend fun erOppgaveStyrer(): Boolean {
         val requestBuilder = XacmlRequestBuilder()
@@ -201,7 +203,7 @@ class PepClient @KtorExperimentalAPI constructor(
                     false
                 }
             }
-            cache.set(xacmlJson,CacheObject( result))
+            cache.set(xacmlJson, CacheObject( result))
             return result
         }else {
             return get.value

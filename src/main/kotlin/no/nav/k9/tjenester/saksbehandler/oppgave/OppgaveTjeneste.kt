@@ -274,6 +274,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun flyttReservasjon(uuid: UUID, ident: String, begrunnelse: String): Reservasjon {
+        if (ident == "") {
+            return reservasjonRepository.hent(uuid)
+        }
         return reservasjonRepository.lagre(uuid, true) {
             it!!.reservertTil = it.reservertTil?.plusHours(24)!!.forskyvReservasjonsDato()
             it.flyttetTidspunkt = LocalDateTime.now()

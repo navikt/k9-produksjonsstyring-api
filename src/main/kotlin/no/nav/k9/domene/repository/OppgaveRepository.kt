@@ -10,6 +10,8 @@ import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverPerDato
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
+import no.nav.k9.utils.Cache
+import no.nav.k9.utils.CacheObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -348,8 +350,13 @@ class OppgaveRepository(
         log.info("Teller autmatiske oppgaver: $spørring ms")
         return count!!
     }
-
+    private val aktiveOppgaverCache = Cache<List<Oppgave>>()
     internal fun hentAktiveOppgaver(): List<Oppgave> {
+        val cacheObject = aktiveOppgaverCache.get("default")
+        if (cacheObject != null) {
+            return cacheObject.value
+        }
+        
         var spørring = System.currentTimeMillis()
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
@@ -365,8 +372,9 @@ class OppgaveRepository(
         spørring = System.currentTimeMillis() - spørring
         val serialisering = System.currentTimeMillis()
         val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
-
+        
         log.info("Henter aktive oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
+        aktiveOppgaverCache.set("default", CacheObject(list))
         return list
     }
 }
