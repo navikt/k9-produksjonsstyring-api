@@ -2,7 +2,7 @@ package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.channels.sendBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
@@ -32,10 +32,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         event: BehandlingProsessEventDto
     ) {
         val modell = behandlingProsessEventRepository.lagre(event)
-        // log.info(objectMapper().writeValueAsString(event))
         val oppgave = modell.oppgave()
 
-        // fjernReservasjon(oppgave)
         if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
         }
@@ -58,9 +56,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             oppgave
         }
         modell.reportMetrics(reservasjonRepository)
-        runBlocking {
-            oppgaverSomSkalInnPåKøer.send(oppgave)
-        }
+        oppgaverSomSkalInnPåKøer.sendBlocking(oppgave)
     }
 
     private fun fjernReservasjon(oppgave: Oppgave) {

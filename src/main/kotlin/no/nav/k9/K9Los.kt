@@ -22,6 +22,7 @@ import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
@@ -74,6 +75,7 @@ import no.nav.k9.tjenester.sse.Sse
 import no.nav.k9.tjenester.sse.SseEvent
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -129,8 +131,8 @@ fun Application.k9Los() {
         configuration = configuration
     )
     val auditlogger = Auditlogger(configuration)
-    val oppgaveKøOppdatert = Channel<UUID>(10000)
-    val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(10000)
+    val oppgaveKøOppdatert = Channel<UUID>(Channel.UNLIMITED)
+    val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(Channel.UNLIMITED)
     val refreshKlienter = Channel<SseEvent>()
 
     val dataSource = hikariConfig(configuration)
@@ -244,7 +246,7 @@ fun Application.k9Los() {
     }.broadcast()
 
     // Synkroniser oppgaver
-    launch {
+    launch (Executors.newSingleThreadExecutor().asCoroutineDispatcher()){
         log.info("Starter oppgavesynkronisering")
         val measureTimeMillis = measureTimeMillis {
 

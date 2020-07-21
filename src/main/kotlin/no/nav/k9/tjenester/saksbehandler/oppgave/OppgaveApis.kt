@@ -212,7 +212,13 @@ internal fun Route.OppgaveApis(
 
     post { _: søkSaksbehandler ->
         val params = call.receive<BrukerIdentDto>()
-        call.respond(oppgaveTjeneste.sokSaksbehandlerMedIdent(params)!!)
+
+        val sokSaksbehandlerMedIdent = oppgaveTjeneste.sokSaksbehandlerMedIdent(params)
+        if (sokSaksbehandlerMedIdent == null) {
+            call.respond("")
+        }else{
+            call.respond(sokSaksbehandlerMedIdent)
+        }
     }
 
     @Location("/oppgaver-for-fagsaker")

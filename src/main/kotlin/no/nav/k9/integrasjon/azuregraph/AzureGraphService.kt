@@ -13,6 +13,8 @@ import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.saksbehandler.IdToken
+import no.nav.k9.utils.Cache
+import no.nav.k9.utils.CacheObject
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
@@ -21,7 +23,7 @@ class AzureGraphService @KtorExperimentalAPI constructor(
     val configuration: Configuration
 ) {
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
-    private val cache = Cache()
+    private val cache = Cache<String>()
     val log = LoggerFactory.getLogger("AzureGraphService")
 
     @KtorExperimentalAPI

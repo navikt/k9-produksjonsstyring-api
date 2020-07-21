@@ -1,6 +1,7 @@
 package no.nav.k9.eventhandler
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -9,6 +10,7 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
 
@@ -17,7 +19,7 @@ fun CoroutineScope.køOppdatertProsessor(
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
     reservasjonRepository: ReservasjonRepository
-) = launch {
+) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     oppdatereKø(
         channel = channel,
         oppgaveKøRepository = oppgaveKøRepository,
@@ -30,7 +32,7 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository
-) = launch {
+) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     oppdatereKøerMedOppgave(
         channel = channel,
         oppgaveKøRepository = oppgaveKøRepository,
@@ -45,24 +47,56 @@ suspend fun oppdatereKø(
     reservasjonRepository: ReservasjonRepository
 ) {
     val log = LoggerFactory.getLogger("behandleOppgave")
+
     for (uuid in channel) {
+        hentAlleElementerIkøSomSet(uuid, channel).forEach {
+            val measureTimeMillis = measureTimeMillis {
+                val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
-        val measureTimeMillis = measureTimeMillis {
-            val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-            oppgaveKøRepository.lagre(uuid) { oppgaveKø ->
-                oppgaveKø!!.oppgaverOgDatoer.clear()
-
+                //oppdatert kø utenfor lås
+                // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
+                val oppgavekøGammel = oppgaveKøRepository.hentOppgavekø(it)
+                val oppgavekøModifisert = oppgaveKøRepository.hentOppgavekø(it)
+                oppgavekøModifisert.oppgaverOgDatoer.clear()
                 for (oppgave in aktiveOppgaver) {
-                    oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                    oppgavekøModifisert.leggOppgaveTilEllerFjernFraKø(
                         oppgave = oppgave,
                         reservasjonRepository = reservasjonRepository
                     )
                 }
-                oppgaveKø
+
+                oppgaveKøRepository.lagre(it) { oppgaveKø ->
+                    if (oppgaveKø!! == oppgavekøGammel) {
+                        oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
+                    }else{
+                        oppgaveKø.oppgaverOgDatoer.clear()
+                        for (oppgave in aktiveOppgaver) {
+                            oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                                oppgave = oppgave,
+                                reservasjonRepository = reservasjonRepository
+                            )
+                        }
+                    }
+
+                    oppgaveKø
+                }
             }
+            log.info("tok ${measureTimeMillis}ms å oppdatere kø")
         }
-        log.info("tok ${measureTimeMillis}ms å oppdatere kø")
     }
+}
+
+private fun hentAlleElementerIkøSomSet(
+    uuid: UUID,
+    channel: ReceiveChannel<UUID>
+): MutableSet<UUID> {
+    val set = mutableSetOf(uuid)
+    var neste = channel.poll()
+    while (neste != null) {
+        set.add(neste)
+        neste = channel.poll()
+    }
+    return set
 }
 
 suspend fun oppdatereKøerMedOppgave(
