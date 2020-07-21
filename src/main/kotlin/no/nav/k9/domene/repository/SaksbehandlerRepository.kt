@@ -96,7 +96,7 @@ class SaksbehandlerRepository(
                     }.asList
             )
         }
-        log.info("Henter " + identer.size + " saksbehanlere")
+        log.info("Henter " + identer.size + " saksbehandlere")
 
         return identer
     }

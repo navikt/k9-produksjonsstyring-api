@@ -17,6 +17,7 @@ import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
+import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -175,7 +176,7 @@ fun Route.MockGrensesnitt(
                     EventHendelse.AKSJONSPUNKT_OPPRETTET,
                     behandlingStatus = "UTRED",
                     behandlinStatus = "UTRED",
-                    aksjonspunktKoderMedStatusListe = mutableMapOf("5003" to "OPPR"),
+                    aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktDefinisjon.AVKLAR_OPPHOLDSRETT.kode to "OPPR"),
                     behandlingSteg = "",
                     opprettetBehandling = LocalDateTime.now(),
                     behandlingTypeKode = "BT-004",
