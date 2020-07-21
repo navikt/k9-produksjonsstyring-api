@@ -2,12 +2,12 @@ package no.nav.k9.utils
 
 import java.time.LocalDateTime
 
-class Cache <T>{
+class Cache <T>(val cacheSize : Int = 1000){
     private val map =
         object : LinkedHashMap<String, CacheObject<T>>(
         ) {
             override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CacheObject<T>>): Boolean {
-                return size > 1000
+                return size > cacheSize
             }
         }
 

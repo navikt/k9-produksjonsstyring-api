@@ -18,7 +18,6 @@ import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import kotlin.system.measureTimeMillis
 
 private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
@@ -87,9 +86,7 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                val measureTimeMillis = measureTimeMillis {
-                    call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
-                }
+                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
@@ -216,7 +213,7 @@ internal fun Route.OppgaveApis(
         val sokSaksbehandlerMedIdent = oppgaveTjeneste.sokSaksbehandlerMedIdent(params)
         if (sokSaksbehandlerMedIdent == null) {
             call.respond("")
-        }else{
+        } else {
             call.respond(sokSaksbehandlerMedIdent)
         }
     }

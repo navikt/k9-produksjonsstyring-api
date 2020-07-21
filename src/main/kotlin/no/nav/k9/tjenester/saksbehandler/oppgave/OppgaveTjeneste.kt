@@ -42,7 +42,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
-            oppgaveRepository.hentOppgaver(oppgaveKø.oppgaverOgDatoer.take(100).map { it.id })
+            oppgaveRepository.hentOppgaver(oppgaveKø.oppgaverOgDatoer.take(20).map { it.id })
         } catch (e: Exception) {
             log.error("Henting av oppgave feilet, returnerer en tom oppgaveliste", e)
             emptyList()
@@ -442,8 +442,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         //Hent reservasjoner for en gitt bruker skriv om til å hente med ident direkte i tabellen
         val saksbehandlerMedEpost = saksbehandlerRepository.finnSaksbehandlerMedEpost(epost)
         val brukerIdent = saksbehandlerMedEpost?.brukerIdent ?: return emptyList()
-        val hent = reservasjonRepository.hent(brukerIdent)
-        for (reservasjon in hent
+        val reservasjoner = reservasjonRepository.hent(brukerIdent)
+        for (reservasjon in reservasjoner
             .sortedBy { reservasjon -> reservasjon.reservertTil }) {
             val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
             if (!tilgangTilSak(oppgave)) continue
@@ -458,8 +458,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     reservasjon.reservertAv,
                     null
                 )
-            var personNavn = "Ukjent navn"
-            var personFnummer = "Ukjent fnummer"
+            var personNavn: String
+            var personFnummer: String
             val navn = if (configuration.erIDevFss) {
                 "${oppgave.fagsakSaksnummer} " + Strings.join(
                     oppgave.aksjonspunkter.liste.entries.stream().map { t ->

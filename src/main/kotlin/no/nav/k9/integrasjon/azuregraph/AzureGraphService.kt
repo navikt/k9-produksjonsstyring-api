@@ -17,6 +17,7 @@ import no.nav.k9.utils.Cache
 import no.nav.k9.utils.CacheObject
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.LocalDateTime
 
 class AzureGraphService @KtorExperimentalAPI constructor(
     accessTokenClient: AccessTokenClient,
@@ -74,7 +75,7 @@ class AzureGraphService @KtorExperimentalAPI constructor(
             }
             return try {
                 val onPremisesSamAccountName = objectMapper().readValue<AccountName>(json).onPremisesSamAccountName
-                cache.set(username, CacheObject(onPremisesSamAccountName))
+                cache.set(username, CacheObject(onPremisesSamAccountName, LocalDateTime.now().plusDays(180)))
                 return onPremisesSamAccountName
             } catch (e: Exception) {
                 log.error(
