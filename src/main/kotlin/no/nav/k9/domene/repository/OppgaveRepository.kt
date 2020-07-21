@@ -355,7 +355,12 @@ class OppgaveRepository(
         log.info("Teller autmatiske oppgaver: $spørring ms")
         return count!!
     }
+    private val aktiveOppgaverCache = Cache<List<Oppgave>>()
     internal fun hentAktiveOppgaver(): List<Oppgave> {
+        val cacheObject = aktiveOppgaverCache.get("default")
+        if (cacheObject != null) {
+            return cacheObject.value
+        }
         
         var spørring = System.currentTimeMillis()
         val json: List<String> = using(sessionOf(dataSource)) {
@@ -374,6 +379,7 @@ class OppgaveRepository(
         val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
         
         log.info("Henter aktive oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
+        aktiveOppgaverCache.set("default", CacheObject(list))
         return list
     }
 }
