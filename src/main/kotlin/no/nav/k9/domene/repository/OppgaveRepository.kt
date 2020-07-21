@@ -94,36 +94,6 @@ class OppgaveRepository(
 
     }
 
-    fun hentOppgaverSortertPåOpprettetDato(oppgaveider: Collection<UUID>): List<String> {
-        val oppgaveiderList = oppgaveider.toList()
-        if (oppgaveider.isEmpty()) {
-            return emptyList()
-        }
-        var spørring = System.currentTimeMillis()
-
-        val session = sessionOf(dataSource)
-        val json: List<String> = using(session) {
-            //language=PostgreSQL
-            it.run(
-                queryOf(
-                    "select id as data from oppgave " +
-                            "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
-                                0,
-                                oppgaveiderList.size - 1
-                            ).map { t -> ":p$t" }.joinToString()}) " +
-                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet')",
-                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
-                )
-                    .map { row ->
-                        row.string("data")
-                    }.asList
-            )
-        }
-        spørring = System.currentTimeMillis() - spørring
-
-        log.info("Henter oppgaver basert på opprettetDato: " + json.size + " oppgaver" + " spørring: " + spørring)
-        return json
-    }
     fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
@@ -206,36 +176,6 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json
-    }
-
-    fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: Collection<UUID>): List<String> {
-        val oppgaveiderList = oppgaveider.toList()
-        if (oppgaveider.isEmpty()) {
-            return emptyList()
-        }
-        var spørring = System.currentTimeMillis()
-        val session = sessionOf(dataSource)
-        val json: List<String> = using(session) {
-            //language=PostgreSQL
-            it.run(
-                queryOf(
-                    "select id as data from oppgave " +
-                            "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
-                                0,
-                                oppgaveiderList.size - 1
-                            ).map { t -> ":p$t" }.joinToString()}) " +
-                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag')",
-                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
-                )
-                    .map { row ->
-                        row.string("data")
-                    }.asList
-            )
-        }
-        spørring = System.currentTimeMillis() - spørring
-
-        log.info("Henter oppgaver basert på forsteStonadsdag: " + json.size + " oppgaver" +" spørring: " + spørring)
         return json
     }
 
