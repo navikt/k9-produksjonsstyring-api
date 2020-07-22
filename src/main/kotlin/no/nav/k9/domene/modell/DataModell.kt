@@ -264,7 +264,7 @@ data class Modell(
             saksnummer = oppgave.fagsakSaksnummer,
             behandlingType = oppgave.behandlingType.navn,
             behandlingStatus = oppgave.behandlingStatus.navn,
-            resultat = null,
+            resultat = sisteEvent().resultatType,
             resultatBegrunnelse = null,
             utenlandstilsnitt = oppgave.utenlands.toString(),
             behandlingTypeBeskrivelse = null,
