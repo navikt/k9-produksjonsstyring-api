@@ -2,13 +2,11 @@ package no.nav.k9.domene.modell
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
-import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaver
-import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -224,7 +222,8 @@ data class OppgaveKø(
 class Saksbehandler(
     var brukerIdent: String?,
     var navn: String?,
-    var epost: String
+    var epost: String,
+    var reservasjoner : MutableSet<UUID> = mutableSetOf()
 )
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)

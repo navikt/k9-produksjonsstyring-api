@@ -5,14 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.*
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toSet
-import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.db.runMigration
@@ -44,6 +37,7 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -53,7 +47,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -124,6 +119,7 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -133,7 +129,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -200,6 +197,7 @@ class K9sakEventHandlerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter
@@ -208,7 +206,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -279,6 +278,7 @@ class K9sakEventHandlerTest {
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter
@@ -287,7 +287,8 @@ class K9sakEventHandlerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()

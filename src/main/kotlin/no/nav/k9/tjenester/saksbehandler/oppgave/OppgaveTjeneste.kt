@@ -63,6 +63,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     val oppgave = oppgaveRepository.hent(uuid)
                     throw IllegalArgumentException("Oppgaven er allerede reservert $uuid ${oppgave.fagsakSaksnummer}, $ident prøvde å reservere saken")
                 }
+                saksbehandlerRepository.leggTilReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                 reservasjon
             }
             val oppgave = oppgaveRepository.hent(uuid)
@@ -239,6 +240,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
         val reservasjon = reservasjonRepository.lagre(uuid, true) {
             it!!.begrunnelse = begrunnelse
+            saksbehandlerRepository.fjernReservasjon(it.reservertAv, it.oppgave)
             it.reservertTil = null
             it
         }
@@ -280,7 +282,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return reservasjonRepository.lagre(uuid, true) {
             it!!.reservertTil = it.reservertTil?.plusHours(24)!!.forskyvReservasjonsDato()
             it.flyttetTidspunkt = LocalDateTime.now()
+            saksbehandlerRepository.fjernReservasjon(it.reservertAv, it.oppgave)
             it.reservertAv = ident
+            saksbehandlerRepository.leggTilReservasjon(ident, it.oppgave)
             it.begrunnelse = begrunnelse
             it
         }
@@ -295,7 +299,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         for (reservasjon in reservasjoner) {
             if (reservasjoner[0].reservertAv != reservasjon.reservertAv) {
                 reservasjonRepository.lagre(uuid, true) {
-                    it!!.reservertAv = reservasjon.reservertAv
+                    saksbehandlerRepository.fjernReservasjon(it!!.reservertAv, reservasjon.oppgave)
+                    it.reservertAv = reservasjon.reservertAv
+                    saksbehandlerRepository.leggTilReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                     it.reservertTil = LocalDateTime.now().plusDays(3).forskyvReservasjonsDato()
                     it
                 }
@@ -512,6 +518,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         ) {
             reservasjonRepository.lagre(oppgave.eksternId, true) {
                 it!!.reservertTil = null
+                saksbehandlerRepository.fjernReservasjon(it.reservertAv, it.oppgave)
                 it
             }
             settSkjermet(oppgave)

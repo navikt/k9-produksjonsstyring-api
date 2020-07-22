@@ -72,6 +72,7 @@ class PepClient @KtorExperimentalAPI constructor(
         fagsakNummer: String
     ): Boolean {
         if (config.erLokalt) {
+            log.info("sjekker tilgang")
             return true
         }
         val identTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()

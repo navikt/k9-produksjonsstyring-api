@@ -17,6 +17,7 @@ import javax.sql.DataSource
 class ReservasjonRepository(
     private val oppgaveKøRepository: OppgaveKøRepository,
     private val oppgaveRepository: OppgaveRepository,
+    private val saksbehandlerRepository: SaksbehandlerRepository,
     private val dataSource: DataSource,
     private val refreshKlienter: Channel<SseEvent>
 ) {
@@ -42,7 +43,7 @@ class ReservasjonRepository(
         return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
     }
 
-    suspend fun hent(saksbehandlersIdent: String): List<Reservasjon> {
+    suspend fun hentGammel(saksbehandlersIdent: String): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -61,6 +62,27 @@ class ReservasjonRepository(
         return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
     }
 
+
+    suspend fun hent(saksbehandlersIdent: String): List<Reservasjon> {
+        val saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedIdent(ident = saksbehandlersIdent)!!
+        if (saksbehandler.reservasjoner.isEmpty()) {
+            return emptyList()
+        }
+        val json: List<String> = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon \n" +
+                            "where id in "+ saksbehandler.reservasjoner.joinToString(separator = "\', \'", prefix = "(\'", postfix = "\')")
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
+        return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
+    }
+    
     private suspend fun fjernReservasjonerSomIkkeLengerErAktive(
         reservasjoner: List<Reservasjon>,
         oppgaveKøRepository: OppgaveKøRepository,
@@ -70,6 +92,7 @@ class ReservasjonRepository(
             if (!reservasjon.erAktiv()) {
                 lagre(reservasjon.oppgave) {
                     it!!.reservertTil = null
+                    saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                     it
                 }
                 oppgaveKøRepository.hent().forEach { oppgaveKø ->
