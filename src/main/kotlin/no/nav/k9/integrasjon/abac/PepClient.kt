@@ -203,7 +203,7 @@ class PepClient @KtorExperimentalAPI constructor(
                     false
                 }
             }
-            cache.set(xacmlJson, CacheObject( result))
+            cache.set(xacmlJson, CacheObject( result, LocalDateTime.now().plusHours(1)))
             return result
         }else {
             return get.value

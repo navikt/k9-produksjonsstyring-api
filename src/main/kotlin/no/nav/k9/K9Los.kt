@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.features.CORS
-import io.ktor.features.CallId
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
+import io.ktor.features.*
 import io.ktor.http.HttpMethod
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
@@ -103,17 +100,18 @@ fun Application.k9Los() {
         }
     }
     val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
-//    install(CallLogging) {
-//        correlationIdAndRequestIdInMdc()
-//        logRequests()
-//        mdc("id_token_jti") { call ->
-//            try {
-//                idTokenProvider.getIdToken(call).getId()
-//            } catch (cause: Throwable) {
-//                null
-//            }
-//        }
-//    }
+    
+    install(CallLogging) {
+        correlationIdAndRequestIdInMdc()
+        logRequests()
+        mdc("id_token_jti") { call ->
+            try {
+                idTokenProvider.getIdToken(call).getId()
+            } catch (cause: Throwable) {
+                null
+            }
+        }
+    }
 
     install(StatusPages) {
         DefaultStatusPages()
@@ -246,43 +244,7 @@ fun Application.k9Los() {
     }.broadcast()
 
     // Synkroniser oppgaver
-    launch (Executors.newSingleThreadExecutor().asCoroutineDispatcher()){
-        log.info("Starter oppgavesynkronisering")
-        val measureTimeMillis = measureTimeMillis {
-
-            for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
-                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
-                val oppgave = event.oppgave()
-                if (!oppgave.aktiv) {
-                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
-                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
-                            reservasjon!!.reservertTil = null
-                            reservasjon
-                        }
-                    }
-                }
-                oppgaveRepository.lagre(oppgave.eksternId) {
-                    oppgave
-                }
-            }
-            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
-            for (oppgavekø in oppgaveKøRepository.hent()) {
-                for (oppgave in oppgaver) {
-                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
-                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                            forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                            forrige!!
-                        }
-                    }
-                }
-                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!
-                }
-            }
-        }
-        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
-
-    }
+    // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
 
     val requestContextService = RequestContextService()
     install(CallIdRequired)
@@ -375,6 +337,51 @@ fun Application.k9Los() {
 
     install(CallId) {
         generated()
+    }
+}
+
+private fun Application.regenererOppgaver(
+    oppgaveRepository: OppgaveRepository,
+    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    reservasjonRepository: ReservasjonRepository,
+    oppgaveKøRepository: OppgaveKøRepository
+) {
+    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+        log.info("Starter oppgavesynkronisering")
+        val measureTimeMillis = measureTimeMillis {
+
+            for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
+                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
+                val oppgave = event.oppgave()
+                if (!oppgave.aktiv) {
+                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
+                            reservasjon!!.reservertTil = null
+                            reservasjon
+                        }
+                    }
+                }
+                oppgaveRepository.lagre(oppgave.eksternId) {
+                    oppgave
+                }
+            }
+            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
+            for (oppgavekø in oppgaveKøRepository.hent()) {
+                for (oppgave in oppgaver) {
+                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
+                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                            forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                            forrige!!
+                        }
+                    }
+                }
+                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                    forrige!!
+                }
+            }
+        }
+        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
+
     }
 }
 
