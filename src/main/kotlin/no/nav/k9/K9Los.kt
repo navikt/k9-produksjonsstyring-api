@@ -251,23 +251,27 @@ fun Application.k9Los() {
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-        for (saksbehandler in saksbehandlerRepository.hentAlleSaksbehandlere()) {
-            if (saksbehandler.brukerIdent == null) {
-                continue
-            }
-            runBlocking {
-                log.info("Starter med migrering")
-                val reservasjoner = reservasjonRepository.hentGammel(saksbehandler.brukerIdent!!)
-                log.info("migrerer " + reservasjoner.size + " reservasjoner")
-                for (reservasjon in reservasjoner) {
-                    saksbehandlerRepository.leggTilReservasjon(
-                        saksbehandlerid = saksbehandler.brukerIdent,
-                        reservasjon = reservasjon.oppgave
-                    )
+        log.info("Starter med migrering")
+        val measureTimeMillis = measureTimeMillis {
+            var count = 0
+            for (saksbehandler in saksbehandlerRepository.hentAlleSaksbehandlere()) {
+                if (saksbehandler.brukerIdent == null) {
+                    continue
                 }
-                log.info("Ferdig med migrering")
+                runBlocking {
+                    val reservasjoner = reservasjonRepository.hentGammel(saksbehandler.brukerIdent!!)
+                    log.info("migrerer " + reservasjoner.size + " reservasjoner")
+                    for (reservasjon in reservasjoner) {
+                        saksbehandlerRepository.leggTilReservasjon(
+                            saksbehandlerid = saksbehandler.brukerIdent,
+                            reservasjon = reservasjon.oppgave
+                        )
+                    }
+                }
+                log.info("Ferdig med " + ++count)
             }
         }
+        log.info("Ferdig med migrering " + measureTimeMillis + " ms")
     }
     val requestContextService = RequestContextService()
     install(CallIdRequired)
