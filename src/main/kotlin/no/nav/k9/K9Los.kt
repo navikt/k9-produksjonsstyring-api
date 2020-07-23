@@ -28,6 +28,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -103,7 +104,7 @@ fun Application.k9Los() {
         }
     }
     val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
-    
+
 //    install(CallLogging) {
 //        correlationIdAndRequestIdInMdc()
 //        logRequests()
@@ -249,25 +250,25 @@ fun Application.k9Los() {
 
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
-
-    for (saksbehandler in saksbehandlerRepository.hentAlleSaksbehandlere()) {
-        if (saksbehandler.brukerIdent == null) {
-            continue
-        }
-        launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-            log.info("Starter med migrering")
-            val reservasjoner = reservasjonRepository.hentGammel(saksbehandler.brukerIdent!!)
-            log.info("migrerer " + reservasjoner.size + " reservasjoner")
-            for (reservasjon in reservasjoner) {
-                saksbehandlerRepository.leggTilReservasjon(
-                    saksbehandlerid = saksbehandler.brukerIdent,
-                    reservasjon = reservasjon.oppgave
-                )
+    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+        for (saksbehandler in saksbehandlerRepository.hentAlleSaksbehandlere()) {
+            if (saksbehandler.brukerIdent == null) {
+                continue
             }
-            log.info("Ferdig med migrering")
+            runBlocking {
+                log.info("Starter med migrering")
+                val reservasjoner = reservasjonRepository.hentGammel(saksbehandler.brukerIdent!!)
+                log.info("migrerer " + reservasjoner.size + " reservasjoner")
+                for (reservasjon in reservasjoner) {
+                    saksbehandlerRepository.leggTilReservasjon(
+                        saksbehandlerid = saksbehandler.brukerIdent,
+                        reservasjon = reservasjon.oppgave
+                    )
+                }
+                log.info("Ferdig med migrering")
+            }
         }
     }
-
     val requestContextService = RequestContextService()
     install(CallIdRequired)
 
