@@ -36,15 +36,16 @@ class OppgaveTjenesteTest {
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter
         )
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val pepClient = mockk<PepClient>()
         val azureGraphService = mockk<AzureGraphService>()
@@ -220,15 +221,16 @@ class OppgaveTjenesteTest {
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter
         )
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val pepClient = mockk<PepClient>()
         val azureGraphService = mockk<AzureGraphService>()

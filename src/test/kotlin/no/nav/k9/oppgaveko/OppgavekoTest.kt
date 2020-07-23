@@ -33,21 +33,23 @@ class OppgavekoTest {
         val refreshKlienter = Channel<SseEvent>(10000)
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter
         )
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val pepClient = mockk<PepClient>()
         val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(

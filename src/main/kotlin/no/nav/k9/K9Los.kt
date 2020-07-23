@@ -28,6 +28,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -145,13 +146,14 @@ fun Application.k9Los() {
         refreshKlienter = refreshKlienter
     )
 
+    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val reservasjonRepository = ReservasjonRepository(
         oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
         dataSource = dataSource,
-        refreshKlienter = refreshKlienter
+        refreshKlienter = refreshKlienter,
+        saksbehandlerRepository = saksbehandlerRepository
     )
-    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val køOppdatertProsessorJob =
         køOppdatertProsessor(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -248,6 +250,21 @@ fun Application.k9Los() {
 
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
+
+    for (saksbehandler in saksbehandlerRepository.hentAlleSaksbehandlere()) {
+        if (saksbehandler.brukerIdent == null) {
+            continue
+        }
+        runBlocking {
+            val reservasjoner = reservasjonRepository.hentGammel(saksbehandler.brukerIdent!!)
+            for (reservasjon in reservasjoner) {
+                saksbehandlerRepository.leggTilReservasjon(
+                    saksbehandlerid = saksbehandler.brukerIdent,
+                    reservasjon = reservasjon.oppgave
+                )
+            }
+        }
+    }
 
     val requestContextService = RequestContextService()
     install(CallIdRequired)
@@ -347,7 +364,8 @@ private fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
     behandlingProsessEventRepository: BehandlingProsessEventRepository,
     reservasjonRepository: ReservasjonRepository,
-    oppgaveKøRepository: OppgaveKøRepository
+    oppgaveKøRepository: OppgaveKøRepository,
+    saksbehhandlerRepository: SaksbehandlerRepository
 ) {
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
         log.info("Starter oppgavesynkronisering")
@@ -360,6 +378,7 @@ private fun Application.regenererOppgaver(
                     if (reservasjonRepository.finnes(oppgave.eksternId)) {
                         reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
                             reservasjon!!.reservertTil = null
+                            saksbehhandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                             reservasjon
                         }
                     }
