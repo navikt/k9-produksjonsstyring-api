@@ -28,7 +28,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -250,29 +249,7 @@ fun Application.k9Los() {
 
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
-    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-        log.info("Starter med migrering")
-        val measureTimeMillis = measureTimeMillis {
-            var count = 0
-            for (saksbehandler in saksbehandlerRepository.hentAlleSaksbehandlere()) {
-                if (saksbehandler.brukerIdent == null) {
-                    continue
-                }
-                runBlocking {
-                    val reservasjoner = reservasjonRepository.hentGammel(saksbehandler.brukerIdent!!)
-                    log.info("migrerer " + reservasjoner.size + " reservasjoner")
-                    for (reservasjon in reservasjoner) {
-                        saksbehandlerRepository.leggTilReservasjon(
-                            saksbehandlerid = saksbehandler.brukerIdent,
-                            reservasjon = reservasjon.oppgave
-                        )
-                    }
-                }
-                log.info("Ferdig med " + ++count)
-            }
-        }
-        log.info("Ferdig med migrering " + measureTimeMillis + " ms")
-    }
+    
     val requestContextService = RequestContextService()
     install(CallIdRequired)
 

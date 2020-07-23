@@ -43,26 +43,6 @@ class ReservasjonRepository(
         return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
     }
 
-    suspend fun hentGammel(saksbehandlersIdent: String): List<Reservasjon> {
-        val json: List<String> = using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon \n" +
-                            "where (not (data ::jsonb -> 'reservasjoner' -> -1 ?? 'aktiv')::BOOLEAN\n" +
-                            "or (data ::jsonb -> 'reservasjoner' -> -1 -> 'aktiv')::BOOLEAN) " +
-                            "and (data ::jsonb -> 'reservasjoner' -> -1 ->> 'reservertAv') = :saksbehandlersIdent",
-                    mapOf("saksbehandlersIdent" to saksbehandlersIdent)
-                )
-                    .map { row ->
-                        row.string("data")
-                    }.asList
-            )
-        }
-        val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
-        return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
-    }
-
-
     suspend fun hent(saksbehandlersIdent: String): List<Reservasjon> {
         val saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedIdent(ident = saksbehandlersIdent)!!
         if (saksbehandler.reservasjoner.isEmpty()) {
