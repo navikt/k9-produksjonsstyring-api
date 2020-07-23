@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.features.*
+import io.ktor.features.CORS
+import io.ktor.features.CallId
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
 import io.ktor.http.HttpMethod
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
@@ -101,18 +104,18 @@ fun Application.k9Los() {
         }
     }
     val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
-
-    install(CallLogging) {
-        correlationIdAndRequestIdInMdc()
-        logRequests()
-        mdc("id_token_jti") { call ->
-            try {
-                idTokenProvider.getIdToken(call).getId()
-            } catch (cause: Throwable) {
-                null
-            }
-        }
-    }
+    
+//    install(CallLogging) {
+//        correlationIdAndRequestIdInMdc()
+//        logRequests()
+//        mdc("id_token_jti") { call ->
+//            try {
+//                idTokenProvider.getIdToken(call).getId()
+//            } catch (cause: Throwable) {
+//                null
+//            }
+//        }
+//    }
 
     install(StatusPages) {
         DefaultStatusPages()
