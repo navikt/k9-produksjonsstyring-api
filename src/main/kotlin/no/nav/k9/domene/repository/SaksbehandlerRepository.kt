@@ -135,7 +135,7 @@ class SaksbehandlerRepository(
                 saksbehandler
             } else {
                 it.brukerIdent = saksbehandler.brukerIdent
-                it.epost = saksbehandler.epost
+                it.epost = saksbehandler.epost.toLowerCase()
                 it.navn = saksbehandler.navn
                 it.enhet = saksbehandler.enhet
                 it
@@ -180,7 +180,7 @@ class SaksbehandlerRepository(
                     queryOf(
                         """
                             delete from saksbehandler 
-                            where epost = :epost """,
+                            where lower(epost) = lower(:epost)""",
                         mapOf("epost" to epost.toLowerCase())
                     ).asUpdate
                 )
