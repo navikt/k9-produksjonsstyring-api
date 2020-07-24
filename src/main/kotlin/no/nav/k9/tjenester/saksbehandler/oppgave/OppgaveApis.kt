@@ -175,13 +175,30 @@ internal fun Route.OppgaveApis(
 
     post { _: flyttReservasjon ->
         val params = call.receive<FlyttReservasjonId>()
-        call.respond(
-            oppgaveTjeneste.flyttReservasjon(
-                UUID.fromString(params.oppgaveId),
-                params.brukerIdent,
-                params.begrunnelse
+        if (configuration.erIkkeLokalt) {
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    idToken = call.idToken()
+                )
+            ) {
+                call.respond(
+                    oppgaveTjeneste.flyttReservasjon(
+                        UUID.fromString(params.oppgaveId),
+                        params.brukerIdent,
+                        params.begrunnelse
+                    )
+                )
+            }
+        }else{
+            call.respond(
+                oppgaveTjeneste.flyttReservasjon(
+                    UUID.fromString(params.oppgaveId),
+                    params.brukerIdent,
+                    params.begrunnelse
+                )
             )
-        )
+        }
     }
 
     @Location("/reservasjon/endre")
