@@ -2,6 +2,7 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.KtorExperimentalAPI
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.channels.Channel
@@ -300,5 +301,108 @@ class OppgaveTjenesteTest {
         oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.isEmpty())
 
+    }
+
+    @Test
+    fun hentReservasjonsHistorikk() = runBlocking {
+        val pg = EmbeddedPostgres.start()
+        val dataSource = pg.postgresDatabase
+        runMigration(dataSource)
+        val oppgaveKøOppdatert = Channel<UUID>(1)
+        val refreshKlienter = Channel<SseEvent>(1000)
+
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(
+            dataSource = dataSource,
+            oppgaveKøOppdatert = oppgaveKøOppdatert,
+            refreshKlienter = refreshKlienter
+        )
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val reservasjonRepository = ReservasjonRepository(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository,
+            dataSource = dataSource,
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
+        )
+        val config = mockk<Configuration>()
+        val pdlService = mockk<PdlService>()
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
+        val pepClient = mockk<PepClient>()
+        val azureGraphService = mockk<AzureGraphService>()
+
+        coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
+        val oppgaveTjeneste = OppgaveTjeneste(
+            oppgaveRepository,
+            oppgaveKøRepository,
+            saksbehandlerRepository,
+            pdlService,
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
+        )
+
+        val uuid = UUID.randomUUID()
+        val oppgaveko = OppgaveKø(
+            id = uuid,
+            navn = "Ny kø",
+            sistEndret = LocalDate.now(),
+            sortering = KøSortering.OPPRETT_BEHANDLING,
+            filtreringBehandlingTyper = mutableListOf(BehandlingType.FORSTEGANGSSOKNAD, BehandlingType.INNSYN),
+            filtreringYtelseTyper = mutableListOf(),
+            filtreringAndreKriterierType = mutableListOf(),
+            enhet = Enhet.NASJONAL,
+            fomDato = null,
+            tomDato = null,
+            saksbehandlere = mutableListOf()
+        )
+        oppgaveKøRepository.lagre(uuid) { oppgaveko }
+
+
+        val oppgave1 = Oppgave(
+            behandlingId = 9438,
+            fagsakSaksnummer = "Yz647",
+            aktorId = "273857",
+            behandlendeEnhet = "Enhet",
+            behandlingsfrist = LocalDateTime.now(),
+            behandlingOpprettet = LocalDateTime.now(),
+            forsteStonadsdag = LocalDate.now().plusDays(6),
+            behandlingStatus = BehandlingStatus.OPPRETTET,
+            behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
+            fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
+            aktiv = true,
+            system = "system",
+            oppgaveAvsluttet = null,
+            utfortFraAdmin = false,
+            eksternId = UUID.randomUUID(),
+            oppgaveEgenskap = emptyList(),
+            aksjonspunkter = Aksjonspunkter(emptyMap()),
+            tilBeslutter = true,
+            utbetalingTilBruker = false,
+            selvstendigFrilans = false,
+            kombinert = false,
+            søktGradering = false,
+            registrerPapir = true,
+            årskvantum = false,
+            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+        )
+        oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
+        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository)
+        oppgaveKøRepository.lagre(oppgaveko.id) {
+            oppgaveko
+        }
+        every { config.erLokalt() } returns true
+        every { config.erIkkeLokalt } returns false
+        var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
+        assert(oppgaver.size == 1)
+        val oppgave = oppgaver.get(0)
+        
+        saksbehandlerRepository.addSaksbehandler(Saksbehandler("123", null, "test@test.no"))
+        saksbehandlerRepository.addSaksbehandler(Saksbehandler("ny", null, "test2@test.no"))
+        
+        oppgaveTjeneste.reserverOppgave("123", oppgave.eksternId)
+        oppgaveTjeneste.flyttReservasjon(oppgave.eksternId, "ny", "Ville ikke ha oppgaven")
+        val reservasjonsHistorikk = oppgaveTjeneste.hentReservasjonsHistorikk(oppgave.eksternId)
+
+        assert(reservasjonsHistorikk.reservasjoner.size == 2)
+        assert(reservasjonsHistorikk.reservasjoner[0].flyttetAv == "123")
     }
 }

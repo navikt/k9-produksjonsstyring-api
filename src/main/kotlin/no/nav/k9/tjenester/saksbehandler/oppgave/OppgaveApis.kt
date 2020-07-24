@@ -204,6 +204,16 @@ internal fun Route.OppgaveApis(
         )
     }
 
+    @Location("/hent-historiske-reservasjoner-på-oppgave")
+    class hentHistoriskeReservasjonerPåOppgave
+
+    post { _: flyttReservasjonTilForrigeSaksbehandler ->
+        val params = call.receive<OppgaveId>()
+        call.respond(
+            oppgaveTjeneste.hentReservasjonsHistorikk(UUID.fromString(params.oppgaveId))
+        )
+    }
+    
     @Location("/flytt/sok")
     class søkSaksbehandler
 
