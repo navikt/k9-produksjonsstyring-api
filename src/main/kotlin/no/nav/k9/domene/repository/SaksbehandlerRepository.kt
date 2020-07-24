@@ -46,7 +46,9 @@ class SaksbehandlerRepository(
                         insert into saksbehandler as k (saksbehandlerid,navn, epost, data)
                         values (:saksbehandlerid,:navn,:epost, :data :: jsonb)
                         on conflict (epost) do update
-                        set data = :data :: jsonb
+                        set data = :data :: jsonb, 
+                            saksbehandlerid = :saksbehandlerid,
+                            navn = :navn
                      """,
                         mapOf(
                             "saksbehandlerid" to id,
@@ -68,7 +70,7 @@ class SaksbehandlerRepository(
             it.transaction { tx ->
                 val run = tx.run(
                     queryOf(
-                        "select data from saksbehandler where epost = :epost for update",
+                        "select data from saksbehandler where lower(epost) = lower(:epost) for update",
                         mapOf("epost" to epost)
                     )
                         .map { row ->
@@ -90,7 +92,9 @@ class SaksbehandlerRepository(
                         insert into saksbehandler as k (saksbehandlerid, navn, epost, data)
                         values (:saksbehandlerid,:navn,:epost, :data :: jsonb)
                         on conflict (epost) do update
-                        set data = :data :: jsonb
+                        set data = :data :: jsonb, 
+                            saksbehandlerid = :saksbehandlerid,
+                            navn = :navn
                      """,
                         mapOf(
                             "saksbehandlerid" to saksbehandler.brukerIdent,
