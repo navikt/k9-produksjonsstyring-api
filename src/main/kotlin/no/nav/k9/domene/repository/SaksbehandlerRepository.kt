@@ -94,7 +94,7 @@ class SaksbehandlerRepository(
                      """,
                         mapOf(
                             "saksbehandlerid" to saksbehandler.brukerIdent,
-                            "epost" to saksbehandler.epost,
+                            "epost" to saksbehandler.epost.toLowerCase(),
                             "navn" to saksbehandler.navn,
                             "data" to json
                         )
@@ -143,7 +143,7 @@ class SaksbehandlerRepository(
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select * from saksbehandler where epost = :epost",
+                    "select * from saksbehandler where lower(epost) = :epost",
                     mapOf("epost" to epost.toLowerCase())
                 )
                     .map { row ->
