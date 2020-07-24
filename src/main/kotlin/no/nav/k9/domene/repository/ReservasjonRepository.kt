@@ -1,5 +1,6 @@
 package no.nav.k9.domene.repository
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
@@ -107,17 +108,17 @@ class ReservasjonRepository(
     }
 
     fun hentMedHistorikk(id: UUID): List<Reservasjon> {
-        val json: List<String> = using(sessionOf(dataSource)) {
+        val json: String? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select (data ::jsonb -> 'reservasjoner') as data from reservasjon where id = :id",
                     mapOf("id" to id.toString())
                 ).map { row ->
                     row.string("data")
-                }.asList
+                }.asSingle
             )
         }
-        return json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
+        return objectMapper().readValue(json!!)
     }
 
     fun finnes(id: UUID): Boolean {
