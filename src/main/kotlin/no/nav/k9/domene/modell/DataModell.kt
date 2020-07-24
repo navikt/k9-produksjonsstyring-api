@@ -250,6 +250,16 @@ data class Modell(
         } else {
             ""
         }
+        
+        val behandldendeEnhet= 
+        if (reservasjonRepository.finnes(oppgave.eksternId)) {
+            val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(oppgave.eksternId)
+            val first = hentMedHistorikk.filter { reservasjon -> reservasjon.reservertAv != null }
+                .map { reservasjon -> reservasjon.reservertAv }.first()
+            first?.substringBefore(" ")
+        }else {
+            null
+        }
         val zone = ZoneId.of("Europe/Oslo")
         return Behandling(
             sakId = oppgave.fagsakSaksnummer,
@@ -277,9 +287,9 @@ data class Modell(
             behandlingOpprettetAv = "system",
             behandlingOpprettetType = null,
             behandlingOpprettetTypeBeskrivelse = null,
-            ansvarligEnhetKode = oppgave.behandlendeEnhet,
+            ansvarligEnhetKode = behandldendeEnhet,
             ansvarligEnhetType = "NORG",
-            behandlendeEnhetKode = oppgave.behandlendeEnhet,
+            behandlendeEnhetKode = behandldendeEnhet,
             behandlendeEnhetType = "NORG",
             datoForUttak = null,
             datoForUtbetaling = null,

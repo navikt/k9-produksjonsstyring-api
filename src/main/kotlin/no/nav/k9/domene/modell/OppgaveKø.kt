@@ -223,7 +223,8 @@ class Saksbehandler(
     var brukerIdent: String?,
     var navn: String?,
     var epost: String,
-    var reservasjoner : MutableSet<UUID> = mutableSetOf()
+    var reservasjoner : MutableSet<UUID> = mutableSetOf(),
+    var enhet : String?
 )
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)

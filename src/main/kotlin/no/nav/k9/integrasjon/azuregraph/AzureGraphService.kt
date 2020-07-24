@@ -87,6 +87,68 @@ class AzureGraphService @KtorExperimentalAPI constructor(
             return cachedObject.value
         }
     }
+
+    @KtorExperimentalAPI
+    internal suspend fun hentEnhetForInnloggetBruker(): String {
+        if (configuration.erLokalt) {
+            return "saksbehandler@nav.no"
+        }
+
+        val username = IdToken(kotlin.coroutines.coroutineContext.idToken().value).getUsername() + "_office_location"
+        val cachedObject = cache.get(username)
+        if (cachedObject == null) {
+            val accessToken =
+                cachedAccessTokenClient.getAccessToken(
+                    setOf("https://graph.microsoft.com/user.read"),
+                    kotlin.coroutines.coroutineContext.idToken().value
+                )
+
+            val httpRequest = "https://graph.microsoft.com/v1.0/me?\$select=officeLocation"
+                .httpGet()
+                .header(
+                    HttpHeaders.Accept to "application/json",
+                    HttpHeaders.Authorization to "Bearer ${accessToken.token}"
+                )
+
+
+            val json = Retry.retry(
+                operation = "hent-ident",
+                initialDelay = Duration.ofMillis(200),
+                factor = 2.0,
+                logger = log
+            ) {
+                val (request, _, result) = Operation.monitored(
+                    app = "k9-los-api",
+                    operation = "hent-ident",
+                    resultResolver = { 200 == it.second.statusCode }
+                ) { httpRequest.awaitStringResponseResult() }
+
+                result.fold(
+                    { success -> success },
+                    { error ->
+                        log.error(
+                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+                        )
+                        log.error(error.toString())
+                        throw IllegalStateException("Feil ved henting av saksbehandlers id")
+                    }
+                )
+            }
+            return try {
+                val officeLocation = objectMapper().readValue<OfficeLocation>(json).officeLocation
+                cache.set(username, CacheObject(officeLocation, LocalDateTime.now().plusDays(180)))
+                return officeLocation
+            } catch (e: Exception) {
+                log.error(
+                    "Feilet deserialisering", e
+                )
+                ""
+            }
+        } else {
+            return cachedObject.value
+        }
+    }
+    
 }
 
 

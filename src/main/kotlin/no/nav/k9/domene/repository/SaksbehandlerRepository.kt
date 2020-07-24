@@ -1,6 +1,7 @@
 package no.nav.k9.domene.repository
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -15,7 +16,7 @@ class SaksbehandlerRepository(
     private val dataSource: DataSource
 ) {
     private val log: Logger = LoggerFactory.getLogger(SaksbehandlerRepository::class.java)
-    private fun lagre(
+    private fun lagreMedId(
         id: String,
         f: (Saksbehandler?) -> Saksbehandler
     ) {
@@ -35,29 +36,80 @@ class SaksbehandlerRepository(
                     forrige = objectMapper().readValue(run, Saksbehandler::class.java)
                     f(forrige)
                 } else {
-                    finnSaksbehandlerMedIdent(ident = id)
+                    f(null)
                 }
 
                 val json = objectMapper().writeValueAsString(saksbehandler)
                 tx.run(
                     queryOf(
                         """
-                        insert into saksbehandler as k (saksbehandlerid, epost, data)
-                        values (:saksbehandlerid,:epost, :data :: jsonb)
+                        insert into saksbehandler as k (saksbehandlerid,navn, epost, data)
+                        values (:saksbehandlerid,:navn,:epost, :data :: jsonb)
                         on conflict (epost) do update
                         set data = :data :: jsonb
-                     """, mapOf("saksbehandlerid" to id,"epost" to saksbehandler!!.epost, "data" to json)
+                     """,
+                        mapOf(
+                            "saksbehandlerid" to id,
+                            "epost" to saksbehandler.epost,
+                            "navn" to saksbehandler.navn,
+                            "data" to json
+                        )
                     ).asUpdate
                 )
             }
         }
     }
 
+    private fun lagreMedEpost(
+        epost: String,
+        f: (Saksbehandler?) -> Saksbehandler
+    ) {
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                val run = tx.run(
+                    queryOf(
+                        "select data from saksbehandler where epost = :epost for update",
+                        mapOf("epost" to epost)
+                    )
+                        .map { row ->
+                            row.stringOrNull("data")
+                        }.asSingle
+                )
+                val forrige: Saksbehandler?
+                val saksbehandler = if (!run.isNullOrEmpty()) {
+                    forrige = objectMapper().readValue(run, Saksbehandler::class.java)
+                    f(forrige)
+                } else {
+                    f(null)
+                }
+
+                val json = objectMapper().writeValueAsString(saksbehandler)
+                tx.run(
+                    queryOf(
+                        """
+                        insert into saksbehandler as k (saksbehandlerid, navn, epost, data)
+                        values (:saksbehandlerid,:navn,:epost, :data :: jsonb)
+                        on conflict (epost) do update
+                        set data = :data :: jsonb
+                     """,
+                        mapOf(
+                            "saksbehandlerid" to saksbehandler.brukerIdent,
+                            "epost" to saksbehandler.epost,
+                            "navn" to saksbehandler.navn,
+                            "data" to json
+                        )
+                    ).asUpdate
+                )
+            }
+        }
+    }
+
+
     fun leggTilReservasjon(saksbehandlerid: String?, reservasjon: UUID) {
         if (saksbehandlerid == null) {
             return
         }
-        lagre(saksbehandlerid) { saksbehandler ->
+        lagreMedId(saksbehandlerid) { saksbehandler ->
             saksbehandler!!.reservasjoner.add(reservasjon)
             saksbehandler
         }
@@ -67,30 +119,22 @@ class SaksbehandlerRepository(
         if (id == null) {
             return
         }
-        lagre(id) { saksbehandler ->
+        lagreMedId(id) { saksbehandler ->
             saksbehandler!!.reservasjoner.remove(reservasjon)
             saksbehandler
         }
     }
 
     fun addSaksbehandler(saksbehandler: Saksbehandler) {
-        using(sessionOf(dataSource)) {
-            it.transaction { tx ->
-                tx.run(
-                    queryOf(
-                        """
-                            insert into saksbehandler (saksbehandlerid, navn, epost)
-                            values(:ident, :navn, :epost)
-                            on conflict (epost) do update
-                            set navn = :navn, saksbehandlerid = :ident
-                            """,
-                        mapOf(
-                            "ident" to saksbehandler.brukerIdent,
-                            "navn" to saksbehandler.navn,
-                            "epost" to saksbehandler.epost.toLowerCase()
-                        )
-                    ).asUpdate
-                )
+        lagreMedEpost(saksbehandler.epost) {
+            if (it == null) {
+                saksbehandler
+            } else {
+                it.brukerIdent = saksbehandler.brukerIdent
+                it.epost = saksbehandler.epost
+                it.navn = saksbehandler.navn
+                it.enhet = saksbehandler.enhet
+                it
             }
         }
     }
@@ -103,22 +147,7 @@ class SaksbehandlerRepository(
                     mapOf("epost" to epost.toLowerCase())
                 )
                     .map { row ->
-                        val data = row.stringOrNull("data")
-                        if (data == null) {
-                            Saksbehandler(
-                                row.stringOrNull("saksbehandlerid"),
-                                row.stringOrNull("navn"),
-                                row.string("epost").toLowerCase(),
-                                reservasjoner = mutableSetOf()
-                            )
-                        } else {
-                            Saksbehandler(
-                                row.stringOrNull("saksbehandlerid"),
-                                row.stringOrNull("navn"),
-                                row.string("epost").toLowerCase(),
-                                reservasjoner = objectMapper().readValue<Saksbehandler>(data).reservasjoner
-                            )
-                        }
+                        mapSaksbehandler(row)
                     }.asSingle
             )
         }
@@ -133,22 +162,7 @@ class SaksbehandlerRepository(
                     mapOf("ident" to ident)
                 )
                     .map { row ->
-                        val data = row.stringOrNull("data")
-                        if (data == null) {
-                            Saksbehandler(
-                                row.stringOrNull("saksbehandlerid"),
-                                row.stringOrNull("navn"),
-                                row.string("epost").toLowerCase(),
-                                reservasjoner = mutableSetOf()
-                            )
-                        } else {
-                            Saksbehandler(
-                                row.stringOrNull("saksbehandlerid"),
-                                row.stringOrNull("navn"),
-                                row.string("epost").toLowerCase(),
-                                reservasjoner = objectMapper().readValue<Saksbehandler>(data).reservasjoner
-                            )
-                        }
+                        mapSaksbehandler(row)
                     }.asSingle
             )
         }
@@ -178,27 +192,33 @@ class SaksbehandlerRepository(
                     mapOf()
                 )
                     .map { row ->
-                        val data = row.stringOrNull("data")
-                        if (data == null) {
-                            Saksbehandler(
-                                row.stringOrNull("saksbehandlerid"),
-                                row.stringOrNull("navn"),
-                                row.string("epost").toLowerCase(),
-                                reservasjoner = mutableSetOf()
-                            )
-                        } else {
-                            Saksbehandler(
-                                row.stringOrNull("saksbehandlerid"),
-                                row.stringOrNull("navn"),
-                                row.string("epost").toLowerCase(),
-                                reservasjoner = objectMapper().readValue<Saksbehandler>(data).reservasjoner
-                            )
-                        }
+                        mapSaksbehandler(row)
                     }.asList
             )
         }
         log.info("Henter " + identer.size + " saksbehandlere")
 
         return identer
+    }
+
+    private fun mapSaksbehandler(row: Row): Saksbehandler {
+        val data = row.stringOrNull("data")
+        return if (data == null) {
+            Saksbehandler(
+                row.stringOrNull("saksbehandlerid"),
+                row.stringOrNull("navn"),
+                row.string("epost").toLowerCase(),
+                reservasjoner = mutableSetOf(),
+                enhet = null
+            )
+        } else {
+            Saksbehandler(
+                row.stringOrNull("saksbehandlerid"),
+                row.stringOrNull("navn"),
+                row.string("epost").toLowerCase(),
+                reservasjoner = objectMapper().readValue<Saksbehandler>(data).reservasjoner,
+                enhet = objectMapper().readValue<Saksbehandler>(data).enhet
+            )
+        }
     }
 }
