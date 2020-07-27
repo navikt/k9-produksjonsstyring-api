@@ -17,6 +17,7 @@ import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
+import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -127,8 +128,8 @@ fun Route.MockGrensesnitt(
                 aksjonspunktKoderMedStatusListe = mutableMapOf(aksjonspunktToggle.kode to "OPPR"),
                 behandlingSteg = "",
                 opprettetBehandling = LocalDateTime.now(),
-                behandlingTypeKode = "BT-002",
-                ytelseTypeKode = "PSB"
+                behandlingTypeKode = "BT-004",
+                ytelseTypeKode = "OMP"
             )
         } else {
             val sisteEvent = modell.sisteEvent()
@@ -148,7 +149,7 @@ fun Route.MockGrensesnitt(
                 aksjonspunktKoderMedStatusListe = sisteEvent.aksjonspunktKoderMedStatusListe,
                 behandlingSteg = "",
                 opprettetBehandling = LocalDateTime.now(),
-                behandlingTypeKode = "BT-002",
+                behandlingTypeKode = "BT-004",
                 ytelseTypeKode = sisteEvent.ytelseTypeKode
             )
         }
@@ -175,11 +176,11 @@ fun Route.MockGrensesnitt(
                     EventHendelse.AKSJONSPUNKT_OPPRETTET,
                     behandlingStatus = "UTRED",
                     behandlinStatus = "UTRED",
-                    aksjonspunktKoderMedStatusListe = mutableMapOf("5003" to "OPPR"),
+                    aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktDefinisjon.AVKLAR_OPPHOLDSRETT.kode to "OPPR"),
                     behandlingSteg = "",
                     opprettetBehandling = LocalDateTime.now(),
-                    behandlingTypeKode = "BT-002",
-                    ytelseTypeKode = "PSB"
+                    behandlingTypeKode = "BT-004",
+                    ytelseTypeKode = "OMP"
                 )
 
             k9sakEventHandler.prosesser(event)

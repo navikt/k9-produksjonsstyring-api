@@ -38,7 +38,6 @@
     
     <logger name="auditLogger" level="INFO" additivity="false">
         <appender-ref ref="auditLogger" />
-        <appender-ref ref="STDOUT"/>
     </logger>
     
     <root level="INFO">

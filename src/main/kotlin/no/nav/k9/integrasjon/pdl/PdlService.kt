@@ -16,10 +16,13 @@ import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
+import no.nav.k9.utils.Cache
+import no.nav.k9.utils.CacheObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.Duration
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
@@ -30,7 +33,7 @@ class PdlService @KtorExperimentalAPI constructor(
     private val henteNavnScopes: Set<String> = setOf("openid")
 ) {
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
-    private val cache = Cache()
+    private val cache = Cache<String>(10_000)
 
     companion object {
         fun getQ2Ident(string: String): String {
@@ -142,7 +145,7 @@ class PdlService @KtorExperimentalAPI constructor(
                 )
             }
             return try {
-                cache.set(query, CacheObject(json!!))
+                cache.set(query, CacheObject(json!!, LocalDateTime.now().plusHours(7)))
                 return objectMapper().readValue<PersonPdl>(json)
             } catch (e: Exception) {
                 log.warn(
@@ -237,7 +240,7 @@ class PdlService @KtorExperimentalAPI constructor(
                         )
                     )
                 }
-                cache.set(query, CacheObject(json!!))
+                cache.set(query, CacheObject(json!!, LocalDateTime.now().plusDays(7)))
                 return objectMapper().readValue<AktøridPdl>(json)
             } catch (e: Exception) {
                 log.warn("", e.message)

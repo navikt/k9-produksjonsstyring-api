@@ -19,6 +19,7 @@ import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
@@ -52,7 +53,8 @@ import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
-import no.nav.k9.tjenester.avdelingsleder.nøkkeltall.NøkkeltallApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.fagsak.FagsakApis
 import no.nav.k9.tjenester.innsikt.InnsiktGrensesnitt
@@ -70,6 +72,7 @@ import no.nav.k9.tjenester.sse.Sse
 import no.nav.k9.tjenester.sse.SseEvent
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -109,6 +112,18 @@ fun Application.k9Los() {
         }
     }
 
+//    install(CallLogging) {
+//        correlationIdAndRequestIdInMdc()
+//        logRequests()
+//        mdc("id_token_jti") { call ->
+//            try {
+//                idTokenProvider.getIdToken(call).getId()
+//            } catch (cause: Throwable) {
+//                null
+//            }
+//        }
+//    }
+
     install(StatusPages) {
         DefaultStatusPages()
         JacksonStatusPages()
@@ -125,8 +140,8 @@ fun Application.k9Los() {
         configuration = configuration
     )
     val auditlogger = Auditlogger(configuration)
-    val oppgaveKøOppdatert = Channel<UUID>(10000)
-    val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(10000)
+    val oppgaveKøOppdatert = Channel<UUID>(Channel.UNLIMITED)
+    val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(Channel.UNLIMITED)
     val refreshKlienter = Channel<SseEvent>()
 
     val dataSource = hikariConfig(configuration)
@@ -138,13 +153,14 @@ fun Application.k9Los() {
         refreshKlienter = refreshKlienter
     )
 
+    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val reservasjonRepository = ReservasjonRepository(
         oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
         dataSource = dataSource,
-        refreshKlienter = refreshKlienter
+        refreshKlienter = refreshKlienter,
+        saksbehandlerRepository = saksbehandlerRepository
     )
-    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val køOppdatertProsessorJob =
         køOppdatertProsessor(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -169,6 +185,9 @@ fun Application.k9Los() {
         accessTokenClient = accessTokenClientResolver.accessTokenClient(),
         configuration = configuration
     )
+    val statistikkRepository = StatistikkRepository(dataSource)
+
+    val nokkeltallTjeneste = NokkeltallTjeneste(oppgaveRepository, statistikkRepository)
 
     val pepClient = PepClient(azureGraphService = azureGraphService, auditlogger = auditlogger, config = configuration)
 
@@ -188,7 +207,8 @@ fun Application.k9Los() {
         oppgaveKøRepository = oppgaveKøRepository,
         reservasjonRepository = reservasjonRepository,
         statistikkProducer = statistikkProducer,
-        oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer
+        oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+        statistikkRepository = statistikkRepository
     )
 
     val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
@@ -205,7 +225,8 @@ fun Application.k9Los() {
         pdlService = pdlService,
         configuration = configuration,
         pepClient = pepClient,
-        azureGraphService = azureGraphService
+        azureGraphService = azureGraphService,
+        statistikkRepository = statistikkRepository
     )
 
 
@@ -235,50 +256,8 @@ fun Application.k9Los() {
     }.broadcast()
   
     // Synkroniser oppgaver
-    launch {
-        log.info("Starter oppgavesynkronisering")
-        val measureTimeMillis = measureTimeMillis {
-
-            for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
-                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
-                val oppgave = event.oppgave()
-                if (!oppgave.aktiv) {
-                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
-                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
-                            reservasjon!!.reservertTil = null
-                            reservasjon
-                        }
-                    }
-                }
-                oppgaveRepository.lagre(oppgave.eksternId) {
-                    oppgave
-                }
-            }
-            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
-            for (oppgavekø in oppgaveKøRepository.hent()) {
-                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!.oppgaverOgDatoer.clear()
-                    forrige
-                }
-            }
-            for (oppgavekø in oppgaveKøRepository.hent()) {
-                for (oppgave in oppgaver) {
-                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
-                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                            forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                            forrige!!
-                        }
-                    }
-                }
-                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!
-                }
-            }
-        }
-        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
-
-    }
-
+    // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
+    
     val requestContextService = RequestContextService()
     install(CallIdRequired)
 
@@ -325,7 +304,8 @@ fun Application.k9Los() {
                     oppgaveRepository = oppgaveRepository,
                     reservasjonRepository = reservasjonRepository,
                     eventRepository = behandlingProsessEventRepository,
-                    sseChannel = sseChannel
+                    sseChannel = sseChannel,
+                    nokkeltallTjeneste = nokkeltallTjeneste
                 )
             }
         } else {
@@ -349,7 +329,8 @@ fun Application.k9Los() {
                 oppgaveRepository = oppgaveRepository,
                 reservasjonRepository = reservasjonRepository,
                 eventRepository = behandlingProsessEventRepository,
-                sseChannel = sseChannel
+                sseChannel = sseChannel,
+                nokkeltallTjeneste = nokkeltallTjeneste
             )
         }
         static("static") {
@@ -369,8 +350,53 @@ fun Application.k9Los() {
     install(CallId) {
         generated()
     }
-   
-   
+}
+
+private fun Application.regenererOppgaver(
+    oppgaveRepository: OppgaveRepository,
+    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    reservasjonRepository: ReservasjonRepository,
+    oppgaveKøRepository: OppgaveKøRepository,
+    saksbehhandlerRepository: SaksbehandlerRepository
+) {
+    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+        log.info("Starter oppgavesynkronisering")
+        val measureTimeMillis = measureTimeMillis {
+
+            for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
+                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
+                val oppgave = event.oppgave()
+                if (!oppgave.aktiv) {
+                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
+                            reservasjon!!.reservertTil = null
+                            saksbehhandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
+                            reservasjon
+                        }
+                    }
+                }
+                oppgaveRepository.lagre(oppgave.eksternId) {
+                    oppgave
+                }
+            }
+            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
+            for (oppgavekø in oppgaveKøRepository.hent()) {
+                for (oppgave in oppgaver) {
+                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
+                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                            forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                            forrige!!
+                        }
+                    }
+                }
+                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                    forrige!!
+                }
+            }
+        }
+        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
+
+    }
 }
 
 @ExperimentalCoroutinesApi
@@ -391,7 +417,8 @@ private fun Route.api(
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
     reservasjonRepository: ReservasjonRepository,
-    sseChannel: BroadcastChannel<SseEvent>
+    sseChannel: BroadcastChannel<SseEvent>,
+    nokkeltallTjeneste: NokkeltallTjeneste
 ) {
 
     route("api") {
@@ -408,7 +435,6 @@ private fun Route.api(
                 configuration = configuration
             )
         }
-        NøkkeltallApis()
         route("saksbehandler") {
             route("oppgaver") {
                 OppgaveApis(
@@ -437,6 +463,9 @@ private fun Route.api(
                 AvdelingslederOppgavekøApis(
                     avdelingslederTjeneste
                 )
+            }
+            route("nokkeltall") {
+                NokkeltallApis(nokkeltallTjeneste = nokkeltallTjeneste)
             }
         }
 

@@ -15,6 +15,9 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.slf4j.LoggerFactory
 
 val log = LoggerFactory.getLogger("Route.Sse")
@@ -78,18 +81,28 @@ internal fun Route.Sse(
 
 }
 
+@ExperimentalCoroutinesApi
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
     respondTextWriter(contentType = ContentType.Text.EventStream) {
         write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
         write("\n")
         flush()
-        for (event in events) {
+        events.receiveAsFlow().conflate().collect { event ->
             for (dataLine in event.data.lines()) {
                 write("data: $dataLine\n")
             }
             write("\n")
             flush()
         }
+//        for (event in events) {
+//            while (events.poll() != null) {
+//            }
+//            for (dataLine in event.data.lines()) {
+//                write("data: $dataLine\n")
+//            }
+//            write("\n")
+//            flush()
+//        }
     }
 }

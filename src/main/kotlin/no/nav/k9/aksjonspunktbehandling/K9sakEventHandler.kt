@@ -2,14 +2,11 @@ package no.nav.k9.aksjonspunktbehandling
 
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.channels.sendBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -25,7 +22,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     val oppgaveKøRepository: OppgaveKøRepository,
     val reservasjonRepository: ReservasjonRepository,
     val statistikkProducer: StatistikkProducer,
-    val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
+    val oppgaverSomSkalInnPåKøer: Channel<Oppgave>,
+    val statistikkRepository: StatistikkRepository
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
@@ -34,10 +32,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         event: BehandlingProsessEventDto
     ) {
         val modell = behandlingProsessEventRepository.lagre(event)
-        // log.info(objectMapper().writeValueAsString(event))
         val oppgave = modell.oppgave()
 
-        // fjernReservasjon(oppgave)
         if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
         }
@@ -49,6 +45,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)
+                if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                    statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
+                }
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
@@ -57,15 +56,14 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             oppgave
         }
         modell.reportMetrics(reservasjonRepository)
-        runBlocking {
-            oppgaverSomSkalInnPåKøer.send(oppgave)
-        }
+        oppgaverSomSkalInnPåKøer.sendBlocking(oppgave)
     }
 
     private fun fjernReservasjon(oppgave: Oppgave) {
         if (reservasjonRepository.finnes(oppgave.eksternId)) {
             reservasjonRepository.lagre(oppgave.eksternId) {
                 it!!.reservertTil = null
+                
                 it
             }
         }

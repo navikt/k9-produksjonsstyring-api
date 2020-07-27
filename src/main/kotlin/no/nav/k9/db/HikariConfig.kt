@@ -10,10 +10,10 @@ import no.nav.k9.Configuration
 fun createHikariConfig(jdbcUrl: String, username: String? = null, password: String? = null) =
     HikariConfig().apply {
         this.jdbcUrl = jdbcUrl
-        maximumPoolSize = 4
+        maximumPoolSize = 8
         minimumIdle = 1
         idleTimeout = 10001
-        connectionTimeout = 1000
+        connectionTimeout = 10000
         maxLifetime = 30001
         driverClassName = "org.postgresql.Driver"
         username?.let { this.username = it }
