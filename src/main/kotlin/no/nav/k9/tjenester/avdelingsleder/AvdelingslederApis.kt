@@ -11,6 +11,7 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveId
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import no.nav.k9.tjenester.saksbehandler.oppgave.OpphevReservasjonId
 import java.util.*
 
 @KtorExperimentalAPI
@@ -69,7 +70,7 @@ internal fun Route.AvdelingslederApis(
     class opphevReservasjon
 
     post { _: opphevReservasjon ->
-        val oppgaveId = call.receive<OppgaveId>()
-        call.respond(avdelingslederTjeneste.opphevReservasjon(UUID.fromString(oppgaveId.oppgaveId)))
+        val params = call.receive<OpphevReservasjonId>()
+        call.respond(avdelingslederTjeneste.opphevReservasjon(UUID.fromString(params.oppgaveId), params.begrunnelse))
     }
 }
