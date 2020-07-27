@@ -9,6 +9,7 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveId
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import java.util.*
 
@@ -62,5 +63,13 @@ internal fun Route.AvdelingslederApis(
 
     get { _: hentReservasjoner ->
         call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
+    }
+
+    @Location("/reservasjoner/opphev")
+    class opphevReservasjon
+
+    post { _: opphevReservasjon ->
+        val oppgaveId = call.receive<OppgaveId>()
+        call.respond(avdelingslederTjeneste.opphevReservasjon(UUID.fromString(oppgaveId.oppgaveId)))
     }
 }
