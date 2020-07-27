@@ -177,6 +177,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return emptyList()
     }
 
+    @KtorExperimentalAPI
     suspend fun reservertAvMeg(ident: String?): Boolean {
         return azureGraphService.hentIdentTilInnloggetBruker() == ident
     }
@@ -188,9 +189,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             if (reservasjon != null && (!reservasjon.erAktiv())) OppgaveStatusDto(false, null, false, null, null)
             else OppgaveStatusDto(
                 true,
-                reservasjon.reservertTil,
-                reservertAvMeg(reservasjon.reservertAv),
-                reservasjon.reservertAv,
+                reservasjon?.reservertTil,
+                reservertAvMeg(reservasjon?.reservertAv),
+                reservasjon?.reservertAv,
                 null
             )
         val person = pdlService.person(oppgave.aktorId)!!
