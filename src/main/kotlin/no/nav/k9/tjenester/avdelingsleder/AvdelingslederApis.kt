@@ -32,7 +32,7 @@ internal fun Route.AvdelingslederApis(
 
     get { _: hentAntallOppgaver ->
         val uuid = call.parameters["id"]
-        call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid)))
+        call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid),true))
     }
 
     @Location("/saksbehandlere")
