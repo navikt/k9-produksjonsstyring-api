@@ -3,6 +3,7 @@ package no.nav.k9.aksjonspunktbehandling
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
@@ -41,6 +42,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
+                leggTilNyIkøForStatistikk(oppgave, true)
             }
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
@@ -48,6 +50,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 if (reservasjonRepository.finnes(oppgave.eksternId)) {
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                 }
+                leggTilNyIkøForStatistikk(oppgave, false)
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
@@ -59,11 +62,29 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         oppgaverSomSkalInnPåKøer.sendBlocking(oppgave)
     }
 
+    private fun leggTilNyIkøForStatistikk(oppgave: Oppgave, ny:Boolean) {
+        for (oppgaveKø in oppgaveKøRepository.hent()) {
+            if (oppgaveKø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
+                runBlocking {
+                    oppgaveKøRepository.lagre(oppgaveKø.id) {
+                        if (ny) {
+                            it!!.nyeOgFerdigstilteOppgaverDto(oppgave).leggTilNy(oppgave.eksternId.toString())
+                            it
+                        } else {
+                            it!!.nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
+                            it
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun fjernReservasjon(oppgave: Oppgave) {
         if (reservasjonRepository.finnes(oppgave.eksternId)) {
             reservasjonRepository.lagre(oppgave.eksternId) {
                 it!!.reservertTil = null
-                
+
                 it
             }
         }
