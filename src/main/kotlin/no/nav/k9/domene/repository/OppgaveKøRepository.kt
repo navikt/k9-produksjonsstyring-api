@@ -1,7 +1,7 @@
 package no.nav.k9.domene.repository
 
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.channels.sendBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -48,7 +48,6 @@ class OppgaveKøRepository(
             )
         }
         return objectMapper().readValue(json!!, OppgaveKø::class.java)
-
     }
 
     suspend fun lagre(
@@ -122,9 +121,7 @@ class OppgaveKøRepository(
     }
 
     fun oppdaterKøMedOppgaver(uuid: UUID) {
-        runBlocking {
-            oppgaveKøOppdatert.send(uuid)
-        }
+        oppgaveKøOppdatert.sendBlocking(uuid)
     }
 
 }

@@ -36,6 +36,8 @@ data class BehandlingProsessEventDto(
     val behandlinStatus: String?,
     val behandlingSteg: String?,
     val behandlendeEnhet: String? = null,
+    val resultatType :String? = null,
+    
     /**
      * Ytelsestype i kodeform. Eksempel: FP
      */

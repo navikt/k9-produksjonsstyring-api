@@ -10,6 +10,8 @@ import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverPerDato
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
+import no.nav.k9.utils.Cache
+import no.nav.k9.utils.CacheObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -92,36 +94,6 @@ class OppgaveRepository(
 
     }
 
-    fun hentOppgaverSortertPåOpprettetDato(oppgaveider: Collection<UUID>): List<String> {
-        val oppgaveiderList = oppgaveider.toList()
-        if (oppgaveider.isEmpty()) {
-            return emptyList()
-        }
-        var spørring = System.currentTimeMillis()
-
-        val session = sessionOf(dataSource)
-        val json: List<String> = using(session) {
-            //language=PostgreSQL
-            it.run(
-                queryOf(
-                    "select id as data from oppgave " +
-                            "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
-                                0,
-                                oppgaveiderList.size - 1
-                            ).map { t -> ":p$t" }.joinToString()}) " +
-                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingOpprettet')",
-                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
-                )
-                    .map { row ->
-                        row.string("data")
-                    }.asList
-            )
-        }
-        spørring = System.currentTimeMillis() - spørring
-
-        log.info("Henter oppgaver basert på opprettetDato: " + json.size + " oppgaver" + " spørring: " + spørring)
-        return json
-    }
     fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
@@ -207,36 +179,6 @@ class OppgaveRepository(
         return json
     }
 
-    fun hentOppgaverSortertPåFørsteStønadsdag(oppgaveider: Collection<UUID>): List<String> {
-        val oppgaveiderList = oppgaveider.toList()
-        if (oppgaveider.isEmpty()) {
-            return emptyList()
-        }
-        var spørring = System.currentTimeMillis()
-        val session = sessionOf(dataSource)
-        val json: List<String> = using(session) {
-            //language=PostgreSQL
-            it.run(
-                queryOf(
-                    "select id as data from oppgave " +
-                            "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
-                                0,
-                                oppgaveiderList.size - 1
-                            ).map { t -> ":p$t" }.joinToString()}) " +
-                            "order by (data ::jsonb -> 'oppgaver' -> -1 -> 'forsteStonadsdag')",
-                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
-                )
-                    .map { row ->
-                        row.string("data")
-                    }.asList
-            )
-        }
-        spørring = System.currentTimeMillis() - spørring
-
-        log.info("Henter oppgaver basert på forsteStonadsdag: " + json.size + " oppgaver" +" spørring: " + spørring)
-        return json
-    }
-
     fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
@@ -270,8 +212,12 @@ class OppgaveRepository(
         return objectMapper().readValue(json, Oppgave::class.java)
     }
 
-
+    private val hentAktiveOppgaverTotaltCache = Cache<Int>()
     internal fun hentAktiveOppgaverTotalt(): Int {
+        val cacheObject = hentAktiveOppgaverTotaltCache.get("default")
+        if (cacheObject != null) {
+            return cacheObject.value
+        }
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(
@@ -286,6 +232,7 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         log.info("Teller aktive oppgaver: $spørring ms")
+        hentAktiveOppgaverTotaltCache.set("default", CacheObject(count!!))
         return count!!
     }
 
@@ -348,8 +295,13 @@ class OppgaveRepository(
         log.info("Teller autmatiske oppgaver: $spørring ms")
         return count!!
     }
-
+    private val aktiveOppgaverCache = Cache<List<Oppgave>>()
     internal fun hentAktiveOppgaver(): List<Oppgave> {
+        val cacheObject = aktiveOppgaverCache.get("default")
+        if (cacheObject != null) {
+            return cacheObject.value
+        }
+        
         var spørring = System.currentTimeMillis()
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
@@ -365,8 +317,9 @@ class OppgaveRepository(
         spørring = System.currentTimeMillis() - spørring
         val serialisering = System.currentTimeMillis()
         val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
-
+        
         log.info("Henter aktive oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
+        aktiveOppgaverCache.set("default", CacheObject(list))
         return list
     }
 }

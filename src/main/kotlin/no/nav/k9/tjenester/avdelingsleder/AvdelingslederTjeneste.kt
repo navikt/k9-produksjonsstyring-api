@@ -41,7 +41,7 @@ class AvdelingslederTjeneste(
                 andreKriterier = it.filtreringAndreKriterierType,
                 sistEndret = it.sistEndret,
                 skjermet = it.skjermet,
-                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id, true),
+                antallBehandlinger = 0,//oppgaveTjeneste.hentAntallOppgaver(it.id, true),
                 saksbehandlere = it.saksbehandlere
             )
         }
@@ -76,7 +76,7 @@ class AvdelingslederTjeneste(
         var saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedEpost(epostDto.epost)
         if (saksbehandler == null) {
             saksbehandler = Saksbehandler(
-                null, null, epostDto.epost
+                null, null, epostDto.epost, mutableSetOf(), null
             )
             saksbehandlerRepository.addSaksbehandler(saksbehandler)
         }
@@ -99,15 +99,19 @@ class AvdelingslederTjeneste(
         return saksbehandlerRepository.hentAlleSaksbehandlere()
     }
 
-    suspend  fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
-        oppgaveKøRepository.lagre(UUID.fromString(behandling.id)) { oppgaveKø ->
-            if (behandling.checked) oppgaveKø!!.filtreringBehandlingTyper.add(behandling.behandlingType)
-            else oppgaveKø!!.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
-                it != behandling.behandlingType
-            }.toMutableList()
-            oppgaveKø
-        }
-        oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
+    suspend fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
+            oppgaveKøRepository.lagre(UUID.fromString(behandling.id)) { oppgaveKø ->
+                if (behandling.checked) {
+                    oppgaveKø!!.filtreringBehandlingTyper.add(behandling.behandlingType)
+                } else {
+                    oppgaveKø!!.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
+                        it != behandling.behandlingType
+                    }.toMutableList()
+                }
+                oppgaveKø
+            }
+            oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
+      
     }
 
     suspend fun endreSkjerming(skjermet: SkjermetDto) {
@@ -118,7 +122,7 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(skjermet.id))
     }
 
-    suspend  fun endreYtelsesType(ytelse: YtelsesTypeDto) {
+    suspend fun endreYtelsesType(ytelse: YtelsesTypeDto) {
         oppgaveKøRepository.lagre(UUID.fromString(ytelse.id))
         { oppgaveKø ->
             oppgaveKø!!.filtreringYtelseTyper = mutableListOf()
@@ -131,7 +135,7 @@ class AvdelingslederTjeneste(
 
     }
 
-    suspend  fun endreKriterium(kriteriumDto: AndreKriterierDto) {
+    suspend fun endreKriterium(kriteriumDto: AndreKriterierDto) {
         oppgaveKøRepository.lagre(UUID.fromString(kriteriumDto.id))
         { oppgaveKø ->
             if (kriteriumDto.checked) {
@@ -147,7 +151,7 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(kriteriumDto.id))
     }
 
-    suspend  fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
+    suspend fun endreOppgavekøNavn(køNavn: OppgavekøNavnDto) {
         oppgaveKøRepository.lagre(UUID.fromString(køNavn.id)) { oppgaveKø ->
             oppgaveKø!!.navn = køNavn.navn
             oppgaveKø
@@ -163,7 +167,7 @@ class AvdelingslederTjeneste(
 
     }
 
-    suspend  fun endreKøSorteringDato(datoSortering: SorteringDatoDto) {
+    suspend fun endreKøSorteringDato(datoSortering: SorteringDatoDto) {
         oppgaveKøRepository.lagre(UUID.fromString(datoSortering.id)) { oppgaveKø ->
             oppgaveKø!!.fomDato = datoSortering.fomDato
             oppgaveKø.tomDato = datoSortering.tomDato

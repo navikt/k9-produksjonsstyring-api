@@ -58,7 +58,9 @@ internal fun Route.NavAnsattApis(
                         Saksbehandler(
                             brukerIdent = azureGraphService.hentIdentTilInnloggetBruker(),
                             navn = token.getName(),
-                            epost = token.getUsername()
+                            epost = token.getUsername(),
+                            reservasjoner = mutableSetOf(),
+                            enhet = azureGraphService.hentEnhetForInnloggetBruker()
                         )
                     )
                 }

@@ -18,7 +18,6 @@ import no.nav.k9.tjenester.saksbehandler.idToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import kotlin.system.measureTimeMillis
 
 private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
@@ -87,9 +86,7 @@ internal fun Route.OppgaveApis(
                     idToken = idToken
                 )
             ) {
-                val measureTimeMillis = measureTimeMillis {
-                    call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
-                }
+                call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver(idToken.getUsername()))
             }
         } else {
             call.respond(oppgaveTjeneste.hentSisteReserverteOppgaver("saksbehandler@nav.no"))
@@ -178,13 +175,30 @@ internal fun Route.OppgaveApis(
 
     post { _: flyttReservasjon ->
         val params = call.receive<FlyttReservasjonId>()
-        call.respond(
-            oppgaveTjeneste.flyttReservasjon(
-                UUID.fromString(params.oppgaveId),
-                params.brukerIdent,
-                params.begrunnelse
+        if (configuration.erIkkeLokalt) {
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    idToken = call.idToken()
+                )
+            ) {
+                call.respond(
+                    oppgaveTjeneste.flyttReservasjon(
+                        UUID.fromString(params.oppgaveId),
+                        params.brukerIdent,
+                        params.begrunnelse
+                    )
+                )
+            }
+        }else{
+            call.respond(
+                oppgaveTjeneste.flyttReservasjon(
+                    UUID.fromString(params.oppgaveId),
+                    params.brukerIdent,
+                    params.begrunnelse
+                )
             )
-        )
+        }
     }
 
     @Location("/reservasjon/endre")
@@ -207,12 +221,28 @@ internal fun Route.OppgaveApis(
         )
     }
 
+    @Location("/hent-historiske-reservasjoner-på-oppgave")
+    class hentHistoriskeReservasjonerPåOppgave
+
+    post { _: flyttReservasjonTilForrigeSaksbehandler ->
+        val params = call.receive<OppgaveId>()
+        call.respond(
+            oppgaveTjeneste.hentReservasjonsHistorikk(UUID.fromString(params.oppgaveId))
+        )
+    }
+    
     @Location("/flytt/sok")
     class søkSaksbehandler
 
     post { _: søkSaksbehandler ->
         val params = call.receive<BrukerIdentDto>()
-        call.respond(oppgaveTjeneste.sokSaksbehandlerMedIdent(params)!!)
+
+        val sokSaksbehandlerMedIdent = oppgaveTjeneste.sokSaksbehandlerMedIdent(params)
+        if (sokSaksbehandlerMedIdent == null) {
+            call.respond("")
+        } else {
+            call.respond(sokSaksbehandlerMedIdent)
+        }
     }
 
     @Location("/oppgaver-for-fagsaker")

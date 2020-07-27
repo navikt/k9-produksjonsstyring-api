@@ -22,6 +22,7 @@ import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
@@ -74,6 +75,7 @@ import no.nav.k9.tjenester.sse.Sse
 import no.nav.k9.tjenester.sse.SseEvent
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -101,6 +103,7 @@ fun Application.k9Los() {
         }
     }
     val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
+
 //    install(CallLogging) {
 //        correlationIdAndRequestIdInMdc()
 //        logRequests()
@@ -129,8 +132,8 @@ fun Application.k9Los() {
         configuration = configuration
     )
     val auditlogger = Auditlogger(configuration)
-    val oppgaveKøOppdatert = Channel<UUID>(10000)
-    val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(10000)
+    val oppgaveKøOppdatert = Channel<UUID>(Channel.UNLIMITED)
+    val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(Channel.UNLIMITED)
     val refreshKlienter = Channel<SseEvent>()
 
     val dataSource = hikariConfig(configuration)
@@ -142,13 +145,14 @@ fun Application.k9Los() {
         refreshKlienter = refreshKlienter
     )
 
+    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val reservasjonRepository = ReservasjonRepository(
         oppgaveRepository = oppgaveRepository,
         oppgaveKøRepository = oppgaveKøRepository,
         dataSource = dataSource,
-        refreshKlienter = refreshKlienter
+        refreshKlienter = refreshKlienter,
+        saksbehandlerRepository = saksbehandlerRepository
     )
-    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
     val køOppdatertProsessorJob =
         køOppdatertProsessor(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -245,44 +249,8 @@ fun Application.k9Los() {
     }.broadcast()
 
     // Synkroniser oppgaver
-    launch {
-        log.info("Starter oppgavesynkronisering")
-        val measureTimeMillis = measureTimeMillis {
-
-            for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
-                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
-                val oppgave = event.oppgave()
-                if (!oppgave.aktiv) {
-                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
-                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
-                            reservasjon!!.reservertTil = null
-                            reservasjon
-                        }
-                    }
-                }
-                oppgaveRepository.lagre(oppgave.eksternId) {
-                    oppgave
-                }
-            }
-            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
-            for (oppgavekø in oppgaveKøRepository.hent()) {
-                for (oppgave in oppgaver) {
-                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
-                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                            forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                            forrige!!
-                        }
-                    }
-                }
-                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!
-                }
-            }
-        }
-        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
-
-    }
-
+    // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
+    
     val requestContextService = RequestContextService()
     install(CallIdRequired)
 
@@ -374,6 +342,53 @@ fun Application.k9Los() {
 
     install(CallId) {
         generated()
+    }
+}
+
+private fun Application.regenererOppgaver(
+    oppgaveRepository: OppgaveRepository,
+    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    reservasjonRepository: ReservasjonRepository,
+    oppgaveKøRepository: OppgaveKøRepository,
+    saksbehhandlerRepository: SaksbehandlerRepository
+) {
+    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+        log.info("Starter oppgavesynkronisering")
+        val measureTimeMillis = measureTimeMillis {
+
+            for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
+                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
+                val oppgave = event.oppgave()
+                if (!oppgave.aktiv) {
+                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
+                            reservasjon!!.reservertTil = null
+                            saksbehhandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
+                            reservasjon
+                        }
+                    }
+                }
+                oppgaveRepository.lagre(oppgave.eksternId) {
+                    oppgave
+                }
+            }
+            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
+            for (oppgavekø in oppgaveKøRepository.hent()) {
+                for (oppgave in oppgaver) {
+                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
+                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                            forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                            forrige!!
+                        }
+                    }
+                }
+                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                    forrige!!
+                }
+            }
+        }
+        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
+
     }
 }
 

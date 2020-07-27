@@ -1,5 +1,6 @@
 package no.nav.k9.domene.repository
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
@@ -17,6 +18,7 @@ import javax.sql.DataSource
 class ReservasjonRepository(
     private val oppgaveKøRepository: OppgaveKøRepository,
     private val oppgaveRepository: OppgaveRepository,
+    private val saksbehandlerRepository: SaksbehandlerRepository,
     private val dataSource: DataSource,
     private val refreshKlienter: Channel<SseEvent>
 ) {
@@ -43,14 +45,15 @@ class ReservasjonRepository(
     }
 
     suspend fun hent(saksbehandlersIdent: String): List<Reservasjon> {
+        val saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedIdent(ident = saksbehandlersIdent)!!
+        if (saksbehandler.reservasjoner.isEmpty()) {
+            return emptyList()
+        }
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon \n" +
-                            "where (not (data ::jsonb -> 'reservasjoner' -> -1 ?? 'aktiv')::BOOLEAN\n" +
-                            "or (data ::jsonb -> 'reservasjoner' -> -1 -> 'aktiv')::BOOLEAN) " +
-                            "and (data ::jsonb -> 'reservasjoner' -> -1 ->> 'reservertAv') = :saksbehandlersIdent",
-                    mapOf("saksbehandlersIdent" to saksbehandlersIdent)
+                            "where id in "+ saksbehandler.reservasjoner.joinToString(separator = "\', \'", prefix = "(\'", postfix = "\')")
                 )
                     .map { row ->
                         row.string("data")
@@ -60,7 +63,7 @@ class ReservasjonRepository(
         val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
         return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
     }
-
+    
     private suspend fun fjernReservasjonerSomIkkeLengerErAktive(
         reservasjoner: List<Reservasjon>,
         oppgaveKøRepository: OppgaveKøRepository,
@@ -70,6 +73,7 @@ class ReservasjonRepository(
             if (!reservasjon.erAktiv()) {
                 lagre(reservasjon.oppgave) {
                     it!!.reservertTil = null
+                    saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                     it
                 }
                 oppgaveKøRepository.hent().forEach { oppgaveKø ->
@@ -104,17 +108,17 @@ class ReservasjonRepository(
     }
 
     fun hentMedHistorikk(id: UUID): List<Reservasjon> {
-        val json: List<String> = using(sessionOf(dataSource)) {
+        val json: String? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select (data ::jsonb -> 'reservasjoner') as data from reservasjon where id = :id",
                     mapOf("id" to id.toString())
                 ).map { row ->
                     row.string("data")
-                }.asList
+                }.asSingle
             )
         }
-        return json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
+        return objectMapper().readValue(json!!)
     }
 
     fun finnes(id: UUID): Boolean {

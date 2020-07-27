@@ -30,6 +30,7 @@ data class OppgaveKø(
 
     var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaver>> = mutableMapOf()
 ) {
+
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository
@@ -60,7 +61,7 @@ data class OppgaveKø(
         return false
     }
 
-    private fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaver {
+    fun nyeOgFerdigstilteOppgaverDto(oppgave: Oppgave): NyeOgFerdigstilteOppgaver {
         return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
             mutableMapOf()
         }.getOrPut(oppgave.behandlingType.kode) {
@@ -221,7 +222,9 @@ data class OppgaveKø(
 class Saksbehandler(
     var brukerIdent: String?,
     var navn: String?,
-    var epost: String
+    var epost: String,
+    var reservasjoner : MutableSet<UUID> = mutableSetOf(),
+    var enhet : String?
 )
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)

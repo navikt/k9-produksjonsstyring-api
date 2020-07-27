@@ -37,12 +37,18 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert, refreshKlienter = refreshKlienter)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(
+            dataSource = dataSource,
+            oppgaveKøOppdatert = oppgaveKøOppdatert,
+            refreshKlienter = refreshKlienter
+        )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -53,7 +59,7 @@ class K9sakEventHandlerTest {
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
         val config = mockk<Configuration>()
-        every{config.erLokalt()} returns true
+        every { config.erLokalt() } returns true
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
@@ -113,14 +119,18 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-             refreshKlienter = refreshKlienter)
+        val oppgaveKøRepository = OppgaveKøRepository(
+            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
+            refreshKlienter = refreshKlienter
+        )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -131,7 +141,7 @@ class K9sakEventHandlerTest {
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
         val config = mockk<Configuration>()
-        every{config.erLokalt()} returns true
+        every { config.erLokalt() } returns true
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource),
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -187,13 +197,17 @@ class K9sakEventHandlerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-             refreshKlienter = refreshKlienter)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(
+            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
+            refreshKlienter = refreshKlienter
+        )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -204,7 +218,7 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
-        every{config.erLokalt()} returns true
+        every { config.erLokalt() } returns true
 
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
@@ -264,13 +278,17 @@ class K9sakEventHandlerTest {
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-             refreshKlienter = refreshKlienter)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(
+            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
+            refreshKlienter = refreshKlienter
+        )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -281,7 +299,7 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
-        every{config.erLokalt()} returns true
+        every { config.erLokalt() } returns true
 
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,

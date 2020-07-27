@@ -45,7 +45,6 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
         behandlingOpprettet: BehandlingOpprettet
     ) {
         if (config.erLokalt()) {
-            log.info("Lokal kjøring, sender ikke melding til sak og behandling")
             return
         }
         val melding = objectMapper().writeValueAsString(behandlingOpprettet)

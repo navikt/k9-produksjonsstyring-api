@@ -41,6 +41,7 @@ class RutinerTest {
         val refreshKlienter = Channel<SseEvent>(100)
         val statistikkProducer = mockk<StatistikkProducer>()
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -51,7 +52,8 @@ class RutinerTest {
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
             dataSource = dataSource,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
         )
         every { statistikkProducer.send(any()) } just runs
         val uuid = UUID.randomUUID()
