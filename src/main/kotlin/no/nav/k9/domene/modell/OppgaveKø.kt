@@ -47,14 +47,12 @@ data class OppgaveKø(
                         }
                     )
                 )
-                nyeOgFerdigstilteOppgaverDto(oppgave).leggTilNy(oppgave.eksternId.toString())
                 return true
             }
 
         } else {
             if (this.oppgaverOgDatoer.any { it.id == oppgave.eksternId }) {
                 this.oppgaverOgDatoer.remove(this.oppgaverOgDatoer.first { it.id == oppgave.eksternId })
-                nyeOgFerdigstilteOppgaverDto(oppgave).leggTilFerdigstilt(oppgave.eksternId.toString())
                 return true
             }
         }
