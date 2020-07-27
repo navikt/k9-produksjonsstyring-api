@@ -111,7 +111,7 @@ class AvdelingslederTjeneste(
                 oppgaveKø
             }
             oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
-      
+
     }
 
     suspend fun endreSkjerming(skjermet: SkjermetDto) {
@@ -194,7 +194,7 @@ class AvdelingslederTjeneste(
     }
 
     suspend fun hentAlleReservasjoner(): List<ReservasjonDto> {
-        return reservasjonRepository.hent(oppgaveKøRepository,  oppgaveRepository).map {
+        return reservasjonRepository.hent(oppgaveKøRepository, oppgaveRepository).map {
             val oppgave = oppgaveRepository.hent(it.oppgave)
             val saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedIdent(it.reservertAv)
             ReservasjonDto(
