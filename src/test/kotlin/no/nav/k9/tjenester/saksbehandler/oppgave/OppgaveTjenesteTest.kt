@@ -395,8 +395,8 @@ class OppgaveTjenesteTest {
         assert(oppgaver.size == 1)
         val oppgave = oppgaver.get(0)
         
-        saksbehandlerRepository.addSaksbehandler(Saksbehandler("123", null, "test@test.no"))
-        saksbehandlerRepository.addSaksbehandler(Saksbehandler("ny", null, "test2@test.no"))
+        saksbehandlerRepository.addSaksbehandler(Saksbehandler(brukerIdent = "123", navn= null, epost = "test@test.no", enhet = null))
+        saksbehandlerRepository.addSaksbehandler(Saksbehandler(brukerIdent="ny", navn=null,epost =  "test2@test.no",enhet = null))
         
         oppgaveTjeneste.reserverOppgave("123", oppgave.eksternId)
         oppgaveTjeneste.flyttReservasjon(oppgave.eksternId, "ny", "Ville ikke ha oppgaven")
