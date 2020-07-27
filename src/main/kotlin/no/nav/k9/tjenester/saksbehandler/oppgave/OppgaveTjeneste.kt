@@ -336,9 +336,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         var reserverteOppgaverSomHørerTilKø = 0
         if (taMedReserverte) {
             val reservasjoner = reservasjonRepository.hent(
-                oppgaveKøRepository = oppgaveKøRepository,
-                oppgaveRepository = oppgaveRepository
+                saksbehandlerRepository.hentAlleSaksbehandlere()
+                    .flatMap { saksbehandler -> saksbehandler.reservasjoner }.toSet()
             )
+
             for (oppgave in oppgaveRepository.hentOppgaver(reservasjoner.map { it.oppgave })) {
                 if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
                     reserverteOppgaverSomHørerTilKø++

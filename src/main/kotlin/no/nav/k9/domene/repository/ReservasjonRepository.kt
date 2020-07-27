@@ -49,11 +49,27 @@ class ReservasjonRepository(
         if (saksbehandler.reservasjoner.isEmpty()) {
             return emptyList()
         }
+        return hent(saksbehandler.reservasjoner)
+    }
+
+    suspend fun hent(reservasjoner: Set<UUID>): List<Reservasjon> {
+        return fjernReservasjonerSomIkkeLengerErAktive(
+            hentReservasjoner(reservasjoner),
+            oppgaveKøRepository,
+            oppgaveRepository
+        )
+    }
+
+    private fun hentReservasjoner(set: Set<UUID>): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon \n" +
-                            "where id in "+ saksbehandler.reservasjoner.joinToString(separator = "\', \'", prefix = "(\'", postfix = "\')")
+                            "where id in " + set.joinToString(
+                        separator = "\', \'",
+                        prefix = "(\'",
+                        postfix = "\')"
+                    )
                 )
                     .map { row ->
                         row.string("data")
@@ -61,9 +77,9 @@ class ReservasjonRepository(
             )
         }
         val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
-        return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
+        return reservasjoner
     }
-    
+
     private suspend fun fjernReservasjonerSomIkkeLengerErAktive(
         reservasjoner: List<Reservasjon>,
         oppgaveKøRepository: OppgaveKøRepository,
