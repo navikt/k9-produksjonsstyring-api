@@ -55,7 +55,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             reservertTil = LocalDateTime.now().plusHours(24).forskyvReservasjonsDato(),
             reservertAv = ident, flyttetAv = null, flyttetTidspunkt = null, begrunnelse = null, oppgave = uuid
         )
-        log.info("reserverer oppgave med $ident $uuid")
 
         try {
             reservasjonRepository.lagre(uuid, true) {

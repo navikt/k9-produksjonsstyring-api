@@ -43,10 +43,13 @@ fun Route.InnsiktGrensesnitt(
                     val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
                     val aksjonspunkter =  Aksjonspunkter().aksjonspunkter()
                     val delvisAutomatiske = inaktiveOppgaverTotalt- (automatiskProsesserteTotalt + beslutterOppgaver)
+                    val eldsteOppgave = oppgaveRepository.hentEldsteOppgave()
                     p {
                         +"Det er nå ${aktiveOppgaver.size} åpne oppgaver og $inaktiveOppgaverTotalt inaktive oppgaver, $automatiskProsesserteTotalt er prosessert automatisk, hvorav $beslutterOppgaver beslutter oppgaver og $delvisAutomatiske delvis automatiske (innom saksbehandler men ikke beslutter)"
                     }
-
+                    p {
+                        +"Eldste oppgave kom ${eldsteOppgave.eventTid}" 
+                    }
                     val ukjenteAksjonspunkter =
                         aktiveOppgaver.stream().flatMap { t -> t.aksjonspunkter.liste.keys.stream() }
                             .filter { t -> !aksjonspunkter.map { a -> a.kode }.contains(t) }.toList()
