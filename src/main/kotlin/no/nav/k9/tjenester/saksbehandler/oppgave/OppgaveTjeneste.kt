@@ -483,7 +483,16 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     reservasjon.reservertTil,
                     true,
                     reservasjon.reservertAv,
-                    null
+                    flyttetReservasjon = if (reservasjon.flyttetAv.isNullOrEmpty()) {
+                        null
+                    } else {
+                        FlyttetReservasjonDto(
+                                reservasjon.flyttetTidspunkt!!,
+                                reservasjon.flyttetAv!!,
+                                saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjon.flyttetAv!!)?.navn!!,
+                                reservasjon.begrunnelse!!
+                        )
+                    }
                 )
             var personNavn: String
             var personFnummer: String
