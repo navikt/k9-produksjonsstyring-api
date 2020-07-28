@@ -208,9 +208,9 @@ class AvdelingslederTjeneste(
         }
     }
 
-    suspend fun opphevReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
+    suspend fun opphevReservasjon(uuid: UUID): Reservasjon {
         val reservasjon = reservasjonRepository.lagre(uuid, true) {
-            it!!.begrunnelse = "Opphevet av en avdelingsleder: $begrunnelse"
+            it!!.begrunnelse = "Opphevet av en avdelingsleder"
             saksbehandlerRepository.fjernReservasjon(it.reservertAv, it.oppgave)
             it.reservertTil = null
             it

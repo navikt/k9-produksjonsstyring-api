@@ -70,7 +70,7 @@ internal fun Route.AvdelingslederApis(
     class opphevReservasjon
 
     post { _: opphevReservasjon ->
-        val params = call.receive<OpphevReservasjonId>()
-        call.respond(avdelingslederTjeneste.opphevReservasjon(UUID.fromString(params.oppgaveId), params.begrunnelse))
+        val params = call.receive<OppgaveId>()
+        call.respond(avdelingslederTjeneste.opphevReservasjon(UUID.fromString(params.oppgaveId)))
     }
 }
