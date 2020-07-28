@@ -16,7 +16,6 @@ import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.sse.SseEvent
-import org.junit.Ignore
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -25,7 +24,6 @@ import java.util.*
 class OppgaveTjenesteTest {
     @KtorExperimentalAPI
     @Test
-    @Ignore
     fun `Returnerer korrekte tall for nye og ferdistilte oppgaver`() = runBlocking {
         val pg = EmbeddedPostgres.start()
         val dataSource = pg.postgresDatabase
@@ -195,18 +193,17 @@ class OppgaveTjenesteTest {
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository)
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave3, reservasjonRepository)
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository)
+        
         oppgaveKøRepository.lagre(oppgaveko.id) {
-            oppgaveko
+            it!!.nyeOgFerdigstilteOppgaverDto(oppgave1).leggTilNy(oppgave1.eksternId.toString())
+            it.nyeOgFerdigstilteOppgaverDto(oppgave2).leggTilNy(oppgave2.eksternId.toString())
+            it.nyeOgFerdigstilteOppgaverDto(oppgave3).leggTilNy(oppgave3.eksternId.toString())
+            it.nyeOgFerdigstilteOppgaverDto(oppgave4).leggTilNy(oppgave4.eksternId.toString())
+            it
         }
         every { config.erLokalt() } returns true
         val hent = oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(oppgaveko.id.toString())
-        assert(hent.size == 2)
-        assert(hent[0].behandlingType == BehandlingType.FORSTEGANGSSOKNAD)
-        assert(hent[0].antallFerdigstilte == 0)
-        assert(hent[0].antallNye == 2)
-        assert(hent[1].behandlingType == BehandlingType.INNSYN)
-        assert(hent[1].antallFerdigstilte == 0)
-        assert(hent[1].antallNye == 1)
+        assert(hent.size == 3)
     }
     
     @KtorExperimentalAPI

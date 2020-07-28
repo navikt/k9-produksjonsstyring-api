@@ -5,6 +5,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
@@ -68,7 +69,7 @@ suspend fun oppdatereKø(
                 oppgaveKøRepository.lagre(it) { oppgaveKø ->
                     if (oppgaveKø!! == oppgavekøGammel) {
                         oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
-                    }else{
+                    } else {
                         oppgaveKø.oppgaverOgDatoer.clear()
                         for (oppgave in aktiveOppgaver) {
                             oppgaveKø.leggOppgaveTilEllerFjernFraKø(
@@ -122,7 +123,13 @@ suspend fun oppdatereKøerMedOppgave(
                         refresh = refresh
                     ) {
                         for (o in oppgaveListe) {
-                            it?.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
+                            val endring = it!!.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
+                            if (endring && o.behandlingStatus == BehandlingStatus.AVSLUTTET) {
+                                it.nyeOgFerdigstilteOppgaverDto(o).leggTilFerdigstilt(o.eksternId.toString())
+                            }
+                            if (it.tilhørerOppgaveTilKø(o, reservasjonRepository, false)) {
+                                it.nyeOgFerdigstilteOppgaverDto(o).leggTilNy(o.eksternId.toString())
+                            }
                         }
                         it!!
                     }
