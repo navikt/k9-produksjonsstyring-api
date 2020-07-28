@@ -272,7 +272,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 23,
                 59,
                 59
-            )
+            ).forskyvReservasjonsDato()
             it
         }
     }
