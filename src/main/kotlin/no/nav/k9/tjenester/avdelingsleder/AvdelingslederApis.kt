@@ -9,7 +9,9 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveId
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import no.nav.k9.tjenester.saksbehandler.oppgave.OpphevReservasjonId
 import java.util.*
 
 @KtorExperimentalAPI
@@ -56,4 +58,19 @@ internal fun Route.AvdelingslederApis(
     post { _: slettSaksbehandler ->
         val epost = call.receive<EpostDto>()
         call.respond(avdelingslederTjeneste.fjernSaksbehandler(epost.epost)) }
+
+    @Location("/reservasjoner")
+    class hentReservasjoner
+
+    get { _: hentReservasjoner ->
+        call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
+    }
+
+    @Location("/reservasjoner/opphev")
+    class opphevReservasjon
+
+    post { _: opphevReservasjon ->
+        val params = call.receive<OppgaveId>()
+        call.respond(avdelingslederTjeneste.opphevReservasjon(UUID.fromString(params.oppgaveId)))
+    }
 }

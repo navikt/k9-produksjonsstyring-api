@@ -232,8 +232,9 @@ fun Application.k9Los() {
     val avdelingslederTjeneste = AvdelingslederTjeneste(
         oppgaveKøRepository,
         saksbehandlerRepository,
-        azureGraphService,
-        oppgaveTjeneste
+        oppgaveTjeneste,
+        reservasjonRepository,
+        oppgaveRepository
     )
 
 
