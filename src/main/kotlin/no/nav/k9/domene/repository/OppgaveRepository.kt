@@ -43,6 +43,22 @@ class OppgaveRepository(
         return list
     }
 
+    fun hentEldsteOppgave(): Oppgave {
+        var spørring = System.currentTimeMillis()
+        val json: String? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select * from oppgave order by (data ::jsonb -> 'oppgaver' -> -1 -> 'eventTid') limit 1 ",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asSingle
+            )
+        }
+        return objectMapper().readValue(json!!, Oppgave::class.java) 
+    }
+    
     fun hent(uuid: UUID): Oppgave {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
@@ -106,7 +122,7 @@ class OppgaveRepository(
             it.run(
                 queryOf(
                     "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave " +
-                            "where (data ::jsonb -> 'oppgaver' -> -1 ->> 'eksternId') in (${IntRange(
+                            "where id in (${IntRange(
                                 0,
                                 oppgaveiderList.size - 1
                             ).map { t -> ":p$t" }.joinToString()}) ",
