@@ -93,7 +93,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
                     mapOf()
                 )
                     .map { row ->
-                        row.string("eventtid")
+                        row.string("data")
                     }.asSingle
             )
         }
