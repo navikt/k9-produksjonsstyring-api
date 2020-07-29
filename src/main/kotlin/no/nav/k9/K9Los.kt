@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.features.*
+import io.ktor.features.CORS
+import io.ktor.features.CallId
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
 import io.ktor.http.HttpMethod
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
@@ -244,10 +247,10 @@ fun Application.k9Los() {
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
-  
+
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
-    
+    regenererOppgaver2(oppgaveRepository, behandlingProsessEventRepository)
     val requestContextService = RequestContextService()
     install(CallIdRequired)
 
@@ -381,6 +384,36 @@ private fun Application.regenererOppgaver(
                 }
                 oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
                     forrige!!
+                }
+            }
+        }
+        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
+
+    }
+}
+
+
+private fun Application.regenererOppgaver2(
+    oppgaveRepository: OppgaveRepository,
+    behandlingProsessEventRepository: BehandlingProsessEventRepository
+) {
+    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+        log.info("Starter oppgavemigrering")
+        val measureTimeMillis = measureTimeMillis {
+
+            val ider = behandlingProsessEventRepository.hentAlleEventerIder()
+            var count = 0
+            for (id in ider) {
+                try {
+                    oppgaveRepository.lagre(UUID.fromString(id)) {
+                        behandlingProsessEventRepository.hent(UUID.fromString(id)).oppgave()
+                    }
+                } catch (e: Exception) {
+                    log.error("", e)
+                }
+                count++
+                if (count % 1000 == 0) {
+                    log.info("""$count av ${ider.size} ferdig""")
                 }
             }
         }

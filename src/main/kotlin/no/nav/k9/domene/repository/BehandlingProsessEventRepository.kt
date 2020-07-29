@@ -26,7 +26,9 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
         if (json.isNullOrEmpty()) {
             return Modell(emptyList())
         }
-        return objectMapper().readValue(json, Modell::class.java)
+        val modell = objectMapper().readValue(json, Modell::class.java)
+     
+        return  Modell(  modell.eventer.sortedBy { it.eventTid })
     }
 
     fun lagre(
