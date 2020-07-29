@@ -48,8 +48,8 @@ class OppgaveRepository(
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    """select (data ::jsonb -> 'oppgaver' -> -1 -> 'eventTid') as eventtid
-                             from oppgave order by (data ::jsonb -> 'oppgaver' -> -1 -> 'eventTid') limit 1 """,
+                    """select (data ::jsonb -> 'oppgaver' -> 0 -> 'eventTid') as eventtid
+                             from oppgave order by (data ::jsonb -> 'oppgaver' -> 0 -> 'eventTid') limit 1 """,
                     mapOf()
                 )
                     .map { row ->
