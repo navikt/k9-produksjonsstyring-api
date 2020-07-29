@@ -45,14 +45,15 @@ class OppgaveRepository(
 
     fun hentEldsteOppgaveTid(): String {
         val json: String? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select (data ::jsonb -> 'oppgaver' -> -1 -> 'eventTid')" +
-                            " from oppgave order by (data ::jsonb -> 'oppgaver' -> -1 -> 'eventTid') limit 1 ",
+                    """select (data ::jsonb -> 'oppgaver' -> -1 -> 'eventTid') as eventtid
+                             from oppgave order by (data ::jsonb -> 'oppgaver' -> -1 -> 'eventTid') limit 1 """,
                     mapOf()
                 )
                     .map { row ->
-                        row.string("data")
+                        row.string("eventtid")
                     }.asSingle
             )
         }
