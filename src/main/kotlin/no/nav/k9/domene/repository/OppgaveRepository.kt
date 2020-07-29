@@ -43,20 +43,21 @@ class OppgaveRepository(
         return list
     }
 
-    fun hentEldsteOppgave(): Oppgave {
-        var spørring = System.currentTimeMillis()
+    fun hentEldsteOppgaveTid(): String {
         val json: String? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select * from oppgave order by (data ::jsonb -> 'oppgaver' -> -1 -> 'eventTid') limit 1 ",
+                    """select (data ::jsonb -> 'oppgaver' -> 0 -> 'eventTid') as eventtid
+                             from oppgave order by (data ::jsonb -> 'oppgaver' -> 0 -> 'eventTid') limit 1 """,
                     mapOf()
                 )
                     .map { row ->
-                        row.string("data")
+                        row.string("eventtid")
                     }.asSingle
             )
         }
-        return objectMapper().readValue(json!!, Oppgave::class.java) 
+        return  json!!
     }
     
     fun hent(uuid: UUID): Oppgave {
