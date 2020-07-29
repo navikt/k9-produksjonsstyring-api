@@ -20,7 +20,7 @@ data class BehandlingProsessEventDto(
     val saksnummer: String,
     val aktørId: String,
 
-    val behandlingId: Long, // fjernes etter overgang til eksternId
+    val behandlingId: Long?, // fjernes etter overgang til eksternId
 
     @JsonSerialize(using = ToStringSerializer::class)
     @JsonDeserialize(using = LocalDateDeserializer::class)
@@ -58,6 +58,11 @@ data class BehandlingProsessEventDto(
     /**
      * Map av aksjonspunktkode og statuskode.
      */
-    val aksjonspunktKoderMedStatusListe: MutableMap<String, String>
+    val aksjonspunktKoderMedStatusListe: MutableMap<String, String>,
 
+    val href :String? = null,
+    val førsteFeilutbetaling :String? = null,
+    val feilutbetaltBeløp : Long?= null,
+    val ansvarligSaksbehandlerIdent :String?= null
+    
 )

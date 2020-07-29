@@ -42,23 +42,6 @@ class OppgaveRepository(
         log.info("Henter: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list
     }
-
-    fun hentEldsteOppgaveTid(): String {
-        val json: String? = using(sessionOf(dataSource)) {
-            //language=PostgreSQL
-            it.run(
-                queryOf(
-                    """select (data ::jsonb -> 'oppgaver' -> 0 -> 'eventTid') as eventtid
-                             from oppgave order by (data ::jsonb -> 'oppgaver' -> 0 -> 'eventTid') limit 1 """,
-                    mapOf()
-                )
-                    .map { row ->
-                        row.string("eventtid")
-                    }.asSingle
-            )
-        }
-        return  json!!
-    }
     
     fun hent(uuid: UUID): Oppgave {
         val json: String? = using(sessionOf(dataSource)) {

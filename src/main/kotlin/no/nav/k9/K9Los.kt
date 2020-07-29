@@ -275,7 +275,7 @@ fun Application.k9Los() {
             }
         }
         route("innsikt") {
-            InnsiktGrensesnitt(oppgaveRepository)
+            InnsiktGrensesnitt(oppgaveRepository, behandlingProsessEventRepository)
         }
         if (configuration.erIkkeLokalt) {
             authenticate(*issuers.allIssuers()) {

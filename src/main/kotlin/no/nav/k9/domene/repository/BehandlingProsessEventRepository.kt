@@ -83,4 +83,20 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
         return ider
 
     }
+
+    fun eldsteEventTid(): String {
+        val json: String? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    """select sort_array(data->'eventer', 'eventTid') -> 0 ->'eventTid' as data from behandling_prosess_events_k9 order by (sort_array(data->'eventer', 'eventTid') -> 0 ->'eventTid') limit 1;""",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.string("eventtid")
+                    }.asSingle
+            )
+        }
+        return  json!!
+    }
 }

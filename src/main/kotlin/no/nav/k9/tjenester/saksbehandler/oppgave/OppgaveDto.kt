@@ -8,7 +8,7 @@ import java.util.*
 
 class OppgaveDto(
     val status: OppgaveStatusDto,
-    val behandlingId: Long,
+    val behandlingId: Long?,
     val saksnummer: String,
     val navn: String,
     val system: String,
