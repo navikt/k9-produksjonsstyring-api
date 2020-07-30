@@ -267,7 +267,7 @@ class OppgaveRepository(
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingStatus' ->> 'kode' = 'AVSLU') ::boolean",
+                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' = 'AVSLU') ::boolean",
                     mapOf()
                 )
                     .map { row ->
