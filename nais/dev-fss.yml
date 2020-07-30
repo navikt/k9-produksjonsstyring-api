@@ -76,6 +76,8 @@ spec:
       value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
     - name: KAFKA_AKSJONSPUNKTHENDELSE_TOPIC
       value: privat-k9-aksjonspunkthendelse
+    - name: KAFKA_AKSJONSPUNKTHENDELSE_TILBAKE_TOPIC
+      value: privat-tilbakekreving-k9loshendelse-v1
     - name: KAFKA_SAKOGBEHANDLING_TOPIC
       value: aapen-sob-oppgaveHendelse-v1
     - name: KAFKA_STATISTIKK_SAK_TOPIC

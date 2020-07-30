@@ -69,7 +69,8 @@ class PepClient @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun harTilgangTilLesSak(
-        fagsakNummer: String
+        fagsakNummer: String,
+        aktørid: String
     ): Boolean {
         if (config.erLokalt) {
             log.info("sjekker tilgang")
@@ -103,7 +104,7 @@ class PepClient @KtorExperimentalAPI constructor(
                     CefField(CefFieldName.ABAC_RESOURCE_TYPE, TILGANG_SAK),
                     CefField(CefFieldName.ABAC_ACTION, "read"),
                     CefField(CefFieldName.USER_ID, identTilInnloggetBruker),
-                    CefField(CefFieldName.BERORT_BRUKER_ID, "read"),
+                    CefField(CefFieldName.BERORT_BRUKER_ID, aktørid),
 
                     CefField(CefFieldName.BEHANDLING_VERDI, "behandlingsid"),
                     CefField(CefFieldName.BEHANDLING_LABEL, "Behandling"),
