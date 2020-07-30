@@ -42,7 +42,7 @@ class OppgaveRepository(
         log.info("Henter: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list
     }
-    
+
     fun hent(uuid: UUID): Oppgave {
         try {
             val json: String? = using(sessionOf(dataSource)) {
@@ -74,69 +74,35 @@ class OppgaveRepository(
     }
 
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
-        try {
-            using(sessionOf(dataSource)) {
-                it.transaction { tx ->
-                    val run = tx.run(
-                        queryOf(
-                            "select data from oppgave where id = :id for update",
-                            mapOf("id" to uuid.toString())
-                        )
-                            .map { row ->
-                                row.string("data")
-                            }.asSingle
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                val run = tx.run(
+                    queryOf(
+                        "select data from oppgave where id = :id for update",
+                        mapOf("id" to uuid.toString())
                     )
+                        .map { row ->
+                            row.string("data")
+                        }.asSingle
+                )
 
-                    val oppgave = if (!run.isNullOrEmpty()) {
-                        f(objectMapper().readValue(run, Oppgave::class.java))
-                    } else {
-                        f(null)
-                    }
-                    val json = objectMapper().writeValueAsString(oppgave)
+                val oppgave = if (!run.isNullOrEmpty()) {
+                    f(objectMapper().readValue(run, Oppgave::class.java))
+                } else {
+                    f(null)
+                }
+                val json = objectMapper().writeValueAsString(oppgave)
 
-                    tx.run(
-                        queryOf(
-                            """
+                tx.run(
+                    queryOf(
+                        """
                     insert into oppgave as k (id, data)
                     values (:id, :data :: jsonb)
                     on conflict (id) do update
                     set data =  :data :: jsonb
                  """, mapOf("id" to uuid.toString(), "data" to json)
-                        ).asUpdate
-                    )
-                }
-            }
-        } catch (_: Exception) {
-            using(sessionOf(dataSource)) {
-                it.transaction { tx ->
-                    val run = tx.run(
-                        queryOf(
-                            "select (data ::jsonb -> 'oppgaver' -> -1) as data from oppgave where id = :id for update",
-                            mapOf("id" to uuid.toString())
-                        )
-                            .map { row ->
-                                row.string("data")
-                            }.asSingle
-                    )
-
-                    val oppgave = if (!run.isNullOrEmpty()) {
-                        f(objectMapper().readValue(run, Oppgave::class.java))
-                    } else {
-                        f(null)
-                    }
-                    val json = objectMapper().writeValueAsString(oppgave)
-
-                    tx.run(
-                        queryOf(
-                            """
-                    insert into oppgave as k (id, data)
-                    values (:id, :data :: jsonb)
-                    on conflict (id) do update
-                    set data =  :data :: jsonb
-                 """, mapOf("id" to uuid.toString(), "data" to json)
-                        ).asUpdate
-                    )
-                }
+                    ).asUpdate
+                )
             }
         }
     }
@@ -146,7 +112,7 @@ class OppgaveRepository(
         if (oppgaveider.isEmpty()) {
             return emptyList()
         }
-        
+
         var spørring = System.currentTimeMillis()
         val session = sessionOf(dataSource)
         val json: List<String> = using(session) {
@@ -167,8 +133,10 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         val serialisering = System.currentTimeMillis()
-        val list = json.filter { it.indexOf("oppgaver") == -1}.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
-            .sortedBy { oppgave -> oppgave.behandlingOpprettet }
+        val list =
+            json.filter { it.indexOf("oppgaver") == -1 }.map { s -> objectMapper().readValue(s, Oppgave::class.java) }
+                .toList()
+                .sortedBy { oppgave -> oppgave.behandlingOpprettet }
 
         log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list
