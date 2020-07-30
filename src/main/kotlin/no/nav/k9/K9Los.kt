@@ -250,7 +250,7 @@ fun Application.k9Los() {
 
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
-    regenererOppgaver2(oppgaveRepository, behandlingProsessEventRepository)
+  
     val requestContextService = RequestContextService()
     install(CallIdRequired)
 
@@ -392,35 +392,6 @@ private fun Application.regenererOppgaver(
     }
 }
 
-
-private fun Application.regenererOppgaver2(
-    oppgaveRepository: OppgaveRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository
-) {
-    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-        log.info("Starter oppgavemigrering")
-        val measureTimeMillis = measureTimeMillis {
-
-            val ider = behandlingProsessEventRepository.hentAlleEventerIder()
-            var count = 0
-            for (id in ider) {
-                try {
-                    oppgaveRepository.lagre(UUID.fromString(id)) {
-                        behandlingProsessEventRepository.hent(UUID.fromString(id)).oppgave()
-                    }
-                } catch (e: Exception) {
-                    log.error("", e)
-                }
-                count++
-                if (count % 1000 == 0) {
-                    log.info("""$count av ${ider.size} ferdig""")
-                }
-            }
-        }
-        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
-
-    }
-}
 
 @ExperimentalCoroutinesApi
 @KtorExperimentalAPI

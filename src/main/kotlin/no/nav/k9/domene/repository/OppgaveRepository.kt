@@ -258,7 +258,7 @@ class OppgaveRepository(
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "sele data from oppgave where lower(data ->> 'fagsakSaksnummer') = lower(:saksnummer)",
+                    "select data from oppgave where lower(data ->> 'fagsakSaksnummer') = lower(:saksnummer)",
                     mapOf("saksnummer" to saksnummer)
                 )
                     .map { row ->
