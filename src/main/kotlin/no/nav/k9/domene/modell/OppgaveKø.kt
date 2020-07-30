@@ -321,7 +321,7 @@ enum class BehandlingType(override val kode: String, override val navn: String, 
     companion object {
         @JsonCreator
         @JvmStatic
-        fun fraKode(kode: String): BehandlingType = values().find { it.kode == kode }!!
+        fun fraKode(kode: String): BehandlingType = values().find { it.kode == kode }?:FORSTEGANGSSOKNAD
     }
 
 }
@@ -339,7 +339,7 @@ enum class BehandlingStatus(override val kode: String, override val navn: String
     companion object {
         @JsonCreator
         @JvmStatic
-        fun fraKode(kode: String): BehandlingStatus = values().find { it.kode == kode }!!
+        fun fraKode(kode: String): BehandlingStatus = values().find { it.kode == kode }?:OPPRETTET
     }
 }
 

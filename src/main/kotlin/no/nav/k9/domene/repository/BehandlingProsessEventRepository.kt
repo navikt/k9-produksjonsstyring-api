@@ -26,7 +26,9 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
         if (json.isNullOrEmpty()) {
             return Modell(emptyList())
         }
-        return objectMapper().readValue(json, Modell::class.java)
+        val modell = objectMapper().readValue(json, Modell::class.java)
+     
+        return  Modell(  modell.eventer.sortedBy { it.eventTid })
     }
 
     fun lagre(
@@ -82,5 +84,21 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
         }
         return ider
 
+    }
+
+    fun eldsteEventTid(): String {
+        val json: String? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    """select sort_array(data->'eventer', 'eventTid') -> 0 ->'eventTid' as data from behandling_prosess_events_k9 order by (sort_array(data->'eventer', 'eventTid') -> 0 ->'eventTid') limit 1;""",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asSingle
+            )
+        }
+        return  json!!
     }
 }

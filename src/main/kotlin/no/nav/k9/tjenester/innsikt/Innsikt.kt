@@ -8,6 +8,7 @@ import io.ktor.locations.get
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.*
+import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import kotlin.streams.toList
@@ -15,7 +16,8 @@ import kotlin.streams.toList
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 fun Route.InnsiktGrensesnitt(
-    oppgaveRepository: OppgaveRepository
+    oppgaveRepository: OppgaveRepository,
+    behandlingProsessEventRepository: BehandlingProsessEventRepository
 ) {
     @Location("/")
     class main
@@ -43,12 +45,12 @@ fun Route.InnsiktGrensesnitt(
                     val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
                     val aksjonspunkter =  Aksjonspunkter().aksjonspunkter()
                     val delvisAutomatiske = inaktiveOppgaverTotalt- (automatiskProsesserteTotalt + beslutterOppgaver)
-                    val eventTidEldsteOppgave = oppgaveRepository.hentEldsteOppgaveTid()
+                    val s = behandlingProsessEventRepository.eldsteEventTid()
                     p {
                         +"Det er nå ${aktiveOppgaver.size} åpne oppgaver og $inaktiveOppgaverTotalt inaktive oppgaver, $automatiskProsesserteTotalt er prosessert automatisk, hvorav $beslutterOppgaver beslutter oppgaver og $delvisAutomatiske delvis automatiske (innom saksbehandler men ikke beslutter)"
                     }
                     p {
-                        +"Eldste oppgave kom ${eventTidEldsteOppgave}" 
+                        +"Eldste eventTid kom ${s}" 
                     }
                     val ukjenteAksjonspunkter =
                         aktiveOppgaver.stream().flatMap { t -> t.aksjonspunkter.liste.keys.stream() }
