@@ -70,7 +70,7 @@ internal fun Route.TestApis(
                     setOf("https://graph.microsoft.com/.default"),
                     kotlin.coroutines.coroutineContext.idToken().value
                 )
-            val harTilgangTilLesSak = pepClient.harTilgangTilLesSak("6GBFC")
+            val harTilgangTilLesSak = pepClient.harTilgangTilLesSak("6GBFC", "oppgave.aktorId")
             
             call.respond(
                 "${call.idToken().getUsername()} erOppgavestyrer: $erOppgaveStyrer, harBasistilgang: $harbasistilgang, har tilgang til 6GBFC:$harTilgangTilLesSak"

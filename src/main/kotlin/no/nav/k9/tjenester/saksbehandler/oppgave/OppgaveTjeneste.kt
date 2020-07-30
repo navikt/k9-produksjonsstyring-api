@@ -119,7 +119,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     }
                     return oppgaveRepository.hentOppgaverMedAktorId(aktorId).filter {
                         if (!pepClient.harTilgangTilLesSak(
-                                fagsakNummer = it.fagsakSaksnummer
+                                fagsakNummer = it.fagsakSaksnummer,
+                                aktørid = it.aktorId
                             )
                         ) {
                             settSkjermet(it)
@@ -149,7 +150,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         val oppgave = oppgaveRepository.hentOppgaveMedSaksnummer(query)
         if (oppgave != null) {
             if (!pepClient.harTilgangTilLesSak(
-                    fagsakNummer = oppgave.fagsakSaksnummer
+                    fagsakNummer = oppgave.fagsakSaksnummer,
+                    aktørid = oppgave.aktorId
                 )
             ) {
                 settSkjermet(oppgave)
@@ -363,7 +365,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             break
                         }
                         if (!pepClient.harTilgangTilLesSak(
-                                fagsakNummer = oppgave.fagsakSaksnummer
+                                fagsakNummer = oppgave.fagsakSaksnummer,
+                                aktørid = oppgave.aktorId
                             )
                         ) {
                             settSkjermet(oppgave)
@@ -543,7 +546,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     private suspend fun tilgangTilSak(oppgave: Oppgave): Boolean {
         if (!pepClient.harTilgangTilLesSak(
-                fagsakNummer = oppgave.fagsakSaksnummer
+                fagsakNummer = oppgave.fagsakSaksnummer,
+                aktørid = oppgave.aktorId
             )
         ) {
             reservasjonRepository.lagre(oppgave.eksternId, true) {
