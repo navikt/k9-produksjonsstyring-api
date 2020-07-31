@@ -350,7 +350,11 @@ class OppgaveRepository(
             )
         }
        
-        return json.flatten()
+        return json.flatten().groupBy { it.kode }.map { entry ->
+            val aksjonspunkt = entry.value.get(0)
+            aksjonspunkt.antall=  entry.value.map { it.antall }.sum()
+            aksjonspunkt
+        }
     }
     
 }

@@ -39,16 +39,16 @@ fun Route.InnsiktGrensesnitt(
 
                     val inaktiveOppgaverTotalt = oppgaveRepository.hentInaktiveOppgaverTotalt()
                     val automatiskProsesserteTotalt = oppgaveRepository.hentAutomatiskProsesserteTotalt()
-                    val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaversAksjonspunktliste()
+                    val aksjonspunkter = oppgaveRepository.hentAktiveOppgaversAksjonspunktliste()
                     val s = behandlingProsessEventRepository.eldsteEventTid()
                     p {
-                        +"Det er nå ${aktiveOppgaver.sumBy{ it.antall }} åpne oppgaver og $inaktiveOppgaverTotalt inaktive oppgaver, $automatiskProsesserteTotalt er prosessert automatisk"
+                        +"Det er nå ${aksjonspunkter.sumBy { it.antall }} åpne oppgaver og $inaktiveOppgaverTotalt inaktive oppgaver, $automatiskProsesserteTotalt er prosessert automatisk"
                     }
                     p {
-                        +"Eldste eventTid kom ${s}" 
+                        +"Eldste eventTid kom ${s}"
                     }
-                    
-                    for (aksjonspunkt in aktiveOppgaver.stream().sorted { o1, o2 -> o2.antall.compareTo(o1.antall) }) {
+
+                    for (aksjonspunkt in aksjonspunkter.stream().sorted { o1, o2 -> o2.antall.compareTo(o1.antall) }) {
                         if (aksjonspunkt.antall == 0) {
                             continue
                         }
