@@ -187,14 +187,14 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun tilOppgaveDto(oppgave: Oppgave, reservasjon: Reservasjon?): OppgaveDto {
 
         val oppgaveStatus =
-            if (reservasjon != null && (!reservasjon.erAktiv())){
+            if (reservasjon != null && (!reservasjon.erAktiv()) || reservasjon == null){
                 OppgaveStatusDto(false, null, false, null, null)
-            } else {
+            } else  {
                 OppgaveStatusDto(
                     true,
-                    reservasjon?.reservertTil,
-                    reservertAvMeg(reservasjon?.reservertAv),
-                    reservasjon?.reservertAv,
+                    reservasjon.reservertTil,
+                    reservertAvMeg(reservasjon.reservertAv),
+                    reservasjon.reservertAv,
                     null
                 )
             }
