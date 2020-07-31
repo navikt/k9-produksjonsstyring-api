@@ -73,20 +73,20 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
             }
             return OppgaveStatusDto(
-                true,
-                reservasjon.reservertTil,
-                reservertAvMeg(ident),
-                null,
-                null
+                erReservert = true,
+                reservertTilTidspunkt = reservasjon.reservertTil,
+                erReservertAvInnloggetBruker = reservertAvMeg(ident),
+                reservertAv = ident,
+                flyttetReservasjon = null
             )
         } catch (e: java.lang.IllegalArgumentException) {
             log.warn(e.message)
             return OppgaveStatusDto(
-                true,
-                reservasjon.reservertTil,
-                false,
-                reservasjon.reservertAv,
-                null
+                erReservert = true,
+                reservertTilTidspunkt = reservasjon.reservertTil,
+                erReservertAvInnloggetBruker = false,
+                reservertAv = reservasjon.reservertAv,
+                flyttetReservasjon = null
             )
         }
     }
@@ -187,14 +187,17 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun tilOppgaveDto(oppgave: Oppgave, reservasjon: Reservasjon?): OppgaveDto {
 
         val oppgaveStatus =
-            if (reservasjon != null && (!reservasjon.erAktiv())) OppgaveStatusDto(false, null, false, null, null)
-            else OppgaveStatusDto(
-                true,
-                reservasjon?.reservertTil,
-                reservertAvMeg(reservasjon?.reservertAv),
-                reservasjon?.reservertAv,
-                null
-            )
+            if (reservasjon != null && (!reservasjon.erAktiv())){
+                OppgaveStatusDto(false, null, false, null, null)
+            } else {
+                OppgaveStatusDto(
+                    true,
+                    reservasjon?.reservertTil,
+                    reservertAvMeg(reservasjon?.reservertAv),
+                    reservasjon?.reservertAv,
+                    null
+                )
+            }
         val person = pdlService.person(oppgave.aktorId)!!
         return OppgaveDto(
             status = oppgaveStatus,
@@ -490,10 +493,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         null
                     } else {
                         FlyttetReservasjonDto(
-                                reservasjon.flyttetTidspunkt!!,
-                                reservasjon.flyttetAv!!,
-                                saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjon.flyttetAv!!)?.navn!!,
-                                reservasjon.begrunnelse!!
+                            reservasjon.flyttetTidspunkt!!,
+                            reservasjon.flyttetAv!!,
+                            saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjon.flyttetAv!!)?.navn!!,
+                            reservasjon.begrunnelse!!
                         )
                     }
                 )
