@@ -1,5 +1,6 @@
 package no.nav.k9.domene.repository
 
+import com.fasterxml.jackson.core.type.TypeReference
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -7,9 +8,10 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverPerDato
-import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
+import no.nav.k9.tjenester.mock.Aksjonspunkt
 import no.nav.k9.utils.Cache
 import no.nav.k9.utils.CacheObject
 import org.slf4j.Logger
@@ -299,29 +301,6 @@ class OppgaveRepository(
         return count!!
     }
 
-    internal fun hentBeslutterTotalt(): Int {
-        var spørring = System.currentTimeMillis()
-        val count: Int? = using(sessionOf(dataSource)) {
-            //language=PostgreSQL
-            it.run(
-                queryOf(
-                    "select count(*) as count from oppgave o left join reservasjon r using (id)\n" +
-                            "where not (o.data ::jsonb -> 'oppgaver' -> -1 -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN') and (o.data ::jsonb -> 'oppgaver' -> -1 -> 'behandlingStatus' ->> 'kode' = 'AVSLU') and r.id is not null and exists(\n" +
-                            "    select 1 from jsonb_array_elements(o.data -> 'oppgaver') elem\n" +
-                            "    where (elem -> 'tilBeslutter') :: BOOLEAN\n" +
-                            "    )",
-                    mapOf()
-                )
-                    .map { row ->
-                        row.int("count")
-                    }.asSingle
-            )
-        }
-        spørring = System.currentTimeMillis() - spørring
-        log.info("Teller autmatiske oppgaver: $spørring ms")
-        return count!!
-    }
-
     private val aktiveOppgaverCache = Cache<List<Oppgave>>()
     internal fun hentAktiveOppgaver(): List<Oppgave> {
         val cacheObject = aktiveOppgaverCache.get("default")
@@ -349,4 +328,33 @@ class OppgaveRepository(
         aktiveOppgaverCache.set("default", CacheObject(list))
         return list
     }
+
+    internal fun hentAktiveOppgaversAksjonspunktliste(): List<Aksjonspunkt> {
+    
+        val json: List<List<Aksjonspunkt>> = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select (data -> 'aksjonspunkter' -> 'liste') punkt,  count(*) from oppgave where (data -> 'aktiv') ::boolean group by data -> 'aksjonspunkter' -> 'liste' ",
+                    mapOf()
+                )
+                    .map { row ->
+                        
+                        val map =  objectMapper().readValue(
+                            row.string("punkt"),
+                            object : TypeReference<HashMap<String, String>>() {})
+                        val antall = row.int("count")
+                        val aksjonspunkter = map.keys.map { AksjonspunktDefinisjon.fraKode(it) }
+                            .map { Aksjonspunkt(it.kode, it.navn, it.aksjonspunktType.navn,it.behandlingSteg.navn, "", "", it.defaultTotrinnBehandling, antall = antall ) }.toList()
+                        aksjonspunkter
+                    }.asList
+            )
+        }
+       
+        return json.flatten().groupBy { it.kode }.map { entry ->
+            val aksjonspunkt = entry.value.get(0)
+            aksjonspunkt.antall=  entry.value.map { it.antall }.sum()
+            aksjonspunkt
+        }
+    }
+    
 }
