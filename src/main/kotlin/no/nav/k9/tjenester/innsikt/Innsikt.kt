@@ -10,8 +10,6 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.*
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.tjenester.mock.Aksjonspunkter
-import kotlin.streams.toList
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -41,37 +39,16 @@ fun Route.InnsiktGrensesnitt(
 
                     val inaktiveOppgaverTotalt = oppgaveRepository.hentInaktiveOppgaverTotalt()
                     val automatiskProsesserteTotalt = oppgaveRepository.hentAutomatiskProsesserteTotalt()
-                    val beslutterOppgaver = oppgaveRepository.hentBeslutterTotalt()
-                    val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-                    val aksjonspunkter =  Aksjonspunkter().aksjonspunkter()
-                    val delvisAutomatiske = inaktiveOppgaverTotalt- (automatiskProsesserteTotalt + beslutterOppgaver)
+                    val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaversAksjonspunktliste()
                     val s = behandlingProsessEventRepository.eldsteEventTid()
                     p {
-                        +"Det er nå ${aktiveOppgaver.size} åpne oppgaver og $inaktiveOppgaverTotalt inaktive oppgaver, $automatiskProsesserteTotalt er prosessert automatisk, hvorav $beslutterOppgaver beslutter oppgaver og $delvisAutomatiske delvis automatiske (innom saksbehandler men ikke beslutter)"
+                        +"Det er nå ${aktiveOppgaver.sumBy{ it.antall }} åpne oppgaver og $inaktiveOppgaverTotalt inaktive oppgaver, $automatiskProsesserteTotalt er prosessert automatisk"
                     }
                     p {
                         +"Eldste eventTid kom ${s}" 
                     }
-                    val ukjenteAksjonspunkter =
-                        aktiveOppgaver.stream().flatMap { t -> t.aksjonspunkter.liste.keys.stream() }
-                            .filter { t -> !aksjonspunkter.map { a -> a.kode }.contains(t) }.toList()
-
-                    for (u in ukjenteAksjonspunkter) {
-                        div {
-                            classes = setOf("input-group-text display-4")
-                            +"Ukjent aksjonspunkt: ${u} "
-                        }
-                    }
-
-                    for (aksjonspunkt in aksjonspunkter) {
-                        aksjonspunkt.antall = aktiveOppgaver.filter { oppgaveModell ->
-                            oppgaveModell.aksjonspunkter.liste.containsKey(
-                                aksjonspunkt.kode
-                            )
-                        }.size
-                    }
-
-                    for (aksjonspunkt in aksjonspunkter.stream().sorted { o1, o2 -> o2.antall.compareTo(o1.antall) }) {
+                    
+                    for (aksjonspunkt in aktiveOppgaver.stream().sorted { o1, o2 -> o2.antall.compareTo(o1.antall) }) {
                         if (aksjonspunkt.antall == 0) {
                             continue
                         }
