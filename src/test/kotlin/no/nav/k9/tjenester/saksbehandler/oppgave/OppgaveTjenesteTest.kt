@@ -195,10 +195,10 @@ class OppgaveTjenesteTest {
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository)
         
         oppgaveKøRepository.lagre(oppgaveko.id) {
-            it!!.nyeOgFerdigstilteOppgaverDto(oppgave1).leggTilNy(oppgave1.eksternId.toString())
-            it.nyeOgFerdigstilteOppgaverDto(oppgave2).leggTilNy(oppgave2.eksternId.toString())
-            it.nyeOgFerdigstilteOppgaverDto(oppgave3).leggTilNy(oppgave3.eksternId.toString())
-            it.nyeOgFerdigstilteOppgaverDto(oppgave4).leggTilNy(oppgave4.eksternId.toString())
+            it!!.nyeOgFerdigstilteOppgaver(oppgave1).leggTilNy(oppgave1.eksternId.toString())
+            it.nyeOgFerdigstilteOppgaver(oppgave2).leggTilNy(oppgave2.eksternId.toString())
+            it.nyeOgFerdigstilteOppgaver(oppgave3).leggTilNy(oppgave3.eksternId.toString())
+            it.nyeOgFerdigstilteOppgaver(oppgave4).leggTilNy(oppgave4.eksternId.toString())
             it
         }
         every { config.erLokalt() } returns true
