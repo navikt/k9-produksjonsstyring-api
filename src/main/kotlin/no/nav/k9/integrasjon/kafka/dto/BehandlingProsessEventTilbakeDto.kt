@@ -9,14 +9,14 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-data class BehandlingProsessEventDto(
+data class BehandlingProsessEventTilbakeDto(
 
     /**
      * Ekstern id for behandlingen. Id benyttes til oppslag i fagsystem.
      * Benytt samme id for alle oppdateringer av aksjonspunkt/prosess innenfor samme behandling.
      */
     val eksternId: UUID?,
-    val fagsystem: Fagsystem,
+    val fagsystem: FagsystemTilbake,
     val saksnummer: String,
     val aktørId: String,
 

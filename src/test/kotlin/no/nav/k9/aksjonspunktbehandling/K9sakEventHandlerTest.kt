@@ -350,4 +350,173 @@ class K9sakEventHandlerTest {
         assertTrue { oppgave.aktiv }
         assertTrue(oppgave.aksjonspunkter.lengde() == 3)
     }
+
+    @KtorExperimentalAPI
+    @Test
+    fun `Støtte tilbakekreving`() {
+        val pg = EmbeddedPostgres.start()
+        val dataSource = pg.postgresDatabase
+        runMigration(dataSource)
+        val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
+        val refreshKlienter = Channel<SseEvent>(1)
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(
+            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
+            refreshKlienter = refreshKlienter
+        )
+        val reservasjonRepository = ReservasjonRepository(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository,
+            dataSource = dataSource,
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
+        )
+        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val statistikkProducer = mockk<StatistikkProducer>()
+        val config = mockk<Configuration>()
+
+        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
+        every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
+        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
+        every { statistikkProducer.send(any()) } just runs
+        every { config.erLokalt() } returns true
+
+        val k9sakEventHandler = K9sakEventHandler(
+            oppgaveRepository,
+            BehandlingProsessEventRepository(dataSource = dataSource),
+            config = config,
+            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            oppgaveKøRepository = oppgaveKøRepository,
+            reservasjonRepository = reservasjonRepository,
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+            statistikkRepository = statistikkRepository
+        )
+
+        @Language("JSON") val json =
+            """{
+               "eksternId": "5c7be441-ebf3-4878-9ebc-399635b0a179",
+               "fagsystem": "K9TILBAKE",
+               "saksnummer": "61613602",
+               "aktørId": "9914079721604",
+               "behandlingId": null,
+               "eventTid": "2020-06-17T13:07:15.674343500",
+               "eventHendelse": "AKSJONSPUNKT_OPPRETTET",
+               "behandlinStatus": null,
+               "behandlingStatus": "UTRED",
+               "behandlingSteg": "FAKTFEILUTSTEG",
+               "behandlendeEnhet": "4833",
+               "ytelseTypeKode": "OMP",
+               "behandlingTypeKode": "BT-007",
+               "opprettetBehandling": "2020-06-16T13:16:51.690",
+               "aksjonspunktKoderMedStatusListe": {
+                               "5030": "UTFO",
+                               "7002": "UTFO",
+                               "7001": "OPPR",
+                               "7003": "OPPR"
+               },
+               "href": "/fpsak/fagsak/61613602/behandling/53/?punkt=default&fakta=default",
+               "førsteFeilutbetaling": "2019-10-19",
+               "feilutbetaltBeløp": 26820,
+               "ansvarligSaksbehandlerIdent": "saksbeh"
+}       """
+        
+      
+
+        val event =   AksjonspunktLagetTilbake().deserialize(null,json.toByteArray() )!!
+        
+        k9sakEventHandler.prosesser(event)
+        val oppgave =
+            oppgaveRepository.hent(UUID.fromString("5c7be441-ebf3-4878-9ebc-399635b0a179"))
+        assertTrue { !oppgave.aktiv }
+    }
+    
+    @KtorExperimentalAPI
+    @Test
+    fun `Støtte tilbakekreving aksjonspunkt`() {
+        val pg = EmbeddedPostgres.start()
+        val dataSource = pg.postgresDatabase
+        runMigration(dataSource)
+        val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
+        val refreshKlienter = Channel<SseEvent>(1)
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(
+            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
+            refreshKlienter = refreshKlienter
+        )
+        val reservasjonRepository = ReservasjonRepository(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository,
+            dataSource = dataSource,
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
+        )
+        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
+        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val statistikkProducer = mockk<StatistikkProducer>()
+        val config = mockk<Configuration>()
+
+        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
+        every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
+        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
+        every { statistikkProducer.send(any()) } just runs
+        every { config.erLokalt() } returns true
+
+        val k9sakEventHandler = K9sakEventHandler(
+            oppgaveRepository,
+            BehandlingProsessEventRepository(dataSource = dataSource),
+            config = config,
+            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            oppgaveKøRepository = oppgaveKøRepository,
+            reservasjonRepository = reservasjonRepository,
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+            statistikkRepository = statistikkRepository
+        )
+
+        @Language("JSON") val json =
+            """{
+               "eksternId": "5c7be441-ebf3-4878-9ebc-399635b0a179",
+               "fagsystem": "K9TILBAKE",
+               "saksnummer": "61613602",
+               "aktørId": "9914079721604",
+               "behandlingId": null,
+               "eventTid": "2020-06-17T13:13:24.536645200",
+               "eventHendelse": "AKSJONSPUNKT_TILBAKEFØR",
+               "behandlinStatus": null,
+               "behandlingStatus": "UTRED",
+               "behandlingSteg": "FAKTFEILUTSTEG",
+               "behandlendeEnhet": "1900",
+               "ytelseTypeKode": "OMP",
+               "behandlingTypeKode": "BT-007",
+               "opprettetBehandling": "2020-06-16T13:16:51.690",
+               "aksjonspunktKoderMedStatusListe": {
+                               "5030": "UTFO",
+                               "7002": "UTFO",
+                               "7001": "UTFO",
+                               "5002": "AVBR",
+                               "7003": "UTFO"
+               },
+               "href": "/fpsak/fagsak/61613602/behandling/53/?punkt=default&fakta=default",
+               "førsteFeilutbetaling": "2019-10-19",
+               "feilutbetaltBeløp": 26820,
+               "ansvarligSaksbehandlerIdent": "saksbeh"
+}       """
+        
+      
+
+        val event =   AksjonspunktLagetTilbake().deserialize(null,json.toByteArray() )!!
+        
+        k9sakEventHandler.prosesser(event)
+        val oppgave =
+            oppgaveRepository.hent(UUID.fromString("5c7be441-ebf3-4878-9ebc-399635b0a179"))
+        assertTrue { !oppgave.aktiv }
+    }
 }
