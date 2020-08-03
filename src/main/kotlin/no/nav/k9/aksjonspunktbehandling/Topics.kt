@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventTilbakeDto
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.serialization.Serializer
@@ -51,6 +52,27 @@ internal class AksjonspunktLaget : SerDes<BehandlingProsessEventDto>() {
         return data?.let {
             return try {
                 objectMapper.readValue(it)
+            } catch (e: Exception) {
+                log.warn("", e)
+                log.warn(String(it))
+                throw e
+            }
+        }
+    }
+}
+
+internal class AksjonspunktLagetTilbake : SerDes<BehandlingProsessEventDto>() {
+    override fun deserialize(topic: String?, data: ByteArray?): BehandlingProsessEventDto? {
+        return data?.let {
+            return try {
+                objectMapper.readValue(
+                    objectMapper.writeValueAsBytes(
+                        objectMapper.readValue<BehandlingProsessEventTilbakeDto>(
+                            it
+                        )
+                    )
+                )
+
             } catch (e: Exception) {
                 log.warn("", e)
                 log.warn(String(it))

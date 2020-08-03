@@ -282,7 +282,9 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 enum class FagsakYtelseType private constructor(override val kode: String, override val navn: String) : Kodeverdi {
     PLEIEPENGER_SYKT_BARN("PSB", "Pleiepenger sykt barn"),
     OMSORGSPENGER("OMP", "Omsorgspenger"),
-    FRISINN("FRISINN", "Frisinn");
+    FRISINN("FRISINN", "Frisinn"),
+    PPN("PPN", "PPN"),
+    OLP("OLP", "OLP");
 
     override val kodeverk = "FAGSAK_YTELSE_TYPE"
 
