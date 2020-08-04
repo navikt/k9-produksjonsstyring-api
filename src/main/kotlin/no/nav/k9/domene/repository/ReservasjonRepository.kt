@@ -23,26 +23,6 @@ class ReservasjonRepository(
     private val refreshKlienter: Channel<SseEvent>
 ) {
     private val log: Logger = LoggerFactory.getLogger(ReservasjonRepository::class.java)
-    suspend fun hent(
-        oppgaveKøRepository: OppgaveKøRepository,
-        oppgaveRepository: OppgaveRepository
-    ): List<Reservasjon> {
-        val json: List<String> = using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    "select (data ::jsonb -> 'reservasjoner' -> -1) as data from reservasjon \n" +
-                            "where not (data ::jsonb -> 'reservasjoner' -> -1 ?? 'aktiv')::BOOLEAN\n" +
-                            "   or (data ::jsonb -> 'reservasjoner' -> -1 -> 'aktiv')::BOOLEAN",
-                    mapOf()
-                )
-                    .map { row ->
-                        row.string("data")
-                    }.asList
-            )
-        }
-        val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
-        return fjernReservasjonerSomIkkeLengerErAktive(reservasjoner, oppgaveKøRepository, oppgaveRepository)
-    }
 
     suspend fun hent(saksbehandlersIdent: String): List<Reservasjon> {
         val saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedIdent(ident = saksbehandlersIdent)!!
