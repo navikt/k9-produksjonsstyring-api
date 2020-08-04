@@ -586,8 +586,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 continue
             }
             if (saksbehandler.navn != null && saksbehandler.navn!!.toLowerCase().contains(søkestreng, true)) {
-                d = 0.0
                 i = index
+                break
             }
                         
             var distance = levenshtein.distance(søkestreng.toLowerCase(), saksbehandler.brukerIdent!!.toLowerCase())
