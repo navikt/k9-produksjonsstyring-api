@@ -581,7 +581,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
         var d = Double.MAX_VALUE
         var i = -1
-        alleSaksbehandlere.withIndex().forEach { (index, saksbehandler) ->
+        for ((index, saksbehandler) in alleSaksbehandlere.withIndex()) {
+            if (saksbehandler.brukerIdent == null) {
+                continue
+            }
             var distance = levenshtein.distance(søkestreng, saksbehandler.brukerIdent)
             if (distance < d) {
                 d = distance
