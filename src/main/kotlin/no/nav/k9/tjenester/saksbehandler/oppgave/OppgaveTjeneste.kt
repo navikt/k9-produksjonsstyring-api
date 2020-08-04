@@ -590,17 +590,17 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 i = index
             }
                         
-            var distance = levenshtein.distance(søkestreng, saksbehandler.brukerIdent)
+            var distance = levenshtein.distance(søkestreng.toLowerCase(), saksbehandler.brukerIdent!!.toLowerCase())
             if (distance < d) {
                 d = distance
                 i = index
             }
-            distance = levenshtein.distance(søkestreng, saksbehandler.navn)
+            distance = levenshtein.distance(søkestreng.toLowerCase(), saksbehandler.navn!!.toLowerCase())
             if (distance < d) {
                 d = distance
                 i = index
             }
-            distance = levenshtein.distance(søkestreng, saksbehandler.epost)
+            distance = levenshtein.distance(søkestreng.toLowerCase(), saksbehandler.epost.toLowerCase())
             if (distance < d) {
                 d = distance
                 i = index
