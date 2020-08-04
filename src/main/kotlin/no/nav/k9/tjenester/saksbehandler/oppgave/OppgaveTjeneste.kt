@@ -548,7 +548,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return list
     }
 
-    private suspend fun tilgangTilSak(oppgave: Oppgave): Boolean {
+     suspend fun tilgangTilSak(oppgave: Oppgave): Boolean {
         if (!pepClient.harTilgangTilLesSak(
                 fagsakNummer = oppgave.fagsakSaksnummer,
                 aktørid = oppgave.aktorId

@@ -1,5 +1,6 @@
 package no.nav.k9.tjenester.avdelingsleder
 
+import kotlinx.coroutines.runBlocking
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.Enhet
 import no.nav.k9.domene.modell.KøSortering
@@ -99,18 +100,18 @@ class AvdelingslederTjeneste(
     }
 
     suspend fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
-            oppgaveKøRepository.lagre(UUID.fromString(behandling.id)) { oppgaveKø ->
-                if (behandling.checked) {
-                    oppgaveKø!!.filtreringBehandlingTyper.add(behandling.behandlingType)
-                } else {
-                    oppgaveKø!!.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
-                        it != behandling.behandlingType
-                    }.toMutableList()
-                }
-                oppgaveKø.nyeOgFerdigstilteOppgaver.clear()
-                oppgaveKø
+        oppgaveKøRepository.lagre(UUID.fromString(behandling.id)) { oppgaveKø ->
+            if (behandling.checked) {
+                oppgaveKø!!.filtreringBehandlingTyper.add(behandling.behandlingType)
+            } else {
+                oppgaveKø!!.filtreringBehandlingTyper = oppgaveKø.filtreringBehandlingTyper.filter {
+                    it != behandling.behandlingType
+                }.toMutableList()
             }
-            oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
+            oppgaveKø.nyeOgFerdigstilteOppgaver.clear()
+            oppgaveKø
+        }
+        oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
 
     }
 
@@ -200,22 +201,27 @@ class AvdelingslederTjeneste(
         val list = mutableListOf<ReservasjonDto>()
         for (saksbehandler in saksbehandlerRepository.hentAlleSaksbehandlere()) {
             for (uuid in saksbehandler.reservasjoner) {
+
                 val oppgave = oppgaveRepository.hent(uuid)
-                val reservasjon = reservasjonRepository.hent(uuid)
-                list.add(
-                    ReservasjonDto(
-                        reservertAvUid = saksbehandler.brukerIdent!!,
-                        reservertAvNavn = saksbehandler.navn ?: "",
-                        reservertTilTidspunkt = reservasjon.reservertTil!!,
-                        oppgaveId = reservasjon.oppgave,
-                        saksnummer = oppgave.fagsakSaksnummer,
-                        behandlingType = oppgave.behandlingType
-                    )
-                )
+                runBlocking {
+                    if (oppgaveTjeneste.tilgangTilSak(oppgave)) {
+                        val reservasjon = reservasjonRepository.hent(uuid)
+                        list.add(
+                            ReservasjonDto(
+                                reservertAvUid = saksbehandler.brukerIdent!!,
+                                reservertAvNavn = saksbehandler.navn ?: "",
+                                reservertTilTidspunkt = reservasjon.reservertTil!!,
+                                oppgaveId = reservasjon.oppgave,
+                                saksnummer = oppgave.fagsakSaksnummer,
+                                behandlingType = oppgave.behandlingType
+                            )
+                        )
+                    }
+                }
             }
         }
-        
-         return list
+
+        return list
     }
 
     suspend fun opphevReservasjon(uuid: UUID): Reservasjon {
