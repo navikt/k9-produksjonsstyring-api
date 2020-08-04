@@ -51,9 +51,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 }
                 for (oppgaveKø in oppgaveKøRepository.hent()) {
                     val set = mutableSetOf<String>()
-                    oppgaveKø.nyeOgFerdigstilteOppgaver.forEach { mutableEntry ->
-                        mutableEntry.value.forEach { e ->
-                            set.addAll(e.value.nye)
+                    oppgaveKø.nyeOgFerdigstilteOppgaver.forEach { e ->
+                        e.value.forEach {
+                            set.addAll(it.value.nye)
                         }
                     }
                     if (set.contains(oppgave.eksternId.toString())) {
