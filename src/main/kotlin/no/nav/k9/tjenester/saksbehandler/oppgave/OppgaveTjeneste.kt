@@ -585,6 +585,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             if (saksbehandler.brukerIdent == null) {
                 continue
             }
+            if (saksbehandler.navn != null && saksbehandler.navn!!.toLowerCase().contains(søkestreng, true)) {
+                d = 0.0
+                i = index
+            }
+                        
             var distance = levenshtein.distance(søkestreng, saksbehandler.brukerIdent)
             if (distance < d) {
                 d = distance
