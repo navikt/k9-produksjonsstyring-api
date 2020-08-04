@@ -9,7 +9,6 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
-import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.*
 import no.nav.k9.tjenester.avdelingsleder.reservasjoner.ReservasjonDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
@@ -193,19 +192,26 @@ class AvdelingslederTjeneste(
         }
     }
 
-    suspend fun hentAlleReservasjoner(): List<ReservasjonDto> {
-        return reservasjonRepository.hent(oppgaveKøRepository, oppgaveRepository).map {
-            val oppgave = oppgaveRepository.hent(it.oppgave)
-            val saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedIdent(it.reservertAv)
-            ReservasjonDto(
-                  it.reservertAv,
-                  if (saksbehandler != null) saksbehandler.navn!! else "",
-                  it.reservertTil!!,
-                  it.oppgave,
-                  oppgave.fagsakSaksnummer,
-                  oppgave.behandlingType
-            )
+    fun hentAlleReservasjoner(): List<ReservasjonDto> {
+        val list = mutableListOf<ReservasjonDto>()
+        for (saksbehandler in saksbehandlerRepository.hentAlleSaksbehandlere()) {
+            for (uuid in saksbehandler.reservasjoner) {
+                val oppgave = oppgaveRepository.hent(uuid)
+                val reservasjon = reservasjonRepository.hent(uuid)
+                list.add(
+                    ReservasjonDto(
+                        reservertAvUid = saksbehandler.brukerIdent!!,
+                        reservertAvNavn = saksbehandler.navn ?: "",
+                        reservertTilTidspunkt = reservasjon.reservertTil!!,
+                        oppgaveId = reservasjon.oppgave,
+                        saksnummer = oppgave.fagsakSaksnummer,
+                        behandlingType = oppgave.behandlingType
+                    )
+                )
+            }
         }
+        
+         return list
     }
 
     suspend fun opphevReservasjon(uuid: UUID): Reservasjon {

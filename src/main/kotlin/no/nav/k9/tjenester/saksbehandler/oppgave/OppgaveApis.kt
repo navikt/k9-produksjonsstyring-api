@@ -190,7 +190,7 @@ internal fun Route.OppgaveApis(
                     )
                 )
             }
-        }else{
+        } else {
             call.respond(
                 oppgaveTjeneste.flyttReservasjon(
                     UUID.fromString(params.oppgaveId),
@@ -230,14 +230,14 @@ internal fun Route.OppgaveApis(
             oppgaveTjeneste.hentReservasjonsHistorikk(UUID.fromString(params.oppgaveId))
         )
     }
-    
+
     @Location("/flytt/sok")
     class søkSaksbehandler
 
     post { _: søkSaksbehandler ->
         val params = call.receive<BrukerIdentDto>()
 
-        val sokSaksbehandlerMedIdent = oppgaveTjeneste.sokSaksbehandlerMedIdent(params)
+        val sokSaksbehandlerMedIdent = oppgaveTjeneste.sokSaksbehandler(params.brukerIdent)
         if (sokSaksbehandlerMedIdent == null) {
             call.respond("")
         } else {
@@ -258,7 +258,14 @@ internal fun Route.OppgaveApis(
                     context = coroutineContext,
                     idToken = call.idToken()
                 )
-            ) { call.respond(oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)) }
+            ) {
+                val oppgaver = oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)
+                if (oppgaver.isNotEmpty()) {
+                    call.respond(listOf(oppgaver[0]))
+                } else {
+                    call.respond(oppgaver)
+                }            
+            }
         } else {
             withContext(
                 Dispatchers.Unconfined

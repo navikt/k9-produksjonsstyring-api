@@ -1,5 +1,6 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
+import info.debatty.java.stringsimilarity.Levenshtein
 import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
 import no.nav.k9.Configuration
@@ -572,6 +573,35 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun sokSaksbehandlerMedIdent(ident: BrukerIdentDto): Saksbehandler? {
         return saksbehandlerRepository.finnSaksbehandlerMedIdent(ident.brukerIdent)
+    }
+
+    fun sokSaksbehandler(søkestreng: String): Saksbehandler? {
+        val alleSaksbehandlere = saksbehandlerRepository.hentAlleSaksbehandlere()
+        val levenshtein = Levenshtein()
+
+        var d = Double.MAX_VALUE
+        var i = -1
+        for ((index, saksbehandler) in alleSaksbehandlere.withIndex()) {
+            if (saksbehandler.brukerIdent == null) {
+                continue
+            }
+            var distance = levenshtein.distance(søkestreng, saksbehandler.brukerIdent)
+            if (distance < d) {
+                d = distance
+                i = index
+            }
+            distance = levenshtein.distance(søkestreng, saksbehandler.navn)
+            if (distance < d) {
+                d = distance
+                i = index
+            }
+            distance = levenshtein.distance(søkestreng, saksbehandler.epost)
+            if (distance < d) {
+                d = distance
+                i = index
+            }
+        }
+        return alleSaksbehandlere[i]
     }
 
     fun hentOppgaveKøer(): List<OppgaveKø> {
