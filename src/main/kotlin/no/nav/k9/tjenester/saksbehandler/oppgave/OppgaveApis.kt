@@ -237,7 +237,7 @@ internal fun Route.OppgaveApis(
     post { _: søkSaksbehandler ->
         val params = call.receive<BrukerIdentDto>()
 
-        val sokSaksbehandlerMedIdent = oppgaveTjeneste.sokSaksbehandlerMedIdent(params)
+        val sokSaksbehandlerMedIdent = oppgaveTjeneste.sokSaksbehandler(params.brukerIdent)
         if (sokSaksbehandlerMedIdent == null) {
             call.respond("")
         } else {
