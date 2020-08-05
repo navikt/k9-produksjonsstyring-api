@@ -1,6 +1,6 @@
 package no.nav.k9.tjenester.avdelingsleder
 
-import kotlinx.coroutines.runBlocking
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.Enhet
 import no.nav.k9.domene.modell.KøSortering
@@ -10,6 +10,7 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.*
 import no.nav.k9.tjenester.avdelingsleder.reservasjoner.ReservasjonDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
@@ -23,7 +24,8 @@ class AvdelingslederTjeneste(
     private val saksbehandlerRepository: SaksbehandlerRepository,
     private val oppgaveTjeneste: OppgaveTjeneste,
     private val reservasjonRepository: ReservasjonRepository,
-    private val oppgaveRepository: OppgaveRepository
+    private val oppgaveRepository: OppgaveRepository,
+    private val pepClient: PepClient
 ) {
 
     suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
@@ -197,26 +199,31 @@ class AvdelingslederTjeneste(
         }
     }
 
-    fun hentAlleReservasjoner(): List<ReservasjonDto> {
+    @KtorExperimentalAPI
+    suspend fun hentAlleReservasjoner(): List<ReservasjonDto> {
         val list = mutableListOf<ReservasjonDto>()
         for (saksbehandler in saksbehandlerRepository.hentAlleSaksbehandlere()) {
             for (uuid in saksbehandler.reservasjoner) {
 
                 val oppgave = oppgaveRepository.hent(uuid)
-                runBlocking {
-                    if (oppgaveTjeneste.tilgangTilSak(oppgave)) {
-                        val reservasjon = reservasjonRepository.hent(uuid)
-                        list.add(
-                            ReservasjonDto(
-                                reservertAvUid = saksbehandler.brukerIdent!!,
-                                reservertAvNavn = saksbehandler.navn ?: "",
-                                reservertTilTidspunkt = reservasjon.reservertTil!!,
-                                oppgaveId = reservasjon.oppgave,
-                                saksnummer = oppgave.fagsakSaksnummer,
-                                behandlingType = oppgave.behandlingType
-                            )
+
+                if (pepClient.harTilgangTilLesSak(
+                        fagsakNummer = oppgave.fagsakSaksnummer,
+                        aktørid = oppgave.aktorId
+                    )
+                ) {
+
+                    val reservasjon = reservasjonRepository.hent(uuid)
+                    list.add(
+                        ReservasjonDto(
+                            reservertAvUid = saksbehandler.brukerIdent!!,
+                            reservertAvNavn = saksbehandler.navn ?: "",
+                            reservertTilTidspunkt = reservasjon.reservertTil!!,
+                            oppgaveId = reservasjon.oppgave,
+                            saksnummer = oppgave.fagsakSaksnummer,
+                            behandlingType = oppgave.behandlingType
                         )
-                    }
+                    )
                 }
             }
         }
