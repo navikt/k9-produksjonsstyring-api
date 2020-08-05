@@ -16,8 +16,12 @@ fun Route.AdminApis(
     class driftsmelding 
     
     post { _: driftsmelding ->
-        val driftsmeldingDto = call.receive<DriftsmeldingDto>()
+        val driftsmeldingDto = call.receive<Driftsmelding>()
         adminTjeneste.setDriftsmelding(driftsmeldingDto)        
+    }
+    
+    get { _: driftsmelding ->
+        adminTjeneste.hentDriftsmeldinger()
     }
     
     @Location("/admin/synkroniseroppgave")
