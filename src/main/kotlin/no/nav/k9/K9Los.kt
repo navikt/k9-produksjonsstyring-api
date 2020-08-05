@@ -239,7 +239,8 @@ fun Application.k9Los() {
         oppgaveTjeneste = oppgaveTjeneste,
         reservasjonRepository = reservasjonRepository,
         oppgaveRepository = oppgaveRepository,
-        pepClient = pepClient
+        pepClient = pepClient,
+        configuration = configuration
     )
     val driftsmeldingRepository = DriftsmeldingRepository(dataSource)
     val adminTjeneste = AdminTjeneste(driftsmeldingRepository = driftsmeldingRepository) 
@@ -454,7 +455,9 @@ private fun Route.api(
         route("avdelingsleder") {
             AvdelingslederApis(
                 oppgaveTjeneste = oppgaveTjeneste,
-                avdelingslederTjeneste = avdelingslederTjeneste
+                avdelingslederTjeneste = avdelingslederTjeneste,
+                requestContextService = requestContextService,
+                configuration = configuration
             )
             route("oppgavekoer") {
                 AvdelingslederOppgavekøApis(

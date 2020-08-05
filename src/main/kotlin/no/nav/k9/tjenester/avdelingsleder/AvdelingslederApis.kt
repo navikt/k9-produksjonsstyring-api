@@ -9,16 +9,21 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.withContext
+import no.nav.k9.Configuration
+import no.nav.k9.integrasjon.rest.RequestContextService
+import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveId
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
-import no.nav.k9.tjenester.saksbehandler.oppgave.OpphevReservasjonId
 import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.AvdelingslederApis(
     oppgaveTjeneste: OppgaveTjeneste,
-    avdelingslederTjeneste: AvdelingslederTjeneste
+    avdelingslederTjeneste: AvdelingslederTjeneste,
+    requestContextService: RequestContextService,
+    configuration: Configuration
 ) {
 
     @Location("/oppgaver/antall-totalt")
@@ -63,7 +68,18 @@ internal fun Route.AvdelingslederApis(
     class hentReservasjoner
 
     get { _: hentReservasjoner ->
-        call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
+        if (configuration.erIkkeLokalt) {
+            withContext(
+                requestContextService.getCoroutineContext(
+                    context = coroutineContext,
+                    idToken = call.idToken()
+                )
+            ) {
+                call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
+            }
+        }else{
+            call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
+        }   
     }
 
     @Location("/reservasjoner/opphev")

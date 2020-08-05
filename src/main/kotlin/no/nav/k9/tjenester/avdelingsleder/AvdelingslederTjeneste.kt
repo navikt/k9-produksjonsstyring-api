@@ -1,6 +1,7 @@
 package no.nav.k9.tjenester.avdelingsleder
 
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.Enhet
 import no.nav.k9.domene.modell.KøSortering
@@ -25,7 +26,8 @@ class AvdelingslederTjeneste(
     private val oppgaveTjeneste: OppgaveTjeneste,
     private val reservasjonRepository: ReservasjonRepository,
     private val oppgaveRepository: OppgaveRepository,
-    private val pepClient: PepClient
+    private val pepClient: PepClient,
+    private val configuration: Configuration
 ) {
 
     suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
@@ -207,24 +209,25 @@ class AvdelingslederTjeneste(
 
                 val oppgave = oppgaveRepository.hent(uuid)
 
-                if (pepClient.harTilgangTilLesSak(
+                if (configuration.erIkkeLokalt && !pepClient.harTilgangTilLesSak(
                         fagsakNummer = oppgave.fagsakSaksnummer,
                         aktørid = oppgave.aktorId
                     )
                 ) {
-
-                    val reservasjon = reservasjonRepository.hent(uuid)
-                    list.add(
-                        ReservasjonDto(
-                            reservertAvUid = saksbehandler.brukerIdent!!,
-                            reservertAvNavn = saksbehandler.navn ?: "",
-                            reservertTilTidspunkt = reservasjon.reservertTil!!,
-                            oppgaveId = reservasjon.oppgave,
-                            saksnummer = oppgave.fagsakSaksnummer,
-                            behandlingType = oppgave.behandlingType
-                        )
-                    )
+                    continue
                 }
+                val reservasjon = reservasjonRepository.hent(uuid)
+                list.add(
+                    ReservasjonDto(
+                        reservertAvUid = saksbehandler.brukerIdent!!,
+                        reservertAvNavn = saksbehandler.navn ?: "",
+                        reservertTilTidspunkt = reservasjon.reservertTil!!,
+                        oppgaveId = reservasjon.oppgave,
+                        saksnummer = oppgave.fagsakSaksnummer,
+                        behandlingType = oppgave.behandlingType
+                    )
+                )
+                
             }
         }
 
