@@ -54,6 +54,7 @@ import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
+import no.nav.k9.tjenester.admin.AdminTjeneste
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
@@ -233,13 +234,16 @@ fun Application.k9Los() {
         oppdatereKøerMedOppgaveProsessorJob.cancel()
     }
     val avdelingslederTjeneste = AvdelingslederTjeneste(
-        oppgaveKøRepository,
-        saksbehandlerRepository,
-        oppgaveTjeneste,
-        reservasjonRepository,
-        oppgaveRepository
+        oppgaveKøRepository = oppgaveKøRepository,
+        saksbehandlerRepository = saksbehandlerRepository,
+        oppgaveTjeneste = oppgaveTjeneste,
+        reservasjonRepository = reservasjonRepository,
+        oppgaveRepository = oppgaveRepository,
+        pepClient = pepClient,
+        configuration = configuration
     )
-
+    val driftsmeldingRepository = DriftsmeldingRepository(dataSource)
+    val adminTjeneste = AdminTjeneste(driftsmeldingRepository = driftsmeldingRepository) 
 
     // Server side events
     val sseChannel = produce {
@@ -250,7 +254,7 @@ fun Application.k9Los() {
 
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
-  
+
     val requestContextService = RequestContextService()
     install(CallIdRequired)
 
@@ -298,7 +302,8 @@ fun Application.k9Los() {
                     reservasjonRepository = reservasjonRepository,
                     eventRepository = behandlingProsessEventRepository,
                     sseChannel = sseChannel,
-                    nokkeltallTjeneste = nokkeltallTjeneste
+                    nokkeltallTjeneste = nokkeltallTjeneste,
+                    adminTjeneste = adminTjeneste
                 )
             }
         } else {
@@ -323,7 +328,8 @@ fun Application.k9Los() {
                 reservasjonRepository = reservasjonRepository,
                 eventRepository = behandlingProsessEventRepository,
                 sseChannel = sseChannel,
-                nokkeltallTjeneste = nokkeltallTjeneste
+                nokkeltallTjeneste = nokkeltallTjeneste,
+                adminTjeneste = adminTjeneste
             )
         }
         static("static") {
@@ -412,15 +418,13 @@ private fun Route.api(
     oppgaveRepository: OppgaveRepository,
     reservasjonRepository: ReservasjonRepository,
     sseChannel: BroadcastChannel<SseEvent>,
-    nokkeltallTjeneste: NokkeltallTjeneste
+    nokkeltallTjeneste: NokkeltallTjeneste,
+    adminTjeneste: AdminTjeneste
 ) {
 
     route("api") {
         AdminApis(
-            behandlingProsessEventRepository = eventRepository,
-            oppgaveRepository = oppgaveRepository,
-            reservasjonRepository = reservasjonRepository,
-            oppgaveKøRepository = oppgaveKøRepository
+            adminTjeneste = adminTjeneste
         )
         route("fagsak") {
             FagsakApis(
@@ -451,7 +455,9 @@ private fun Route.api(
         route("avdelingsleder") {
             AvdelingslederApis(
                 oppgaveTjeneste = oppgaveTjeneste,
-                avdelingslederTjeneste = avdelingslederTjeneste
+                avdelingslederTjeneste = avdelingslederTjeneste,
+                requestContextService = requestContextService,
+                configuration = configuration
             )
             route("oppgavekoer") {
                 AvdelingslederOppgavekøApis(
