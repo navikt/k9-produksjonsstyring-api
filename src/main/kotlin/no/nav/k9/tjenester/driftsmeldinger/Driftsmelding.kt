@@ -1,4 +1,4 @@
-package no.nav.k9.tjenester.admin
+package no.nav.k9.tjenester.driftsmeldinger
 
 import java.time.LocalDateTime
 import java.util.*

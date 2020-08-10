@@ -3,7 +3,7 @@ package no.nav.k9.domene.repository
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.db.runMigration
-import no.nav.k9.tjenester.admin.Driftsmelding
+import no.nav.k9.tjenester.driftsmeldinger.Driftsmelding
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -18,7 +18,8 @@ class DriftsmeldingRepositoryTest{
         val driftsmeldingRepository = DriftsmeldingRepository(dataSource)
 
 
-        val driftsmelding = Driftsmelding(melding = "Driftsmelding")
+        val driftsmelding =
+            Driftsmelding(melding = "Driftsmelding")
         driftsmeldingRepository.lagreDriftsmelding(driftsmelding)
 
         val alle = driftsmeldingRepository.hentAlle()
