@@ -1,29 +1,15 @@
 package no.nav.k9.tjenester.admin
 
-import io.ktor.application.call
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
-import io.ktor.locations.post
-import io.ktor.request.receive
 import io.ktor.routing.Route
 
 @KtorExperimentalLocationsAPI
 fun Route.AdminApis(
     adminTjeneste: AdminTjeneste
 ) {
-    @Location("/admin/driftsmelding")
-    class driftsmelding 
-    
-    post { _: driftsmelding ->
-        val driftsmeldingDto = call.receive<Driftsmelding>()
-        adminTjeneste.setDriftsmelding(driftsmeldingDto)        
-    }
-    
-    get { _: driftsmelding ->
-        adminTjeneste.hentDriftsmeldinger()
-    }
-    
+       
     @Location("/admin/synkroniseroppgave")
     class synkroniserOppgave
 

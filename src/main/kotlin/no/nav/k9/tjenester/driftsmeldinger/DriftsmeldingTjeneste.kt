@@ -1,9 +1,8 @@
-package no.nav.k9.tjenester.admin
+package no.nav.k9.tjenester.driftsmeldinger
 
 import no.nav.k9.domene.repository.DriftsmeldingRepository
-import no.nav.k9.tjenester.driftsmeldinger.Driftsmelding
 
-class AdminTjeneste(
+class DriftsmeldingTjeneste(
     private val driftsmeldingRepository: DriftsmeldingRepository
 ) {
     fun setDriftsmelding(driftsmelding: Driftsmelding) {

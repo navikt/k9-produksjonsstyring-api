@@ -3,8 +3,7 @@ package no.nav.k9.domene.repository
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.nav.k9.tjenester.admin.Driftsmelding
-import java.time.LocalDateTime
+import no.nav.k9.tjenester.driftsmeldinger.Driftsmelding
 import java.util.*
 import javax.sql.DataSource
 

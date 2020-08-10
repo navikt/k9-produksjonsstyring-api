@@ -60,6 +60,8 @@ import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
+import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingTjeneste
+import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingerApis
 import no.nav.k9.tjenester.fagsak.FagsakApis
 import no.nav.k9.tjenester.innsikt.InnsiktGrensesnitt
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
@@ -244,6 +246,7 @@ fun Application.k9Los() {
     )
     val driftsmeldingRepository = DriftsmeldingRepository(dataSource)
     val adminTjeneste = AdminTjeneste(driftsmeldingRepository = driftsmeldingRepository) 
+    val driftsmeldingTjeneste = DriftsmeldingTjeneste(driftsmeldingRepository = driftsmeldingRepository) 
 
     // Server side events
     val sseChannel = produce {
@@ -303,7 +306,8 @@ fun Application.k9Los() {
                     eventRepository = behandlingProsessEventRepository,
                     sseChannel = sseChannel,
                     nokkeltallTjeneste = nokkeltallTjeneste,
-                    adminTjeneste = adminTjeneste
+                    adminTjeneste = adminTjeneste,
+                            driftsmeldingTjeneste= driftsmeldingTjeneste
                 )
             }
         } else {
@@ -329,7 +333,8 @@ fun Application.k9Los() {
                 eventRepository = behandlingProsessEventRepository,
                 sseChannel = sseChannel,
                 nokkeltallTjeneste = nokkeltallTjeneste,
-                adminTjeneste = adminTjeneste
+                adminTjeneste = adminTjeneste,
+                driftsmeldingTjeneste= driftsmeldingTjeneste
             )
         }
         static("static") {
@@ -419,13 +424,19 @@ private fun Route.api(
     reservasjonRepository: ReservasjonRepository,
     sseChannel: BroadcastChannel<SseEvent>,
     nokkeltallTjeneste: NokkeltallTjeneste,
-    adminTjeneste: AdminTjeneste
+    adminTjeneste: AdminTjeneste,
+    driftsmeldingTjeneste: DriftsmeldingTjeneste
 ) {
 
     route("api") {
         AdminApis(
             adminTjeneste = adminTjeneste
         )
+        route("driftsmeldinger") {
+            DriftsmeldingerApis(
+                driftsmeldingTjeneste = driftsmeldingTjeneste
+            )
+        }
         route("fagsak") {
             FagsakApis(
                 oppgaveTjeneste = oppgaveTjeneste,

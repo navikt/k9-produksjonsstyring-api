@@ -6,6 +6,7 @@ import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.tjenester.innsikt.Mapping
 import java.util.*
 import javax.sql.DataSource
 
@@ -100,5 +101,20 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
             )
         }
         return  json!!
+    }
+    
+    fun mapMellomeksternIdOgBehandlingsid(): List<Mapping> {
+        return using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    """select id, (data-> 'eventer' -> -1 ->'behandlingId' ) as behandlingid from behandling_prosess_events_k9""",
+                    mapOf()
+                )
+                    .map { row ->
+                        Mapping(id = row.string("behandlingid"), uuid = row.string("id"))                        
+                    }.asList
+            )
+        }
     }
 }
