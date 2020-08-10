@@ -65,7 +65,7 @@ fun Route.InnsiktGrensesnitt(
     @Location("/mapping")
     class mapping
 
-    get { _: main ->
+    get { _: mapping ->
         val mapMellomeksternIdOgBehandlingsid =
             behandlingProsessEventRepository.mapMellomeksternIdOgBehandlingsid()
         call.respond(mapMellomeksternIdOgBehandlingsid)
