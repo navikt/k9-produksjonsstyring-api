@@ -2,9 +2,11 @@ package no.nav.k9.tjenester.innsikt
 
 import io.ktor.application.call
 import io.ktor.html.respondHtml
+import io.ktor.http.HttpHeaders
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
+import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
@@ -66,6 +68,7 @@ fun Route.InnsiktGrensesnitt(
     class mapping
 
     get { _: mapping ->
+        call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"mapping_behandlingsid_externid.json\"")
         val mapMellomeksternIdOgBehandlingsid =
             behandlingProsessEventRepository.mapMellomeksternIdOgBehandlingsid()
         call.respond(mapMellomeksternIdOgBehandlingsid)
