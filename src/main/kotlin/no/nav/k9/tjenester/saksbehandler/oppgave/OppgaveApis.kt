@@ -271,6 +271,7 @@ internal fun Route.OppgaveApis(
                     call.respond(oppgaver)
                 }
             }
+            
         } else {
             withContext(
                 Dispatchers.Unconfined
