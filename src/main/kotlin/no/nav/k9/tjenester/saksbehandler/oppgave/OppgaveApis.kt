@@ -261,7 +261,7 @@ internal fun Route.OppgaveApis(
             ) {
                 val oppgaver = oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)
                 if (oppgaver.isNotEmpty()) {
-                    val first = oppgaver.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling }
+                    val first = oppgaver.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling || oppgaveDto.status.erReservert }
                     if (first != null) {
                         call.respond(listOf(first))
                     } else {
