@@ -101,4 +101,19 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
         }
         return  json!!
     }
+    
+    fun mapMellomeksternIdOgBehandlingsid(): List<Pair<String, String>> {
+        return using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    """select id, (data-> 'eventer' -> -1 ->'behandlingId' ) as behandlingid from behandling_prosess_events_k9""",
+                    mapOf()
+                )
+                    .map { row ->
+                        Pair(row.string("id"),row.string("behandlingid"))                        
+                    }.asList
+            )
+        }
+    }
 }

@@ -5,6 +5,7 @@ import io.ktor.html.respondHtml
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
+import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.*
@@ -60,5 +61,13 @@ fun Route.InnsiktGrensesnitt(
                 }
             }
         }
+    }
+    @Location("/mapping")
+    class mapping
+
+    get { _: main ->
+        val mapMellomeksternIdOgBehandlingsid =
+            behandlingProsessEventRepository.mapMellomeksternIdOgBehandlingsid()
+        call.respond(mapMellomeksternIdOgBehandlingsid)
     }
 }
