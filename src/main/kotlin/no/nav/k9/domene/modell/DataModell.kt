@@ -263,7 +263,7 @@ data class Modell(
         val zone = ZoneId.of("Europe/Oslo")
         return Behandling(
             sakId = oppgave.fagsakSaksnummer,
-            behandlingId = oppgave.behandlingId.toString(),
+            behandlingId = oppgave.eksternId.toString(),
             funksjonellTid = sisteEvent().eventTid.atOffset(zone.rules.getOffset(sisteEvent().eventTid)),
             tekniskTid = OffsetDateTime.now(),
             mottattDato = oppgave.behandlingOpprettet.toLocalDate(),

@@ -261,11 +261,17 @@ internal fun Route.OppgaveApis(
             ) {
                 val oppgaver = oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)
                 if (oppgaver.isNotEmpty()) {
-                    call.respond(listOf(oppgaver[0]))
+                    val first = oppgaver.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling }
+                    if (first != null) {
+                        call.respond(listOf(first))
+                    } else {
+                        call.respond(listOf(oppgaver[0]))
+                    }
                 } else {
                     call.respond(oppgaver)
-                }            
+                }
             }
+            
         } else {
             withContext(
                 Dispatchers.Unconfined
