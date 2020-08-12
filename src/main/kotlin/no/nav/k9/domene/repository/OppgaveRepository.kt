@@ -240,12 +240,7 @@ class OppgaveRepository(
         return objectMapper().readValue(json, Oppgave::class.java)
     }
 
-    private val hentAktiveOppgaverTotaltCache = Cache<Int>()
     internal fun hentAktiveOppgaverTotalt(): Int {
-        val cacheObject = hentAktiveOppgaverTotaltCache.get("default")
-        if (cacheObject != null) {
-            return cacheObject.value
-        }
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(
@@ -260,7 +255,6 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         log.info("Teller aktive oppgaver: $spørring ms")
-        hentAktiveOppgaverTotaltCache.set("default", CacheObject(count!!))
         return count!!
     }
 

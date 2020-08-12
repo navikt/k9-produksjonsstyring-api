@@ -282,10 +282,11 @@ fun Application.k9Los() {
         if (!configuration.erIProd) {
             route("mock") {
                 MockGrensesnitt(
-                    k9sakEventHandler,
-                    behandlingProsessEventRepository,
-                    oppgaveKøRepository,
-                    oppgaveRepository
+                    k9sakEventHandler = k9sakEventHandler,
+                    behandlingProsessEventRepository = behandlingProsessEventRepository,
+                    oppgaveKøRepository = oppgaveKøRepository,
+                    oppgaveRepository = oppgaveRepository,
+                    saksbehandlerRepository = saksbehandlerRepository
                 )
             }
         }

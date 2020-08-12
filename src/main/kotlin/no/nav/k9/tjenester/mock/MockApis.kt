@@ -17,6 +17,7 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
@@ -31,7 +32,8 @@ fun Route.MockGrensesnitt(
     k9sakEventHandler: K9sakEventHandler,
     behandlingProsessEventRepository: BehandlingProsessEventRepository,
     oppgaveKøRepository: OppgaveKøRepository,
-    oppgaveRepository: OppgaveRepository
+    oppgaveRepository: OppgaveRepository,
+    saksbehandlerRepository: SaksbehandlerRepository
 ) {
     @Location("/")
     class main
@@ -202,10 +204,13 @@ fun Route.MockGrensesnitt(
         if (ferdigStill != null) {
             k9sakEventHandler.prosesser(
                 behandlingProsessEventRepository.hent(UUID.fromString(ferdigStill)).sisteEvent()
-                    .copy(behandlingStatus = BehandlingStatus.AVSLUTTET.kode, aksjonspunktKoderMedStatusListe = mutableMapOf())
+                    .copy(
+                        behandlingStatus = BehandlingStatus.AVSLUTTET.kode,
+                        aksjonspunktKoderMedStatusListe = mutableMapOf()
+                    )
             )
         }
-        
+
         val oppgavekøer = oppgaveKøRepository.hent()
 
         call.respondHtml {
@@ -228,6 +233,11 @@ fun Route.MockGrensesnitt(
                             selected = true
                             +"Velg kø"
                         }
+                        option {
+                            selected = "reserverte" == valgtKø
+                            value = "reserverte"
+                            +"Reserverte"
+                        }
                         for (oppgaveKø in oppgavekøer) {
                             option {
                                 selected = oppgaveKø.id.toString() == valgtKø
@@ -238,9 +248,17 @@ fun Route.MockGrensesnitt(
                     }
 
                     if (valgtKø != null) {
-                        val oppgaver = oppgaveRepository
-                            .hentOppgaver(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }
-                                .oppgaverOgDatoer.take(20).map { it.id })
+                        val oppgaver =
+                            if (valgtKø == "reserverte") {
+                                oppgaveRepository
+                                    .hentOppgaver(
+                                        saksbehandlerRepository.hentAlleSaksbehandlere().flatMap { it.reservasjoner })
+                            } else {
+                                oppgaveRepository
+                                    .hentOppgaver(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }
+                                        .oppgaverOgDatoer.take(20).map { it.id })
+                            }
+
                         table {
                             classes = setOf("table")
                             thead {
@@ -264,7 +282,8 @@ fun Route.MockGrensesnitt(
                                         button {
                                             classes = setOf("btn", "btn-dark")
                                             //language=JavaScript
-                                            onClick = "window.location.search = (window.location.search.lastIndexOf('&') == -1 ? window.location.search : window.location.search.substr(0,window.location.search.lastIndexOf('&'))) +'&ferdigstill=${oppgave.eksternId}';"
+                                            onClick =
+                                                "window.location.search = (window.location.search.lastIndexOf('&') == -1 ? window.location.search : window.location.search.substr(0,window.location.search.lastIndexOf('&'))) +'&ferdigstill=${oppgave.eksternId}';"
                                             +"Ferdigstill"
                                         }
                                     }

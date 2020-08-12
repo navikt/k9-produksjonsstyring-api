@@ -65,6 +65,9 @@ data class Modell(
         var behandlingStatus = event.behandlingStatus
         // feil i dto, sjekker begge feltene
         behandlingStatus = behandlingStatus ?: event.behandlinStatus ?: BehandlingStatus.OPPRETTET.kode
+        if (behandlingStatus == BehandlingStatus.AVSLUTTET.kode) {
+            aktiv = false
+        }
         return Oppgave(
             behandlingId = event.behandlingId,
             fagsakSaksnummer = event.saksnummer,
