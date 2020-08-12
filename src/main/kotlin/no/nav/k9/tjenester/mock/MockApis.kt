@@ -259,7 +259,7 @@ fun Route.MockGrensesnitt(
                                         button {
                                             classes = setOf("btn", "btn-dark")
                                             //language=JavaScript
-                                            onClick = "window.location.search = window.location.search.substr(0,window.location.search.lastIndexOf('&')) +'&ferdigstill=${oppgave.eksternId}';"
+                                            onClick = "window.location.search = window.location.search.lastIndexOf('&') == -1 ? window.location.search : window.location.search.substr(0,window.location.search.lastIndexOf('&')) +'&ferdigstill=${oppgave.eksternId}';"
                                             +"Ferdigstill"
                                         }
                                     }
