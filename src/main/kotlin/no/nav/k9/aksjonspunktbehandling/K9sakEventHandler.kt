@@ -59,7 +59,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     if (set.contains(oppgave.eksternId.toString())) {
                         runBlocking {
                             oppgaveKøRepository.lagre(oppgaveKø.id) {
-                                it!!.nyeOgFerdigstilteOppgaver(oppgave, false)
+                                it!!.nyeOgFerdigstilteOppgaver(oppgave)
                                     .leggTilFerdigstilt(oppgave.eksternId.toString())
                                 it
                             }

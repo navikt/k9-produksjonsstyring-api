@@ -209,7 +209,8 @@ fun Route.MockGrensesnitt(
                 behandlingProsessEventRepository.hent(UUID.fromString(ferdigStill)).sisteEvent()
                     .copy(
                         behandlingStatus = BehandlingStatus.AVSLUTTET.kode,
-                        aksjonspunktKoderMedStatusListe = mutableMapOf()
+                        aksjonspunktKoderMedStatusListe = mutableMapOf(),
+                        eventTid = LocalDateTime.now()
                     )
             )
         }
