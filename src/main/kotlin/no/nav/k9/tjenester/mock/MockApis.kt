@@ -222,7 +222,7 @@ fun Route.MockGrensesnitt(
                         classes = setOf("form-control")
                         id = "valgtKø"
                         //language=JavaScript
-                        onChange = " window.location.search = window.location.search.substr(0,window.location.search.lastIndexOf('&')) +'?valgtKø=' + document.getElementById('valgtKø').value;"
+                        onChange = "window.location.search =?valgtKø=' + document.getElementById('valgtKø').value;"
                         for (oppgaveKø in oppgavekøer) {
                             option {
                                 selected = oppgaveKø.id.toString() == valgtKø
@@ -259,7 +259,7 @@ fun Route.MockGrensesnitt(
                                         button {
                                             classes = setOf("btn", "btn-dark")
                                             //language=JavaScript
-                                            onClick = "window.location.search ='&ferdigstill=${oppgave.eksternId}';"
+                                            onClick = "window.location.search = window.location.search.substr(0,window.location.search.lastIndexOf('&')) +'&ferdigstill=${oppgave.eksternId}';"
                                             +"Ferdigstill"
                                         }
                                     }

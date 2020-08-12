@@ -254,7 +254,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
+    suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
         return oppgaveKøRepository.hent().flatMap { it.nyeOgFerdigstilteOppgaverSisteSyvDager() }
             .groupBy { it.dato }.values.map { nyeOgFerdigstilteOppgaverDto ->
                 nyeOgFerdigstilteOppgaverDto.groupBy { it.behandlingType }.map { entry ->
@@ -270,17 +270,15 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
             }.flatten().map {
                 var antallFerdistilteMine = 0
-                runBlocking {
-                    val hentIdentTilInnloggetBruker = if (configuration.erLokalt) {
-                        "saksbehandler@nav.no"
-                    } else {
-                        azureGraphService.hentIdentTilInnloggetBruker()
-                    }
-                    antallFerdistilteMine =
-                        reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
-                            .toSet())
-                            .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
+                val hentIdentTilInnloggetBruker = if (configuration.erLokalt) {
+                    "saksbehandler@nav.no"
+                } else {
+                    azureGraphService.hentIdentTilInnloggetBruker()
                 }
+                antallFerdistilteMine =
+                    reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
+                        .toSet())
+                        .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
                 NyeOgFerdigstilteOppgaverDto(
                     behandlingType = it.behandlingType,
                     dato = it.dato,
