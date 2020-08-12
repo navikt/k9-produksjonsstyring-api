@@ -49,7 +49,10 @@ fun Route.MockGrensesnitt(
             body {
                 div {
                     classes = setOf("container ")
-
+                    a {
+                        href="/mock/endreBehandling"
+                        +"Endre behandling"
+                    }
                     h1 { +"Testside for k9-los" }
                     p {
                         +"Aksjonspunkter toggles av og på som hendelser. En behandling regnes som avsluttet dersom den er opprettet og ikke lengre har noen aksjonspunkter som operative"
@@ -222,6 +225,10 @@ fun Route.MockGrensesnitt(
             body {
                 div {
                     classes = setOf("container ")
+                    a { 
+                        href="/mock"
+                        +"Mock"
+                    }
                     h1 { +"Endre behandling" }
                     select {
                         classes = setOf("form-control")
