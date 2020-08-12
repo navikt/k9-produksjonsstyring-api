@@ -3,7 +3,6 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 import info.debatty.java.stringsimilarity.Levenshtein
 import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
-import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon

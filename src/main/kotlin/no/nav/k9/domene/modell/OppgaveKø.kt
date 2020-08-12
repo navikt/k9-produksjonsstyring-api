@@ -59,8 +59,8 @@ data class OppgaveKø(
         return false
     }
 
-    fun nyeOgFerdigstilteOppgaver(oppgave: Oppgave): NyeOgFerdigstilteOppgaver {
-        return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
+    fun nyeOgFerdigstilteOppgaver(oppgave: Oppgave, ny:Boolean = true): NyeOgFerdigstilteOppgaver {
+        return nyeOgFerdigstilteOppgaver.getOrPut(if (ny) oppgave.eventTid.toLocalDate() else LocalDate.now()) {
             mutableMapOf()
         }.getOrPut(oppgave.behandlingType.kode) {
             NyeOgFerdigstilteOppgaver(
