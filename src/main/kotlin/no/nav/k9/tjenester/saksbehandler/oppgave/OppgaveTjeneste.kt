@@ -253,8 +253,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
     }
 
+    @KtorExperimentalAPI
     fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
-        val ret = oppgaveKøRepository.hent().flatMap { it.nyeOgFerdigstilteOppgaverSisteSyvDager() }
+        return oppgaveKøRepository.hent().flatMap { it.nyeOgFerdigstilteOppgaverSisteSyvDager() }
             .groupBy { it.dato }.values.map { nyeOgFerdigstilteOppgaverDto ->
                 nyeOgFerdigstilteOppgaverDto.groupBy { it.behandlingType }.map { entry ->
                     entry.value.reduce { acc, nyeOgFerdigstilteOppgaver ->
@@ -267,13 +268,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         acc
                     }
                 }
-            }.flatten()
-
-        val map = ret.map {
-            val toList = it.ferdigstilte.map { UUID.fromString(it)!! }.toSet()
+            }.flatten().map {
             var antallFerdistilteMine = 0
             runBlocking {
-                antallFerdistilteMine = reservasjonRepository.hent(toList)
+                antallFerdistilteMine = reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }.toSet())
                     .filter { it.reservertAv == azureGraphService.hentIdentTilInnloggetBruker() }.size
             }
             NyeOgFerdigstilteOppgaverDto(
@@ -284,7 +282,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 antallFerdigstilteMine = antallFerdistilteMine
             )
         }
-        return map
     }
 
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
