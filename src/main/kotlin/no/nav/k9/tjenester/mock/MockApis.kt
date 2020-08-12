@@ -223,6 +223,11 @@ fun Route.MockGrensesnitt(
                         id = "valgtKø"
                         //language=JavaScript
                         onChange = "window.location.search ='?valgtKø=' + document.getElementById('valgtKø').value;"
+                        option {
+                            disabled = true
+                            selected = true
+                            +"Velg kø"
+                        }
                         for (oppgaveKø in oppgavekøer) {
                             option {
                                 selected = oppgaveKø.id.toString() == valgtKø
