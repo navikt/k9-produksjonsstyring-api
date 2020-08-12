@@ -202,7 +202,7 @@ fun Route.MockGrensesnitt(
         if (ferdigStill != null) {
             k9sakEventHandler.prosesser(
                 behandlingProsessEventRepository.hent(UUID.fromString(ferdigStill)).sisteEvent()
-                    .copy(behandlingStatus = BehandlingStatus.AVSLUTTET.kode)
+                    .copy(behandlingStatus = BehandlingStatus.AVSLUTTET.kode, aksjonspunktKoderMedStatusListe = mutableMapOf())
             )
         }
         
