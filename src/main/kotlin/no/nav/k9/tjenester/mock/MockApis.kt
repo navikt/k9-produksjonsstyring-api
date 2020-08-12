@@ -198,7 +198,7 @@ fun Route.MockGrensesnitt(
 
     get { _: endreBehandling ->
         val valgtKø = call.request.queryParameters.get("valgtKø")
-        val ferdigStill = call.request.queryParameters.get("ferdigStill")
+        val ferdigStill = call.request.queryParameters.get("ferdigstill")
         if (ferdigStill != null) {
             k9sakEventHandler.prosesser(
                 behandlingProsessEventRepository.hent(UUID.fromString(ferdigStill)).sisteEvent()
@@ -259,7 +259,7 @@ fun Route.MockGrensesnitt(
                                         button {
                                             classes = setOf("btn", "btn-dark")
                                             //language=JavaScript
-                                            onClick = "window.location.search +='&ferdigStill=${oppgave.eksternId}';"
+                                            onClick = "window.location.search ='&ferdigstill=${oppgave.eksternId}';"
                                             +"Ferdigstill"
                                         }
                                     }

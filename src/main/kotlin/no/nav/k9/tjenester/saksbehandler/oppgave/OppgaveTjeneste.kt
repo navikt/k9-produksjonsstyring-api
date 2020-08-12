@@ -269,19 +269,26 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     }
                 }
             }.flatten().map {
-            var antallFerdistilteMine = 0
-            runBlocking {
-                antallFerdistilteMine = reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }.toSet())
-                    .filter { it.reservertAv == azureGraphService.hentIdentTilInnloggetBruker() }.size
+                var antallFerdistilteMine = 0
+                runBlocking {
+                    val hentIdentTilInnloggetBruker = if (configuration.erLokalt) {
+                        "saksbehandler@nav.no"
+                    } else {
+                        azureGraphService.hentIdentTilInnloggetBruker()
+                    }
+                    antallFerdistilteMine =
+                        reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
+                            .toSet())
+                            .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
+                }
+                NyeOgFerdigstilteOppgaverDto(
+                    behandlingType = it.behandlingType,
+                    dato = it.dato,
+                    antallNye = it.nye.size,
+                    antallFerdigstilte = it.ferdigstilte.size,
+                    antallFerdigstilteMine = antallFerdistilteMine
+                )
             }
-            NyeOgFerdigstilteOppgaverDto(
-                behandlingType = it.behandlingType,
-                dato = it.dato,
-                antallNye = it.nye.size,
-                antallFerdigstilte = it.ferdigstilte.size,
-                antallFerdigstilteMine = antallFerdistilteMine
-            )
-        }
     }
 
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
