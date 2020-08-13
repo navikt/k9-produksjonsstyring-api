@@ -245,8 +245,8 @@ fun Application.k9Los() {
         configuration = configuration
     )
     val driftsmeldingRepository = DriftsmeldingRepository(dataSource)
-    val adminTjeneste = AdminTjeneste(driftsmeldingRepository = driftsmeldingRepository) 
-    val driftsmeldingTjeneste = DriftsmeldingTjeneste(driftsmeldingRepository = driftsmeldingRepository) 
+    val adminTjeneste = AdminTjeneste(driftsmeldingRepository = driftsmeldingRepository)
+    val driftsmeldingTjeneste = DriftsmeldingTjeneste(driftsmeldingRepository = driftsmeldingRepository)
 
     // Server side events
     val sseChannel = produce {
@@ -281,11 +281,21 @@ fun Application.k9Los() {
         )
         if (!configuration.erIProd) {
             route("mock") {
-                MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
+                MockGrensesnitt(
+                    k9sakEventHandler = k9sakEventHandler,
+                    behandlingProsessEventRepository = behandlingProsessEventRepository,
+                    oppgaveKøRepository = oppgaveKøRepository,
+                    oppgaveRepository = oppgaveRepository,
+                    saksbehandlerRepository = saksbehandlerRepository
+                )
             }
         }
         route("innsikt") {
-            InnsiktGrensesnitt(oppgaveRepository, behandlingProsessEventRepository)
+            InnsiktGrensesnitt(
+                oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository,
+                saksbehandlerRepository = saksbehandlerRepository,
+                behandlingProsessEventRepository = behandlingProsessEventRepository
+            )
         }
         if (configuration.erIkkeLokalt) {
             authenticate(*issuers.allIssuers()) {
@@ -307,7 +317,7 @@ fun Application.k9Los() {
                     sseChannel = sseChannel,
                     nokkeltallTjeneste = nokkeltallTjeneste,
                     adminTjeneste = adminTjeneste,
-                            driftsmeldingTjeneste= driftsmeldingTjeneste
+                    driftsmeldingTjeneste = driftsmeldingTjeneste
                 )
             }
         } else {
@@ -334,7 +344,7 @@ fun Application.k9Los() {
                 sseChannel = sseChannel,
                 nokkeltallTjeneste = nokkeltallTjeneste,
                 adminTjeneste = adminTjeneste,
-                driftsmeldingTjeneste= driftsmeldingTjeneste
+                driftsmeldingTjeneste = driftsmeldingTjeneste
             )
         }
         static("static") {
@@ -461,7 +471,11 @@ private fun Route.api(
                 requestContextService = requestContextService,
                 oppgaveKøRepository = oppgaveKøRepository
             )
-            SaksbehandlerNøkkeltallApis(oppgaveTjeneste = oppgaveTjeneste)
+            SaksbehandlerNøkkeltallApis(
+                configuration = configuration,
+                requestContextService = requestContextService,
+                oppgaveTjeneste = oppgaveTjeneste
+            )
         }
         route("avdelingsleder") {
             AvdelingslederApis(

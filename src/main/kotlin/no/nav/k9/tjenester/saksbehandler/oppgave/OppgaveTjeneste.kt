@@ -188,9 +188,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun tilOppgaveDto(oppgave: Oppgave, reservasjon: Reservasjon?): OppgaveDto {
 
         val oppgaveStatus =
-            if (reservasjon != null && (!reservasjon.erAktiv()) || reservasjon == null){
+            if (reservasjon != null && (!reservasjon.erAktiv()) || reservasjon == null) {
                 OppgaveStatusDto(false, null, false, null, null)
-            } else  {
+            } else {
                 OppgaveStatusDto(
                     true,
                     reservasjon.reservertTil,
@@ -242,7 +242,50 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
         return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverSisteSyvDager()
-            .map { NyeOgFerdigstilteOppgaverDto(it.behandlingType, it.dato, it.nye.size, it.ferdigstilte.size) }
+            .map {
+                NyeOgFerdigstilteOppgaverDto(
+                    behandlingType = it.behandlingType,
+                    dato = it.dato,
+                    antallNye = it.nye.size,
+                    antallFerdigstilte = it.ferdigstilte.size
+                )
+            }
+    }
+
+    @KtorExperimentalAPI
+    suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
+        return oppgaveKøRepository.hent().flatMap { it.nyeOgFerdigstilteOppgaverSisteSyvDager() }
+            .groupBy { it.dato }.values.map { nyeOgFerdigstilteOppgaverDto ->
+                nyeOgFerdigstilteOppgaverDto.groupBy { it.behandlingType }.map { entry ->
+                    entry.value.reduce { acc, nyeOgFerdigstilteOppgaver ->
+                        nyeOgFerdigstilteOppgaver.ferdigstilte.forEach {
+                            acc.leggTilFerdigstilt(it)
+                        }
+                        nyeOgFerdigstilteOppgaver.nye.forEach {
+                            acc.leggTilNy(it)
+                        }
+                        acc
+                    }
+                }
+            }.flatten().map {
+                var antallFerdistilteMine = 0
+                val hentIdentTilInnloggetBruker = if (configuration.erLokalt) {
+                    "saksbehandler@nav.no"
+                } else {
+                    azureGraphService.hentIdentTilInnloggetBruker()
+                }
+                antallFerdistilteMine =
+                    reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
+                        .toSet())
+                        .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
+                NyeOgFerdigstilteOppgaverDto(
+                    behandlingType = it.behandlingType,
+                    dato = it.dato,
+                    antallNye = it.nye.size,
+                    antallFerdigstilte = it.ferdigstilte.size,
+                    antallFerdigstilteMine = antallFerdistilteMine
+                )
+            }
     }
 
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
@@ -548,7 +591,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return list
     }
 
-     suspend fun tilgangTilSak(oppgave: Oppgave): Boolean {
+    suspend fun tilgangTilSak(oppgave: Oppgave): Boolean {
         if (!pepClient.harTilgangTilLesSak(
                 fagsakNummer = oppgave.fagsakSaksnummer,
                 aktørid = oppgave.aktorId
@@ -589,7 +632,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 i = index
                 break
             }
-                        
+
             var distance = levenshtein.distance(søkestreng.toLowerCase(), saksbehandler.brukerIdent!!.toLowerCase())
             if (distance < d) {
                 d = distance
