@@ -1,5 +1,5 @@
 package no.nav.k9.tjenester.avdelingsleder.oppgaveko
 
-data class OppgavekøIdDto(
+data class IdDto(
     val id: String
 )

@@ -3,14 +3,15 @@ package no.nav.k9.domene.repository
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.nav.k9.tjenester.driftsmeldinger.Driftsmelding
+import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingDto
+import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingSwitch
 import java.util.*
 import javax.sql.DataSource
 
 class DriftsmeldingRepository(
     private val dataSource: DataSource
 ) {
-    fun lagreDriftsmelding(driftsmelding: Driftsmelding) {
+    fun lagreDriftsmelding(driftsmelding: DriftsmeldingDto) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
 
@@ -34,7 +35,30 @@ class DriftsmeldingRepository(
         }
     }
 
-    fun hentAlle(): List<Driftsmelding> {
+    fun setDriftsmelding(driftsmelding: DriftsmeldingSwitch) {
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+
+                //language=PostgreSQL
+                tx.run(
+                        queryOf(
+                                """
+                    update driftsmeldinger
+                    set aktiv = :aktiv
+                    where id = :id                
+                       
+                 """,
+                        mapOf(
+                                "id" to driftsmelding.id,
+                                "aktiv" to driftsmelding.aktiv
+                        )
+                ).asUpdate
+                )
+            }
+        }
+    }
+
+    fun hentAlle(): List<DriftsmeldingDto> {
         return using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -42,7 +66,7 @@ class DriftsmeldingRepository(
                     """select * from driftsmeldinger""".trimIndent()
                 )
                     .map { row ->
-                        Driftsmelding(
+                        DriftsmeldingDto(
                             id = UUID.fromString(row.string("id")),
                             melding = row.string("melding"),
                             aktiv = row.boolean("aktiv"),
@@ -64,11 +88,30 @@ class DriftsmeldingRepository(
                     delete from driftsmeldinger where id = :id            
                  """,
                         mapOf(
-                            "id" to id.toString()                           
+                            "id" to id.toString()
                         )
                     ).asUpdate
                 )
             }
+        }
+    }
+
+    fun finnDriftsmelding(melding: String): DriftsmeldingDto? {
+        return using(sessionOf(dataSource)) {
+            it.run(
+                    queryOf(
+                            "select * from driftsmeldinger where lower(melding) = lower(:melding)",
+                            mapOf("melding" to melding)
+                    )
+                            .map { row ->
+                                DriftsmeldingDto(
+                                        id = UUID.fromString(row.string("id")),
+                                        melding = row.string("melding"),
+                                        aktiv = row.boolean("aktiv"),
+                                        dato = row.localDateTime("dato")
+                                )
+                            }.asSingle
+            )
         }
     }
 

@@ -4,7 +4,10 @@ import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.db.runMigration
 import no.nav.k9.tjenester.driftsmeldinger.Driftsmelding
+import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingDto
 import org.junit.Test
+import java.time.LocalDateTime
+import java.util.*
 import kotlin.test.assertEquals
 
 class DriftsmeldingRepositoryTest{
@@ -19,7 +22,11 @@ class DriftsmeldingRepositoryTest{
 
 
         val driftsmelding =
-            Driftsmelding(melding = "Driftsmelding")
+            DriftsmeldingDto(
+                    UUID.randomUUID(),
+                    "Driftsmelding",
+            LocalDateTime.now(),
+            false)
         driftsmeldingRepository.lagreDriftsmelding(driftsmelding)
 
         val alle = driftsmeldingRepository.hentAlle()
@@ -31,5 +38,5 @@ class DriftsmeldingRepositoryTest{
         val ingen = driftsmeldingRepository.hentAlle()
         assertEquals(0, ingen.size)
     }
-    
+
 }

@@ -40,7 +40,7 @@ fun Route.AvdelingslederOppgavekøApis(
     class slettOppgaveKø
 
     post { _: slettOppgaveKø ->
-        val uuid = call.receive<OppgavekøIdDto>()
+        val uuid = call.receive<IdDto>()
         call.respond(avdelingslederTjeneste.slettOppgavekø(UUID.fromString(uuid.id)))
     }
 
