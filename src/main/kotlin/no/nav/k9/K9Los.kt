@@ -291,7 +291,11 @@ fun Application.k9Los() {
             }
         }
         route("innsikt") {
-            InnsiktGrensesnitt(oppgaveRepository, behandlingProsessEventRepository)
+            InnsiktGrensesnitt(
+                oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository,
+                saksbehandlerRepository = saksbehandlerRepository,
+                behandlingProsessEventRepository = behandlingProsessEventRepository
+            )
         }
         if (configuration.erIkkeLokalt) {
             authenticate(*issuers.allIssuers()) {

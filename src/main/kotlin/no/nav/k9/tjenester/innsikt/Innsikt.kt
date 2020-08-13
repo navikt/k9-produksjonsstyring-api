@@ -12,12 +12,16 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.*
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
+import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 fun Route.InnsiktGrensesnitt(
     oppgaveRepository: OppgaveRepository,
+    oppgaveKøRepository: OppgaveKøRepository,
+    saksbehandlerRepository: SaksbehandlerRepository,
     behandlingProsessEventRepository: BehandlingProsessEventRepository
 ) {
     @Location("/")
@@ -68,9 +72,32 @@ fun Route.InnsiktGrensesnitt(
     class mapping
 
     get { _: mapping ->
-        call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"mapping_behandlingsid_externid.json\"")
+        call.response.header(
+            HttpHeaders.ContentDisposition,
+            "attachment; filename=\"mapping_behandlingsid_externid.json\""
+        )
         val mapMellomeksternIdOgBehandlingsid =
             behandlingProsessEventRepository.mapMellomeksternIdOgBehandlingsid()
         call.respond(mapMellomeksternIdOgBehandlingsid)
+    }
+
+    @Location("/overflow")
+    class overflow
+
+    get { _: overflow ->
+        val oppgaveIder = oppgaveRepository.hentAktiveOppgaver().map { it.eksternId }.toSet()
+
+        val mutableSet = oppgaveIder.toMutableSet()
+
+
+        mutableSet
+            .removeAll(oppgaveKøRepository.hent().flatMap { it.oppgaverOgDatoer }.map { it.id }.toSet())
+        mutableSet.removeAll(saksbehandlerRepository.hentAlleSaksbehandlere().flatMap { it.reservasjoner })
+
+        val oppgaver = oppgaveRepository.hentOppgaver(mutableSet)
+        if (oppgaver.isEmpty()) {
+            call.respond("Ingen overflødige")
+        }
+        call.respond(oppgaver)
     }
 }
