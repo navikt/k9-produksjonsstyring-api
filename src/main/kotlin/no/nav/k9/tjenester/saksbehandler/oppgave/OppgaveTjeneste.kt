@@ -96,7 +96,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
         if (query.length == 11) {
             var aktørId = pdlService.identifikator(query)
-            log.info("Hentet aktørid var null, var null: " + (aktørId == null))
             if (!configuration.erIProd) {
                 aktørId = AktøridPdl(
                     data = AktøridPdl.Data(
@@ -114,9 +113,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
             if (aktørId != null && aktørId.data.hentIdenter != null && aktørId.data.hentIdenter!!.identer.isNotEmpty()) {
                 var aktorId = aktørId.data.hentIdenter!!.identer[0].ident
-                log.info("Skal hente person")
                 val person = pdlService.person(aktorId)
-                log.info("Hentet person, var null: " + (person == null))
                 if (person != null) {
                     if (!configuration.erIProd) {
                         aktorId = "1172507325105"
