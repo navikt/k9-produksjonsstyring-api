@@ -98,6 +98,6 @@ fun Route.InnsiktGrensesnitt(
         if (oppgaver.isEmpty()) {
             call.respond("Ingen overflødige")
         }
-        call.respond(oppgaver)
+        call.respond(oppgaver.map { it.copy(aktorId = "") })
     }
 }
