@@ -192,11 +192,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 OppgaveStatusDto(false, null, false, null, null)
             } else {
                 OppgaveStatusDto(
-                    true,
-                    reservasjon.reservertTil,
-                    reservertAvMeg(reservasjon.reservertAv),
-                    reservasjon.reservertAv,
-                    null
+                    erReservert = true,
+                    reservertTilTidspunkt = reservasjon.reservertTil,
+                    erReservertAvInnloggetBruker = reservertAvMeg(reservasjon.reservertAv),
+                    reservertAv = reservasjon.reservertAv,
+                    flyttetReservasjon = null
                 )
             }
         val person = pdlService.person(oppgave.aktorId)!!
@@ -229,7 +229,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return saksnummere.map { oppgaveRepository.hentOppgaveMedSaksnummer(it) }
             .map { oppgave ->
                 tilOppgaveDto(
-                    oppgave!!, if (reservasjonRepository.finnes(oppgave.eksternId)
+                    oppgave = oppgave!!, reservasjon = if (reservasjonRepository.finnes(oppgave.eksternId)
                         && reservasjonRepository.hent(oppgave.eksternId).erAktiv()
                     ) {
                         reservasjonRepository.hent(oppgave.eksternId)
