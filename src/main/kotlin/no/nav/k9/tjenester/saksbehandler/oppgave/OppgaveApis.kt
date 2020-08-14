@@ -261,7 +261,6 @@ internal fun Route.OppgaveApis(
                 )
             ) {
                 val oppgaver = oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)
-                log.info("Debug av oppgaver: " + objectMapper().writeValueAsString(oppgaver))
                 if (oppgaver.isNotEmpty()) {
                     val first = oppgaver.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling }
                     if (first != null) {
