@@ -23,7 +23,7 @@ internal fun CoroutineContext.idToken() = requestContext().idToken
 
 // For bruk i non suspending functions
 // https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/coroutine-context-and-dispatchers.md#thread-local-data
-internal class RequestContextService {
+class RequestContextService {
 
     private companion object {
         private val requestContexts = ThreadLocal<RequestContext>()

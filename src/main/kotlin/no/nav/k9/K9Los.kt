@@ -279,11 +279,21 @@ fun Application.k9Los() {
         )
         if (!configuration.erIProd) {
             route("mock") {
-                MockGrensesnitt(k9sakEventHandler, behandlingProsessEventRepository)
+                MockGrensesnitt(
+                    k9sakEventHandler = k9sakEventHandler,
+                    behandlingProsessEventRepository = behandlingProsessEventRepository,
+                    oppgaveKøRepository = oppgaveKøRepository,
+                    oppgaveRepository = oppgaveRepository,
+                    saksbehandlerRepository = saksbehandlerRepository
+                )
             }
         }
         route("innsikt") {
-            InnsiktGrensesnitt(oppgaveRepository, behandlingProsessEventRepository)
+            InnsiktGrensesnitt(
+                oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository,
+                saksbehandlerRepository = saksbehandlerRepository,
+                behandlingProsessEventRepository = behandlingProsessEventRepository
+            )
         }
         if (configuration.erIkkeLokalt) {
             authenticate(*issuers.allIssuers()) {
@@ -330,7 +340,7 @@ fun Application.k9Los() {
                 eventRepository = behandlingProsessEventRepository,
                 sseChannel = sseChannel,
                 nokkeltallTjeneste = nokkeltallTjeneste,
-                driftsmeldingTjeneste= driftsmeldingTjeneste
+                driftsmeldingTjeneste = driftsmeldingTjeneste
             )
         }
         static("static") {
@@ -453,7 +463,11 @@ private fun Route.api(
                 requestContextService = requestContextService,
                 oppgaveKøRepository = oppgaveKøRepository
             )
-            SaksbehandlerNøkkeltallApis(oppgaveTjeneste = oppgaveTjeneste)
+            SaksbehandlerNøkkeltallApis(
+                configuration = configuration,
+                requestContextService = requestContextService,
+                oppgaveTjeneste = oppgaveTjeneste
+            )
         }
         route("avdelingsleder") {
             AvdelingslederApis(

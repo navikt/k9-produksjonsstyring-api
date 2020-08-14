@@ -40,6 +40,10 @@ class ReservasjonRepository(
         )
     }
 
+    fun hentSelvOmDeIkkeErAktive(reservasjoner: Set<UUID>): List<Reservasjon> {
+        return hentReservasjoner(reservasjoner)
+    }
+
     private fun hentReservasjoner(set: Set<UUID>): List<Reservasjon> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(

@@ -145,8 +145,9 @@ class PdlService @KtorExperimentalAPI constructor(
                 )
             }
             return try {
-                cache.set(query, CacheObject(json!!, LocalDateTime.now().plusHours(7)))
-                return objectMapper().readValue<PersonPdl>(json)
+                val readValue = objectMapper().readValue<PersonPdl>(json!!)
+                cache.set(query, CacheObject(json, LocalDateTime.now().plusHours(7)))
+                return readValue
             } catch (e: Exception) {
                 log.warn(
                     "Feilet deserialisering ved oppslag av $aktorId", e.message

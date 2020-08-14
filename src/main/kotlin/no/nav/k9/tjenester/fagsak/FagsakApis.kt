@@ -7,7 +7,6 @@ import io.ktor.locations.post
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.rest.RequestContextService
@@ -26,12 +25,6 @@ internal fun Route.FagsakApis(
     post { _: søkFagsaker ->
         val søk = call.receive<QueryString>()
         if (configuration.erLokalt) {
-           /* withContext(
-                Dispatchers.Unconfined
-            ) {
-                call.respond(oppgaveTjeneste.søkFagsaker("Saksnummer"))
-
-            }*/
             call.respond(emptyList<FagsakDto>())
         } else {
             val idToken = call.idToken()

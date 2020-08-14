@@ -13,7 +13,11 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.*
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
+import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
+import no.nav.k9.domene.repository.OppgaveKøRepository
+import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
@@ -26,7 +30,10 @@ import java.util.*
 @KtorExperimentalLocationsAPI
 fun Route.MockGrensesnitt(
     k9sakEventHandler: K9sakEventHandler,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository
+    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    oppgaveKøRepository: OppgaveKøRepository,
+    oppgaveRepository: OppgaveRepository,
+    saksbehandlerRepository: SaksbehandlerRepository
 ) {
     @Location("/")
     class main
@@ -42,7 +49,10 @@ fun Route.MockGrensesnitt(
             body {
                 div {
                     classes = setOf("container ")
-
+                    a {
+                        href="/mock/endreBehandling"
+                        +"Endre behandling"
+                    }
                     h1 { +"Testside for k9-los" }
                     p {
                         +"Aksjonspunkter toggles av og på som hendelser. En behandling regnes som avsluttet dersom den er opprettet og ikke lengre har noen aksjonspunkter som operative"
@@ -186,5 +196,111 @@ fun Route.MockGrensesnitt(
             k9sakEventHandler.prosesser(event)
         }
         call.respond(HttpStatusCode.Accepted)
+    }
+
+    @Location("/endreBehandling")
+    class endreBehandling
+
+    get { _: endreBehandling ->
+        val valgtKø = call.request.queryParameters.get("valgtKø")
+        val ferdigStill = call.request.queryParameters.get("ferdigstill")
+        if (ferdigStill != null) {
+            k9sakEventHandler.prosesser(
+                behandlingProsessEventRepository.hent(UUID.fromString(ferdigStill)).sisteEvent()
+                    .copy(
+                        behandlingStatus = BehandlingStatus.AVSLUTTET.kode,
+                        aksjonspunktKoderMedStatusListe = mutableMapOf(),
+                        eventTid = LocalDateTime.now()
+                    )
+            )
+        }
+
+        val oppgavekøer = oppgaveKøRepository.hent()
+
+        call.respondHtml {
+            head {
+                title { +"Test app for k9-los" }
+                styleLink("/static/bootstrap.css")
+                script(src = "/static/script.js") {}
+            }
+            body {
+                div {
+                    classes = setOf("container ")
+                    a { 
+                        href="/mock"
+                        +"Mock"
+                    }
+                    h1 { +"Endre behandling" }
+                    select {
+                        classes = setOf("form-control")
+                        id = "valgtKø"
+                        //language=JavaScript
+                        onChange = "window.location.search ='?valgtKø=' + document.getElementById('valgtKø').value;"
+                        option {
+                            disabled = true
+                            selected = true
+                            +"Velg kø"
+                        }
+                        option {
+                            selected = "reserverte" == valgtKø
+                            value = "reserverte"
+                            +"Reserverte"
+                        }
+                        for (oppgaveKø in oppgavekøer) {
+                            option {
+                                selected = oppgaveKø.id.toString() == valgtKø
+                                value = oppgaveKø.id.toString()
+                                +oppgaveKø.navn
+                            }
+                        }
+                    }
+
+                    if (valgtKø != null) {
+                        val oppgaver =
+                            if (valgtKø == "reserverte") {
+                                oppgaveRepository
+                                    .hentOppgaver(
+                                        saksbehandlerRepository.hentAlleSaksbehandlere().flatMap { it.reservasjoner })
+                            } else {
+                                oppgaveRepository
+                                    .hentOppgaver(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }
+                                        .oppgaverOgDatoer.take(20).map { it.id })
+                            }
+
+                        table {
+                            classes = setOf("table")
+                            thead {
+                                tr {
+                                    td {
+                                        +"Saksnummer"
+                                    }
+                                    td {
+                                        +"Behandlingstatus"
+                                    }
+                                    td {
+                                        +""
+                                    }
+                                }
+                            }
+                            for (oppgave in oppgaver) {
+                                tr {
+                                    td { +oppgave.fagsakSaksnummer }
+                                    td { +oppgave.behandlingStatus.navn }
+                                    td {
+                                        button {
+                                            classes = setOf("btn", "btn-dark")
+                                            //language=JavaScript
+                                            onClick =
+                                                "window.location.search = (window.location.search.lastIndexOf('&') == -1 ? window.location.search : window.location.search.substr(0,window.location.search.lastIndexOf('&'))) +'&ferdigstill=${oppgave.eksternId}';"
+                                            +"Ferdigstill"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
