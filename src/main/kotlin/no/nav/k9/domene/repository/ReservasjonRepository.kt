@@ -71,7 +71,7 @@ class ReservasjonRepository(
     ): List<Reservasjon> {
         reservasjoner.forEach { reservasjon ->
             if (!reservasjon.erAktiv()) {
-                lagre(reservasjon.oppgave) {
+                lagre(reservasjon.oppgave, refresh = true) {
                     it!!.reservertTil = null
                     saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                     it
