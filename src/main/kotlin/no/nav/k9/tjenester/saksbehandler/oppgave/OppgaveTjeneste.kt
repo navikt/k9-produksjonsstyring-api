@@ -148,8 +148,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
             }
         }
-        val oppgave = oppgaveRepository.hentOppgaveMedSaksnummer(query)
-        if (oppgave != null) {
+        val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer(query)
+        val ret = mutableListOf<FagsakDto>()
+        for (oppgave in oppgaver) {
             if (!pepClient.harTilgangTilLesSak(
                     fagsakNummer = oppgave.fagsakSaksnummer,
                     aktørid = oppgave.aktorId
@@ -159,7 +160,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 return emptyList()
             }
             val person = pdlService.person(oppgave.aktorId)!!
-            return listOf(
+
+            ret.add(
                 FagsakDto(
                     oppgave.fagsakSaksnummer,
                     PersonDto(
@@ -192,11 +194,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 OppgaveStatusDto(false, null, false, null, null)
             } else {
                 OppgaveStatusDto(
-                    true,
-                    reservasjon.reservertTil,
-                    reservertAvMeg(reservasjon.reservertAv),
-                    reservasjon.reservertAv,
-                    null
+                    erReservert = true,
+                    reservertTilTidspunkt = reservasjon.reservertTil,
+                    erReservertAvInnloggetBruker = reservertAvMeg(reservasjon.reservertAv),
+                    reservertAv = reservasjon.reservertAv,
+                    flyttetReservasjon = null
                 )
             }
         val person = pdlService.person(oppgave.aktorId)!!
@@ -226,10 +228,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentOppgaverFraListe(saksnummere: List<String>): List<OppgaveDto> {
-        return saksnummere.map { oppgaveRepository.hentOppgaveMedSaksnummer(it) }
+        return saksnummere.flatMap { oppgaveRepository.hentOppgaverMedSaksnummer(it) }
             .map { oppgave ->
                 tilOppgaveDto(
-                    oppgave!!, if (reservasjonRepository.finnes(oppgave.eksternId)
+                    oppgave = oppgave, reservasjon = if (reservasjonRepository.finnes(oppgave.eksternId)
                         && reservasjonRepository.hent(oppgave.eksternId).erAktiv()
                     ) {
                         reservasjonRepository.hent(oppgave.eksternId)

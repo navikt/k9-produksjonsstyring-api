@@ -12,6 +12,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
@@ -19,7 +20,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
-private val logger: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
+private val log: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -261,7 +262,7 @@ internal fun Route.OppgaveApis(
             ) {
                 val oppgaver = oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)
                 if (oppgaver.isNotEmpty()) {
-                    val first = oppgaver.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling || oppgaveDto.status.erReservert }
+                    val first = oppgaver.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling }
                     if (first != null) {
                         call.respond(listOf(first))
                     } else {
