@@ -223,8 +223,8 @@ class OppgaveRepository(
         return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
     }
 
-    fun hentOppgaveMedSaksnummer(saksnummer: String): Oppgave? {
-        val json: String = using(sessionOf(dataSource)) {
+    fun hentOppgaverMedSaksnummer(saksnummer: String): List<Oppgave> {
+        val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
                 queryOf(
@@ -233,11 +233,10 @@ class OppgaveRepository(
                 )
                     .map { row ->
                         row.string("data")
-                    }.asSingle
+                    }.asList
             )
         }
-            ?: return null
-        return objectMapper().readValue(json, Oppgave::class.java)
+        return json.map { objectMapper().readValue(it, Oppgave::class.java) }
     }
 
     internal fun hentAktiveOppgaverTotalt(): Int {
