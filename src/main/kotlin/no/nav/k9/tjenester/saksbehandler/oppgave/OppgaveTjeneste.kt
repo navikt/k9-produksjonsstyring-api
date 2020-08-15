@@ -178,7 +178,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 )
             )
         }
-        return emptyList()
+        return ret
     }
 
     @KtorExperimentalAPI
