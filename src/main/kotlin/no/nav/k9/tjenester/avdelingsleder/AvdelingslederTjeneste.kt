@@ -51,7 +51,7 @@ class AvdelingslederTjeneste(
         }
     }
 
-    suspend fun opprettOppgaveKø(): OppgavekøIdDto {
+    suspend fun opprettOppgaveKø(): IdDto {
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(uuid) {
             OppgaveKø(
@@ -69,7 +69,7 @@ class AvdelingslederTjeneste(
             )
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(uuid)
-        return OppgavekøIdDto(uuid.toString())
+        return IdDto(uuid.toString())
     }
 
     fun slettOppgavekø(uuid: UUID) {
@@ -227,7 +227,7 @@ class AvdelingslederTjeneste(
                         behandlingType = oppgave.behandlingType
                     )
                 )
-                
+
             }
         }
 

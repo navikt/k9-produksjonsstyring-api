@@ -54,7 +54,6 @@ import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
-import no.nav.k9.tjenester.admin.AdminTjeneste
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
@@ -245,7 +244,6 @@ fun Application.k9Los() {
         configuration = configuration
     )
     val driftsmeldingRepository = DriftsmeldingRepository(dataSource)
-    val adminTjeneste = AdminTjeneste(driftsmeldingRepository = driftsmeldingRepository)
     val driftsmeldingTjeneste = DriftsmeldingTjeneste(driftsmeldingRepository = driftsmeldingRepository)
 
     // Server side events
@@ -316,8 +314,7 @@ fun Application.k9Los() {
                     eventRepository = behandlingProsessEventRepository,
                     sseChannel = sseChannel,
                     nokkeltallTjeneste = nokkeltallTjeneste,
-                    adminTjeneste = adminTjeneste,
-                    driftsmeldingTjeneste = driftsmeldingTjeneste
+                            driftsmeldingTjeneste= driftsmeldingTjeneste
                 )
             }
         } else {
@@ -343,7 +340,6 @@ fun Application.k9Los() {
                 eventRepository = behandlingProsessEventRepository,
                 sseChannel = sseChannel,
                 nokkeltallTjeneste = nokkeltallTjeneste,
-                adminTjeneste = adminTjeneste,
                 driftsmeldingTjeneste = driftsmeldingTjeneste
             )
         }
@@ -434,14 +430,10 @@ private fun Route.api(
     reservasjonRepository: ReservasjonRepository,
     sseChannel: BroadcastChannel<SseEvent>,
     nokkeltallTjeneste: NokkeltallTjeneste,
-    adminTjeneste: AdminTjeneste,
     driftsmeldingTjeneste: DriftsmeldingTjeneste
 ) {
 
     route("api") {
-        AdminApis(
-            adminTjeneste = adminTjeneste
-        )
         route("driftsmeldinger") {
             DriftsmeldingerApis(
                 driftsmeldingTjeneste = driftsmeldingTjeneste

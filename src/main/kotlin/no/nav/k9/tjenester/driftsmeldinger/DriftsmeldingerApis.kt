@@ -8,21 +8,38 @@ import io.ktor.locations.post
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import no.nav.k9.tjenester.avdelingsleder.oppgaveko.IdDto
+import java.util.*
 
 @KtorExperimentalLocationsAPI
 fun Route.DriftsmeldingerApis(
     driftsmeldingTjeneste: DriftsmeldingTjeneste
 ) {
     @Location("/")
-    class driftsmelding 
-    
-    post { _: driftsmelding ->
-        val driftsmeldingDto = call.receive<Driftsmelding>()
-        driftsmeldingTjeneste.setDriftsmelding(driftsmeldingDto)        
-    }
-    
+    class driftsmelding
+
     get { _: driftsmelding ->
         call.respond( driftsmeldingTjeneste.hentDriftsmeldinger())
-       
+    }
+
+    post { _: driftsmelding ->
+        val melding = call.receive<Driftsmelding>()
+        call.respond(driftsmeldingTjeneste.leggTilDriftsmelding(melding.driftsmelding))
+    }
+
+    @Location("/slett")
+    class slettDriftsmelding
+
+    post { _: slettDriftsmelding ->
+        val param = call.receive<IdDto>()
+        call.respond(driftsmeldingTjeneste.slettDriftsmelding(UUID.fromString(param.id)))
+    }
+
+    @Location("/toggle")
+    class toggleDriftsmelding
+
+    post { _: toggleDriftsmelding ->
+        val param = call.receive<DriftsmeldingSwitch>()
+        call.respond(driftsmeldingTjeneste.toggleDriftsmelding(param))
     }
 }
