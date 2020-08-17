@@ -52,7 +52,7 @@ internal fun Route.NavAnsattApis(
                     kanBehandleKode7 = pepClient.harBasisTilgang(),
                     kanOppgavestyre = pepClient.erOppgaveStyrer(),
                     kanReservere = pepClient.harTilgangTilReservingAvOppgaver(),
-                    kanDrifte = true
+                    kanDrifte = false
                 )
                 if (saksbehandlerRepository.finnSaksbehandlerMedEpost(token.getUsername()) != null) {
                     saksbehandlerRepository.addSaksbehandler(
