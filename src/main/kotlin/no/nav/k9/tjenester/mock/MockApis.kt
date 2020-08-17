@@ -22,19 +22,20 @@ import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
+import org.koin.ktor.ext.inject
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-fun Route.MockGrensesnitt(
-    k9sakEventHandler: K9sakEventHandler,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    oppgaveKøRepository: OppgaveKøRepository,
-    oppgaveRepository: OppgaveRepository,
-    saksbehandlerRepository: SaksbehandlerRepository
-) {
+fun Route.MockGrensesnitt() {
+    val k9sakEventHandler by inject<K9sakEventHandler>()
+    val behandlingProsessEventRepository by inject<BehandlingProsessEventRepository>()
+    val oppgaveKøRepository by inject<OppgaveKøRepository>()
+    val oppgaveRepository by inject<OppgaveRepository>()
+    val saksbehandlerRepository by inject<SaksbehandlerRepository>()
+    
     @Location("/")
     class main
 

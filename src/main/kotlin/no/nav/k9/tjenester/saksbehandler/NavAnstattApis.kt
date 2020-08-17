@@ -15,17 +15,17 @@ import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
+import org.koin.ktor.ext.inject
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.NavAnsattApis(
-    pepClient: PepClient,
-    requestContextService: RequestContextService,
-    saksbehandlerRepository: SaksbehandlerRepository,
-    azureGraphService: AzureGraphService,
-    configuration: Configuration
-) {
+internal fun Route.NavAnsattApis() {
+    val pepClient by inject<PepClient>()
+    val requestContextService by inject<RequestContextService>()
+    val saksbehandlerRepository by inject<SaksbehandlerRepository>()
+    val azureGraphService by inject<AzureGraphService>()
+    val configuration by inject<Configuration>()
     @Location("/saksbehandler")
     class getInnloggetBruker
 

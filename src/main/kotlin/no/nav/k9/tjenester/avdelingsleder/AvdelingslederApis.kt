@@ -15,17 +15,16 @@ import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveId
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import org.koin.ktor.ext.inject
 import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.AvdelingslederApis(
-    oppgaveTjeneste: OppgaveTjeneste,
-    avdelingslederTjeneste: AvdelingslederTjeneste,
-    requestContextService: RequestContextService,
-    configuration: Configuration
-) {
-
+internal fun Route.AvdelingslederApis() {
+    val oppgaveTjeneste by inject<OppgaveTjeneste>()
+    val avdelingslederTjeneste by inject<AvdelingslederTjeneste>()
+    val requestContextService by inject<RequestContextService>()
+    val configuration by inject<Configuration>()
     @Location("/oppgaver/antall-totalt")
     class hentAntallOppgaverForAvdeling
 

@@ -7,11 +7,11 @@ import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import no.nav.k9.Configuration
+import org.koin.ktor.ext.inject
 
 @KtorExperimentalLocationsAPI
-fun Route.KonfigApis(
-    configuration: Configuration
-) {
+fun Route.KonfigApis() {
+    val configuration by inject<Configuration>()
     val k9sakUrlDev = "https://app-q1.adeo.no/k9/web"
     val k9sakUrlProd = "https://app.adeo.no/k9/web"
     val sseUrlDev = "https://k9-los-oidc-auth-proxy.nais.preprod.local/api/k9-los-api/sse"

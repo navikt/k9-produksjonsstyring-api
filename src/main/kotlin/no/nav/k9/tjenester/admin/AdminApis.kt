@@ -6,9 +6,7 @@ import io.ktor.locations.get
 import io.ktor.routing.Route
 
 @KtorExperimentalLocationsAPI
-fun Route.AdminApis(
-) {
-
+fun Route.AdminApis() {
     @Location("/admin/synkroniseroppgave")
     class synkroniserOppgave
 

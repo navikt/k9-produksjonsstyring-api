@@ -9,12 +9,13 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.IdDto
+import org.koin.ktor.ext.inject
 import java.util.*
 
 @KtorExperimentalLocationsAPI
-fun Route.DriftsmeldingerApis(
-    driftsmeldingTjeneste: DriftsmeldingTjeneste
-) {
+fun Route.DriftsmeldingerApis() {
+    val driftsmeldingTjeneste by inject<DriftsmeldingTjeneste>()
+    
     @Location("/")
     class driftsmelding
 

@@ -143,4 +143,8 @@ data class Configuration(private val config: ApplicationConfig) {
     fun auditProduct(): String {
         return config.getRequiredString("nav.audit.product", secret = false)
     }
+
+    fun koinProfile(): String {
+        return "LOCAL"
+    }
 }

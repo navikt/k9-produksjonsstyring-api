@@ -270,13 +270,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     }
                 }
             }.flatten().map {
-                var antallFerdistilteMine = 0
                 val hentIdentTilInnloggetBruker = if (configuration.erLokalt) {
                     "saksbehandler@nav.no"
                 } else {
                     azureGraphService.hentIdentTilInnloggetBruker()
                 }
-                antallFerdistilteMine =
+                val antallFerdistilteMine =
                     reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
                         .toSet())
                         .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
