@@ -15,6 +15,7 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
+import no.nav.k9.integrasjon.pdl.PersonPdl
 import no.nav.k9.tjenester.sse.SseEvent
 import org.junit.Test
 import java.time.LocalDate
@@ -302,6 +303,97 @@ class OppgaveTjenesteTest {
 
     }
 
+    @Test
+    fun `hent fagsak`(){
+        val pg = EmbeddedPostgres.start()
+        val dataSource = pg.postgresDatabase
+        runMigration(dataSource)
+
+        val oppgaveKøOppdatert = Channel<UUID>(1)
+        val refreshKlienter = Channel<SseEvent>(1000)
+
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveKøRepository = OppgaveKøRepository(
+            dataSource = dataSource,
+            oppgaveKøOppdatert = oppgaveKøOppdatert,
+            refreshKlienter = refreshKlienter
+        )
+        val pdlService = mockk<PdlService>()
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+
+        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
+        val pepClient = mockk<PepClient>()
+        val azureGraphService = mockk<AzureGraphService>()
+        val config = mockk<Configuration>()
+        val reservasjonRepository = ReservasjonRepository(
+            oppgaveKøRepository = oppgaveKøRepository,
+            oppgaveRepository = oppgaveRepository,
+            dataSource = dataSource,
+            refreshKlienter = refreshKlienter,
+            saksbehandlerRepository = saksbehandlerRepository
+        )
+        val oppgaveTjeneste = OppgaveTjeneste(
+            oppgaveRepository,
+            oppgaveKøRepository,
+            saksbehandlerRepository,
+            pdlService,
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
+        )
+
+        val oppgave1 = Oppgave(
+            behandlingId = 9438,
+            fagsakSaksnummer = "Yz647",
+            aktorId = "273857",
+            behandlendeEnhet = "Enhet",
+            behandlingsfrist = LocalDateTime.now(),
+            behandlingOpprettet = LocalDateTime.now(),
+            forsteStonadsdag = LocalDate.now().plusDays(6),
+            behandlingStatus = BehandlingStatus.OPPRETTET,
+            behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
+            fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
+            aktiv = true,
+            system = "system",
+            oppgaveAvsluttet = null,
+            utfortFraAdmin = false,
+            eksternId = UUID.randomUUID(),
+            oppgaveEgenskap = emptyList(),
+            aksjonspunkter = Aksjonspunkter(emptyMap()),
+            tilBeslutter = true,
+            utbetalingTilBruker = false,
+            selvstendigFrilans = false,
+            kombinert = false,
+            søktGradering = false,
+            registrerPapir = true,
+            årskvantum = false,
+            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+        )
+        oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
+    
+        coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
+        every { config.erLokalt() } returns true
+        every { config.erIkkeLokalt } returns false
+        coEvery { pepClient.harTilgangTilLesSak(any(), any()) } returns true
+        coEvery { pdlService.person(any()) } returns PersonPdl(data = PersonPdl.Data(
+            hentPerson = PersonPdl.Data.HentPerson(
+                folkeregisteridentifikator = listOf(PersonPdl.Data.HentPerson.Folkeregisteridentifikator("12345678901")),
+                navn = listOf(
+                    PersonPdl.Data.HentPerson.Navn(
+                        etternavn = "etternavn",
+                        forkortetNavn = null,
+                        fornavn = "fornavn",
+                        mellomnavn = null
+                    )),
+                kjoenn = listOf(PersonPdl.Data.HentPerson.Kjoenn("K")),
+                doedsfall = listOf()
+            )
+        ))
+        
+        runBlocking {
+            val fagsaker = oppgaveTjeneste.søkFagsaker("Yz647")
+            assert(fagsaker.isNotEmpty())
+        }
+    }
+    
     @Test
     fun hentReservasjonsHistorikk() = runBlocking {
         val pg = EmbeddedPostgres.start()
