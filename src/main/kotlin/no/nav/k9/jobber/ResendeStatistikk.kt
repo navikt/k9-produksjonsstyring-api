@@ -1,4 +1,4 @@
-package no.nav.k9.datavarehus
+package no.nav.k9.jobber
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
