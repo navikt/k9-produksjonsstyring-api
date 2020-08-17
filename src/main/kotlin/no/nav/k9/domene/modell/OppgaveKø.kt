@@ -64,6 +64,7 @@ data class OppgaveKø(
             mutableMapOf()
         }.getOrPut(oppgave.behandlingType.kode) {
             NyeOgFerdigstilteOppgaver(
+                fagsakYtelseType = oppgave.fagsakYtelseType,
                 behandlingType = oppgave.behandlingType,
                 dato = oppgave.eventTid.toLocalDate()
             )
@@ -117,8 +118,8 @@ data class OppgaveKø(
         return false
     }
 
-    fun nyeOgFerdigstilteOppgaverSisteSyvDager(): List<NyeOgFerdigstilteOppgaver> {
-        return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(7)
+    fun nyeOgFerdigstilteOppgaverPerAntallDager(antallDager: Int): List<NyeOgFerdigstilteOppgaver> {
+        return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(antallDager)
     }
 
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {

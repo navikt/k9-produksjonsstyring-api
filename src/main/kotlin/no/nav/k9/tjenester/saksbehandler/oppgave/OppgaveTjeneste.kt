@@ -14,6 +14,7 @@ import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.navn
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverPerDato
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
@@ -243,7 +244,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
-        return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverSisteSyvDager()
+        return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverPerAntallDager(7)
             .map {
                 NyeOgFerdigstilteOppgaverDto(
                     behandlingType = it.behandlingType,
@@ -256,7 +257,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
-        return oppgaveKøRepository.hent().flatMap { it.nyeOgFerdigstilteOppgaverSisteSyvDager() }
+        return oppgaveKøRepository.hent().flatMap { it.nyeOgFerdigstilteOppgaverPerAntallDager(7) }
             .groupBy { it.dato }.values.map { nyeOgFerdigstilteOppgaverDto ->
                 nyeOgFerdigstilteOppgaverDto.groupBy { it.behandlingType }.map { entry ->
                     entry.value.reduce { acc, nyeOgFerdigstilteOppgaver ->
@@ -288,6 +289,32 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     antallFerdigstilteMine = antallFerdistilteMine
                 )
             }
+    }
+
+    fun hentBeholdningAvOppgaverPerDato(): List<AlleOppgaverPerDato> {
+        var antalletTotalt = oppgaveRepository.hentAktiveOppgaverTotalt()
+        return oppgaveKøRepository.hent().flatMap { it.nyeOgFerdigstilteOppgaverPerAntallDager(28) }
+                .groupBy { it.dato }.values.map { nyeOgFerdigstilteOppgaverDto ->
+                    nyeOgFerdigstilteOppgaverDto.groupBy { { it.toKey() } }.map { entry ->
+                        entry.value.reduce { acc, nyeOgFerdigstilteOppgaver ->
+                            nyeOgFerdigstilteOppgaver.ferdigstilte.forEach {
+                                acc.leggTilFerdigstilt(it)
+                            }
+                            nyeOgFerdigstilteOppgaver.nye.forEach {
+                                acc.leggTilNy(it)
+                            }
+                            acc
+                        }
+                    }
+                }.flatten().map {
+                    antalletTotalt = antalletTotalt - it.nye.size + it.ferdigstilte.size
+                    AlleOppgaverPerDato(
+                            it.fagsakYtelseType,
+                            it.behandlingType,
+                            it.dato,
+                            antalletTotalt
+                    )
+                }
     }
 
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {

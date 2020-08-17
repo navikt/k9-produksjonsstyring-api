@@ -176,7 +176,7 @@ class OppgaveRepository(
         }
     }
 
-    fun hentAlleOppgaverPerDato(): List<AlleOppgaverPerDato> {
+    fun hentOppgaverBeholdningPerDato(): List<AlleOppgaverPerDato> {
 
         val json = using(sessionOf(dataSource)) {
             it.run(
@@ -323,7 +323,7 @@ class OppgaveRepository(
     }
 
     internal fun hentAktiveOppgaversAksjonspunktliste(): List<Aksjonspunkt> {
-    
+
         val json: List<List<Aksjonspunkt>> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -331,7 +331,7 @@ class OppgaveRepository(
                     mapOf()
                 )
                     .map { row ->
-                        
+
                         val map =  objectMapper().readValue(
                             row.string("punkt"),
                             object : TypeReference<HashMap<String, String>>() {})
@@ -342,12 +342,12 @@ class OppgaveRepository(
                     }.asList
             )
         }
-       
+
         return json.flatten().groupBy { it.kode }.map { entry ->
             val aksjonspunkt = entry.value.get(0)
             aksjonspunkt.antall=  entry.value.map { it.antall }.sum()
             aksjonspunkt
         }
     }
-    
+
 }

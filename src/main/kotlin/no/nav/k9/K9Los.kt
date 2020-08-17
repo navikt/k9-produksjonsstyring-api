@@ -482,7 +482,9 @@ private fun Route.api(
                 )
             }
             route("nokkeltall") {
-                NokkeltallApis(nokkeltallTjeneste = nokkeltallTjeneste)
+                NokkeltallApis(
+                        nokkeltallTjeneste = nokkeltallTjeneste,
+                        oppgaveTjeneste = oppgaveTjeneste)
             }
         }
 

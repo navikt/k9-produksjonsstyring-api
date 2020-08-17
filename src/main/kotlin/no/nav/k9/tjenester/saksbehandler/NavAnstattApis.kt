@@ -83,7 +83,7 @@ internal fun Route.NavAnsattApis(
                     kanBehandleKode7 = true,
                     kanOppgavestyre = true,
                     kanReservere = true,
-                    kanDrifte = true
+                    kanDrifte = false
                 )
             )
         }

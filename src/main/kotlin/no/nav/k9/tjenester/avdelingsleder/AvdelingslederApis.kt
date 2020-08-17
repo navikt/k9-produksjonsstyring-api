@@ -27,9 +27,9 @@ internal fun Route.AvdelingslederApis(
 ) {
 
     @Location("/oppgaver/antall-totalt")
-    class hentAntallOppgaverForAvdeling
+    class hentAntallOppgaverTotalt
 
-    get { _: hentAntallOppgaverForAvdeling ->
+    get { _: hentAntallOppgaverTotalt ->
         val antall = oppgaveTjeneste.hentAntallOppgaverTotalt()
         call.respond(antall)
     }
@@ -79,7 +79,7 @@ internal fun Route.AvdelingslederApis(
             }
         }else{
             call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
-        }   
+        }
     }
 
     @Location("/reservasjoner/opphev")
