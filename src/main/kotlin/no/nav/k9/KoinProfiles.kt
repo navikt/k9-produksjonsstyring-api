@@ -236,7 +236,7 @@ fun prodConfig(app: Application, config: Configuration) = module {
         ) as IAzureGraphService
     }
     single {
-        PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config)as IPepClient
+        PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
     } 
 }
 
