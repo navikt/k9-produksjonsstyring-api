@@ -103,8 +103,7 @@ data class Configuration(private val config: ApplicationConfig) {
     fun databaseName(): String {
         return "k9-los"
     }
-
-
+    
     fun azureClientId(): String {
         return config.getOptionalString("nav.auth.azure_client_id", secret = false)!!
     }
@@ -112,8 +111,7 @@ data class Configuration(private val config: ApplicationConfig) {
     fun azureClientSecret(): String {
         return config.getOptionalString("nav.auth.azure_client_secret", secret = true)!!
     }
-
-
+    
     fun auditEnabled(): Boolean {
         return config.getRequiredString("nav.audit.enabled", secret = false).toBoolean()
     }
