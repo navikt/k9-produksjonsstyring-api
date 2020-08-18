@@ -14,6 +14,7 @@ import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
+import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
 import org.koin.ktor.ext.inject
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory
 @KtorExperimentalLocationsAPI
 internal fun Route.NavAnsattApis() {
     val pepClient by inject<IPepClient>()
-    val requestContextService by inject<RequestContextService>()
+    val requestContextService by inject<IRequestContextService>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
     val azureGraphService by inject<IAzureGraphService>()
     val configuration by inject<Configuration>()

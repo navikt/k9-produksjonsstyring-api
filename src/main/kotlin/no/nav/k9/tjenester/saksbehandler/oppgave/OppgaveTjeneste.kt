@@ -15,6 +15,7 @@ import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.navn
+import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverBeholdningHistorikk
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
@@ -24,6 +25,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 import kotlin.streams.toList
 import kotlin.system.measureTimeMillis
 
@@ -346,8 +348,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    fun hentSisteBehandledeOppgaver(ident: String): List<BehandletOppgave> {
-        return statistikkRepository.hentBehandlinger(ident)
+    suspend fun hentSisteBehandledeOppgaver(): List<BehandletOppgave> {
+        return statistikkRepository.hentBehandlinger(coroutineContext.idToken().getUsername())
     }
 
     fun flyttReservasjonTilForrigeSakbehandler(uuid: UUID) {
@@ -517,10 +519,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun hentSisteReserverteOppgaver(epost: String): List<OppgaveDto> {
+    suspend fun hentSisteReserverteOppgaver(): List<OppgaveDto> {
         val list = mutableListOf<OppgaveDto>()
         //Hent reservasjoner for en gitt bruker skriv om til å hente med ident direkte i tabellen
-        val saksbehandlerMedEpost = saksbehandlerRepository.finnSaksbehandlerMedEpost(epost)
+        val saksbehandlerMedEpost = saksbehandlerRepository.finnSaksbehandlerMedEpost(coroutineContext.idToken().getUsername())
         val brukerIdent = saksbehandlerMedEpost?.brukerIdent ?: return emptyList()
         val reservasjoner = reservasjonRepository.hent(brukerIdent)
         for (reservasjon in reservasjoner
