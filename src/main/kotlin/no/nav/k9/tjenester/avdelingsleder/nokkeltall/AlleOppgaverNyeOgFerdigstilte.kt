@@ -4,9 +4,10 @@ import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import java.time.LocalDate
 
-data class AlleOppgaverPerDato(
+data class AlleOppgaverNyeOgFerdigstilte(
     val fagsakYtelseType: FagsakYtelseType,
     val behandlingType: BehandlingType,
-    val opprettetDato: LocalDate,
-    val antall: Int
+    val dato: LocalDate,
+    val nye: Int,
+    val ferdigstilte: Int
 )

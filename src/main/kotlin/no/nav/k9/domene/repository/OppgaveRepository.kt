@@ -10,7 +10,7 @@ import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverPerDato
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.mock.Aksjonspunkt
 import no.nav.k9.utils.Cache
 import no.nav.k9.utils.CacheObject
@@ -174,37 +174,6 @@ class OppgaveRepository(
 
             return emptyList()
         }
-    }
-
-    fun hentOppgaverBeholdningPerDato(): List<AlleOppgaverPerDato> {
-
-        val json = using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    """
-                        select count(*) as antall,
-                        (data ::jsonb -> 'fagsakYtelseType' ->> 'kode') as fagsakYtelseType,
-                        (data ::jsonb -> 'behandlingType' ->> 'kode') as behandlingType,
-                        (data ::jsonb ->> 'behandlingOpprettet') ::date as opprettetDato
-                        from oppgave o where (data ::jsonb -> 'aktiv') ::boolean
-                        and (data ::jsonb ->> 'behandlingOpprettet')::date <= current_date 
-                        and (data ::jsonb ->> 'behandlingOpprettet')::date >= (current_date - '28 days' ::interval)
-                        group by opprettetDato, behandlingType, fagsakYtelseType
-                    """.trimIndent(),
-                    mapOf()
-                )
-                    .map { row ->
-                        AlleOppgaverPerDato(
-                            FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
-                            BehandlingType.fraKode(row.string("behandlingType")),
-                            row.localDate("opprettetDato"),
-                            row.int("antall")
-                        )
-                    }.asList
-            )
-        }
-        return json
-
     }
 
     fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {

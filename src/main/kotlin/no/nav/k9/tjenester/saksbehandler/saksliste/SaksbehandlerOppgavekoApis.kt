@@ -16,17 +16,17 @@ import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import org.koin.ktor.ext.inject
 import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.SaksbehandlerOppgavekoApis(
-    oppgaveTjeneste: OppgaveTjeneste,
-    pepClient: PepClient,
-    requestContextService: RequestContextService,
-    configuration: Configuration,
-    oppgaveKøRepository: OppgaveKøRepository
-) {
+internal fun Route.SaksbehandlerOppgavekoApis() {
+    val oppgaveTjeneste by inject<OppgaveTjeneste>()
+    val pepClient by inject<PepClient>()
+    val requestContextService by inject<RequestContextService>()
+    val configuration by inject<Configuration>()
+    val oppgaveKøRepository by inject<OppgaveKøRepository>()
     @Location("/oppgaveko")
     class getSakslister
 

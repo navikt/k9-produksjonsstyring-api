@@ -10,24 +10,19 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.k9.AccessTokenClientResolver
-import no.nav.k9.Configuration
 import no.nav.k9.integrasjon.abac.PepClient
-import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.rest.idToken
+import org.koin.ktor.ext.inject
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.TestApis(
-    requestContextService: RequestContextService,
-    pdlService: PdlService,
-    accessTokenClientResolver: AccessTokenClientResolver,
-    accessTokenClient: AccessTokenClient,
-    configuration: Configuration,
-    pepClient: PepClient
-) {
-
+internal fun Route.TestApis() {
+    val requestContextService by inject<RequestContextService>()
+    val accessTokenClientResolver by inject<AccessTokenClientResolver>()
+    val accessTokenClient by inject<AccessTokenClient>()
+    val pepClient by inject<PepClient>()
     val log = LoggerFactory.getLogger("Route.TestApis")
  
     @Location("/testToken")
@@ -64,12 +59,11 @@ internal fun Route.TestApis(
               val erOppgaveStyrer = pepClient.erOppgaveStyrer()
 
               val harbasistilgang = pepClient.harBasisTilgang()
-    
-            val accessToken =
-                accessTokenClient.getAccessToken(
-                    setOf("https://graph.microsoft.com/.default"),
-                    kotlin.coroutines.coroutineContext.idToken().value
-                )
+
+            accessTokenClient.getAccessToken(
+                setOf("https://graph.microsoft.com/.default"),
+                kotlin.coroutines.coroutineContext.idToken().value
+            )
             val harTilgangTilLesSak = pepClient.harTilgangTilLesSak("6GBFC", "oppgave.aktorId")
             
             call.respond(

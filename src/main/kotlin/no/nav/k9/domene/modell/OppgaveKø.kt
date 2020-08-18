@@ -64,7 +64,6 @@ data class OppgaveKø(
             mutableMapOf()
         }.getOrPut(oppgave.behandlingType.kode) {
             NyeOgFerdigstilteOppgaver(
-                fagsakYtelseType = oppgave.fagsakYtelseType,
                 behandlingType = oppgave.behandlingType,
                 dato = oppgave.eventTid.toLocalDate()
             )

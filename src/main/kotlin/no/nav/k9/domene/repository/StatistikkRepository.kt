@@ -5,8 +5,9 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleFerdigstilteOppgaver
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleFerdigstilteOppgaverDto
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import java.util.*
 import javax.sql.DataSource
@@ -101,6 +102,70 @@ class StatistikkRepository(
                             behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
                             dato = row.localDate("dato"),
                             antall = row.int("antall")
+                        )
+                    }.asList
+            )
+        }
+    }
+
+    fun lagreFerdigstiltHistorikk(bt: String, fyt: String, eksternId: UUID) {
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                //language=PostgreSQL
+                tx.run(
+                    queryOf(
+                        """insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, ferdigstilte)
+                                    values (:behandlingType, :fagsakYtelseType, current_date, :dataInitial ::jsonb)
+                                    on conflict (behandlingType, fagsakYtelseType, dato) do update
+                                    set ferdigstilte = k.ferdigstilte || :ferdigstilte ::jsonb
+                                 """, mapOf("behandlingType" to bt,
+                            "fagsakYtelseType" to fyt,
+                            "dataInitial" to "[\"${eksternId}\"]",
+                            "ferdigstilte" to "[\"$eksternId\"]")
+                    ).asUpdate
+                )
+            }
+        }
+    }
+
+    fun lagreNyHistorikk(bt: String, fyt: String, eksternId: UUID) {
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                //language=PostgreSQL
+                tx.run(
+                    queryOf(
+                        """insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, nye)
+                                    values (:behandlingType, :fagsakYtelseType, current_date, :dataInitial ::jsonb)
+                                    on conflict (behandlingType, fagsakYtelseType, dato) do update
+                                    set nye = k.nye || :nye ::jsonb
+                                 """, mapOf("behandlingType" to bt,
+                            "fagsakYtelseType" to fyt,
+                            "dataInitial" to "[\"${eksternId}\"]",
+                            "nye" to "[\"$eksternId\"]")
+                    ).asUpdate
+                )
+            }
+        }
+    }
+
+    fun hentFerdigstilteOgNyeHistorikk(): List<AlleOppgaverNyeOgFerdigstilte> {
+        return using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    """
+                            select behandlingtype, fagsakYtelseType, dato, jsonb_array_length(ferdigstilte) as ferdigstilte, jsonb_array_length(nye) as nye
+                            from nye_og_ferdigstilte  where dato >= current_date - '28 days'::interval
+                            group by behandlingtype, fagsakYtelseType, dato
+                    """.trimIndent(),
+                    mapOf()
+                )
+                    .map { row ->
+                        AlleOppgaverNyeOgFerdigstilte(
+                            behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
+                            fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                            dato = row.localDate("dato"),
+                            ferdigstilte = row.int("ferdigstilte"),
+                            nye = row.int("nye")
                         )
                     }.asList
             )

@@ -7,7 +7,6 @@ import java.time.LocalDate
 
 data class NyeOgFerdigstilteOppgaver(
     val behandlingType: BehandlingType,
-    val fagsakYtelseType: FagsakYtelseType,
     val dato: LocalDate,
     val nye: MutableSet<String> = mutableSetOf(),
     val ferdigstilte: MutableSet<String> = mutableSetOf()
@@ -18,6 +17,4 @@ data class NyeOgFerdigstilteOppgaver(
     fun leggTilFerdigstilt(uuid: String) {
         ferdigstilte.add(uuid)
     }
-
-    fun toKey() = Key(this.behandlingType, this.fagsakYtelseType)
 }

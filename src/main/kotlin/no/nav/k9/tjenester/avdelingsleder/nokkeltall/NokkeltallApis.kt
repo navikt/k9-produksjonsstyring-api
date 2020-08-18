@@ -7,12 +7,12 @@ import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import org.koin.ktor.ext.inject
 
 @KtorExperimentalLocationsAPI
-fun Route.NokkeltallApis(
-    nokkeltallTjeneste: NokkeltallTjeneste,
-    oppgaveTjeneste: OppgaveTjeneste
-) {
+fun Route.NokkeltallApis() {
+    val nokkeltallTjeneste by inject<NokkeltallTjeneste>()
+    val oppgaveTjeneste by inject<OppgaveTjeneste>()
     @Location("/behandlinger-under-arbeid")
     class getAlleOppgaver
 

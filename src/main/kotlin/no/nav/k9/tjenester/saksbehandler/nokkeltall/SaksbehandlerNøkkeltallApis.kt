@@ -8,18 +8,17 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
-import java.time.LocalDate
+import org.koin.ktor.ext.inject
 
 @KtorExperimentalLocationsAPI
-fun Route.SaksbehandlerNøkkeltallApis(
-    configuration: Configuration,
-    requestContextService: RequestContextService,
-    oppgaveTjeneste: OppgaveTjeneste
-) {
+fun Route.SaksbehandlerNøkkeltallApis() {
+    val configuration by inject<Configuration>()
+    val requestContextService by inject<RequestContextService>()
+    val oppgaveTjeneste by inject<OppgaveTjeneste>()
+
     @Location("/nokkeltall/nye-og-ferdigstilte-oppgaver")
     class getNyeOgFerdigstilteOppgaver
 
@@ -39,5 +38,10 @@ fun Route.SaksbehandlerNøkkeltallApis(
         } else {
             call.respond(oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver())
         }
+//        val queryParameter = call.request.queryParameters["id"]
+//        //call.respond(oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(queryParameter!!))
+//        
+//        
+
     }
 }

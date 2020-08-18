@@ -12,10 +12,10 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
-import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
+import org.koin.ktor.ext.inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -24,13 +24,11 @@ private val log: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.OppgaveApis(
-    configuration: Configuration,
-    requestContextService: RequestContextService,
-    oppgaveTjeneste: OppgaveTjeneste,
-    saksbehandlerRepository: SaksbehandlerRepository
-) {
-
+internal fun Route.OppgaveApis() {
+    val configuration by inject<Configuration>()
+    val requestContextService by inject<RequestContextService>()
+    val oppgaveTjeneste by inject<OppgaveTjeneste>()
+    val saksbehandlerRepository by inject<SaksbehandlerRepository>()
     @Location("/")
     class hentOppgaver
 

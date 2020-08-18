@@ -14,7 +14,8 @@ import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.navn
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverPerDato
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverBeholdningHistorikk
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
@@ -271,13 +272,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     }
                 }
             }.flatten().map {
-                var antallFerdistilteMine = 0
                 val hentIdentTilInnloggetBruker = if (configuration.erLokalt) {
                     "saksbehandler@nav.no"
                 } else {
                     azureGraphService.hentIdentTilInnloggetBruker()
                 }
-                antallFerdistilteMine =
+                val antallFerdistilteMine =
                     reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
                         .toSet())
                         .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
@@ -291,24 +291,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
     }
 
-    fun hentBeholdningAvOppgaverPerDato(): List<AlleOppgaverPerDato> {
+    fun hentBeholdningAvOppgaverPerDato(): List<AlleOppgaverBeholdningHistorikk> {
         var antalletTotalt = oppgaveRepository.hentAktiveOppgaverTotalt()
-        return oppgaveKøRepository.hent().flatMap { it.nyeOgFerdigstilteOppgaverPerAntallDager(28) }
-                .groupBy { it.dato }.values.map { nyeOgFerdigstilteOppgaverDto ->
-                    nyeOgFerdigstilteOppgaverDto.groupBy { { it.toKey() } }.map { entry ->
-                        entry.value.reduce { acc, nyeOgFerdigstilteOppgaver ->
-                            nyeOgFerdigstilteOppgaver.ferdigstilte.forEach {
-                                acc.leggTilFerdigstilt(it)
-                            }
-                            nyeOgFerdigstilteOppgaver.nye.forEach {
-                                acc.leggTilNy(it)
-                            }
-                            acc
-                        }
-                    }
-                }.flatten().map {
-                    antalletTotalt = antalletTotalt - it.nye.size + it.ferdigstilte.size
-                    AlleOppgaverPerDato(
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikk().map {
+            antalletTotalt = antalletTotalt - it.nye + it.ferdigstilte
+            AlleOppgaverBeholdningHistorikk(
                             it.fagsakYtelseType,
                             it.behandlingType,
                             it.dato,

@@ -42,7 +42,11 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
+                if (oppgave.aktiv) {
+                    statistikkRepository.lagreNyHistorikk(oppgave.behandlingType.kode, oppgave.fagsakYtelseType.kode, oppgave.eksternId)
+                }
             }
+
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)
@@ -66,7 +70,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                         }
                     }
                 }
-
+                statistikkRepository.lagreFerdigstiltHistorikk(oppgave.behandlingType.kode, oppgave.fagsakYtelseType.kode, oppgave.eksternId)
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
