@@ -15,7 +15,7 @@ import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.audit.*
-import no.nav.k9.integrasjon.azuregraph.AzureGraphService
+import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.utils.Cache
 import no.nav.k9.utils.CacheObject
@@ -32,7 +32,7 @@ private const val XACML_CONTENT_TYPE = "application/xacml+json"
 private const val DOMENE = "k9"
 
 class PepClient @KtorExperimentalAPI constructor(
-    private val azureGraphService: AzureGraphService,
+    private val azureGraphService: IAzureGraphService,
     private val auditlogger: Auditlogger,
     private val config: Configuration
 ) {
