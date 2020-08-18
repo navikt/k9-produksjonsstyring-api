@@ -29,7 +29,6 @@ class AvdelingslederTjeneste(
     private val pepClient: PepClient,
     private val configuration: Configuration
 ) {
-
     suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
         return oppgaveKøRepository.hent().map {
             OppgavekøDto(
@@ -219,7 +218,7 @@ class AvdelingslederTjeneste(
                 val reservasjon = reservasjonRepository.hent(uuid)
                 list.add(
                     ReservasjonDto(
-                        reservertAvUid = saksbehandler.brukerIdent!!,
+                        reservertAvUid = saksbehandler.brukerIdent?:"",
                         reservertAvNavn = saksbehandler.navn ?: "",
                         reservertTilTidspunkt = reservasjon.reservertTil!!,
                         oppgaveId = reservasjon.oppgave,
