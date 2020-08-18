@@ -56,6 +56,15 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun reserverOppgave(ident: String, uuid: UUID): OppgaveStatusDto {
+        if(!pepClient.harTilgangTilReservingAvOppgaver()){
+            return OppgaveStatusDto(
+                erReservert = false,
+                reservertTilTidspunkt = null,
+                erReservertAvInnloggetBruker = false,
+                reservertAv = null,
+                flyttetReservasjon = null
+            )
+        }
         val reservasjon = Reservasjon(
             reservertTil = LocalDateTime.now().plusHours(24).forskyvReservasjonsDato(),
             reservertAv = ident, flyttetAv = null, flyttetTidspunkt = null, begrunnelse = null, oppgave = uuid
