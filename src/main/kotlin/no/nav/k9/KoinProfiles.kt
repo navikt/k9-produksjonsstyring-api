@@ -122,9 +122,7 @@ fun common(app: Application, config: Configuration) = module {
             clients = config.clients()
         )
     }
-
-
-
+    
     single {
         PdlService(
             baseUrl = config.pdlUrl(),
