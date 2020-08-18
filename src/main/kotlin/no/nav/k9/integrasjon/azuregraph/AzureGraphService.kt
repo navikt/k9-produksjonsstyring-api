@@ -19,20 +19,15 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.LocalDateTime
 
-class AzureGraphService @KtorExperimentalAPI constructor(
-    accessTokenClient: AccessTokenClient,
-    val configuration: Configuration
-) {
+open class AzureGraphService @KtorExperimentalAPI constructor(
+    accessTokenClient: AccessTokenClient
+) : IAzureGraphService {
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
     private val cache = Cache<String>()
     val log = LoggerFactory.getLogger("AzureGraphService")
 
     @KtorExperimentalAPI
-    internal suspend fun hentIdentTilInnloggetBruker(): String {
-        if (configuration.erLokalt) {
-            return "saksbehandler@nav.no"
-        }
-
+    override suspend fun hentIdentTilInnloggetBruker(): String {
         val username = IdToken(kotlin.coroutines.coroutineContext.idToken().value).getUsername()
         val cachedObject = cache.get(username)
         if (cachedObject == null) {
@@ -89,11 +84,8 @@ class AzureGraphService @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    internal suspend fun hentEnhetForInnloggetBruker(): String {
-        if (configuration.erLokalt) {
-            return "saksbehandler@nav.no"
-        }
-
+    override suspend fun hentEnhetForInnloggetBruker(): String {
+      
         val username = IdToken(kotlin.coroutines.coroutineContext.idToken().value).getUsername() + "_office_location"
         val cachedObject = cache.get(username)
         if (cachedObject == null) {

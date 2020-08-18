@@ -9,6 +9,7 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.PepClient
@@ -32,7 +33,7 @@ internal fun Route.NavAnsattApis() {
     val log = LoggerFactory.getLogger("Route.NavAnsattApis")
 
     get { _: getInnloggetBruker ->
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             val idtoken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(

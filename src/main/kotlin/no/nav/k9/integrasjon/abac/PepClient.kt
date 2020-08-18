@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.audit.*
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
@@ -39,6 +40,7 @@ class PepClient @KtorExperimentalAPI constructor(
     private val url = config.abacEndpointUrl
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
     private val cache = Cache<Boolean>()
+
     @KtorExperimentalAPI
     suspend fun erOppgaveStyrer(): Boolean {
         val requestBuilder = XacmlRequestBuilder()
@@ -72,8 +74,7 @@ class PepClient @KtorExperimentalAPI constructor(
         fagsakNummer: String,
         aktørid: String
     ): Boolean {
-        if (config.erLokalt) {
-            log.info("sjekker tilgang")
+        if (config.koinProfile() == KoinProfile.LOCAL) {
             return true
         }
         val identTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
@@ -131,15 +132,12 @@ class PepClient @KtorExperimentalAPI constructor(
         val decision = evaluate(requestBuilder)
         return decision
     }
-    
+
 
     @KtorExperimentalAPI
     suspend fun kanSendeSakTilStatistikk(
         fagsakNummer: String
     ): Boolean {
-        if (config.erLokalt()) {
-            log.info("Lokal kjøring, får alltid true ved sjekk på om sak kan sendes til statistikk")
-        }
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK)
@@ -188,7 +186,8 @@ class PepClient @KtorExperimentalAPI constructor(
                         { success -> success },
                         { error ->
                             log.error(
-                                "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+                                "Error response = '${error.response.body()
+                                    .asString("text/plain")}' fra '${request.url}'"
                             )
                             log.error(error.toString())
                             throw IllegalStateException("Feil ved evaluering av abac.")
@@ -205,9 +204,9 @@ class PepClient @KtorExperimentalAPI constructor(
                     false
                 }
             }
-            cache.set(xacmlJson, CacheObject( result, LocalDateTime.now().plusHours(1)))
+            cache.set(xacmlJson, CacheObject(result, LocalDateTime.now().plusHours(1)))
             return result
-        }else {
+        } else {
             return get.value
         }
     }

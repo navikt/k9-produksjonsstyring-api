@@ -16,14 +16,12 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.routing.Route
 import io.ktor.routing.Routing
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
@@ -55,7 +53,6 @@ import no.nav.k9.tjenester.kodeverk.KodeverkApis
 import no.nav.k9.tjenester.konfig.KonfigApis
 import no.nav.k9.tjenester.mock.MockGrensesnitt
 import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
-import no.nav.k9.tjenester.saksbehandler.TestApis
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
@@ -97,7 +94,7 @@ fun Application.k9Los() {
                 .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
         }
     }
-  
+
     install(StatusPages) {
         DefaultStatusPages()
         JacksonStatusPages()
@@ -108,7 +105,7 @@ fun Application.k9Los() {
         køOppdatertProsessor(
             oppgaveKøRepository = koin.get(),
             oppgaveRepository = koin.get(),
-            channel = koin.get< Channel<UUID>>(named("oppgaveKøOppdatert")),
+            channel = koin.get<Channel<UUID>>(named("oppgaveKøOppdatert")),
             reservasjonRepository = koin.get()
         )
 
@@ -129,7 +126,7 @@ fun Application.k9Los() {
         køOppdatertProsessorJob.cancel()
         oppdatereKøerMedOppgaveProsessorJob.cancel()
     }
-    
+
     // Server side events
     val sseChannel = produce {
         for (oppgaverOppdatertEvent in koin.get<Channel<SseEvent>>(named("refreshKlienter"))) {
@@ -154,33 +151,58 @@ fun Application.k9Los() {
             healthService = koin.get(),
             frequency = Duration.ofMinutes(1)
         )
-        
-        if (!configuration.erIProd) {
-            route("mock") {
-                MockGrensesnitt()
-            }
+
+        route("mock") {
+            MockGrensesnitt()
         }
+
         route("innsikt") {
             innsiktGrensesnitt()
         }
-        if (configuration.erIkkeLokalt) {
-            authenticate(*issuers.allIssuers()) {
-                api(
-                    koin = koin,
-                    sseChannel = sseChannel
-                )
-            }
-        } else {
+      
+        authenticate(*issuers.allIssuers(), optional = (KoinProfile.LOCAL == koin.get<KoinProfile>())) {
             install(CORS) {
                 method(HttpMethod.Options)
                 anyHost()
                 allowCredentials = true
             }
-            api(
-                koin = koin,
-                sseChannel = sseChannel
-            )
+            route("api") {
+              
+                AdminApis()
+                route("driftsmeldinger") {
+                    DriftsmeldingerApis()
+                }
+                route("fagsak") {
+                    FagsakApis()
+                }
+                route("saksbehandler") {
+                    route("oppgaver") {
+                        OppgaveApis()
+                    }
+
+                    SaksbehandlerOppgavekoApis()
+                    SaksbehandlerNøkkeltallApis()
+                }
+                route("avdelingsleder") {
+                    AvdelingslederApis()
+                    route("oppgavekoer") {
+                        AvdelingslederOppgavekøApis()
+                    }
+                    route("nokkeltall") {
+                        NokkeltallApis()
+                    }
+                }
+
+                NavAnsattApis()
+
+                route("konfig") { KonfigApis() }
+                KodeverkApis()
+                Sse(sseChannel = sseChannel
+                )
+            }
+            
         }
+      
         static("static") {
             resources("static/css")
             resources("static/js")
@@ -247,49 +269,4 @@ private fun Application.regenererOppgaver(
     }
 }
 
-
-@ExperimentalCoroutinesApi
-@KtorExperimentalAPI
-@KtorExperimentalLocationsAPI
-private fun Route.api(
-    koin: org.koin.core.Koin,
-    sseChannel: BroadcastChannel<SseEvent>
-) {
-
-    route("api") {
-        AdminApis()
-        route("driftsmeldinger") {
-            DriftsmeldingerApis()
-        }
-        route("fagsak") {
-            FagsakApis()
-        }
-        route("saksbehandler") {
-            route("oppgaver") {
-                OppgaveApis()
-            }
-
-            SaksbehandlerOppgavekoApis()
-            SaksbehandlerNøkkeltallApis()
-        }
-        route("avdelingsleder") {
-            AvdelingslederApis()
-            route("oppgavekoer") {
-                AvdelingslederOppgavekøApis()
-            }
-            route("nokkeltall") {
-                NokkeltallApis()
-            }
-        }
-
-        NavAnsattApis()
-        
-        if (!koin.get<Configuration>().erIProd) {
-            TestApis()
-        }
-        route("konfig") { KonfigApis() }
-        KodeverkApis()
-        Sse(sseChannel = sseChannel)
-    }
-}
 

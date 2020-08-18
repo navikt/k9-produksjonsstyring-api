@@ -2,6 +2,7 @@ package no.nav.k9.tjenester.avdelingsleder
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.Enhet
 import no.nav.k9.domene.modell.KøSortering
@@ -209,7 +210,7 @@ class AvdelingslederTjeneste(
 
                 val oppgave = oppgaveRepository.hent(uuid)
 
-                if (configuration.erIkkeLokalt && !pepClient.harTilgangTilLesSak(
+                if (configuration.koinProfile() != KoinProfile.LOCAL && !pepClient.harTilgangTilLesSak(
                         fagsakNummer = oppgave.fagsakSaksnummer,
                         aktørid = oppgave.aktorId
                     )

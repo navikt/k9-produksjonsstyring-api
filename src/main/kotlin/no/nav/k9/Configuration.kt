@@ -47,7 +47,7 @@ data class Configuration(private val config: ApplicationConfig) {
         return config.getOptionalString("nav.kafka.tilbakekrevingaksjonshendelseTopic", secret = false)
             ?: "privat-tilbakekreving-k9loshendelse-v1"
     }
-    
+
     internal fun getSakOgBehandlingTopic(): String {
         return config.getOptionalString("nav.kafka.sakOgBehandlingTopic", secret = false)
             ?: ""
@@ -57,10 +57,12 @@ data class Configuration(private val config: ApplicationConfig) {
         return config.getOptionalString("nav.kafka.statistikkSakTopic", secret = false)
             ?: ""
     }
+
     internal fun getStatistikkBehandlingTopic(): String {
         return config.getOptionalString("nav.kafka.statistikkBehandlingTopic", secret = false)
             ?: ""
     }
+
     internal fun getKafkaConfig() =
         config.getRequiredString("nav.kafka.bootstrap_servers", secret = false).let { bootstrapServers ->
             val trustStore = config.getRequiredString("nav.trust_store.path", secret = false).let { trustStorePath ->
@@ -76,7 +78,7 @@ data class Configuration(private val config: ApplicationConfig) {
                     config.getRequiredString("nav.kafka.password", secret = true)
                 ),
                 trustStore = trustStore,
-                exactlyOnce = false, // settes til true når vi skal gå mot prod cluster
+                exactlyOnce = false, 
                 unreadyAfterStreamStoppedIn = unreadyAfterStreamStoppedIn()
             )
         }
@@ -93,30 +95,7 @@ data class Configuration(private val config: ApplicationConfig) {
     fun getOppgaveBaseUri(): URI {
         return URI(config.getRequiredString("nav.gosys.baseuri", secret = false))
     }
-
-    var erIkkeLokalt: Boolean
-    var erLokalt: Boolean
-    var erIDevFss: Boolean
-    var erIProd: Boolean
-    fun erLokalt() :Boolean{
-        return erLokalt
-    }   
-    init {
-        erIkkeLokalt = !config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
-        erLokalt = config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()
-
-        val clustername = config.getOptionalString("nav.clustername", secret = false)
-        erIDevFss = if (clustername.isNullOrBlank()) {
-            false
-        } else clustername == "dev-fss"
-
-        erIProd = if (clustername.isNullOrBlank()) {
-            false
-        } else clustername == "prod-fss"
-        
-    }
-
-
+    
     fun getVaultDbPath(): String {
         return config.getOptionalString("nav.db.vault_mountpath", secret = false)!!
     }
@@ -124,27 +103,45 @@ data class Configuration(private val config: ApplicationConfig) {
     fun databaseName(): String {
         return "k9-los"
     }
-    
-    
+
+
     fun azureClientId(): String {
         return config.getOptionalString("nav.auth.azure_client_id", secret = false)!!
     }
+
     fun azureClientSecret(): String {
         return config.getOptionalString("nav.auth.azure_client_secret", secret = true)!!
     }
-    
-    
+
+
     fun auditEnabled(): Boolean {
         return config.getRequiredString("nav.audit.enabled", secret = false).toBoolean()
     }
+
     fun auditVendor(): String {
         return config.getRequiredString("nav.audit.vendor", secret = false)
     }
+
     fun auditProduct(): String {
         return config.getRequiredString("nav.audit.product", secret = false)
     }
 
-    fun koinProfile(): String {
-        return "LOCAL"
+    fun koinProfile(): KoinProfile {
+        val clustername = config.getOptionalString("nav.clustername", secret = false)
+        if (config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()) {
+            return KoinProfile.LOCAL
+        } else if (if (clustername.isNullOrBlank()) {
+                false
+            } else clustername == "dev-fss"
+        ) {
+            return KoinProfile.PREPROD
+        } else if (if (clustername.isNullOrBlank()) {
+                false
+            } else clustername == "prod-fss"
+        ) {
+            return KoinProfile.PROD
+        }
+        return KoinProfile.PROD
     }
+
 }

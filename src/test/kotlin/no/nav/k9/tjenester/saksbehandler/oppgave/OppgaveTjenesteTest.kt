@@ -8,6 +8,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
@@ -202,7 +203,7 @@ class OppgaveTjenesteTest {
             it.nyeOgFerdigstilteOppgaver(oppgave4).leggTilNy(oppgave4.eksternId.toString())
             it
         }
-        every { config.erLokalt() } returns true
+        every { KoinProfile.LOCAL == config.koinProfile() } returns true
         val hent = oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(oppgaveko.id.toString())
         assert(hent.size == 3)
     }
@@ -292,8 +293,8 @@ class OppgaveTjenesteTest {
         oppgaveKøRepository.lagre(oppgaveko.id) {
             oppgaveko
         }
-        every { config.erLokalt() } returns true
-        every { config.erIkkeLokalt } returns false
+        every { config.koinProfile() } returns KoinProfile.LOCAL
+       
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
         oppgaveTjeneste.settSkjermet(oppgave1)
@@ -370,8 +371,7 @@ class OppgaveTjenesteTest {
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
     
         coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
-        every { config.erLokalt() } returns true
-        every { config.erIkkeLokalt } returns false
+        every { config.koinProfile() } returns KoinProfile.LOCAL
         coEvery { pepClient.harTilgangTilLesSak(any(), any()) } returns true
         coEvery { pdlService.person(any()) } returns PersonPdl(data = PersonPdl.Data(
             hentPerson = PersonPdl.Data.HentPerson(
@@ -480,8 +480,7 @@ class OppgaveTjenesteTest {
         oppgaveKøRepository.lagre(oppgaveko.id) {
             oppgaveko
         }
-        every { config.erLokalt() } returns true
-        every { config.erIkkeLokalt } returns false
+        every { config.koinProfile() } returns KoinProfile.LOCAL
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
         val oppgave = oppgaver.get(0)

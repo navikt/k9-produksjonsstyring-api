@@ -10,6 +10,7 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
@@ -26,7 +27,7 @@ internal fun Route.FagsakApis() {
 
     post { _: søkFagsaker ->
         val søk = call.receive<QueryString>()
-        if (configuration.erLokalt) {
+        if (KoinProfile.LOCAL == configuration.koinProfile()) {
             call.respond(emptyList<FagsakDto>())
         } else {
             val idToken = call.idToken()

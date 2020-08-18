@@ -7,6 +7,7 @@ import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import org.koin.ktor.ext.inject
 
 @KtorExperimentalLocationsAPI
@@ -22,7 +23,7 @@ fun Route.KonfigApis() {
     class hentK9SakUrl
 
     get { _: hentK9SakUrl ->
-        if (configuration.erIDevFss) call.respond(Konfig(k9sakUrlDev)) else call.respond(Konfig(k9sakUrlProd))
+        if (KoinProfile.PREPROD == configuration.koinProfile()) call.respond(Konfig(k9sakUrlDev)) else call.respond(Konfig(k9sakUrlProd))
     }
 
     @Location("/sse-url")
@@ -30,10 +31,10 @@ fun Route.KonfigApis() {
 
     get { _: hentSseUrl ->
         when {
-            configuration.erIProd -> {
+            configuration.koinProfile() == KoinProfile.PROD -> {
                 call.respond(Konfig(sseUrlProd))
             }
-            configuration.erIDevFss -> {
+            KoinProfile.PREPROD == configuration.koinProfile() -> {
                 call.respond(Konfig(sseUrlDev))
             }
             else -> {

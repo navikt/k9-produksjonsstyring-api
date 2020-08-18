@@ -5,6 +5,7 @@ import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.health.HealthService
+import no.nav.k9.KoinProfile.*
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -12,6 +13,8 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.audit.Auditlogger
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
+import no.nav.k9.integrasjon.azuregraph.AzureGraphServiceLocal
+import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.pdl.PdlService
@@ -32,11 +35,10 @@ import javax.sql.DataSource
 @KtorExperimentalAPI
 fun selectModuleBasedOnProfile(application: Application, config: Configuration): List<Module> {
     val envModule = when (config.koinProfile()) {
-        "TEST" -> buildAndTestConfig()
-        "LOCAL" -> localDevConfig(application, config)
-        "PREPROD" -> preprodConfig(application, config)
-        "PROD" -> prodConfig(application, config)
-        else -> localDevConfig(application, config)
+        TEST -> buildAndTestConfig()
+        LOCAL -> localDevConfig(application, config)
+        PREPROD -> preprodConfig(application, config)
+        PROD -> prodConfig(application, config)
     }
     return listOf(common(application, config), envModule)
 }
@@ -47,6 +49,7 @@ fun buildAndTestConfig() = module {
 
 @KtorExperimentalAPI
 fun common(app: Application, config: Configuration) = module {
+    single { config.koinProfile()}
     single { config }
     single { app.hikariConfig(config) as DataSource }
     single { OppgaveRepository(get()) }
@@ -117,12 +120,7 @@ fun common(app: Application, config: Configuration) = module {
         )
     }
 
-    single {
-        AzureGraphService(
-            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient(),
-            configuration = config
-        )
-    }
+   
 
     single {
         PdlService(
@@ -209,17 +207,28 @@ fun common(app: Application, config: Configuration) = module {
 
 @KtorExperimentalAPI
 fun localDevConfig(app: Application, config: Configuration) = module {
-    
+    single {
+        AzureGraphServiceLocal(
+        ) as IAzureGraphService
+    }
 }
 
 @KtorExperimentalAPI
 fun preprodConfig(app: Application, config: Configuration) = module {
-    single { app.hikariConfig(config) as DataSource }
+    single {
+        AzureGraphService(
+            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
+        ) as IAzureGraphService
+    }
 }
 
 @KtorExperimentalAPI
 fun prodConfig(app: Application, config: Configuration) = module {
-    single { app.hikariConfig(config) as DataSource }
+    single {
+        AzureGraphService(
+            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
+        ) as IAzureGraphService
+    }
 }
 
 // utils

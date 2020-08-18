@@ -13,6 +13,7 @@ import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
@@ -71,7 +72,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     internal suspend fun person(aktorId: String): PersonPdl? {
-        if (!configuration.erIProd) {
+        if (!(configuration.koinProfile() == KoinProfile.PROD)) {
             return PersonPdl(
                 data = PersonPdl.Data(
                     hentPerson = PersonPdl.Data.HentPerson(
@@ -161,7 +162,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     internal suspend fun identifikator(fnummer: String): AktøridPdl? {
-        if (configuration.erLokalt) {
+        if (KoinProfile.LOCAL == configuration.koinProfile()) {
             return AktøridPdl(
                 data = AktøridPdl.Data(
                     hentIdenter = AktøridPdl.Data.HentIdenter(
@@ -229,7 +230,7 @@ class PdlService @KtorExperimentalAPI constructor(
                 )
             }
             try {
-                if (configuration.erIDevFss) {
+                if (KoinProfile.PREPROD == configuration.koinProfile()) {
                     val ident = objectMapper().readValue<AktøridPdl>(json!!)
                     ident.data.hentIdenter = AktøridPdl.Data.HentIdenter(
                         listOf(
@@ -254,7 +255,7 @@ class PdlService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     private fun getQ2Ident(string: String, configuration: Configuration): String {
-        if (!configuration.erIDevFss) {
+        if (!(KoinProfile.PREPROD == configuration.koinProfile())) {
             return string
         }
         return getQ2Ident(string)

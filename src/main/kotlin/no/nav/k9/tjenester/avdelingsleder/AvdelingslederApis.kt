@@ -11,6 +11,7 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveId
@@ -67,7 +68,7 @@ internal fun Route.AvdelingslederApis() {
     class hentReservasjoner
 
     get { _: hentReservasjoner ->
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
