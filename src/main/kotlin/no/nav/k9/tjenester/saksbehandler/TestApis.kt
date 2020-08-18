@@ -10,6 +10,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.k9.AccessTokenClientResolver
+import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.rest.idToken
@@ -22,7 +23,7 @@ internal fun Route.TestApis() {
     val requestContextService by inject<RequestContextService>()
     val accessTokenClientResolver by inject<AccessTokenClientResolver>()
     val accessTokenClient by inject<AccessTokenClient>()
-    val pepClient by inject<PepClient>()
+    val pepClient by inject<IPepClient>()
     val log = LoggerFactory.getLogger("Route.TestApis")
  
     @Location("/testToken")

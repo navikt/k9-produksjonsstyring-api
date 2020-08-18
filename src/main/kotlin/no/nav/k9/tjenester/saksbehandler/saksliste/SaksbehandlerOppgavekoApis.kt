@@ -12,7 +12,7 @@ import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.idToken
@@ -24,7 +24,7 @@ import java.util.*
 @KtorExperimentalLocationsAPI
 internal fun Route.SaksbehandlerOppgavekoApis() {
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
-    val pepClient by inject<PepClient>()
+    val pepClient by inject<IPepClient>()
     val requestContextService by inject<RequestContextService>()
     val configuration by inject<Configuration>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()

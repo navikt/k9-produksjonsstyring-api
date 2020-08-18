@@ -78,7 +78,7 @@ data class Configuration(private val config: ApplicationConfig) {
                     config.getRequiredString("nav.kafka.password", secret = true)
                 ),
                 trustStore = trustStore,
-                exactlyOnce = false, 
+                exactlyOnce = false,
                 unreadyAfterStreamStoppedIn = unreadyAfterStreamStoppedIn()
             )
         }
@@ -95,7 +95,7 @@ data class Configuration(private val config: ApplicationConfig) {
     fun getOppgaveBaseUri(): URI {
         return URI(config.getRequiredString("nav.gosys.baseuri", secret = false))
     }
-    
+
     fun getVaultDbPath(): String {
         return config.getOptionalString("nav.db.vault_mountpath", secret = false)!!
     }
@@ -103,8 +103,7 @@ data class Configuration(private val config: ApplicationConfig) {
     fun databaseName(): String {
         return "k9-los"
     }
-
-
+    
     fun azureClientId(): String {
         return config.getOptionalString("nav.auth.azure_client_id", secret = false)!!
     }
@@ -112,8 +111,7 @@ data class Configuration(private val config: ApplicationConfig) {
     fun azureClientSecret(): String {
         return config.getOptionalString("nav.auth.azure_client_secret", secret = true)!!
     }
-
-
+    
     fun auditEnabled(): Boolean {
         return config.getRequiredString("nav.audit.enabled", secret = false).toBoolean()
     }
@@ -126,22 +124,27 @@ data class Configuration(private val config: ApplicationConfig) {
         return config.getRequiredString("nav.audit.product", secret = false)
     }
 
-    fun koinProfile(): KoinProfile {
+    var koinProfile = no.nav.k9.KoinProfile.LOCAL
+
+    init {
         val clustername = config.getOptionalString("nav.clustername", secret = false)
         if (config.getOptionalString("nav.db.vault_mountpath", secret = false).isNullOrBlank()) {
-            return KoinProfile.LOCAL
+            koinProfile = KoinProfile.LOCAL
         } else if (if (clustername.isNullOrBlank()) {
                 false
             } else clustername == "dev-fss"
         ) {
-            return KoinProfile.PREPROD
+            koinProfile = KoinProfile.PREPROD
         } else if (if (clustername.isNullOrBlank()) {
                 false
             } else clustername == "prod-fss"
         ) {
-            return KoinProfile.PROD
+            koinProfile = KoinProfile.PROD
         }
-        return KoinProfile.PROD
+    }
+
+    fun koinProfile(): KoinProfile {
+        return koinProfile
     }
 
 }

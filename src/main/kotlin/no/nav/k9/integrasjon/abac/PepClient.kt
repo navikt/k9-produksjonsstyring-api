@@ -35,14 +35,14 @@ class PepClient @KtorExperimentalAPI constructor(
     private val azureGraphService: IAzureGraphService,
     private val auditlogger: Auditlogger,
     private val config: Configuration
-) {
+) :  IPepClient {
     @KtorExperimentalAPI
     private val url = config.abacEndpointUrl
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
     private val cache = Cache<Boolean>()
 
     @KtorExperimentalAPI
-    suspend fun erOppgaveStyrer(): Boolean {
+    override suspend fun erOppgaveStyrer(): Boolean {
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER)
@@ -55,7 +55,7 @@ class PepClient @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun harBasisTilgang(): Boolean {
+    override suspend fun harBasisTilgang(): Boolean {
 
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
@@ -70,7 +70,7 @@ class PepClient @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun harTilgangTilLesSak(
+    override suspend fun harTilgangTilLesSak(
         fagsakNummer: String,
         aktørid: String
     ): Boolean {
@@ -119,7 +119,7 @@ class PepClient @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun harTilgangTilReservingAvOppgaver(): Boolean {
+    override suspend fun harTilgangTilReservingAvOppgaver(): Boolean {
 
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
@@ -135,7 +135,7 @@ class PepClient @KtorExperimentalAPI constructor(
 
 
     @KtorExperimentalAPI
-    suspend fun kanSendeSakTilStatistikk(
+    override suspend fun kanSendeSakTilStatistikk(
         fagsakNummer: String
     ): Boolean {
         val requestBuilder = XacmlRequestBuilder()

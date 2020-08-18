@@ -16,12 +16,14 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
+import io.ktor.routing.Route
 import io.ktor.routing.Routing
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
@@ -159,50 +161,15 @@ fun Application.k9Los() {
         route("innsikt") {
             innsiktGrensesnitt()
         }
-      
-        authenticate(*issuers.allIssuers(), optional = (KoinProfile.LOCAL == koin.get<KoinProfile>())) {
-            install(CORS) {
-                method(HttpMethod.Options)
-                anyHost()
-                allowCredentials = true
+        
+        if ((KoinProfile.LOCAL == koin.get<KoinProfile>())) {
+            api(sseChannel)
+        } else {
+            authenticate(*issuers.allIssuers()) {
+                api(sseChannel)
             }
-            route("api") {
-              
-                AdminApis()
-                route("driftsmeldinger") {
-                    DriftsmeldingerApis()
-                }
-                route("fagsak") {
-                    FagsakApis()
-                }
-                route("saksbehandler") {
-                    route("oppgaver") {
-                        OppgaveApis()
-                    }
-
-                    SaksbehandlerOppgavekoApis()
-                    SaksbehandlerNøkkeltallApis()
-                }
-                route("avdelingsleder") {
-                    AvdelingslederApis()
-                    route("oppgavekoer") {
-                        AvdelingslederOppgavekøApis()
-                    }
-                    route("nokkeltall") {
-                        NokkeltallApis()
-                    }
-                }
-
-                NavAnsattApis()
-
-                route("konfig") { KonfigApis() }
-                KodeverkApis()
-                Sse(sseChannel = sseChannel
-                )
-            }
-            
         }
-      
+
         static("static") {
             resources("static/css")
             resources("static/js")
@@ -219,6 +186,49 @@ fun Application.k9Los() {
 
     install(CallId) {
         generated()
+    }
+}
+
+private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
+    install(CORS) {
+        method(HttpMethod.Options)
+        anyHost()
+        allowCredentials = true
+    }
+    route("api") {
+
+        AdminApis()
+        route("driftsmeldinger") {
+            DriftsmeldingerApis()
+        }
+        route("fagsak") {
+            FagsakApis()
+        }
+        route("saksbehandler") {
+            route("oppgaver") {
+                OppgaveApis()
+            }
+
+            SaksbehandlerOppgavekoApis()
+            SaksbehandlerNøkkeltallApis()
+        }
+        route("avdelingsleder") {
+            AvdelingslederApis()
+            route("oppgavekoer") {
+                AvdelingslederOppgavekøApis()
+            }
+            route("nokkeltall") {
+                NokkeltallApis()
+            }
+        }
+
+        NavAnsattApis()
+
+        route("konfig") { KonfigApis() }
+        KodeverkApis()
+        Sse(
+            sseChannel = sseChannel
+        )
     }
 }
 

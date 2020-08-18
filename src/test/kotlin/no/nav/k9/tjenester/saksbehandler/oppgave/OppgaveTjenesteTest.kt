@@ -13,7 +13,7 @@ import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
-import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PersonPdl
@@ -50,7 +50,7 @@ class OppgaveTjenesteTest {
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val pepClient = mockk<PepClient>()
+        val pepClient = mockk<IPepClient>()
         val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(
             oppgaveRepository,
@@ -234,7 +234,7 @@ class OppgaveTjenesteTest {
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val pepClient = mockk<PepClient>()
+        val pepClient = mockk<IPepClient>()
         val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(
             oppgaveRepository,
@@ -304,6 +304,7 @@ class OppgaveTjenesteTest {
 
     }
 
+    @KtorExperimentalAPI
     @Test
     fun `hent fagsak`(){
         val pg = EmbeddedPostgres.start()
@@ -323,7 +324,7 @@ class OppgaveTjenesteTest {
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
 
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val pepClient = mockk<PepClient>()
+        val pepClient = mockk<IPepClient>()
         val azureGraphService = mockk<AzureGraphService>()
         val config = mockk<Configuration>()
         val reservasjonRepository = ReservasjonRepository(
@@ -419,7 +420,7 @@ class OppgaveTjenesteTest {
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val pepClient = mockk<PepClient>()
+        val pepClient = mockk<IPepClient>()
         val azureGraphService = mockk<AzureGraphService>()
 
         coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
