@@ -4,6 +4,7 @@ import info.debatty.java.stringsimilarity.Levenshtein
 import io.ktor.util.KtorExperimentalAPI
 import joptsimple.internal.Strings
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
@@ -98,7 +99,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
         if (query.length == 11) {
             var aktørId = pdlService.identifikator(query)
-            if (!configuration.erIProd) {
+            if (!(configuration.koinProfile() == KoinProfile.PROD)) {
                 aktørId = AktøridPdl(
                     data = AktøridPdl.Data(
                         hentIdenter = AktøridPdl.Data.HentIdenter(
@@ -117,7 +118,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 var aktorId = aktørId.data.hentIdenter!!.identer[0].ident
                 val person = pdlService.person(aktorId)
                 if (person != null) {
-                    if (!configuration.erIProd) {
+                    if (!(configuration.koinProfile() == KoinProfile.PROD)) {
                         aktorId = "1172507325105"
                     }
                     return oppgaveRepository.hentOppgaverMedAktorId(aktorId).filter {
@@ -272,7 +273,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     }
                 }
             }.flatten().map {
-                val hentIdentTilInnloggetBruker = if (configuration.erLokalt) {
+                val hentIdentTilInnloggetBruker = if (KoinProfile.LOCAL == configuration.koinProfile()) {
                     "saksbehandler@nav.no"
                 } else {
                     azureGraphService.hentIdentTilInnloggetBruker()
@@ -419,7 +420,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNesteOppgaverIKø(kø: UUID): List<OppgaveDto> {
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             if (pepClient.harBasisTilgang()) {
                 val list = mutableListOf<OppgaveDto>()
                 val ms = measureTimeMillis {
@@ -437,7 +438,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         }
                         val person = pdlService.person(oppgave.aktorId)
 
-                        val navn = if (configuration.erIDevFss) {
+                        val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
                             "${oppgave.fagsakSaksnummer} " + Strings.join(
                                 oppgave.aksjonspunkter.liste.entries.stream().map { t ->
                                     val a = Aksjonspunkter().aksjonspunkter()
@@ -562,7 +563,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 )
             var personNavn: String
             var personFnummer: String
-            val navn = if (configuration.erIDevFss) {
+            val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
                 "${oppgave.fagsakSaksnummer} " + Strings.join(
                     oppgave.aksjonspunkter.liste.entries.stream().map { t ->
                         val a = Aksjonspunkter().aksjonspunkter()

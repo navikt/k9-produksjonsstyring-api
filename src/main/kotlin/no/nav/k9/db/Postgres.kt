@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.Application
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
 import javax.sql.DataSource
@@ -16,10 +17,10 @@ enum class Role {
 
 @KtorExperimentalAPI
 fun Application.getDataSource(configuration: Configuration) =
-    if (configuration.erIkkeLokalt) {
-        dataSourceFromVault(configuration, Role.User)
-    } else {
+    if (configuration.koinProfile() == KoinProfile.LOCAL) {
         HikariDataSource(configuration.hikariConfig())
+    } else {
+        dataSourceFromVault(configuration, Role.User)
     }
 
 @KtorExperimentalAPI
@@ -32,12 +33,12 @@ fun Application.dataSourceFromVault(hikariConfig: Configuration, role: Role) =
 
 @KtorExperimentalAPI
 fun Application.migrate(configuration: Configuration) =
-    if (configuration.erIkkeLokalt) {
+    if (configuration.koinProfile() == KoinProfile.LOCAL) {
+        runMigration(HikariDataSource(configuration.hikariConfig()))
+    } else {
         runMigration(
             dataSourceFromVault(configuration, Role.Admin), "SET ROLE \"${configuration.databaseName()}-${Role.Admin}\""
         )
-    } else {
-        runMigration(HikariDataSource(configuration.hikariConfig()))
     }
 
 fun runMigration(dataSource: DataSource, initSql: String? = null): Int {

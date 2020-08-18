@@ -7,6 +7,7 @@ import no.nav.helse.dusseldorf.ktor.health.Healthy
 import no.nav.helse.dusseldorf.ktor.health.Result
 import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.ReservasjonRepository
@@ -57,7 +58,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     fun send(modell: Modell) {
-        if (config.erLokalt) {
+        if (config.koinProfile() == KoinProfile.LOCAL) {
             return
         }
         runBlocking {
@@ -77,7 +78,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
     private fun sendSak(
         sak: Sak
     ) {
-        if (config.erLokalt()) {
+        if (config.koinProfile() == KoinProfile.LOCAL) {
             log.info("Lokal kjøring, sender ikke melding til statistikk")
             return
         }
@@ -96,7 +97,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
     private fun sendBehandling(
         behandling: Behandling
     ) {
-        if (config.erLokalt()) {
+        if (config.koinProfile() == KoinProfile.LOCAL) {
             log.info("Lokal kjøring, sender ikke melding til statistikk")
             return
         }

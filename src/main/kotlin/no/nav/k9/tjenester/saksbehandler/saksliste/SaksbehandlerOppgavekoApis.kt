@@ -9,6 +9,7 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.integrasjon.abac.PepClient
@@ -31,7 +32,7 @@ internal fun Route.SaksbehandlerOppgavekoApis() {
     class getSakslister
 
     get { _: getSakslister ->
-        if (configuration.erLokalt) {
+        if (KoinProfile.LOCAL == configuration.koinProfile()) {
             val list = hentOppgavekøerLokalt(oppgaveTjeneste)
             call.respond(list)
         }else {

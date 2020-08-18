@@ -8,6 +8,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
@@ -23,7 +24,7 @@ fun Route.SaksbehandlerNøkkeltallApis() {
     class getNyeOgFerdigstilteOppgaver
 
     get { _: getNyeOgFerdigstilteOppgaver ->
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(

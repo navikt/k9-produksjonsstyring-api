@@ -7,6 +7,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
@@ -151,7 +152,7 @@ class OppgavekoTest {
         oppgaveKøRepository.lagre(oppgaveko.id) {
              oppgaveko
         }
-        every { config.erLokalt() } returns true
+        every { KoinProfile.LOCAL == config.koinProfile() } returns true
         val hent = oppgaveTjeneste.hentOppgaver(oppgaveko.id)
         assert(hent.size == 1)
         assert(hent[0].registrerPapir)

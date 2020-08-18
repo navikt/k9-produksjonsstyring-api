@@ -12,6 +12,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
@@ -34,7 +35,7 @@ internal fun Route.OppgaveApis() {
 
     get { _: hentOppgaver ->
         val queryParameter = call.request.queryParameters["id"]
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
@@ -58,7 +59,7 @@ internal fun Route.OppgaveApis() {
 
     get { _: getBehandledeOppgaver ->
 
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
@@ -77,7 +78,7 @@ internal fun Route.OppgaveApis() {
     class getReserverteOppgaver
 
     get { _: getReserverteOppgaver ->
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
@@ -109,7 +110,7 @@ internal fun Route.OppgaveApis() {
     post { _: reserverOppgave ->
         val oppgaveId = call.receive<OppgaveId>()
 
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
@@ -141,7 +142,7 @@ internal fun Route.OppgaveApis() {
 
     post { _: leggTilBehandletSak ->
         val params = call.receive<BehandletOppgave>()
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
@@ -174,7 +175,7 @@ internal fun Route.OppgaveApis() {
 
     post { _: flyttReservasjon ->
         val params = call.receive<FlyttReservasjonId>()
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
@@ -251,7 +252,7 @@ internal fun Route.OppgaveApis() {
         val saker = call.request.queryParameters["saksnummerListe"]
         val saksnummerliste = saker?.split(",") ?: emptyList()
 
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
