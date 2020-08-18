@@ -11,7 +11,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
-import no.nav.k9.integrasjon.rest.RequestContextService
+import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.koin.ktor.ext.inject
@@ -21,7 +21,7 @@ import org.koin.ktor.ext.inject
 internal fun Route.FagsakApis() {
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val configuration by inject<Configuration>()
-    val requestContextService by inject<RequestContextService>()
+    val requestContextService by inject<IRequestContextService>()
     @Location("/sok")
     class søkFagsaker
 

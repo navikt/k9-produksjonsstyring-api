@@ -19,7 +19,9 @@ import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.pdl.PdlService
+import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.integrasjon.rest.RequestContextService
+import no.nav.k9.integrasjon.rest.RequestContextServiceLocal
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
@@ -54,7 +56,6 @@ fun common(app: Application, config: Configuration) = module {
     single { config }
     single { app.hikariConfig(config) as DataSource }
     single { OppgaveRepository(get()) }
-    single { RequestContextService() }
     single {
         NokkeltallTjeneste(
             oppgaveRepository = get(),
@@ -121,9 +122,7 @@ fun common(app: Application, config: Configuration) = module {
             clients = config.clients()
         )
     }
-
-
-
+    
     single {
         PdlService(
             baseUrl = config.pdlUrl(),
@@ -214,6 +213,7 @@ fun localDevConfig(app: Application, config: Configuration) = module {
     single {
         PepClientLocal() as IPepClient
     }
+    single { RequestContextServiceLocal() as IRequestContextService}
 }
 
 @KtorExperimentalAPI
@@ -226,6 +226,8 @@ fun preprodConfig(app: Application, config: Configuration) = module {
     single {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
     }
+
+    single { RequestContextService() as IRequestContextService}
 }
 
 @KtorExperimentalAPI
@@ -237,6 +239,8 @@ fun prodConfig(app: Application, config: Configuration) = module {
     }
     single {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
-    } 
+    }
+
+    single { RequestContextService() as IRequestContextService}
 }
 

@@ -12,6 +12,7 @@ import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.k9.AccessTokenClientResolver
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.rest.idToken
 import org.koin.ktor.ext.inject
@@ -20,7 +21,7 @@ import org.slf4j.LoggerFactory
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.TestApis() {
-    val requestContextService by inject<RequestContextService>()
+    val requestContextService by inject<IRequestContextService>()
     val accessTokenClientResolver by inject<AccessTokenClientResolver>()
     val accessTokenClient by inject<AccessTokenClient>()
     val pepClient by inject<IPepClient>()

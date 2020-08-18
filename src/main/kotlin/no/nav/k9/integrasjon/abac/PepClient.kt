@@ -12,7 +12,6 @@ import kotlinx.coroutines.withContext
 import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.Configuration
-import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.audit.*
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
@@ -74,9 +73,6 @@ class PepClient @KtorExperimentalAPI constructor(
         fagsakNummer: String,
         aktørid: String
     ): Boolean {
-        if (config.koinProfile() == KoinProfile.LOCAL) {
-            return true
-        }
         val identTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
         if (identTilInnloggetBruker.isEmpty()) {
             return false

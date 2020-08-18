@@ -12,6 +12,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
+import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveId
@@ -24,7 +25,7 @@ import java.util.*
 internal fun Route.AvdelingslederApis() {
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val avdelingslederTjeneste by inject<AvdelingslederTjeneste>()
-    val requestContextService by inject<RequestContextService>()
+    val requestContextService by inject<IRequestContextService>()
     val configuration by inject<Configuration>()
     @Location("/oppgaver/antall-totalt")
     class hentAntallOppgaverTotalt
