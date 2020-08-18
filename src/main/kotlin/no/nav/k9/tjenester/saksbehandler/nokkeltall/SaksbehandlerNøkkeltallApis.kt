@@ -39,10 +39,5 @@ fun Route.SaksbehandlerNøkkeltallApis() {
         } else {
             call.respond(oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver())
         }
-//        val queryParameter = call.request.queryParameters["id"]
-//        //call.respond(oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(queryParameter!!))
-//        
-//        
-
     }
 }

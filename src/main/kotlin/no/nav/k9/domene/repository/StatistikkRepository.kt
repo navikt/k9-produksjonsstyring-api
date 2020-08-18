@@ -1,5 +1,6 @@
 package no.nav.k9.domene.repository
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -148,23 +149,23 @@ class StatistikkRepository(
         }
     }
 
-    fun hentFerdigstilteOgNyeHistorikk(): List<AlleOppgaverNyeOgFerdigstilte> {
+    fun hentFerdigstilteOgNyeHistorikkPerAntallDager(antall: Int): List<AlleOppgaverNyeOgFerdigstilte> {
         return using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     """
-                            select behandlingtype, fagsakYtelseType, dato, jsonb_array_length(ferdigstilte) as ferdigstilte, jsonb_array_length(nye) as nye
-                            from nye_og_ferdigstilte  where dato >= current_date - '28 days'::interval
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte as ferdigstilte, jsonb_array_length(nye) as nye
+                            from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
-                    mapOf()
+                    mapOf("antall" to "\"${antall} days\"")
                 )
                     .map { row ->
                         AlleOppgaverNyeOgFerdigstilte(
                             behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
                             fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
                             dato = row.localDate("dato"),
-                            ferdigstilte = row.int("ferdigstilte"),
+                            ferdigstilte = objectMapper().readValue(row.string("ferdigstilte")),
                             nye = row.int("nye")
                         )
                     }.asList

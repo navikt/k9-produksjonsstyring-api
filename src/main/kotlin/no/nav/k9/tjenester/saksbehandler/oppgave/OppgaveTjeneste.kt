@@ -11,13 +11,11 @@ import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
-import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverBeholdningHistorikk
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
@@ -260,20 +258,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
-        return oppgaveKøRepository.hent().flatMap { it.nyeOgFerdigstilteOppgaverPerAntallDager(7) }
-            .groupBy { it.dato }.values.map { nyeOgFerdigstilteOppgaverDto ->
-                nyeOgFerdigstilteOppgaverDto.groupBy { it.behandlingType }.map { entry ->
-                    entry.value.reduce { acc, nyeOgFerdigstilteOppgaver ->
-                        nyeOgFerdigstilteOppgaver.ferdigstilte.forEach {
-                            acc.leggTilFerdigstilt(it)
-                        }
-                        nyeOgFerdigstilteOppgaver.nye.forEach {
-                            acc.leggTilNy(it)
-                        }
-                        acc
-                    }
-                }
-            }.flatten().map {
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
                 val hentIdentTilInnloggetBruker = if (KoinProfile.LOCAL == configuration.koinProfile()) {
                     "saksbehandler@nav.no"
                 } else {
@@ -286,17 +271,17 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 NyeOgFerdigstilteOppgaverDto(
                     behandlingType = it.behandlingType,
                     dato = it.dato,
-                    antallNye = it.nye.size,
+                    antallNye = it.nye,
                     antallFerdigstilte = it.ferdigstilte.size,
                     antallFerdigstilteMine = antallFerdistilteMine
                 )
             }
     }
 
-    fun hentBeholdningAvOppgaverPerDato(): List<AlleOppgaverBeholdningHistorikk> {
+    fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverBeholdningHistorikk> {
         var antalletTotalt = oppgaveRepository.hentAktiveOppgaverTotalt()
-        return statistikkRepository.hentFerdigstilteOgNyeHistorikk().map {
-            antalletTotalt = antalletTotalt - it.nye + it.ferdigstilte
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(28).map {
+            antalletTotalt = antalletTotalt - it.nye + it.ferdigstilte.size
             AlleOppgaverBeholdningHistorikk(
                             it.fagsakYtelseType,
                             it.behandlingType,

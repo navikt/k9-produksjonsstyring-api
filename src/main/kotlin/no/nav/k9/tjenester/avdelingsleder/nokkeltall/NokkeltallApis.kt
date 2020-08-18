@@ -24,7 +24,7 @@ fun Route.NokkeltallApis() {
     class getAntallOppgaverPerDato
 
     get { _: getAntallOppgaverPerDato ->
-        call.respond(oppgaveTjeneste.hentBeholdningAvOppgaverPerDato())
+        call.respond(oppgaveTjeneste.hentBeholdningAvOppgaverPerAntallDager())
     }
 
     @Location("/ferdigstilte-behandlinger-historikk")
