@@ -1,7 +1,6 @@
 package no.nav.k9
 
 import io.ktor.application.Application
-import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.health.HealthService
@@ -10,7 +9,9 @@ import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.audit.Auditlogger
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.azuregraph.AzureGraphServiceLocal
@@ -49,7 +50,7 @@ fun buildAndTestConfig() = module {
 
 @KtorExperimentalAPI
 fun common(app: Application, config: Configuration) = module {
-    single { config.koinProfile()}
+    single { config.koinProfile() }
     single { config }
     single { app.hikariConfig(config) as DataSource }
     single { OppgaveRepository(get()) }
@@ -57,7 +58,8 @@ fun common(app: Application, config: Configuration) = module {
     single {
         NokkeltallTjeneste(
             oppgaveRepository = get(),
-            statistikkRepository = get())
+            statistikkRepository = get()
+        )
     }
     single(named("oppgaveKøOppdatert")) {
         Channel<UUID>(Channel.UNLIMITED)
@@ -120,7 +122,7 @@ fun common(app: Application, config: Configuration) = module {
         )
     }
 
-   
+
 
     single {
         PdlService(
@@ -153,9 +155,7 @@ fun common(app: Application, config: Configuration) = module {
             statistikkRepository = get()
         )
     }
-    single {
-        PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config)
-    }
+
 
     single {
         AsynkronProsesseringV1Service(
@@ -211,6 +211,9 @@ fun localDevConfig(app: Application, config: Configuration) = module {
         AzureGraphServiceLocal(
         ) as IAzureGraphService
     }
+    single {
+        PepClientLocal() as IPepClient
+    }
 }
 
 @KtorExperimentalAPI
@@ -219,6 +222,9 @@ fun preprodConfig(app: Application, config: Configuration) = module {
         AzureGraphService(
             accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
         ) as IAzureGraphService
+    }
+    single {
+        PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
     }
 }
 
@@ -229,20 +235,8 @@ fun prodConfig(app: Application, config: Configuration) = module {
             accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
         ) as IAzureGraphService
     }
+    single {
+        PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config)
+    } as IPepClient
 }
 
-// utils
-@KtorExperimentalAPI
-fun ApplicationConfig.getString(path: String): String {
-    return this.property(path).getString()
-}
-
-@KtorExperimentalAPI
-fun ApplicationConfig.getjdbcUrlFromProperties(): String {
-    return String.format(
-        "jdbc:postgresql://%s:%s/%s",
-        this.property("database.host").getString(),
-        this.property("database.port").getString(),
-        this.property("database.name").getString()
-    )
-}

@@ -161,8 +161,7 @@ fun Application.k9Los() {
         route("innsikt") {
             innsiktGrensesnitt()
         }
-
-
+        
         if ((KoinProfile.LOCAL == koin.get<KoinProfile>())) {
             api(sseChannel)
         } else {

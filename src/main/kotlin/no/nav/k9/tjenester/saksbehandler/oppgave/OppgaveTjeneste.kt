@@ -10,6 +10,7 @@ import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
@@ -37,7 +38,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val reservasjonRepository: ReservasjonRepository,
     private val configuration: Configuration,
     private val azureGraphService: IAzureGraphService,
-    private val pepClient: PepClient,
+    private val pepClient: IPepClient,
     private val statistikkRepository: StatistikkRepository
 ) {
 

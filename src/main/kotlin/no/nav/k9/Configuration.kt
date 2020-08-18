@@ -144,7 +144,6 @@ data class Configuration(private val config: ApplicationConfig) {
     }
 
     fun koinProfile(): KoinProfile {
-
         return koinProfile
     }
 
