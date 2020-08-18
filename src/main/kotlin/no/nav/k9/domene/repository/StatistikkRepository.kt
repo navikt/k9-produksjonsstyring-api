@@ -154,7 +154,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte as ferdigstilte, jsonb_array_length(nye) as nye
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, jsonb_array_length(nye) as nye
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
