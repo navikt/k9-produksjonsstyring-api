@@ -151,6 +151,7 @@ class StatistikkRepository(
 
     fun hentFerdigstilteOgNyeHistorikkPerAntallDager(antall: Int): List<AlleOppgaverNyeOgFerdigstilte> {
         return using(sessionOf(dataSource)) {
+            //language=PostgreSQL
             it.run(
                 queryOf(
                     """
@@ -158,15 +159,15 @@ class StatistikkRepository(
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
-                    mapOf("antall" to "\"${antall} days\"")
+                    mapOf("antall" to "\'${antall} days\'")
                 )
                     .map { row ->
                         AlleOppgaverNyeOgFerdigstilte(
                             behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
                             fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
                             dato = row.localDate("dato"),
-                            ferdigstilte = objectMapper().readValue(row.string("ferdigstilte")),
-                            nye = row.int("nye")
+                            ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte")?:"[]"),
+                            nye = row.intOrNull("nye")?:0
                         )
                     }.asList
             )
