@@ -3,6 +3,7 @@ package no.nav.k9.integrasjon.pdl
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
+import info.debatty.java.stringsimilarity.Levenshtein
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
 import io.ktor.util.KtorExperimentalAPI
@@ -26,7 +27,7 @@ import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
-class PdlService @KtorExperimentalAPI constructor(
+class PdlServicePreprod @KtorExperimentalAPI constructor(
     baseUrl: URI,
     accessTokenClient: AccessTokenClient,
     val configuration: Configuration,
@@ -34,8 +35,36 @@ class PdlService @KtorExperimentalAPI constructor(
 ) : IPdlService {
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
     private val cache = Cache<String>(10_000)
-    private val log: Logger = LoggerFactory.getLogger(PdlService::class.java)
-    
+
+    companion object {
+        fun getQ2Ident(string: String): String {
+            val q2 = listOf(
+                "14128521632",
+                "14088521472",
+                "25078522014",
+                "27078523633",
+                "16018623009",
+                "27078522688",
+                "19128521618",
+                "21078525115"
+            )
+            val levenshtein = Levenshtein()
+            var dist = Integer.MAX_VALUE.toDouble();
+            var newIdent = "14128521632"
+
+            q2.forEach { i ->
+                val distance = levenshtein.distance(i, string)
+                if (distance < dist) {
+                    dist = distance
+                    newIdent = i
+                }
+            }
+            return newIdent
+        }
+
+        private val log: Logger = LoggerFactory.getLogger(PdlServicePreprod::class.java)
+    }
+
     private val personUrl = Url.buildURL(
         baseUrl = baseUrl,
         pathParts = listOf()
@@ -45,7 +74,7 @@ class PdlService @KtorExperimentalAPI constructor(
     override suspend fun person(aktorId: String): PersonPdl? {
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
-            mapOf("ident" to aktorId)
+            mapOf("ident" to getQ2Ident(aktorId, configuration = configuration))
         )
         val query = objectMapper().writeValueAsString(
             queryRequest
@@ -120,6 +149,7 @@ class PdlService @KtorExperimentalAPI constructor(
         )
         val cachedObject = cache.get(query)
         if (cachedObject == null) {
+
             val httpRequest = personUrl
                 .httpPost()
                 .body(
@@ -159,7 +189,17 @@ class PdlService @KtorExperimentalAPI constructor(
                 )
             }
             try {
-                cache.set(query, CacheObject(json!!, LocalDateTime.now().plusDays(7)))
+                val ident = objectMapper().readValue<AktøridPdl>(json!!)
+                ident.data.hentIdenter = AktøridPdl.Data.HentIdenter(
+                    listOf(
+                        AktøridPdl.Data.HentIdenter.Identer(
+                            gruppe = "AKTORID",
+                            historisk = false,
+                            ident = "1671237347458"
+                        )
+                    )
+                )
+                cache.set(query, CacheObject(json, LocalDateTime.now().plusDays(7)))
                 return objectMapper().readValue<AktøridPdl>(json)
             } catch (e: Exception) {
                 log.warn("", e.message)
@@ -169,6 +209,15 @@ class PdlService @KtorExperimentalAPI constructor(
             return objectMapper().readValue<AktøridPdl>(cachedObject.value)
         }
     }
+
+    @KtorExperimentalAPI
+    private fun getQ2Ident(string: String, configuration: Configuration): String {
+        if (!(KoinProfile.PREPROD == configuration.koinProfile())) {
+            return string
+        }
+        return getQ2Ident(string)
+    }
+
 
     data class QueryRequest(
         val query: String,
@@ -181,7 +230,7 @@ class PdlService @KtorExperimentalAPI constructor(
     }
 
     private fun getStringFromResource(path: String) =
-        PdlService::class.java.getResourceAsStream(path).bufferedReader().use { it.readText() }
+        PdlServicePreprod::class.java.getResourceAsStream(path).bufferedReader().use { it.readText() }
 
 }
 

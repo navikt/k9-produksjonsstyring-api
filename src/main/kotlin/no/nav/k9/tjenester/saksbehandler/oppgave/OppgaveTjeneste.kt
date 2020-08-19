@@ -12,6 +12,7 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
+import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
@@ -20,6 +21,8 @@ import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
+import org.koin.experimental.property.inject
+import org.koin.ktor.ext.inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -36,14 +39,14 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val oppgaveRepository: OppgaveRepository,
     private val oppgaveKøRepository: OppgaveKøRepository,
     private val saksbehandlerRepository: SaksbehandlerRepository,
-    private val pdlService: PdlService,
+    private val pdlService: IPdlService,
     private val reservasjonRepository: ReservasjonRepository,
     private val configuration: Configuration,
     private val azureGraphService: IAzureGraphService,
     private val pepClient: IPepClient,
     private val statistikkRepository: StatistikkRepository
 ) {
-
+   
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)

@@ -426,8 +426,6 @@ class K9sakEventHandlerTest {
                "ansvarligSaksbehandlerIdent": "saksbeh"
 }       """
         
-      
-
         val event =   AksjonspunktLagetTilbake().deserialize(null,json.toByteArray() )!!
         
         k9sakEventHandler.prosesser(event)

@@ -294,6 +294,32 @@ class OppgaveTjenesteTest {
             oppgaveko
         }
         every { config.koinProfile() } returns KoinProfile.LOCAL
+        coEvery { pdlService.person(any()) } returns PersonPdl(
+            data = PersonPdl.Data(
+                hentPerson = PersonPdl.Data.HentPerson(
+                    listOf(
+                        element =
+                        PersonPdl.Data.HentPerson.Folkeregisteridentifikator("012345678901")
+                    ),
+                    navn = listOf(
+                        PersonPdl.Data.HentPerson.Navn(
+                            etternavn = "Etternavn",
+                            forkortetNavn = "ForkortetNavn",
+                            fornavn = "Fornavn",
+                            mellomnavn = null
+                        )
+                    ),
+                    kjoenn = listOf(
+                        PersonPdl.Data.HentPerson.Kjoenn(
+                            "KVINNE"
+                        )
+                    ),
+                    doedsfall = emptyList()
+                )
+            )
+        )
+        coEvery { pepClient.harBasisTilgang() } returns true
+        coEvery { pepClient.harTilgangTilLesSak(any(),any()) } returns true
        
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
@@ -482,6 +508,35 @@ class OppgaveTjenesteTest {
             oppgaveko
         }
         every { config.koinProfile() } returns KoinProfile.LOCAL
+        coEvery { pepClient.harBasisTilgang() } returns true
+        coEvery { pepClient.harTilgangTilLesSak(any(),any()) } returns true
+        coEvery { pepClient.harTilgangTilReservingAvOppgaver() } returns true
+        coEvery { pdlService.person(any()) } returns PersonPdl(
+            data = PersonPdl.Data(
+                hentPerson = PersonPdl.Data.HentPerson(
+                    listOf(
+                        element =
+                        PersonPdl.Data.HentPerson.Folkeregisteridentifikator("012345678901")
+                    ),
+                    navn = listOf(
+                        PersonPdl.Data.HentPerson.Navn(
+                            etternavn = "Etternavn",
+                            forkortetNavn = "ForkortetNavn",
+                            fornavn = "Fornavn",
+                            mellomnavn = null
+                        )
+                    ),
+                    kjoenn = listOf(
+                        PersonPdl.Data.HentPerson.Kjoenn(
+                            "KVINNE"
+                        )
+                    ),
+                    doedsfall = emptyList()
+                )
+            )
+        )
+        
+        
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
         val oppgave = oppgaver.get(0)
@@ -496,4 +551,5 @@ class OppgaveTjenesteTest {
         assert(reservasjonsHistorikk.reservasjoner.size == 2)
         assert(reservasjonsHistorikk.reservasjoner[0].flyttetAv == "123")
     }
+    
 }

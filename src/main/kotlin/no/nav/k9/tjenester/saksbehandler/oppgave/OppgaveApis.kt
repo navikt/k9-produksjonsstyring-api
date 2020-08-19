@@ -26,7 +26,6 @@ private val log: Logger = LoggerFactory.getLogger("nav.OppgaveApis")
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.OppgaveApis() {
-    val configuration by inject<Configuration>()
     val requestContextService by inject<IRequestContextService>()
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
