@@ -31,6 +31,7 @@ import kotlin.system.measureTimeMillis
 private val log: Logger =
     LoggerFactory.getLogger(OppgaveTjeneste::class.java)
 
+@KtorExperimentalAPI
 class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val oppgaveRepository: OppgaveRepository,
     private val oppgaveKøRepository: OppgaveKøRepository,
@@ -108,7 +109,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun søkFagsaker(query: String): List<FagsakDto> {
         if (query.length == 11) {
             var aktørId = pdlService.identifikator(query)
-            if (!(configuration.koinProfile() == KoinProfile.PROD)) {
+            if (configuration.koinProfile() != KoinProfile.PROD) {
                 aktørId = AktøridPdl(
                     data = AktøridPdl.Data(
                         hentIdenter = AktøridPdl.Data.HentIdenter(
@@ -200,7 +201,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun tilOppgaveDto(oppgave: Oppgave, reservasjon: Reservasjon?): OppgaveDto {
-
         val oppgaveStatus =
             if (reservasjon != null && (!reservasjon.erAktiv()) || reservasjon == null) {
                 OppgaveStatusDto(false, null, false, null, null)
@@ -270,11 +270,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
         return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
-            val hentIdentTilInnloggetBruker = if (KoinProfile.LOCAL == configuration.koinProfile()) {
-                "saksbehandler@nav.no"
-            } else {
-                azureGraphService.hentIdentTilInnloggetBruker()
-            }
+            val hentIdentTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
             val antallFerdistilteMine =
                 reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
                     .toSet())
@@ -417,112 +413,75 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNesteOppgaverIKø(kø: UUID): List<OppgaveDto> {
-        if (configuration.koinProfile() != KoinProfile.LOCAL) {
-            if (pepClient.harBasisTilgang()) {
-                val list = mutableListOf<OppgaveDto>()
-                val ms = measureTimeMillis {
-                    for (oppgave in hentOppgaver(kø)) {
-                        if (list.size == 10) {
-                            break
-                        }
-                        if (!pepClient.harTilgangTilLesSak(
-                                fagsakNummer = oppgave.fagsakSaksnummer,
-                                aktørid = oppgave.aktorId
-                            )
-                        ) {
-                            settSkjermet(oppgave)
-                            continue
-                        }
-                        val person = pdlService.person(oppgave.aktorId)
-
-                        val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                            "${oppgave.fagsakSaksnummer} " +
-                                    oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                                        val a = Aksjonspunkter().aksjonspunkter()
-                                            .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                                        "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                                    }.toList().joinToString(", ")
-                        } else {
-                            person?.navn() ?: "Uten navn"
-                        }
-
-                        list.add(
-                            OppgaveDto(
-                                status = OppgaveStatusDto(
-                                    erReservert = false,
-                                    reservertTilTidspunkt = null,
-                                    erReservertAvInnloggetBruker = false,
-                                    reservertAv = null,
-                                    flyttetReservasjon = null
-                                ),
-                                behandlingId = oppgave.behandlingId,
-                                saksnummer = oppgave.fagsakSaksnummer,
-                                navn = navn,
-                                system = oppgave.system,
-                                personnummer = if (person == null) {
-                                    "Ukjent fnummer"
-                                } else {
-                                    person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
-                                },
-                                behandlingstype = oppgave.behandlingType,
-                                fagsakYtelseType = oppgave.fagsakYtelseType,
-                                behandlingStatus = oppgave.behandlingStatus,
-                                erTilSaksbehandling = oppgave.aktiv,
-                                opprettetTidspunkt = oppgave.behandlingOpprettet,
-                                behandlingsfrist = oppgave.behandlingsfrist,
-                                eksternId = oppgave.eksternId,
-                                tilBeslutter = oppgave.tilBeslutter,
-                                utbetalingTilBruker = oppgave.utbetalingTilBruker,
-                                søktGradering = oppgave.søktGradering,
-                                selvstendigFrilans = oppgave.selvstendigFrilans,
-                                registrerPapir = oppgave.registrerPapir,
-                                kombinert = oppgave.kombinert
-                            )
-                        )
-                    }
-                }
-                log.info("Hentet ${list.size} oppgaver for oppgaveliste tok $ms")
-                return list
-            } else {
-                log.warn("har ikke basistilgang")
-                return emptyList()
-            }
-        } else {
+        if (pepClient.harBasisTilgang()) {
             val list = mutableListOf<OppgaveDto>()
-            val oppgaver = hentOppgaver(kø)
-            for (oppgave in oppgaver) {
-                list.add(
-                    OppgaveDto(
-                        status = OppgaveStatusDto(
-                            erReservert = false,
-                            reservertTilTidspunkt = null,
-                            erReservertAvInnloggetBruker = false,
-                            reservertAv = null,
-                            flyttetReservasjon = null
-                        ),
-                        behandlingId = oppgave.behandlingId,
-                        saksnummer = oppgave.fagsakSaksnummer,
-                        navn = "Navn",
-                        system = oppgave.system,
-                        personnummer = oppgave.aktorId,
-                        behandlingstype = oppgave.behandlingType,
-                        fagsakYtelseType = oppgave.fagsakYtelseType,
-                        behandlingStatus = oppgave.behandlingStatus,
-                        erTilSaksbehandling = oppgave.aktiv,
-                        opprettetTidspunkt = oppgave.behandlingOpprettet,
-                        behandlingsfrist = oppgave.behandlingsfrist,
-                        eksternId = oppgave.eksternId,
-                        tilBeslutter = oppgave.tilBeslutter,
-                        utbetalingTilBruker = oppgave.utbetalingTilBruker,
-                        søktGradering = oppgave.søktGradering,
-                        selvstendigFrilans = oppgave.selvstendigFrilans,
-                        registrerPapir = oppgave.registrerPapir,
-                        kombinert = oppgave.kombinert
+            val ms = measureTimeMillis {
+                for (oppgave in hentOppgaver(kø)) {
+                    if (list.size == 10) {
+                        break
+                    }
+                    if (!pepClient.harTilgangTilLesSak(
+                            fagsakNummer = oppgave.fagsakSaksnummer,
+                            aktørid = oppgave.aktorId
+                        )
+                    ) {
+                        settSkjermet(oppgave)
+                        continue
+                    }
+                    val person = pdlService.person(oppgave.aktorId)
+
+                    val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
+                        "${oppgave.fagsakSaksnummer} " +
+                                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                                    val a = Aksjonspunkter().aksjonspunkter()
+                                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                                    "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                                }.toList().joinToString(", ")
+                    } else {
+                        person?.navn() ?: "Uten navn"
+                    }
+
+                    list.add(
+                        OppgaveDto(
+                            status = OppgaveStatusDto(
+                                erReservert = false,
+                                reservertTilTidspunkt = null,
+                                erReservertAvInnloggetBruker = false,
+                                reservertAv = null,
+                                flyttetReservasjon = null
+                            ),
+                            behandlingId = oppgave.behandlingId,
+                            saksnummer = oppgave.fagsakSaksnummer,
+                            navn = navn,
+                            system = oppgave.system,
+                            personnummer = if (person == null) {
+                                "Ukjent fnummer"
+                            } else {
+                                person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                            },
+                            behandlingstype = oppgave.behandlingType,
+                            fagsakYtelseType = oppgave.fagsakYtelseType,
+                            behandlingStatus = oppgave.behandlingStatus,
+                            erTilSaksbehandling = oppgave.aktiv,
+                            opprettetTidspunkt = oppgave.behandlingOpprettet,
+                            behandlingsfrist = oppgave.behandlingsfrist,
+                            eksternId = oppgave.eksternId,
+                            tilBeslutter = oppgave.tilBeslutter,
+                            utbetalingTilBruker = oppgave.utbetalingTilBruker,
+                            søktGradering = oppgave.søktGradering,
+                            selvstendigFrilans = oppgave.selvstendigFrilans,
+                            registrerPapir = oppgave.registrerPapir,
+                            kombinert = oppgave.kombinert
+                        )
                     )
-                )
+                }
             }
+            log.info("Hentet ${list.size} oppgaver for oppgaveliste tok $ms")
             return list
+        } else {
+            log.warn("har ikke basistilgang")
         }
+        return emptyList()
     }
 
     @KtorExperimentalAPI
@@ -560,12 +519,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             var personNavn: String
             var personFnummer: String
             val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                "${oppgave.fagsakSaksnummer} " + 
-                    oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                        val a = Aksjonspunkter().aksjonspunkter()
-                            .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                        "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                    }.toList().joinToString(", ")
+                "${oppgave.fagsakSaksnummer} " +
+                        oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                            val a = Aksjonspunkter().aksjonspunkter()
+                                .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                            "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                        }.toList().joinToString(", ")
             } else {
                 person?.navn() ?: "Uten navn"
             }
@@ -681,8 +640,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             it?.skjermet = true
             it!!
         }
-        val oppgaKøer = oppgaveKøRepository.hent()
-        for (oppgaveKø in oppgaKøer) {
+        for (oppgaveKø in oppgaveKøRepository.hent()) {
             val skalOppdareKø = oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
             if (skalOppdareKø) {
                 oppgaveKøRepository.lagre(oppgaveKø.id) {
