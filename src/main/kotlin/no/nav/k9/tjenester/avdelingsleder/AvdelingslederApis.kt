@@ -11,25 +11,26 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
+import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveId
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import org.koin.ktor.ext.inject
 import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.AvdelingslederApis(
-    oppgaveTjeneste: OppgaveTjeneste,
-    avdelingslederTjeneste: AvdelingslederTjeneste,
-    requestContextService: RequestContextService,
-    configuration: Configuration
-) {
-
+internal fun Route.AvdelingslederApis() {
+    val oppgaveTjeneste by inject<OppgaveTjeneste>()
+    val avdelingslederTjeneste by inject<AvdelingslederTjeneste>()
+    val requestContextService by inject<IRequestContextService>()
+    val configuration by inject<Configuration>()
     @Location("/oppgaver/antall-totalt")
-    class hentAntallOppgaverForAvdeling
+    class hentAntallOppgaverTotalt
 
-    get { _: hentAntallOppgaverForAvdeling ->
+    get { _: hentAntallOppgaverTotalt ->
         val antall = oppgaveTjeneste.hentAntallOppgaverTotalt()
         call.respond(antall)
     }
@@ -68,7 +69,7 @@ internal fun Route.AvdelingslederApis(
     class hentReservasjoner
 
     get { _: hentReservasjoner ->
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
@@ -79,7 +80,7 @@ internal fun Route.AvdelingslederApis(
             }
         }else{
             call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
-        }   
+        }
     }
 
     @Location("/reservasjoner/opphev")

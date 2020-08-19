@@ -8,6 +8,7 @@ import io.mockk.*
 import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
@@ -59,7 +60,7 @@ class K9sakEventHandlerTest {
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
         val config = mockk<Configuration>()
-        every { config.erLokalt() } returns true
+        every { KoinProfile.LOCAL == config.koinProfile() } returns true
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
@@ -141,7 +142,7 @@ class K9sakEventHandlerTest {
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
         val config = mockk<Configuration>()
-        every { config.erLokalt() } returns true
+        every { KoinProfile.LOCAL == config.koinProfile() } returns true
         val k9sakEventHandler = K9sakEventHandler(
             OppgaveRepository(dataSource = dataSource),
             BehandlingProsessEventRepository(dataSource = dataSource),
@@ -218,7 +219,7 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
-        every { config.erLokalt() } returns true
+        every { KoinProfile.LOCAL == config.koinProfile() } returns true
 
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
@@ -299,7 +300,7 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
-        every { config.erLokalt() } returns true
+        every { KoinProfile.LOCAL == config.koinProfile() } returns true
 
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
@@ -383,7 +384,7 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
-        every { config.erLokalt() } returns true
+        every { KoinProfile.LOCAL == config.koinProfile() } returns true
 
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
@@ -425,8 +426,6 @@ class K9sakEventHandlerTest {
                "ansvarligSaksbehandlerIdent": "saksbeh"
 }       """
         
-      
-
         val event =   AksjonspunktLagetTilbake().deserialize(null,json.toByteArray() )!!
         
         k9sakEventHandler.prosesser(event)
@@ -467,7 +466,7 @@ class K9sakEventHandlerTest {
         every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
-        every { config.erLokalt() } returns true
+        every { KoinProfile.LOCAL == config.koinProfile() } returns true
 
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,

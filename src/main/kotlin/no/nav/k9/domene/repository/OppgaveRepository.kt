@@ -10,7 +10,7 @@ import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverPerDato
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.mock.Aksjonspunkt
 import no.nav.k9.utils.Cache
 import no.nav.k9.utils.CacheObject
@@ -176,37 +176,6 @@ class OppgaveRepository(
         }
     }
 
-    fun hentAlleOppgaverPerDato(): List<AlleOppgaverPerDato> {
-
-        val json = using(sessionOf(dataSource)) {
-            it.run(
-                queryOf(
-                    """
-                        select count(*) as antall,
-                        (data ::jsonb -> 'fagsakYtelseType' ->> 'kode') as fagsakYtelseType,
-                        (data ::jsonb -> 'behandlingType' ->> 'kode') as behandlingType,
-                        (data ::jsonb ->> 'behandlingOpprettet') ::date as opprettetDato
-                        from oppgave o where (data ::jsonb -> 'aktiv') ::boolean
-                        and (data ::jsonb ->> 'behandlingOpprettet')::date <= current_date 
-                        and (data ::jsonb ->> 'behandlingOpprettet')::date >= (current_date - '28 days' ::interval)
-                        group by opprettetDato, behandlingType, fagsakYtelseType
-                    """.trimIndent(),
-                    mapOf()
-                )
-                    .map { row ->
-                        AlleOppgaverPerDato(
-                            FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
-                            BehandlingType.fraKode(row.string("behandlingType")),
-                            row.localDate("opprettetDato"),
-                            row.int("antall")
-                        )
-                    }.asList
-            )
-        }
-        return json
-
-    }
-
     fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
@@ -246,6 +215,25 @@ class OppgaveRepository(
                 queryOf(
                     "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean",
                     mapOf()
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        log.info("Teller aktive oppgaver: $spørring ms")
+        return count!!
+    }
+    
+    internal fun hentAktiveOppgaverTotaltPerBehandlingstypeOgYtelseType(fagsakYtelseType: FagsakYtelseType, behandlingType: BehandlingType): Int {
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean and (data -> 'behandlingType' ->> 'kode') =:behandlingType and (data -> 'fagsakYtelseType' ->> 'kode') =:fagsakYtelseType ",
+                    mapOf("behandlingType" to behandlingType.kode,"fagsakYtelseType" to fagsakYtelseType.kode )
                 )
                     .map { row ->
                         row.int("count")
@@ -323,7 +311,7 @@ class OppgaveRepository(
     }
 
     internal fun hentAktiveOppgaversAksjonspunktliste(): List<Aksjonspunkt> {
-    
+
         val json: List<List<Aksjonspunkt>> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -331,7 +319,7 @@ class OppgaveRepository(
                     mapOf()
                 )
                     .map { row ->
-                        
+
                         val map =  objectMapper().readValue(
                             row.string("punkt"),
                             object : TypeReference<HashMap<String, String>>() {})
@@ -342,12 +330,12 @@ class OppgaveRepository(
                     }.asList
             )
         }
-       
+
         return json.flatten().groupBy { it.kode }.map { entry ->
             val aksjonspunkt = entry.value.get(0)
             aksjonspunkt.antall=  entry.value.map { it.antall }.sum()
             aksjonspunkt
         }
     }
-    
+
 }

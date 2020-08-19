@@ -7,10 +7,12 @@ import io.mockk.mockk
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
@@ -50,7 +52,7 @@ class OppgavekoTest {
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val pepClient = mockk<PepClient>()
+        val pepClient = mockk<IPepClient>()
         val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(
             oppgaveRepository,
@@ -151,7 +153,7 @@ class OppgavekoTest {
         oppgaveKøRepository.lagre(oppgaveko.id) {
              oppgaveko
         }
-        every { config.erLokalt() } returns true
+        every { KoinProfile.LOCAL == config.koinProfile() } returns true
         val hent = oppgaveTjeneste.hentOppgaver(oppgaveko.id)
         assert(hent.size == 1)
         assert(hent[0].registrerPapir)

@@ -9,30 +9,32 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.SaksbehandlerRepository
-import no.nav.k9.integrasjon.abac.PepClient
-import no.nav.k9.integrasjon.azuregraph.AzureGraphService
+import no.nav.k9.integrasjon.abac.IPepClient
+import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
+import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
+import org.koin.ktor.ext.inject
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-internal fun Route.NavAnsattApis(
-    pepClient: PepClient,
-    requestContextService: RequestContextService,
-    saksbehandlerRepository: SaksbehandlerRepository,
-    azureGraphService: AzureGraphService,
-    configuration: Configuration
-) {
+internal fun Route.NavAnsattApis() {
+    val pepClient by inject<IPepClient>()
+    val requestContextService by inject<IRequestContextService>()
+    val saksbehandlerRepository by inject<SaksbehandlerRepository>()
+    val azureGraphService by inject<IAzureGraphService>()
+    val configuration by inject<Configuration>()
     @Location("/saksbehandler")
     class getInnloggetBruker
 
     val log = LoggerFactory.getLogger("Route.NavAnsattApis")
 
     get { _: getInnloggetBruker ->
-        if (configuration.erIkkeLokalt) {
+        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             val idtoken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(

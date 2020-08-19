@@ -33,7 +33,7 @@ class AuditdataHeader (
          */
         private const val logVersion = "1.0"
         private fun cefHeaderEscape(s: String): String {
-            return s!!.replace("\\", "\\\\").replace("|", "\\|").replace("\n", "").replace("\r", "")
+            return s.replace("\\", "\\\\").replace("|", "\\|").replace("\n", "").replace("\r", "")
         }
     }
 }

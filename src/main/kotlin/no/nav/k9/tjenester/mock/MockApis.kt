@@ -12,6 +12,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.*
+import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
@@ -22,23 +23,28 @@ import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
+import org.koin.ktor.ext.inject
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-fun Route.MockGrensesnitt(
-    k9sakEventHandler: K9sakEventHandler,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    oppgaveKøRepository: OppgaveKøRepository,
-    oppgaveRepository: OppgaveRepository,
-    saksbehandlerRepository: SaksbehandlerRepository
-) {
+fun Route.MockGrensesnitt() {
+    val k9sakEventHandler by inject<K9sakEventHandler>()
+    val behandlingProsessEventRepository by inject<BehandlingProsessEventRepository>()
+    val oppgaveKøRepository by inject<OppgaveKøRepository>()
+    val oppgaveRepository by inject<OppgaveRepository>()
+    val saksbehandlerRepository by inject<SaksbehandlerRepository>()
+    val profile by inject<KoinProfile>()
     @Location("/")
     class main
 
     get { _: main ->
+        if (profile == KoinProfile.PROD) {
+            call.respond(HttpStatusCode.NotFound)
+        }
+        
         call.respondHtml {
 
             head {
@@ -117,8 +123,10 @@ fun Route.MockGrensesnitt(
 
     @Location("/toggleaksjonspunkt")
     class aksjonspunkt
-
     post { _: aksjonspunkt ->
+        if (profile == KoinProfile.PROD) {
+             call.respond(HttpStatusCode.NotFound)
+        }
         val aksjonspunktToggle = call.receive<AksjonspunktToggle>()
 
         val modell = behandlingProsessEventRepository.hent(UUID.fromString(aksjonspunktToggle.eksternid))
@@ -172,6 +180,9 @@ fun Route.MockGrensesnitt(
     class aksjonspunkt2
 
     get { _: aksjonspunkt2 ->
+        if (profile == KoinProfile.PROD) {
+             call.respond(HttpStatusCode.NotFound)
+        }
         for (i in 0..10000 step 1) {
 
             val event =
@@ -202,6 +213,9 @@ fun Route.MockGrensesnitt(
     class endreBehandling
 
     get { _: endreBehandling ->
+        if (profile == KoinProfile.PROD) {
+             call.respond(HttpStatusCode.NotFound)
+        }
         val valgtKø = call.request.queryParameters.get("valgtKø")
         val ferdigStill = call.request.queryParameters.get("ferdigstill")
         if (ferdigStill != null) {

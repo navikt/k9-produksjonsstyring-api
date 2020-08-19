@@ -33,48 +33,38 @@ import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
 import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthReporter
-import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
-import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
-import no.nav.k9.auth.IdTokenProvider
-import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
-import no.nav.k9.integrasjon.abac.PepClient
-import no.nav.k9.integrasjon.audit.Auditlogger
-import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
-import no.nav.k9.integrasjon.pdl.PdlService
-import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
-import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
-import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingTjeneste
 import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingerApis
 import no.nav.k9.tjenester.fagsak.FagsakApis
-import no.nav.k9.tjenester.innsikt.InnsiktGrensesnitt
-import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
+import no.nav.k9.tjenester.innsikt.innsiktGrensesnitt
 import no.nav.k9.tjenester.kodeverk.KodeverkApis
 import no.nav.k9.tjenester.konfig.KonfigApis
 import no.nav.k9.tjenester.mock.MockGrensesnitt
 import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
-import no.nav.k9.tjenester.saksbehandler.TestApis
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
-import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
 import no.nav.k9.tjenester.sse.Sse
 import no.nav.k9.tjenester.sse.SseEvent
+import org.koin.core.qualifier.named
+import org.koin.ktor.ext.Koin
+import org.koin.ktor.ext.getKoin
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.Executors
@@ -93,6 +83,10 @@ fun Application.k9Los() {
     val configuration = Configuration(environment.config)
     val issuers = configuration.issuers()
 
+    install(Koin) {
+        modules(selectModuleBasedOnProfile(this@k9Los, config = configuration))
+    }
+    val koin = getKoin()
     install(Authentication) {
         multipleJwtIssuers(issuers)
     }
@@ -104,19 +98,6 @@ fun Application.k9Los() {
                 .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
         }
     }
-    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
-
-//    install(CallLogging) {
-//        correlationIdAndRequestIdInMdc()
-//        logRequests()
-//        mdc("id_token_jti") { call ->
-//            try {
-//                idTokenProvider.getIdToken(call).getId()
-//            } catch (cause: Throwable) {
-//                null
-//            }
-//        }
-//    }
 
     install(StatusPages) {
         DefaultStatusPages()
@@ -124,225 +105,76 @@ fun Application.k9Los() {
         AuthStatusPages()
     }
 
-    val accessTokenClientResolver = AccessTokenClientResolver(
-        clients = configuration.clients()
-    )
-
-    val pdlService = PdlService(
-        configuration.pdlUrl(),
-        accessTokenClient = accessTokenClientResolver.naisSts(),
-        configuration = configuration
-    )
-    val auditlogger = Auditlogger(configuration)
-    val oppgaveKøOppdatert = Channel<UUID>(Channel.UNLIMITED)
-    val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(Channel.UNLIMITED)
-    val refreshKlienter = Channel<SseEvent>()
-
-    val dataSource = hikariConfig(configuration)
-    val oppgaveRepository = OppgaveRepository(dataSource)
-
-    val oppgaveKøRepository = OppgaveKøRepository(
-        dataSource = dataSource,
-        oppgaveKøOppdatert = oppgaveKøOppdatert,
-        refreshKlienter = refreshKlienter
-    )
-
-    val saksbehandlerRepository = SaksbehandlerRepository(dataSource)
-    val reservasjonRepository = ReservasjonRepository(
-        oppgaveRepository = oppgaveRepository,
-        oppgaveKøRepository = oppgaveKøRepository,
-        dataSource = dataSource,
-        refreshKlienter = refreshKlienter,
-        saksbehandlerRepository = saksbehandlerRepository
-    )
     val køOppdatertProsessorJob =
         køOppdatertProsessor(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            channel = oppgaveKøOppdatert,
-            reservasjonRepository = reservasjonRepository
+            oppgaveKøRepository = koin.get(),
+            oppgaveRepository = koin.get(),
+            channel = koin.get<Channel<UUID>>(named("oppgaveKøOppdatert")),
+            reservasjonRepository = koin.get()
         )
+
     val oppdatereKøerMedOppgaveProsessorJob =
         oppdatereKøerMedOppgaveProsessor(
-            oppgaveKøRepository = oppgaveKøRepository,
-            channel = oppgaverSomSkalInnPåKøer,
-            reservasjonRepository = reservasjonRepository
+            oppgaveKøRepository = koin.get(),
+            channel = koin.get<Channel<Oppgave>>(named("oppgaveChannel")),
+            reservasjonRepository = koin.get()
         )
-
-    val behandlingProsessEventRepository = BehandlingProsessEventRepository(dataSource)
-
-    val sakOgBehadlingProducer = SakOgBehadlingProducer(
-        kafkaConfig = configuration.getKafkaConfig(),
-        config = configuration
-    )
-    val azureGraphService = AzureGraphService(
-        accessTokenClient = accessTokenClientResolver.accessTokenClient(),
-        configuration = configuration
-    )
-    val statistikkRepository = StatistikkRepository(dataSource)
-
-    val nokkeltallTjeneste = NokkeltallTjeneste(oppgaveRepository, statistikkRepository)
-
-    val pepClient = PepClient(azureGraphService = azureGraphService, auditlogger = auditlogger, config = configuration)
-
-    val statistikkProducer = StatistikkProducer(
-        kafkaConfig = configuration.getKafkaConfig(),
-        config = configuration,
-        pepClient = pepClient,
-        saksbehandlerRepository = saksbehandlerRepository,
-        reservasjonRepository = reservasjonRepository
-    )
-
-    val k9sakEventHandler = K9sakEventHandler(
-        oppgaveRepository = oppgaveRepository,
-        behandlingProsessEventRepository = behandlingProsessEventRepository,
-        config = configuration,
-        sakOgBehadlingProducer = sakOgBehadlingProducer,
-        oppgaveKøRepository = oppgaveKøRepository,
-        reservasjonRepository = reservasjonRepository,
-        statistikkProducer = statistikkProducer,
-        oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-        statistikkRepository = statistikkRepository
-    )
-
-    val asynkronProsesseringV1Service = AsynkronProsesseringV1Service(
-        kafkaConfig = configuration.getKafkaConfig(),
-        configuration = configuration,
-        k9sakEventHandler = k9sakEventHandler
-    )
-
-    val oppgaveTjeneste = OppgaveTjeneste(
-        oppgaveRepository = oppgaveRepository,
-        oppgaveKøRepository = oppgaveKøRepository,
-        saksbehandlerRepository = saksbehandlerRepository,
-        reservasjonRepository = reservasjonRepository,
-        pdlService = pdlService,
-        configuration = configuration,
-        pepClient = pepClient,
-        azureGraphService = azureGraphService,
-        statistikkRepository = statistikkRepository
-    )
-
 
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
-        asynkronProsesseringV1Service.stop()
-        sakOgBehadlingProducer.stop()
-        statistikkProducer.stop()
+        koin.get<AsynkronProsesseringV1Service>().stop()
+        koin.get<SakOgBehadlingProducer>().stop()
+        koin.get<StatistikkProducer>().stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
         køOppdatertProsessorJob.cancel()
         oppdatereKøerMedOppgaveProsessorJob.cancel()
     }
-    val avdelingslederTjeneste = AvdelingslederTjeneste(
-        oppgaveKøRepository = oppgaveKøRepository,
-        saksbehandlerRepository = saksbehandlerRepository,
-        oppgaveTjeneste = oppgaveTjeneste,
-        reservasjonRepository = reservasjonRepository,
-        oppgaveRepository = oppgaveRepository,
-        pepClient = pepClient,
-        configuration = configuration
-    )
-    val driftsmeldingRepository = DriftsmeldingRepository(dataSource)
-    val driftsmeldingTjeneste = DriftsmeldingTjeneste(driftsmeldingRepository = driftsmeldingRepository)
 
     // Server side events
     val sseChannel = produce {
-        for (oppgaverOppdatertEvent in refreshKlienter) {
+        for (oppgaverOppdatertEvent in koin.get<Channel<SseEvent>>(named("refreshKlienter"))) {
             send(oppgaverOppdatertEvent)
         }
     }.broadcast()
 
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
-
-    val requestContextService = RequestContextService()
+    
+    
+    rekjørForGrafer(koin.get(), koin.get())
+   
     install(CallIdRequired)
 
     install(Locations)
 
     install(Routing) {
 
-        val kodeverkTjeneste = HentKodeverkTjeneste()
-
         MetricsRoute()
         DefaultProbeRoutes()
 
-        val healthService = HealthService(
-            healthChecks = asynkronProsesseringV1Service.isReadyChecks()
-        )
-
         HealthReporter(
             app = appId,
-            healthService = healthService,
+            healthService = koin.get(),
             frequency = Duration.ofMinutes(1)
         )
-        if (!configuration.erIProd) {
-            route("mock") {
-                MockGrensesnitt(
-                    k9sakEventHandler = k9sakEventHandler,
-                    behandlingProsessEventRepository = behandlingProsessEventRepository,
-                    oppgaveKøRepository = oppgaveKøRepository,
-                    oppgaveRepository = oppgaveRepository,
-                    saksbehandlerRepository = saksbehandlerRepository
-                )
-            }
+
+        route("mock") {
+            MockGrensesnitt()
         }
+
         route("innsikt") {
-            InnsiktGrensesnitt(
-                oppgaveRepository = oppgaveRepository, oppgaveKøRepository = oppgaveKøRepository,
-                saksbehandlerRepository = saksbehandlerRepository,
-                behandlingProsessEventRepository = behandlingProsessEventRepository
-            )
+            innsiktGrensesnitt()
         }
-        if (configuration.erIkkeLokalt) {
-            authenticate(*issuers.allIssuers()) {
-                api(
-                    requestContextService,
-                    oppgaveTjeneste,
-                    avdelingslederTjeneste = avdelingslederTjeneste,
-                    kodeverkTjeneste = kodeverkTjeneste,
-                    pdlService = pdlService,
-                    accessTokenClientResolver = accessTokenClientResolver,
-                    configuration = configuration,
-                    pepClient = pepClient,
-                    saksbehhandlerRepository = saksbehandlerRepository,
-                    azureGraphService = azureGraphService,
-                    oppgaveKøRepository = oppgaveKøRepository,
-                    oppgaveRepository = oppgaveRepository,
-                    reservasjonRepository = reservasjonRepository,
-                    eventRepository = behandlingProsessEventRepository,
-                    sseChannel = sseChannel,
-                    nokkeltallTjeneste = nokkeltallTjeneste,
-                            driftsmeldingTjeneste= driftsmeldingTjeneste
-                )
-            }
+
+        if ((KoinProfile.LOCAL == koin.get<KoinProfile>())) {
+            api(sseChannel)
         } else {
-            install(CORS) {
-                method(HttpMethod.Options)
-                anyHost()
-                allowCredentials = true
+            authenticate(*issuers.allIssuers()) {
+                api(sseChannel)
             }
-            api(
-                requestContextService,
-                oppgaveTjeneste,
-                kodeverkTjeneste,
-                avdelingslederTjeneste,
-                pdlService = pdlService,
-                accessTokenClientResolver = accessTokenClientResolver,
-                configuration = configuration,
-                pepClient = pepClient,
-                saksbehhandlerRepository = saksbehandlerRepository,
-                azureGraphService = azureGraphService,
-                oppgaveKøRepository = oppgaveKøRepository,
-                oppgaveRepository = oppgaveRepository,
-                reservasjonRepository = reservasjonRepository,
-                eventRepository = behandlingProsessEventRepository,
-                sseChannel = sseChannel,
-                nokkeltallTjeneste = nokkeltallTjeneste,
-                driftsmeldingTjeneste = driftsmeldingTjeneste
-            )
         }
+
         static("static") {
             resources("static/css")
             resources("static/js")
@@ -361,6 +193,82 @@ fun Application.k9Los() {
         generated()
     }
 }
+
+@ExperimentalCoroutinesApi
+@KtorExperimentalAPI
+@KtorExperimentalLocationsAPI
+private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
+    install(CORS) {
+        method(HttpMethod.Options)
+        anyHost()
+        allowCredentials = true
+    }
+    route("api") {
+
+        AdminApis()
+        route("driftsmeldinger") {
+            DriftsmeldingerApis()
+        }
+        route("fagsak") {
+            FagsakApis()
+        }
+        route("saksbehandler") {
+            route("oppgaver") {
+                OppgaveApis()
+            }
+
+            SaksbehandlerOppgavekoApis()
+            SaksbehandlerNøkkeltallApis()
+        }
+        route("avdelingsleder") {
+            AvdelingslederApis()
+            route("oppgavekoer") {
+                AvdelingslederOppgavekøApis()
+            }
+            route("nokkeltall") {
+                NokkeltallApis()
+            }
+        }
+
+        NavAnsattApis()
+
+        route("konfig") { KonfigApis() }
+        KodeverkApis()
+        Sse(
+            sseChannel = sseChannel
+        )
+    }
+}
+
+private fun Application.rekjørForGrafer(
+    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    statistikkRepository: StatistikkRepository
+) {
+    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+        val alleEventerIder = behandlingProsessEventRepository.hentAlleEventerIder()
+        for ((index, eventId) in alleEventerIder.withIndex()) {
+            if (index % 1000 == 0) {
+                log.info("""Ferdig med $index av ${alleEventerIder.size}""")
+            }
+            for (modell in behandlingProsessEventRepository.hent(UUID.fromString(eventId)).alleVersjoner()) {
+                val oppgave = modell.oppgave()
+                if (modell.starterSak()) {
+                    if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
+                        statistikkRepository.lagreNyHistorikk(
+                            oppgave
+                        )
+                    }
+                }
+                if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
+                    statistikkRepository.lagreFerdigstiltHistorikk(
+                        oppgave
+                    )
+                }
+            }
+        }
+    }
+}
+
 
 private fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
@@ -409,105 +317,4 @@ private fun Application.regenererOppgaver(
     }
 }
 
-
-@ExperimentalCoroutinesApi
-@KtorExperimentalAPI
-@KtorExperimentalLocationsAPI
-private fun Route.api(
-    requestContextService: RequestContextService,
-    oppgaveTjeneste: OppgaveTjeneste,
-    kodeverkTjeneste: HentKodeverkTjeneste,
-    avdelingslederTjeneste: AvdelingslederTjeneste,
-    pdlService: PdlService,
-    accessTokenClientResolver: AccessTokenClientResolver,
-    configuration: Configuration,
-    pepClient: PepClient,
-    saksbehhandlerRepository: SaksbehandlerRepository,
-    azureGraphService: AzureGraphService,
-    eventRepository: BehandlingProsessEventRepository,
-    oppgaveKøRepository: OppgaveKøRepository,
-    oppgaveRepository: OppgaveRepository,
-    reservasjonRepository: ReservasjonRepository,
-    sseChannel: BroadcastChannel<SseEvent>,
-    nokkeltallTjeneste: NokkeltallTjeneste,
-    driftsmeldingTjeneste: DriftsmeldingTjeneste
-) {
-
-    route("api") {
-        route("driftsmeldinger") {
-            DriftsmeldingerApis(
-                driftsmeldingTjeneste = driftsmeldingTjeneste
-            )
-        }
-        route("fagsak") {
-            FagsakApis(
-                oppgaveTjeneste = oppgaveTjeneste,
-                requestContextService = requestContextService,
-                configuration = configuration
-            )
-        }
-        route("saksbehandler") {
-            route("oppgaver") {
-                OppgaveApis(
-                    configuration = configuration,
-                    requestContextService = requestContextService,
-                    oppgaveTjeneste = oppgaveTjeneste,
-                    saksbehandlerRepository = saksbehhandlerRepository
-                )
-            }
-
-            SaksbehandlerOppgavekoApis(
-                configuration = configuration,
-                oppgaveTjeneste = oppgaveTjeneste,
-                pepClient = pepClient,
-                requestContextService = requestContextService,
-                oppgaveKøRepository = oppgaveKøRepository
-            )
-            SaksbehandlerNøkkeltallApis(
-                configuration = configuration,
-                requestContextService = requestContextService,
-                oppgaveTjeneste = oppgaveTjeneste
-            )
-        }
-        route("avdelingsleder") {
-            AvdelingslederApis(
-                oppgaveTjeneste = oppgaveTjeneste,
-                avdelingslederTjeneste = avdelingslederTjeneste,
-                requestContextService = requestContextService,
-                configuration = configuration
-            )
-            route("oppgavekoer") {
-                AvdelingslederOppgavekøApis(
-                    avdelingslederTjeneste
-                )
-            }
-            route("nokkeltall") {
-                NokkeltallApis(nokkeltallTjeneste = nokkeltallTjeneste)
-            }
-        }
-
-        NavAnsattApis(
-            requestContextService = requestContextService,
-            pepClient = pepClient,
-            configuration = configuration,
-            azureGraphService = azureGraphService,
-            saksbehandlerRepository = saksbehhandlerRepository
-        )
-
-
-        if (!configuration.erIProd) {
-            TestApis(
-                requestContextService = requestContextService,
-                pdlService = pdlService,
-                accessTokenClientResolver = accessTokenClientResolver,
-                configuration = configuration,
-                accessTokenClient = accessTokenClientResolver.accessTokenClient(),
-                pepClient = pepClient
-            )
-        }
-        route("konfig") { KonfigApis(configuration) }
-        KodeverkApis(kodeverkTjeneste = kodeverkTjeneste)
-        Sse(sseChannel = sseChannel)
-    }
-}
 

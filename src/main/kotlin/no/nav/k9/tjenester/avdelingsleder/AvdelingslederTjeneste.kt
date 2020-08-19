@@ -2,6 +2,7 @@ package no.nav.k9.tjenester.avdelingsleder
 
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
+import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.Enhet
 import no.nav.k9.domene.modell.KøSortering
@@ -11,6 +12,7 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.*
 import no.nav.k9.tjenester.avdelingsleder.reservasjoner.ReservasjonDto
@@ -26,7 +28,7 @@ class AvdelingslederTjeneste(
     private val oppgaveTjeneste: OppgaveTjeneste,
     private val reservasjonRepository: ReservasjonRepository,
     private val oppgaveRepository: OppgaveRepository,
-    private val pepClient: PepClient,
+    private val pepClient: IPepClient,
     private val configuration: Configuration
 ) {
     suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
@@ -208,7 +210,7 @@ class AvdelingslederTjeneste(
 
                 val oppgave = oppgaveRepository.hent(uuid)
 
-                if (configuration.erIkkeLokalt && !pepClient.harTilgangTilLesSak(
+                if (configuration.koinProfile() != KoinProfile.LOCAL && !pepClient.harTilgangTilLesSak(
                         fagsakNummer = oppgave.fagsakSaksnummer,
                         aktørid = oppgave.aktorId
                     )

@@ -1,6 +1,8 @@
 package no.nav.k9.tjenester.saksbehandler.nokkeltall
 
 import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.tjenester.saksbehandler.oppgave.Key
 import java.time.LocalDate
 
 data class NyeOgFerdigstilteOppgaver(

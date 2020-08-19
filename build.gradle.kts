@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.3.2.daa1b24"
+val dusseldorfKtorVersion = "1.3.2.12404e4"
 val ktorVersion = "1.3.2"
 val pdfBoxVersion = "2.0.16"
 val mainClass = "no.nav.k9.K9LosKt"
@@ -12,6 +12,7 @@ val vaultJdbcVersion = "1.3.1"
 val kafkaEmbeddedEnvVersion = "2.2.3"
 val cxf = "3.3.1"
 val jaxwsTools = "2.3.1"
+val koinVersion = "2.1.6"
 
 plugins {
     kotlin("jvm") version "1.3.70"
@@ -64,6 +65,10 @@ dependencies {
     implementation("info.debatty:java-string-similarity:1.2.1")
     implementation("com.papertrailapp:logback-syslog4j:1.0.0")
 
+    // DI
+    implementation("org.koin:koin-core:$koinVersion")
+    implementation("org.koin:koin-ktor:$koinVersion")
+    
     // Test
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")

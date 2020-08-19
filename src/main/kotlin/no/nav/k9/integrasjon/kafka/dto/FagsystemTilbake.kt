@@ -1,6 +1,5 @@
 package no.nav.k9.integrasjon.kafka.dto
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 
 
@@ -10,7 +9,6 @@ enum class FagsystemTilbake(val kode: String, val kodeverk: String) {
     K9TILBAKE("K9TILBAKE", "FAGSYSTEM");
 
     companion object {
-        @JsonCreator
         @JvmStatic
         fun fraKode(kode: String): FagsystemTilbake = values().find { it.kode == kode }!!
     }

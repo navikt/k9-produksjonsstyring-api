@@ -15,15 +15,16 @@ import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
+import org.koin.ktor.ext.inject
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
-fun Route.InnsiktGrensesnitt(
-    oppgaveRepository: OppgaveRepository,
-    oppgaveKøRepository: OppgaveKøRepository,
-    saksbehandlerRepository: SaksbehandlerRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository
-) {
+fun Route.innsiktGrensesnitt() {
+    val oppgaveRepository by inject<OppgaveRepository>()
+    val oppgaveKøRepository by inject<OppgaveKøRepository>()
+    val saksbehandlerRepository by inject<SaksbehandlerRepository>()
+    val behandlingProsessEventRepository by inject<BehandlingProsessEventRepository>()
+    
     @Location("/")
     class main
 
@@ -31,7 +32,7 @@ fun Route.InnsiktGrensesnitt(
         call.respondHtml {
 
             head {
-                title { +"Innsikt i  k9-los" }
+                title { +"Innsikt i k9-los" }
                 styleLink("/static/bootstrap.css")
                 script(src = "/static/script.js") {}
             }

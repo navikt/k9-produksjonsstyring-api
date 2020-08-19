@@ -9,12 +9,12 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
+import org.koin.ktor.ext.inject
 import java.util.*
 
 @KtorExperimentalLocationsAPI
-fun Route.AvdelingslederOppgavekøApis(
-    avdelingslederTjeneste: AvdelingslederTjeneste
-) {
+fun Route.AvdelingslederOppgavekøApis() {
+    val avdelingslederTjeneste by inject<AvdelingslederTjeneste>()
     @Location("/")
     class hentAlleOppgaveKøer
 
