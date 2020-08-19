@@ -9,5 +9,5 @@ data class AlleOppgaverNyeOgFerdigstilte(
     val behandlingType: BehandlingType,
     val dato: LocalDate,
     val nye: Int,
-    val ferdigstilte: List<String>
+    val ferdigstilte: Set<String>
 )

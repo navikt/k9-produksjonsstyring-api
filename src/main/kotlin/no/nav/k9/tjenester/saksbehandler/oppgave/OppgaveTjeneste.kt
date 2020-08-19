@@ -13,7 +13,6 @@ import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.IPdlService
-import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverBeholdningHistorikk
@@ -21,8 +20,6 @@ import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
-import org.koin.experimental.property.inject
-import org.koin.ktor.ext.inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -46,7 +43,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val pepClient: IPepClient,
     private val statistikkRepository: StatistikkRepository
 ) {
-   
+
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
@@ -289,16 +286,31 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverBeholdningHistorikk> {
-        var antalletTotalt = oppgaveRepository.hentAktiveOppgaverTotalt()
-        return statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(28).map {
-            antalletTotalt = antalletTotalt - it.nye + it.ferdigstilte.size
-            AlleOppgaverBeholdningHistorikk(
-                it.fagsakYtelseType,
-                it.behandlingType,
-                it.dato,
-                antalletTotalt
-            )
+        val ytelsetype =
+            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(28)
+        val mutableListOf = mutableListOf<AlleOppgaverBeholdningHistorikk>()
+        for (ytelseTypeEntry in ytelsetype.groupBy { it.fagsakYtelseType }) {
+            val perBehandlingstype = ytelseTypeEntry.value.groupBy { it.behandlingType }
+            for (behandlingTypeEntry in perBehandlingstype) {
+                var aktive =
+                    oppgaveRepository.hentAktiveOppgaverTotaltPerBehandlingstypeOgYtelseType(
+                        fagsakYtelseType = ytelseTypeEntry.key,
+                        behandlingType = behandlingTypeEntry.key
+                    )
+                behandlingTypeEntry.value.map {
+                    aktive = aktive - it.nye + it.ferdigstilte.size
+                    mutableListOf.add(
+                        AlleOppgaverBeholdningHistorikk(
+                            it.fagsakYtelseType,
+                            it.behandlingType,
+                            it.dato,
+                            aktive
+                        )
+                    )
+                }
+            }
         }
+        return mutableListOf
     }
 
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {

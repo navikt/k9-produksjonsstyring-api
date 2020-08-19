@@ -225,6 +225,25 @@ class OppgaveRepository(
         log.info("Teller aktive oppgaver: $spørring ms")
         return count!!
     }
+    
+    internal fun hentAktiveOppgaverTotaltPerBehandlingstypeOgYtelseType(fagsakYtelseType: FagsakYtelseType, behandlingType: BehandlingType): Int {
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean and (data -> 'behandlingType' ->> 'kode') =':behandlingType' and (data -> 'fagsakYtelseType' ->> 'kode') =':fagsakYtelseType' ",
+                    mapOf("behandlingType" to behandlingType.kode,"fagsakYtelseType" to fagsakYtelseType.kode )
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        log.info("Teller aktive oppgaver: $spørring ms")
+        return count!!
+    }
 
     internal fun hentInaktiveOppgaverTotalt(): Int {
         var spørring = System.currentTimeMillis()
