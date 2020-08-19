@@ -10,7 +10,6 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
-import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.rest.IRequestContextService
@@ -30,6 +29,7 @@ internal fun Route.OppgaveApis() {
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
     val profile by inject<KoinProfile>()
+
     @Location("/")
     class hentOppgaver
 
@@ -38,7 +38,9 @@ internal fun Route.OppgaveApis() {
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                idToken = if(profile != KoinProfile.LOCAL){ call.idToken()}else{
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
                     IdTokenLocal()
                 }
             )
@@ -57,7 +59,9 @@ internal fun Route.OppgaveApis() {
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                 idToken = if(profile != KoinProfile.LOCAL){ call.idToken()}else{
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
                     IdTokenLocal()
                 }
             )
@@ -74,7 +78,9 @@ internal fun Route.OppgaveApis() {
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                 idToken = if(profile != KoinProfile.LOCAL){ call.idToken()}else{
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
                     IdTokenLocal()
                 }
             )
@@ -105,7 +111,9 @@ internal fun Route.OppgaveApis() {
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                 idToken = if(profile != KoinProfile.LOCAL){ call.idToken()}else{
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
                     IdTokenLocal()
                 }
             )
@@ -135,7 +143,9 @@ internal fun Route.OppgaveApis() {
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                 idToken = if(profile != KoinProfile.LOCAL){ call.idToken()}else{
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
                     IdTokenLocal()
                 }
             )
@@ -166,7 +176,9 @@ internal fun Route.OppgaveApis() {
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                 idToken = if(profile != KoinProfile.LOCAL){ call.idToken()}else{
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
                     IdTokenLocal()
                 }
             )
@@ -236,7 +248,9 @@ internal fun Route.OppgaveApis() {
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
-                 idToken = if(profile != KoinProfile.LOCAL){ call.idToken()}else{
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
                     IdTokenLocal()
                 }
             )

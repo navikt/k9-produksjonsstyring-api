@@ -8,7 +8,6 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.withContext
-import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.tjenester.saksbehandler.IdTokenLocal
@@ -19,7 +18,6 @@ import org.koin.ktor.ext.inject
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 fun Route.SaksbehandlerNøkkeltallApis() {
-    val configuration by inject<Configuration>()
     val requestContextService by inject<IRequestContextService>()
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val profile by inject<KoinProfile>()
