@@ -44,7 +44,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
                 if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
-                    statistikkRepository.lagreNyHistorikk(oppgave.behandlingType.kode, oppgave.fagsakYtelseType.kode, oppgave.eksternId)
+                    statistikkRepository.lagreNyHistorikk(oppgave)
                 }
             }
 
@@ -71,7 +71,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                         }
                     }
                 }
-                statistikkRepository.lagreFerdigstiltHistorikk(oppgave.behandlingType.kode, oppgave.fagsakYtelseType.kode, oppgave.eksternId)
+                if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
+                    statistikkRepository.lagreFerdigstiltHistorikk(oppgave)
+                }
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
@@ -86,7 +88,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
     private fun fjernReservasjon(oppgave: Oppgave) {
         if (reservasjonRepository.finnes(oppgave.eksternId)) {
-            reservasjonRepository.lagre(oppgave.eksternId,true) {
+            reservasjonRepository.lagre(oppgave.eksternId, true) {
                 it!!.reservertTil = null
 
                 it

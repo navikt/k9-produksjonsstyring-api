@@ -255,17 +255,13 @@ private fun Application.rekjørForGrafer(
                 if (modell.starterSak()) {
                     if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
                         statistikkRepository.lagreNyHistorikk(
-                            oppgave.behandlingType.kode,
-                            oppgave.fagsakYtelseType.kode,
-                            oppgave.eksternId
+                            oppgave
                         )
                     }
                 }
-                if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
+                if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
                     statistikkRepository.lagreFerdigstiltHistorikk(
-                        oppgave.behandlingType.kode,
-                        oppgave.fagsakYtelseType.kode,
-                        oppgave.eksternId
+                        oppgave
                     )
                 }
             }

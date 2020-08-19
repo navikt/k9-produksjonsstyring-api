@@ -5,6 +5,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleFerdigstilteOppgaver
@@ -109,40 +110,42 @@ class StatistikkRepository(
         }
     }
 
-    fun lagreFerdigstiltHistorikk(bt: String, fyt: String, eksternId: UUID) {
+    fun lagreFerdigstiltHistorikk(oppgave: Oppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 //language=PostgreSQL
                 tx.run(
                     queryOf(
                         """insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, ferdigstilte)
-                                    values (:behandlingType, :fagsakYtelseType, current_date, :dataInitial ::jsonb)
+                                    values (:behandlingType, :fagsakYtelseType, :dato, :dataInitial ::jsonb)
                                     on conflict (behandlingType, fagsakYtelseType, dato) do update
                                     set ferdigstilte = k.ferdigstilte || :ferdigstilte ::jsonb
-                                 """, mapOf("behandlingType" to bt,
-                            "fagsakYtelseType" to fyt,
-                            "dataInitial" to "[\"${eksternId}\"]",
-                            "ferdigstilte" to "[\"$eksternId\"]")
+                                 """, mapOf("behandlingType" to oppgave.behandlingType.kode,
+                            "fagsakYtelseType" to oppgave.fagsakYtelseType.kode,
+                            "dataInitial" to "[\"${oppgave.eksternId}\"]",
+                            "ferdigstilte" to "[\"${oppgave.eksternId}\"]"),
+                            "dato" to oppgave.eventTid.toLocalDate()
                     ).asUpdate
                 )
             }
         }
     }
 
-    fun lagreNyHistorikk(bt: String, fyt: String, eksternId: UUID) {
+    fun lagreNyHistorikk(oppgave: Oppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 //language=PostgreSQL
                 tx.run(
                     queryOf(
                         """insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, nye)
-                                    values (:behandlingType, :fagsakYtelseType, current_date, :dataInitial ::jsonb)
+                                    values (:behandlingType, :fagsakYtelseType, :dato, :dataInitial ::jsonb)
                                     on conflict (behandlingType, fagsakYtelseType, dato) do update
                                     set nye = k.nye || :nye ::jsonb
-                                 """, mapOf("behandlingType" to bt,
-                            "fagsakYtelseType" to fyt,
-                            "dataInitial" to "[\"${eksternId}\"]",
-                            "nye" to "[\"$eksternId\"]")
+                                 """, mapOf("behandlingType" to oppgave.behandlingType.kode,
+                            "fagsakYtelseType" to oppgave.fagsakYtelseType.kode,
+                            "dataInitial" to "[\"${oppgave.eksternId}\"]",
+                            "nye" to "[\"${oppgave.eksternId}\"]"),
+                            "dato" to oppgave.eventTid.toLocalDate()
                     ).asUpdate
                 )
             }
