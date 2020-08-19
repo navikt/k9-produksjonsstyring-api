@@ -123,8 +123,8 @@ class StatistikkRepository(
                                  """, mapOf("behandlingType" to oppgave.behandlingType.kode,
                             "fagsakYtelseType" to oppgave.fagsakYtelseType.kode,
                             "dataInitial" to "[\"${oppgave.eksternId}\"]",
-                            "ferdigstilte" to "[\"${oppgave.eksternId}\"]"),
-                            "dato" to oppgave.eventTid.toLocalDate()
+                            "ferdigstilte" to "[\"${oppgave.eksternId}\"]",
+                            "dato" to oppgave.eventTid.toLocalDate())
                     ).asUpdate
                 )
             }
@@ -144,8 +144,8 @@ class StatistikkRepository(
                                  """, mapOf("behandlingType" to oppgave.behandlingType.kode,
                             "fagsakYtelseType" to oppgave.fagsakYtelseType.kode,
                             "dataInitial" to "[\"${oppgave.eksternId}\"]",
-                            "nye" to "[\"${oppgave.eksternId}\"]"),
-                            "dato" to oppgave.eventTid.toLocalDate()
+                            "nye" to "[\"${oppgave.eksternId}\"]",
+                            "dato" to oppgave.eventTid.toLocalDate())
                     ).asUpdate
                 )
             }
