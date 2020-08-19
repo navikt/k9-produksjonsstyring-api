@@ -288,7 +288,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverBeholdningHistorikk> {
         val ytelsetype =
             statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(28)
-        val mutableListOf = mutableListOf<AlleOppgaverBeholdningHistorikk>()
+        val ret = mutableListOf<AlleOppgaverBeholdningHistorikk>()
         for (ytelseTypeEntry in ytelsetype.groupBy { it.fagsakYtelseType }) {
             val perBehandlingstype = ytelseTypeEntry.value.groupBy { it.behandlingType }
             for (behandlingTypeEntry in perBehandlingstype) {
@@ -299,7 +299,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     )
                 behandlingTypeEntry.value.map {
                     aktive = aktive - it.nye + it.ferdigstilte.size
-                    mutableListOf.add(
+                    ret.add(
                         AlleOppgaverBeholdningHistorikk(
                             it.fagsakYtelseType,
                             it.behandlingType,
@@ -310,7 +310,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
             }
         }
-        return mutableListOf
+        return ret
     }
 
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {

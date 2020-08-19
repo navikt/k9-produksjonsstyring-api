@@ -231,7 +231,7 @@ class StatistikkRepository(
                                     behandlingType = behandlingstype,
                                     dato = dato,
                                     nye = 0,
-                                    ferdigstilte = listOf()
+                                    ferdigstilte = setOf()
                                 )
                             )
                         )
@@ -254,7 +254,7 @@ class StatistikkRepository(
                     behandlingType = behandlingstype,
                     dato = dato,
                     nye = 0,
-                    ferdigstilte = listOf()
+                    ferdigstilte = setOf()
                 )
             )
         }
