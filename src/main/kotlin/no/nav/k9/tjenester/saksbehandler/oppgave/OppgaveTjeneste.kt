@@ -2,7 +2,6 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import info.debatty.java.stringsimilarity.Levenshtein
 import io.ktor.util.KtorExperimentalAPI
-import joptsimple.internal.Strings
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -56,7 +55,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun reserverOppgave(ident: String, uuid: UUID): OppgaveStatusDto {
-        if(!pepClient.harTilgangTilReservingAvOppgaver()){
+        if (!pepClient.harTilgangTilReservingAvOppgaver()) {
             return OppgaveStatusDto(
                 erReservert = false,
                 reservertTilTidspunkt = null,
@@ -256,7 +255,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
-        return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId)).nyeOgFerdigstilteOppgaverPerAntallDager(7)
+        return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId))
+            .nyeOgFerdigstilteOppgaverPerAntallDager(7)
             .map {
                 NyeOgFerdigstilteOppgaverDto(
                     behandlingType = it.behandlingType,
@@ -270,23 +270,23 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
         return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
-                val hentIdentTilInnloggetBruker = if (KoinProfile.LOCAL == configuration.koinProfile()) {
-                    "saksbehandler@nav.no"
-                } else {
-                    azureGraphService.hentIdentTilInnloggetBruker()
-                }
-                val antallFerdistilteMine =
-                    reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
-                        .toSet())
-                        .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
-                NyeOgFerdigstilteOppgaverDto(
-                    behandlingType = it.behandlingType,
-                    dato = it.dato,
-                    antallNye = it.nye,
-                    antallFerdigstilte = it.ferdigstilte.size,
-                    antallFerdigstilteMine = antallFerdistilteMine
-                )
+            val hentIdentTilInnloggetBruker = if (KoinProfile.LOCAL == configuration.koinProfile()) {
+                "saksbehandler@nav.no"
+            } else {
+                azureGraphService.hentIdentTilInnloggetBruker()
             }
+            val antallFerdistilteMine =
+                reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
+                    .toSet())
+                    .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
+            NyeOgFerdigstilteOppgaverDto(
+                behandlingType = it.behandlingType,
+                dato = it.dato,
+                antallNye = it.nye,
+                antallFerdigstilte = it.ferdigstilte.size,
+                antallFerdigstilteMine = antallFerdistilteMine
+            )
+        }
     }
 
     fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverBeholdningHistorikk> {
@@ -294,12 +294,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(28).map {
             antalletTotalt = antalletTotalt - it.nye + it.ferdigstilte.size
             AlleOppgaverBeholdningHistorikk(
-                            it.fagsakYtelseType,
-                            it.behandlingType,
-                            it.dato,
-                            antalletTotalt
-                    )
-                }
+                it.fagsakYtelseType,
+                it.behandlingType,
+                it.dato,
+                antalletTotalt
+            )
+        }
     }
 
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
@@ -436,14 +436,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         val person = pdlService.person(oppgave.aktorId)
 
                         val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                            "${oppgave.fagsakSaksnummer} " + Strings.join(
-                                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                                    val a = Aksjonspunkter().aksjonspunkter()
-                                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                                    "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                                }.toList(),
-                                ", "
-                            )
+                            "${oppgave.fagsakSaksnummer} " +
+                                    oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                                        val a = Aksjonspunkter().aksjonspunkter()
+                                            .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                                        "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                                    }.toList().joinToString(", ")
                         } else {
                             person?.navn() ?: "Uten navn"
                         }
@@ -531,7 +529,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun hentSisteReserverteOppgaver(): List<OppgaveDto> {
         val list = mutableListOf<OppgaveDto>()
         //Hent reservasjoner for en gitt bruker skriv om til å hente med ident direkte i tabellen
-        val saksbehandlerMedEpost = saksbehandlerRepository.finnSaksbehandlerMedEpost(coroutineContext.idToken().getUsername())
+        val saksbehandlerMedEpost =
+            saksbehandlerRepository.finnSaksbehandlerMedEpost(coroutineContext.idToken().getUsername())
         val brukerIdent = saksbehandlerMedEpost?.brukerIdent ?: return emptyList()
         val reservasjoner = reservasjonRepository.hent(brukerIdent)
         for (reservasjon in reservasjoner
@@ -561,14 +560,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             var personNavn: String
             var personFnummer: String
             val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                "${oppgave.fagsakSaksnummer} " + Strings.join(
+                "${oppgave.fagsakSaksnummer} " + 
                     oppgave.aksjonspunkter.liste.entries.stream().map { t ->
                         val a = Aksjonspunkter().aksjonspunkter()
                             .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
                         "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                    }.toList(),
-                    ", "
-                )
+                    }.toList().joinToString(", ")
             } else {
                 person?.navn() ?: "Uten navn"
             }

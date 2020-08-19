@@ -189,6 +189,9 @@ fun Application.k9Los() {
     }
 }
 
+@ExperimentalCoroutinesApi
+@KtorExperimentalAPI
+@KtorExperimentalLocationsAPI
 private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
     install(CORS) {
         method(HttpMethod.Options)
