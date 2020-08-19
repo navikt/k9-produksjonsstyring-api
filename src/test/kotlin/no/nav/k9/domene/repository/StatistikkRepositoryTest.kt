@@ -45,7 +45,7 @@ class StatistikkRepositoryTest {
         statistikkRepository.lagreFerdigstiltHistorikk(BehandlingType.FORSTEGANGSSOKNAD.kode, FagsakYtelseType.OMSORGSPENGER.kode,eksternId2)
         statistikkRepository.lagreFerdigstiltHistorikk(BehandlingType.FORSTEGANGSSOKNAD.kode, FagsakYtelseType.OMSORGSPENGER.kode,eksternId3)
 
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(5000)
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(5000)
         assert(hentFerdigstilte.isNotEmpty())
     }
 }

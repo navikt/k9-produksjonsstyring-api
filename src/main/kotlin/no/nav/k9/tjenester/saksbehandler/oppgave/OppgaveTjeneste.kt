@@ -287,7 +287,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverBeholdningHistorikk> {
         var antalletTotalt = oppgaveRepository.hentAktiveOppgaverTotalt()
-        return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(28).map {
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(28).map {
             antalletTotalt = antalletTotalt - it.nye + it.ferdigstilte.size
             AlleOppgaverBeholdningHistorikk(
                 it.fagsakYtelseType,

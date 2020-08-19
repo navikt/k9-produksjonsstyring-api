@@ -155,6 +155,31 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
+                            select behandlingtype, dato, ferdigstilte, jsonb_array_length(nye) as nye
+                            from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
+                            group by behandlingtype, dato
+                    """.trimIndent(),
+                    mapOf("antall" to "\'${antall} days\'")
+                )
+                    .map { row ->
+                        AlleOppgaverNyeOgFerdigstilte(
+                            behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
+                            fagsakYtelseType = FagsakYtelseType.OMSORGSPENGER,
+                            dato = row.localDate("dato"),
+                            ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte")?:"[]"),
+                            nye = row.intOrNull("nye")?:0
+                        )
+                    }.asList
+            )
+        }
+    }
+
+    fun hentFerdigstilteOgNyeHistorikkMedYtelsetype(antall: Int): List<AlleOppgaverNyeOgFerdigstilte> {
+        return using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    """
                             select behandlingtype, fagsakYtelseType, dato, ferdigstilte, jsonb_array_length(nye) as nye
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
