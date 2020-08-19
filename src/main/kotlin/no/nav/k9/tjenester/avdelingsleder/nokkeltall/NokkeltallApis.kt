@@ -6,9 +6,11 @@ import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.koin.ktor.ext.inject
 
+@KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 fun Route.NokkeltallApis() {
     val nokkeltallTjeneste by inject<NokkeltallTjeneste>()
