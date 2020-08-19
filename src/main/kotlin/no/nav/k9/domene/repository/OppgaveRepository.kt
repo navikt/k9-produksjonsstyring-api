@@ -232,7 +232,7 @@ class OppgaveRepository(
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean and (data -> 'behandlingType' ->> 'kode') =':behandlingType' and (data -> 'fagsakYtelseType' ->> 'kode') =':fagsakYtelseType' ",
+                    "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean and (data -> 'behandlingType' ->> 'kode') =:behandlingType and (data -> 'fagsakYtelseType' ->> 'kode') =:fagsakYtelseType ",
                     mapOf("behandlingType" to behandlingType.kode,"fagsakYtelseType" to fagsakYtelseType.kode )
                 )
                     .map { row ->
