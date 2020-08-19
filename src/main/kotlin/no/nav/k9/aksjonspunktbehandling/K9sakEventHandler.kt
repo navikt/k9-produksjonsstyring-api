@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
@@ -42,7 +43,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
-                if (oppgave.aktiv) {
+                if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
                     statistikkRepository.lagreNyHistorikk(oppgave.behandlingType.kode, oppgave.fagsakYtelseType.kode, oppgave.eksternId)
                 }
             }

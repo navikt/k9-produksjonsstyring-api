@@ -157,7 +157,6 @@ class StatistikkRepository(
                     """
                             select behandlingtype, dato, ferdigstilte, jsonb_array_length(nye) as nye
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
-                            group by behandlingtype, dato
                     """.trimIndent(),
                     mapOf("antall" to "\'${antall} days\'")
                 )

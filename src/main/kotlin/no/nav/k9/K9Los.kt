@@ -38,6 +38,8 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
@@ -138,7 +140,10 @@ fun Application.k9Los() {
 
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
-
+    
+    
+    rekjørForGrafer(koin.get(), koin.get())
+   
     install(CallIdRequired)
 
     install(Locations)
@@ -161,7 +166,7 @@ fun Application.k9Los() {
         route("innsikt") {
             innsiktGrensesnitt()
         }
-        
+
         if ((KoinProfile.LOCAL == koin.get<KoinProfile>())) {
             api(sseChannel)
         } else {
@@ -234,6 +239,40 @@ private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
         )
     }
 }
+
+private fun Application.rekjørForGrafer(
+    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    statistikkRepository: StatistikkRepository
+) {
+    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+        val alleEventerIder = behandlingProsessEventRepository.hentAlleEventerIder()
+        for ((index, eventId) in alleEventerIder.withIndex()) {
+            if (index % 1000 == 0) {
+                log.info("""Ferdig med $index av ${alleEventerIder.size}""")
+            }
+            for (modell in behandlingProsessEventRepository.hent(UUID.fromString(eventId)).alleVersjoner()) {
+                val oppgave = modell.oppgave()
+                if (modell.starterSak()) {
+                    if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
+                        statistikkRepository.lagreNyHistorikk(
+                            oppgave.behandlingType.kode,
+                            oppgave.fagsakYtelseType.kode,
+                            oppgave.eksternId
+                        )
+                    }
+                }
+                if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
+                    statistikkRepository.lagreFerdigstiltHistorikk(
+                        oppgave.behandlingType.kode,
+                        oppgave.fagsakYtelseType.kode,
+                        oppgave.eksternId
+                    )
+                }
+            }
+        }
+    }
+}
+
 
 private fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
