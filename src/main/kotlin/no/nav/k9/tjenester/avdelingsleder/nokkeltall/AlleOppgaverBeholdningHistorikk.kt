@@ -9,5 +9,5 @@ data class AlleOppgaverBeholdningHistorikk(
     val fagsakYtelseType: FagsakYtelseType,
     val behandlingType: BehandlingType,
     val dato: LocalDate,
-    val antallet: Int
+    val antall: Int
 )
