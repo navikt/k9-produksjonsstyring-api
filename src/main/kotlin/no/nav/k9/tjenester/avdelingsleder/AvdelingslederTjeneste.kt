@@ -218,6 +218,7 @@ class AvdelingslederTjeneste(
                     continue
                 }
                 val reservasjon = reservasjonRepository.hent(uuid)
+                if (reservasjon.reservertTil == null) { continue }
                 list.add(
                     ReservasjonDto(
                         reservertAvUid = saksbehandler.brukerIdent?:"",
