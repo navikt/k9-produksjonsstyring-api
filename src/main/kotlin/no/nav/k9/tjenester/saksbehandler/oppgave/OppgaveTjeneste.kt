@@ -297,7 +297,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         fagsakYtelseType = ytelseTypeEntry.key,
                         behandlingType = behandlingTypeEntry.key
                     )
-                behandlingTypeEntry.value.map {
+                behandlingTypeEntry.value.sortedBy { it.dato }.map {
                     aktive = aktive - it.nye + it.ferdigstilte.size
                     ret.add(
                         AlleOppgaverBeholdningHistorikk(
