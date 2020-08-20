@@ -176,7 +176,7 @@ class StatistikkRepository(
                             fagsakYtelseType = FagsakYtelseType.OMSORGSPENGER,
                             dato = row.localDate("dato"),
                             ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte") ?: "[]"),
-                            nye = row.intOrNull("nye") ?: 0
+                            nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
                         )
                     }.asList
             )
@@ -189,7 +189,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, jsonb_array_length(nye) as nye
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye as nye
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
@@ -201,7 +201,7 @@ class StatistikkRepository(
                             fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
                             dato = row.localDate("dato"),
                             ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte") ?: "[]"),
-                            nye = row.intOrNull("nye") ?: 0
+                            nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
                         )
                     }.asList
             )
@@ -230,7 +230,7 @@ class StatistikkRepository(
                                     fagsakYtelseType = fagsakYtelseType,
                                     behandlingType = behandlingstype,
                                     dato = dato,
-                                    nye = 0,
+                                    nye = setOf(),
                                     ferdigstilte = setOf()
                                 )
                             )
@@ -253,7 +253,7 @@ class StatistikkRepository(
                     fagsakYtelseType = fagsakYtelseType,
                     behandlingType = behandlingstype,
                     dato = dato,
-                    nye = 0,
+                    nye = setOf(),
                     ferdigstilte = setOf()
                 )
             )

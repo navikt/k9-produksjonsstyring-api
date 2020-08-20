@@ -8,6 +8,6 @@ data class AlleOppgaverNyeOgFerdigstilte(
     val fagsakYtelseType: FagsakYtelseType,
     val behandlingType: BehandlingType,
     val dato: LocalDate,
-    val nye: Int,
+    val nye: Set<String>,
     val ferdigstilte: Set<String>
 )
