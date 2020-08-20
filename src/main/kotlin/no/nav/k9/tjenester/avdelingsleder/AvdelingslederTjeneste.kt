@@ -49,7 +49,7 @@ class AvdelingslederTjeneste(
                 antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id, true),
                 saksbehandlere = it.saksbehandlere
             )
-        }
+        }.sortedBy { it.navn }
     }
 
     suspend fun opprettOppgaveKø(): IdDto {
@@ -233,7 +233,7 @@ class AvdelingslederTjeneste(
             }
         }
 
-        return list
+        return list.sortedWith(compareBy({ it.reservertAvNavn }, { it.reservertTilTidspunkt }))
     }
 
     suspend fun opphevReservasjon(uuid: UUID): Reservasjon {
