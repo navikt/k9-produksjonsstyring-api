@@ -1,13 +1,14 @@
 package no.nav.k9.domene.repository
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.Aksjonspunkter
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -103,8 +104,14 @@ class StatistikkRepositoryTest {
             årskvantum = false,
             avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
-        statistikkRepository.lagreNyHistorikk(oppgave)
-        statistikkRepository.lagreNyHistorikk(oppgave)
+        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+            it.nye.add(oppgave.eksternId.toString())
+            it
+        }
+        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+            it.nye.add(oppgave.eksternId.toString())
+            it
+        }
         val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(0)
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)

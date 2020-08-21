@@ -1,6 +1,6 @@
 package no.nav.k9.aksjonspunktbehandling
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.runBlocking
@@ -12,6 +12,7 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import org.slf4j.LoggerFactory
 import reportMetrics
 
@@ -44,7 +45,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
                 if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
-                    statistikkRepository.lagreNyHistorikk(oppgave)
+                    statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                        it.nye.add(oppgave.eksternId.toString())
+                        it
+                    }
                 }
             }
 
@@ -72,7 +76,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     }
                 }
                 if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
-                    statistikkRepository.lagreFerdigstiltHistorikk(oppgave)
+                    statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                        it.ferdigstilte.add(oppgave.eksternId.toString())
+                        it
+                    }
                 }
                 sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }

@@ -113,48 +113,52 @@ class StatistikkRepository(
         }
     }
 
-    fun lagreFerdigstiltHistorikk(oppgave: Oppgave) {
+    fun lagre(
+        alleOppgaverNyeOgFerdigstilte: AlleOppgaverNyeOgFerdigstilte,
+        f: (AlleOppgaverNyeOgFerdigstilte) -> AlleOppgaverNyeOgFerdigstilte
+    ) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
-                //language=PostgreSQL
-                tx.run(
+                val run = tx.run(
                     queryOf(
-                        """insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, ferdigstilte)
-                                    values (:behandlingType, :fagsakYtelseType, :dato, :dataInitial ::jsonb)
-                                    on conflict (behandlingType, fagsakYtelseType, dato) do update
-                                    set ferdigstilte = k.ferdigstilte || :ferdigstilte ::jsonb
-                                 """, mapOf(
-                            "behandlingType" to oppgave.behandlingType.kode,
-                            "fagsakYtelseType" to oppgave.fagsakYtelseType.kode,
-                            "dataInitial" to "[\"${oppgave.eksternId}\"]",
-                            "ferdigstilte" to "[\"${oppgave.eksternId}\"]",
-                            "dato" to oppgave.eventTid.toLocalDate()
-                        )
-                    ).asUpdate
+                        "select * from nye_og_ferdigstilte where behandlingType = :behandlingType and fagsakYtelseType = :fagsakYtelseType and dato = :dato for update",
+                        mapOf(  "behandlingType" to alleOppgaverNyeOgFerdigstilte.behandlingType.kode,
+                            "fagsakYtelseType" to alleOppgaverNyeOgFerdigstilte.fagsakYtelseType.kode,
+                            "dato" to alleOppgaverNyeOgFerdigstilte.dato)
+                    )
+                        .map { row ->
+                            AlleOppgaverNyeOgFerdigstilte(
+                                behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
+                                fagsakYtelseType = FagsakYtelseType.OMSORGSPENGER,
+                                dato = row.localDate("dato"),
+                                ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte") ?: "[]"),
+                                nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
+                            )
+                        }.asSingle
                 )
-            }
-        }
-    }
+                val alleOppgaverNyeOgFerdigstilteSomPersisteres = if (run != null) {
+                    f(run)
+                } else {
+                    f(alleOppgaverNyeOgFerdigstilte)
+                }
 
-    fun lagreNyHistorikk(oppgave: Oppgave) {
-        using(sessionOf(dataSource)) {
-            it.transaction { tx ->
-                //language=PostgreSQL
                 tx.run(
                     queryOf(
-                        """insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, nye)
-                                    values (:behandlingType, :fagsakYtelseType, :dato, :dataInitial ::jsonb)
+                        """
+                                    insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, nye,ferdigstilte)
+                                    values (:behandlingType, :fagsakYtelseType, :dato, :nye ::jsonb, :ferdigstilte ::jsonb)
                                     on conflict (behandlingType, fagsakYtelseType, dato) do update
-                                    set nye = k.nye || :nye ::jsonb
-                                 """, mapOf(
-                            "behandlingType" to oppgave.behandlingType.kode,
-                            "fagsakYtelseType" to oppgave.fagsakYtelseType.kode,
-                            "dataInitial" to "[\"${oppgave.eksternId}\"]",
-                            "nye" to "[\"${oppgave.eksternId}\"]",
-                            "dato" to oppgave.eventTid.toLocalDate()
+                                    set nye = :nye ::jsonb , ferdigstilte = :ferdigstilte ::jsonb 
+                     """, mapOf(
+                            "behandlingType" to alleOppgaverNyeOgFerdigstilteSomPersisteres.behandlingType.kode,
+                            "fagsakYtelseType" to alleOppgaverNyeOgFerdigstilteSomPersisteres.fagsakYtelseType.kode,
+                            "dato" to alleOppgaverNyeOgFerdigstilteSomPersisteres.dato,
+                            "nye" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.nye),
+                            "ferdigstilte" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.ferdigstilte.toSet())
                         )
                     ).asUpdate
                 )
+
             }
         }
     }
@@ -229,9 +233,7 @@ class StatistikkRepository(
                                 AlleOppgaverNyeOgFerdigstilte(
                                     fagsakYtelseType = fagsakYtelseType,
                                     behandlingType = behandlingstype,
-                                    dato = dato,
-                                    nye = setOf(),
-                                    ferdigstilte = setOf()
+                                    dato = dato
                                 )
                             )
                         )
@@ -252,9 +254,7 @@ class StatistikkRepository(
                 AlleOppgaverNyeOgFerdigstilte(
                     fagsakYtelseType = fagsakYtelseType,
                     behandlingType = behandlingstype,
-                    dato = dato,
-                    nye = setOf(),
-                    ferdigstilte = setOf()
+                    dato = dato
                 )
             )
         }

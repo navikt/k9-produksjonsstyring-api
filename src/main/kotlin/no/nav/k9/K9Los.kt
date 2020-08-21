@@ -3,23 +3,15 @@ package no.nav.k9
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
-import io.ktor.auth.Authentication
-import io.ktor.auth.authenticate
-import io.ktor.features.CORS
-import io.ktor.features.CallId
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
-import io.ktor.http.HttpMethod
-import io.ktor.http.content.resources
-import io.ktor.http.content.static
-import io.ktor.jackson.jackson
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Locations
-import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.routing.Route
-import io.ktor.routing.Routing
-import io.ktor.routing.route
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.auth.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.http.content.*
+import io.ktor.jackson.*
+import io.ktor.locations.*
+import io.ktor.metrics.micrometer.*
+import io.ktor.routing.*
+import io.ktor.util.*
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -48,6 +40,7 @@ import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingerApis
@@ -254,15 +247,23 @@ private fun Application.rekjørForGrafer(
                 val oppgave = modell.oppgave()
                 if (modell.starterSak()) {
                     if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
-                        statistikkRepository.lagreNyHistorikk(
-                            oppgave
-                        )
+                        statistikkRepository.lagre(
+                            AlleOppgaverNyeOgFerdigstilte(
+                                oppgave
+                                    .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                            it.nye.add(oppgave.eksternId.toString())
+                            it
+                        }
                     }
                 }
                 if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
-                    statistikkRepository.lagreFerdigstiltHistorikk(
-                        oppgave
-                    )
+                    statistikkRepository.lagre(
+                        AlleOppgaverNyeOgFerdigstilte(
+                            oppgave
+                                .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                        it.ferdigstilte.add(oppgave.eksternId.toString())
+                        it
+                    }
                 }
             }
         }
