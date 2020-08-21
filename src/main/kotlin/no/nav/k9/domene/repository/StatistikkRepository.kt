@@ -162,6 +162,7 @@ class StatistikkRepository(
             }
         }
     }
+    
 
     fun hentFerdigstilteOgNyeHistorikkPerAntallDager(antall: Int): List<AlleOppgaverNyeOgFerdigstilte> {
         return using(sessionOf(dataSource)) {
