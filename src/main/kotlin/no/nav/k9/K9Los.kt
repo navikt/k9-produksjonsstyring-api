@@ -3,23 +3,15 @@ package no.nav.k9
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
-import io.ktor.auth.Authentication
-import io.ktor.auth.authenticate
-import io.ktor.features.CORS
-import io.ktor.features.CallId
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
-import io.ktor.http.HttpMethod
-import io.ktor.http.content.resources
-import io.ktor.http.content.static
-import io.ktor.jackson.jackson
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Locations
-import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.routing.Route
-import io.ktor.routing.Routing
-import io.ktor.routing.route
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.auth.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.http.content.*
+import io.ktor.jackson.*
+import io.ktor.locations.*
+import io.ktor.metrics.micrometer.*
+import io.ktor.routing.*
+import io.ktor.util.*
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -142,7 +134,7 @@ fun Application.k9Los() {
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
     
     
-    rekjørForGrafer(koin.get(), koin.get())
+  //  rekjørForGrafer(koin.get(), koin.get())
    
     install(CallIdRequired)
 
