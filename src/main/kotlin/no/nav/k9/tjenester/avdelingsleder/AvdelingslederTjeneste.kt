@@ -48,7 +48,7 @@ class AvdelingslederTjeneste(
                 antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id, true),
                 saksbehandlere = it.saksbehandlere
             )
-        }
+        }.sortedBy { it.navn }
     }
 
     suspend fun opprettOppgaveKø(): IdDto {
@@ -217,6 +217,7 @@ class AvdelingslederTjeneste(
                     continue
                 }
                 val reservasjon = reservasjonRepository.hent(uuid)
+                if (reservasjon.reservertTil == null) { continue }
                 list.add(
                     ReservasjonDto(
                         reservertAvUid = saksbehandler.brukerIdent?:"",
@@ -231,7 +232,7 @@ class AvdelingslederTjeneste(
             }
         }
 
-        return list
+        return list.sortedWith(compareBy({ it.reservertAvNavn }, { it.reservertTilTidspunkt }))
     }
 
     suspend fun opphevReservasjon(uuid: UUID): Reservasjon {
