@@ -135,7 +135,7 @@ fun Application.k9Los() {
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
     
     
-    rekjørForGrafer(koin.get(), koin.get())
+   // rekjørForGrafer(koin.get(), koin.get())
    
     install(CallIdRequired)
 
