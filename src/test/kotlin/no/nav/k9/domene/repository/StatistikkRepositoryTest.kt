@@ -116,6 +116,7 @@ class StatistikkRepositoryTest {
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
         assert(omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size == 1)
+        
     }
 }
 
