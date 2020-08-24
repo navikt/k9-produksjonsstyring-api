@@ -73,7 +73,7 @@ class ReservasjonRepository(
             if (!reservasjon.erAktiv()) {
                 lagre(reservasjon.oppgave, refresh = true) {
                     it!!.reservertTil = null
-                    saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
+                   runBlocking { saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)}
                     it
                 }
                 oppgaveKøRepository.hent().forEach { oppgaveKø ->

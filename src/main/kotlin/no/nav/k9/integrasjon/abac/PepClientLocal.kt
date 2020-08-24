@@ -1,11 +1,11 @@
 package no.nav.k9.integrasjon.abac
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 
-class PepClientLocal @KtorExperimentalAPI constructor(): IPepClient{
+class PepClientLocal @KtorExperimentalAPI constructor() : IPepClient {
     @KtorExperimentalAPI
     override suspend fun erOppgaveStyrer(): Boolean {
-       return true
+        return true
     }
 
     @KtorExperimentalAPI
@@ -20,6 +20,15 @@ class PepClientLocal @KtorExperimentalAPI constructor(): IPepClient{
 
     @KtorExperimentalAPI
     override suspend fun harTilgangTilReservingAvOppgaver(): Boolean {
+        return true
+    }
+
+    @KtorExperimentalAPI
+    override suspend fun erSkjermet(): Boolean {
+        return true
+    }
+
+    override suspend fun erOppgaveStyrerSkjermet(): Boolean {
         return true
     }
 

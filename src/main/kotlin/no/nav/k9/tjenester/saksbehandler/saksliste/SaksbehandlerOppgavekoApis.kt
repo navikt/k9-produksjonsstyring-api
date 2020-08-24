@@ -1,12 +1,10 @@
 package no.nav.k9.tjenester.saksbehandler.saksliste
 
-import io.ktor.application.call
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.get
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.application.*
+import io.ktor.locations.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.util.*
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
@@ -88,7 +86,7 @@ internal fun Route.SaksbehandlerOppgavekoApis() {
     }
 }
 
-private fun hentOppgavekøerLokalt(oppgaveTjeneste: OppgaveTjeneste): List<OppgavekøDto> {
+private suspend fun hentOppgavekøerLokalt(oppgaveTjeneste: OppgaveTjeneste): List<OppgavekøDto> {
     val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
     val list = hentOppgaveKøer.map { oppgaveKø ->
         val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato)

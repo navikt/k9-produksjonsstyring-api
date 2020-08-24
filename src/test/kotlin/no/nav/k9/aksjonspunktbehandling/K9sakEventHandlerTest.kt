@@ -3,7 +3,7 @@ package no.nav.k9.aksjonspunktbehandling
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import io.mockk.*
 import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
@@ -12,6 +12,7 @@ import no.nav.k9.KoinProfile
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.gosys.GosysOppgave
 import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
@@ -38,11 +39,15 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(
+            dataSource = dataSource,
+            pepClient = PepClientLocal()
+        )
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -120,11 +125,13 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -198,10 +205,12 @@ class K9sakEventHandlerTest {
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -279,10 +288,12 @@ class K9sakEventHandlerTest {
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -363,10 +374,12 @@ class K9sakEventHandlerTest {
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -425,15 +438,15 @@ class K9sakEventHandlerTest {
                "feilutbetaltBeløp": 26820,
                "ansvarligSaksbehandlerIdent": "saksbeh"
 }       """
-        
-        val event =   AksjonspunktLagetTilbake().deserialize(null,json.toByteArray() )!!
-        
+
+        val event = AksjonspunktLagetTilbake().deserialize(null, json.toByteArray())!!
+
         k9sakEventHandler.prosesser(event)
         val oppgave =
             oppgaveRepository.hent(UUID.fromString("5c7be441-ebf3-4878-9ebc-399635b0a179"))
         assertTrue { !oppgave.aktiv }
     }
-    
+
     @KtorExperimentalAPI
     @Test
     fun `Støtte tilbakekreving aksjonspunkt`() {
@@ -445,10 +458,12 @@ class K9sakEventHandlerTest {
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
@@ -508,11 +523,10 @@ class K9sakEventHandlerTest {
                "feilutbetaltBeløp": 26820,
                "ansvarligSaksbehandlerIdent": "saksbeh"
 }       """
-        
-      
 
-        val event =   AksjonspunktLagetTilbake().deserialize(null,json.toByteArray() )!!
-        
+
+        val event = AksjonspunktLagetTilbake().deserialize(null, json.toByteArray())!!
+
         k9sakEventHandler.prosesser(event)
         val oppgave =
             oppgaveRepository.hent(UUID.fromString("5c7be441-ebf3-4878-9ebc-399635b0a179"))

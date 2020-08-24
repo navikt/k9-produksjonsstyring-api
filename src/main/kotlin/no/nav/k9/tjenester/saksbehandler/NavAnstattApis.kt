@@ -1,12 +1,10 @@
 package no.nav.k9.tjenester.saksbehandler
 
-import io.ktor.application.call
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.get
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.application.*
+import io.ktor.locations.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.util.*
 import kotlinx.coroutines.withContext
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
@@ -15,7 +13,6 @@ import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.rest.IRequestContextService
-import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
 import org.koin.ktor.ext.inject
 import org.slf4j.LoggerFactory
@@ -52,7 +49,7 @@ internal fun Route.NavAnsattApis() {
                     kanBehandleKodeEgenAnsatt = pepClient.harBasisTilgang(),
                     kanBehandleKode6 = pepClient.harBasisTilgang(),
                     kanBehandleKode7 = pepClient.harBasisTilgang(),
-                    kanOppgavestyre = pepClient.erOppgaveStyrer(),
+                    kanOppgavestyre = pepClient.erOppgaveStyrer() || pepClient.erOppgaveStyrerSkjermet(),
                     kanReservere = pepClient.harTilgangTilReservingAvOppgaver(),
                     kanDrifte = token.getUsername() == "alexandra.bandarenka@nav.no"
                 )

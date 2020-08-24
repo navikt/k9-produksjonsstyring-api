@@ -1,7 +1,7 @@
 package no.nav.k9.oppgaveko
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.channels.Channel
@@ -13,7 +13,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
-import no.nav.k9.integrasjon.abac.PepClient
+import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
@@ -39,9 +39,11 @@ class OppgavekoTest {
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,

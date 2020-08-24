@@ -16,6 +16,7 @@ const val ANSVARLIG_SAKSBEHANDLER = "no.nav.abac.attributter.resource.k9.sak.ans
 const val BEHANDLINGSSTATUS = "no.nav.abac.attributter.resource.k9.sak.behandlingsstatus"
 const val SAKSSTATUS = "no.nav.abac.attributter.resource.k9.sak.saksstatus"
 const val OPPGAVESTYRER = "no.nav.abac.attributter.k9.oppgavestyring"
+const val OPPGAVESTYRER_SKJERMET = "no.nav.abac.attributter.k9.oppgavestyringSkjermet"
 const val BASIS_TILGANG = "no.nav.abac.attributter.k9"
 const val TILGANG_SAK = "no.nav.abac.attributter.k9.fagsak"
 const val KAFKATOPIC_STATISTIKK = "privat-k9statistikk-sak-v1"

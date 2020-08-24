@@ -1,7 +1,7 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -14,6 +14,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
+import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PersonPdl
@@ -37,9 +38,12 @@ class OppgaveTjenesteTest {
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal()
+        )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -221,9 +225,11 @@ class OppgaveTjenesteTest {
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -344,10 +350,12 @@ class OppgaveTjenesteTest {
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
         val pdlService = mockk<PdlService>()
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
 
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val pepClient = mockk<IPepClient>()
@@ -433,9 +441,11 @@ class OppgaveTjenesteTest {
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,

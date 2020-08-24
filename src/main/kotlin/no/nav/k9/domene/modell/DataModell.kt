@@ -1,6 +1,6 @@
 package no.nav.k9.domene.modell
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
@@ -238,14 +238,13 @@ data class Modell(
         return behandlingAvsluttet
     }
 
-    fun dvhBehandling(
+    suspend fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
     ): Behandling {
         val oppgave = oppgave()
         val beslutter = if (oppgave.tilBeslutter
             && reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.finnes(oppgave.eksternId)
-            && reservasjonRepository.hent(oppgave.eksternId).reservertAv != null
         ) {
             val saksbehandler =
                 saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjonRepository.hent(oppgave.eksternId).reservertAv!!)
@@ -257,7 +256,7 @@ data class Modell(
         val behandldendeEnhet= 
         if (reservasjonRepository.finnes(oppgave.eksternId)) {
             val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(oppgave.eksternId)
-            val first = hentMedHistorikk.filter { reservasjon -> reservasjon.reservertAv != null }
+            val first = hentMedHistorikk
                 .map { reservasjon -> reservasjon.reservertAv }.first()
             first?.substringBefore(" ")
         }else {

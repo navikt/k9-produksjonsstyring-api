@@ -3,7 +3,7 @@ package no.nav.k9.eventhandler
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -21,6 +21,7 @@ import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
@@ -42,11 +43,14 @@ class RutinerTest {
         val refreshKlienter = Channel<SseEvent>(100)
         val statistikkProducer = mockk<StatistikkProducer>()
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
-        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal()
+        )
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val reservasjonRepository = ReservasjonRepository(

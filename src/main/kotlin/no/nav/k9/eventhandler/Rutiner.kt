@@ -1,5 +1,6 @@
 package no.nav.k9.eventhandler
 
+import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -99,6 +100,7 @@ private fun hentAlleElementerIkøSomSet(
     return set
 }
 
+@KtorExperimentalAPI
 suspend fun oppdatereKøerMedOppgave(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
@@ -112,12 +114,12 @@ suspend fun oppdatereKøerMedOppgave(
         val oppgave = channel.poll()
         if (oppgave == null) {
             val measureTimeMillis = measureTimeMillis {
-                for (oppgavekø in oppgaveKøRepository.hent()) {
+                for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
                     var refresh = false
                     for (o in oppgaveListe) {
                         refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
                     }
-                    oppgaveKøRepository.lagre(
+                    oppgaveKøRepository.lagreIkkeTaHensyn(
                         oppgavekø.id,
                         refresh = refresh
                     ) {

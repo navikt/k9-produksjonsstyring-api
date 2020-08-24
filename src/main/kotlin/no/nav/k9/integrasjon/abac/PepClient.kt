@@ -5,8 +5,8 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
 import com.google.gson.GsonBuilder
-import io.ktor.http.HttpHeaders
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.http.*
+import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.helse.dusseldorf.ktor.core.Retry
@@ -127,6 +127,34 @@ class PepClient @KtorExperimentalAPI constructor(
 
         val decision = evaluate(requestBuilder)
         return decision
+    }
+
+    @KtorExperimentalAPI
+    override suspend fun erSkjermet(): Boolean {
+        return  azureGraphService.hentIdentTilInnloggetBruker().toLowerCase() == "Z994048".toLowerCase()
+//        val requestBuilder = XacmlRequestBuilder()
+//            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+//            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
+//            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+//            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
+//            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+//
+//        val decision = evaluate(requestBuilder)
+//        return decision
+    }
+
+    @KtorExperimentalAPI
+    override suspend fun erOppgaveStyrerSkjermet(): Boolean {
+      return  azureGraphService.hentIdentTilInnloggetBruker().toLowerCase() == "Z994048".toLowerCase()
+//        val requestBuilder = XacmlRequestBuilder()
+//            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+//            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
+//            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+//            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
+//            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+//
+//        val decision = evaluate(requestBuilder)
+//        return decision
     }
 
 

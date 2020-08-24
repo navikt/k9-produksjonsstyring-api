@@ -20,6 +20,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -113,11 +114,15 @@ fun Application.k9Los() {
             reservasjonRepository = koin.get()
         )
 
+    val asynkronProsesseringV1Service = koin.get<AsynkronProsesseringV1Service>()
+    val sakOgBehadlingProducer = koin.get<SakOgBehadlingProducer>()
+    val statistikkProducer = koin.get<StatistikkProducer>()
+    
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
-        koin.get<AsynkronProsesseringV1Service>().stop()
-        koin.get<SakOgBehadlingProducer>().stop()
-        koin.get<StatistikkProducer>().stop()
+        asynkronProsesseringV1Service.stop()
+        sakOgBehadlingProducer.stop()
+        statistikkProducer.stop()
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
         køOppdatertProsessorJob.cancel()
@@ -133,10 +138,10 @@ fun Application.k9Los() {
 
     // Synkroniser oppgaver
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
-    
-    
-   // rekjørForGrafer(koin.get(), koin.get())
-   
+
+
+    // rekjørForGrafer(koin.get(), koin.get())
+
     install(CallIdRequired)
 
     install(Locations)
@@ -250,7 +255,9 @@ private fun Application.rekjørForGrafer(
                         statistikkRepository.lagre(
                             AlleOppgaverNyeOgFerdigstilte(
                                 oppgave
-                                    .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                                    .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
+                            )
+                        ) {
                             it.nye.add(oppgave.eksternId.toString())
                             it
                         }
@@ -260,7 +267,9 @@ private fun Application.rekjørForGrafer(
                     statistikkRepository.lagre(
                         AlleOppgaverNyeOgFerdigstilte(
                             oppgave
-                                .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                                .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
+                        )
+                    ) {
                         it.ferdigstilte.add(oppgave.eksternId.toString())
                         it
                     }
@@ -289,7 +298,12 @@ private fun Application.regenererOppgaver(
                     if (reservasjonRepository.finnes(oppgave.eksternId)) {
                         reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
                             reservasjon!!.reservertTil = null
-                            saksbehhandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
+                            runBlocking {
+                                saksbehhandlerRepository.fjernReservasjon(
+                                    reservasjon.reservertAv,
+                                    reservasjon.oppgave
+                                )
+                            }
                             reservasjon
                         }
                     }
