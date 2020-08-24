@@ -3,14 +3,14 @@ package no.nav.k9.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.application.Application
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.application.*
+import io.ktor.util.*
 import no.nav.k9.Configuration
 
 fun createHikariConfig(jdbcUrl: String, username: String? = null, password: String? = null) =
     HikariConfig().apply {
         this.jdbcUrl = jdbcUrl
-        maximumPoolSize = 8
+        maximumPoolSize = 12
         minimumIdle = 1
         idleTimeout = 10001
         connectionTimeout = 10000
