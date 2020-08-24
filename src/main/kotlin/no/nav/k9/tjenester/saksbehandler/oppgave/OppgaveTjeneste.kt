@@ -278,7 +278,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = it.behandlingType,
                 dato = it.dato,
-                antallNye = it.nye,
+                antallNye = it.nye.size,
                 antallFerdigstilte = it.ferdigstilte.size,
                 antallFerdigstilteMine = antallFerdistilteMine
             )
@@ -287,7 +287,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverBeholdningHistorikk> {
         val ytelsetype =
-            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(28)
+            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(28-1)
         val ret = mutableListOf<AlleOppgaverBeholdningHistorikk>()
         for (ytelseTypeEntry in ytelsetype.groupBy { it.fagsakYtelseType }) {
             val perBehandlingstype = ytelseTypeEntry.value.groupBy { it.behandlingType }
@@ -298,7 +298,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         behandlingType = behandlingTypeEntry.key
                     )
                 behandlingTypeEntry.value.sortedBy { it.dato }.map {
-                    aktive = aktive - it.nye + it.ferdigstilte.size
+                    aktive = aktive - it.nye.size + it.ferdigstilte.size
                     ret.add(
                         AlleOppgaverBeholdningHistorikk(
                             it.fagsakYtelseType,

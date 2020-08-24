@@ -40,6 +40,7 @@ import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingerApis
@@ -134,7 +135,7 @@ fun Application.k9Los() {
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
     
     
-  //  rekjørForGrafer(koin.get(), koin.get())
+    rekjørForGrafer(koin.get(), koin.get())
    
     install(CallIdRequired)
 
@@ -246,15 +247,23 @@ private fun Application.rekjørForGrafer(
                 val oppgave = modell.oppgave()
                 if (modell.starterSak()) {
                     if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
-                        statistikkRepository.lagreNyHistorikk(
-                            oppgave
-                        )
+                        statistikkRepository.lagre(
+                            AlleOppgaverNyeOgFerdigstilte(
+                                oppgave
+                                    .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                            it.nye.add(oppgave.eksternId.toString())
+                            it
+                        }
                     }
                 }
                 if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
-                    statistikkRepository.lagreFerdigstiltHistorikk(
-                        oppgave
-                    )
+                    statistikkRepository.lagre(
+                        AlleOppgaverNyeOgFerdigstilte(
+                            oppgave
+                                .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                        it.ferdigstilte.add(oppgave.eksternId.toString())
+                        it
+                    }
                 }
             }
         }

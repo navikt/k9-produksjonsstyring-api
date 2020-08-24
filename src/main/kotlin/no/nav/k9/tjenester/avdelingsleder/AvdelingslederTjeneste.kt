@@ -1,6 +1,6 @@
 package no.nav.k9.tjenester.avdelingsleder
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Reservasjon
@@ -13,7 +13,6 @@ import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.IPepClient
-import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.*
 import no.nav.k9.tjenester.avdelingsleder.reservasjoner.ReservasjonDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
