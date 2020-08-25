@@ -31,7 +31,6 @@ internal fun Route.SaksbehandlerOppgavekoApis() {
     class getSakslister
 
     get { _: getSakslister ->
-
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
@@ -43,7 +42,6 @@ internal fun Route.SaksbehandlerOppgavekoApis() {
             )
         ) {
             if (pepClient.harBasisTilgang()) {
-
                 val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
                 val list = hentOppgaveKøer
                     .filter { oppgaveKø ->
@@ -78,30 +76,20 @@ internal fun Route.SaksbehandlerOppgavekoApis() {
     class hentSakslistensSaksbehandlere
 
     get { _: hentSakslistensSaksbehandlere ->
-        call.respond(
-            oppgaveKøRepository.hentOppgavekø(UUID.fromString(call.parameters["id"])).saksbehandlere
-        )
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(
+                oppgaveKøRepository.hentOppgavekø(UUID.fromString(call.parameters["id"])).saksbehandlere
+            )
+        }
     }
 }
 
-private suspend fun hentOppgavekøerLokalt(oppgaveTjeneste: OppgaveTjeneste): List<OppgavekøDto> {
-    val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
-    val list = hentOppgaveKøer.map { oppgaveKø ->
-        val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato)
-
-        OppgavekøDto(
-            id = oppgaveKø.id,
-            navn = oppgaveKø.navn,
-            behandlingTyper = oppgaveKø.filtreringBehandlingTyper,
-            fagsakYtelseTyper = oppgaveKø.filtreringYtelseTyper,
-            saksbehandlere = oppgaveKø.saksbehandlere,
-            antallBehandlinger = oppgaveKø.oppgaverOgDatoer.size,
-            sistEndret = oppgaveKø.sistEndret,
-            sortering = sortering,
-            skjermet = oppgaveKø.skjermet,
-            andreKriterier = oppgaveKø.filtreringAndreKriterierType
-        )
-
-    }
-    return list
-}
