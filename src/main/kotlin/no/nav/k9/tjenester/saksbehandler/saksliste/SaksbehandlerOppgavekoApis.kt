@@ -6,7 +6,6 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.*
 import kotlinx.coroutines.withContext
-import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -24,9 +23,8 @@ import java.util.*
 internal fun Route.SaksbehandlerOppgavekoApis() {
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val pepClient by inject<IPepClient>()
-    val requestContextService by inject<IRequestContextService>()
-    val configuration by inject<Configuration>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
+    val requestContextService by inject<IRequestContextService>()
     val profile by inject<KoinProfile>()
 
     @Location("/oppgaveko")
