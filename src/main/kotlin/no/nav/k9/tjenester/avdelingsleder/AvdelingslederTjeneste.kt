@@ -5,10 +5,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Reservasjon
-import no.nav.k9.domene.modell.Enhet
-import no.nav.k9.domene.modell.KøSortering
-import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.modell.Saksbehandler
+import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
@@ -22,6 +19,7 @@ import no.nav.k9.tjenester.saksbehandler.saksliste.SorteringDto
 import java.time.LocalDate
 import java.util.*
 
+@KtorExperimentalAPI
 class AvdelingslederTjeneste(
     private val oppgaveKøRepository: OppgaveKøRepository,
     private val saksbehandlerRepository: SaksbehandlerRepository,
@@ -151,7 +149,7 @@ class AvdelingslederTjeneste(
         { oppgaveKø ->
             oppgaveKø!!.filtreringYtelseTyper = mutableListOf()
             if (ytelse.fagsakYtelseType != null) {
-                oppgaveKø.filtreringYtelseTyper.add(ytelse.fagsakYtelseType)
+                oppgaveKø.filtreringYtelseTyper.add(FagsakYtelseType.fraKode(ytelse.fagsakYtelseType))
             }
             oppgaveKø.nyeOgFerdigstilteOppgaver.clear()
             oppgaveKø

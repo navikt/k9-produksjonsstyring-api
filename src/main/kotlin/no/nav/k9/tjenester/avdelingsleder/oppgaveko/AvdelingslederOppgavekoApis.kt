@@ -134,7 +134,6 @@ fun Route.AvdelingslederOppgavekøApis() {
 
     @Location("/ytelsetype")
     class lagreYtelsestype
-
     post { _: lagreYtelsestype ->
         val ytelse = call.receive<YtelsesTypeDto>()
         withContext(
