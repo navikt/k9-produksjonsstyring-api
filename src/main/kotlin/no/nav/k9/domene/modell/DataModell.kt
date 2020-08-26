@@ -72,7 +72,7 @@ data class Modell(
             behandlingId = event.behandlingId,
             fagsakSaksnummer = event.saksnummer,
             aktorId = event.aktørId,
-            behandlendeEnhet = event.behandlendeEnhet?:"",
+            behandlendeEnhet = event.behandlendeEnhet ?: "",
             behandlingType = BehandlingType.fraKode(event.behandlingTypeKode),
             fagsakYtelseType = FagsakYtelseType.fraKode(event.ytelseTypeKode),
             aktiv = aktiv,
@@ -252,16 +252,16 @@ data class Modell(
         } else {
             ""
         }
-        
-        val behandldendeEnhet= 
-        if (reservasjonRepository.finnes(oppgave.eksternId)) {
-            val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(oppgave.eksternId)
-            val first = hentMedHistorikk
-                .map { reservasjon -> reservasjon.reservertAv }.first()
-            first?.substringBefore(" ")
-        }else {
-            null
-        }
+
+        val behandldendeEnhet =
+            if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(oppgave.eksternId)
+                val reservertav = hentMedHistorikk
+                    .map { reservasjon -> reservasjon.reservertAv }.first()
+                saksbehandlerRepository.finnSaksbehandlerMedIdent(reservertav)?.enhet?.substringBefore(" ")
+            } else {
+                null
+            }
         val zone = ZoneId.of("Europe/Oslo")
         return Behandling(
             sakId = oppgave.fagsakSaksnummer,
@@ -306,6 +306,7 @@ data class Modell(
         return forrigeEvent != null && !forrigeEvent.aktiveAksjonspunkt()
             .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
     }
+
     fun fikkEndretAksjonspunkt(): Boolean {
         val forrigeEvent = forrigeEvent()
         if (forrigeEvent == null) {
