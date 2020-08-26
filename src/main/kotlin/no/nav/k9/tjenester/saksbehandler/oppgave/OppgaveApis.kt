@@ -1,18 +1,17 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
-import io.ktor.application.call
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.get
-import io.ktor.locations.post
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.application.*
+import io.ktor.locations.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.util.*
 import kotlinx.coroutines.withContext
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.rest.IRequestContextService
+import no.nav.k9.integrasjon.rest.idToken
+import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.IdTokenLocal
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.koin.ktor.ext.inject
@@ -106,8 +105,6 @@ internal fun Route.OppgaveApis() {
 
     post { _: reserverOppgave ->
         val oppgaveId = call.receive<OppgaveId>()
-
-        val idToken = call.idToken()
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
@@ -120,7 +117,7 @@ internal fun Route.OppgaveApis() {
         ) {
             call.respond(
                 oppgaveTjeneste.reserverOppgave(
-                    saksbehandlerRepository.finnSaksbehandlerMedEpost(idToken.getUsername())!!.brukerIdent!!,
+                    saksbehandlerRepository.finnSaksbehandlerMedEpost(IdToken(kotlin.coroutines.coroutineContext.idToken().value).getUsername())!!.brukerIdent!!,
                     UUID.fromString(oppgaveId.oppgaveId)
                 )
             )
