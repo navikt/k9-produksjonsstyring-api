@@ -256,17 +256,21 @@ internal fun Route.OppgaveApis() {
             )
         ) {
             val oppgaver = oppgaveTjeneste.hentOppgaverFraListe(saksnummerliste)
+            val result = mutableListOf<OppgaveDto>()
             if (oppgaver.isNotEmpty()) {
-                val first = oppgaver.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling }
-                if (first != null) {
-                    call.respond(listOf(first))
-                } else {
-                    call.respond(listOf(oppgaver[0]))
+                val oppgaverBySaksnummer = oppgaver.groupBy { it.saksnummer }
+                for (entry in oppgaverBySaksnummer.entries) {
+                    val x = entry.value.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling }
+                    if (x != null) {
+                        result.add(x)
+                    } else {
+                        result.add(entry.value.first())
+                    }
                 }
+                call.respond(result)
             } else {
                 call.respond(oppgaver)
             }
         }
-
     }
 }
