@@ -105,7 +105,7 @@ fun Route.innsiktGrensesnitt() {
                             val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(UUID.fromString(s))
                             val reservertav = hentMedHistorikk
                                 .map { reservasjon -> reservasjon.reservertAv }.first()
-                            saksbehandlerRepository.finnSaksbehandlerMedIdent(reservertav)?.enhet?.substringBefore(" ")
+                            saksbehandlerRepository.finnSaksbehandlerMedIdentIkkeSkjermet(reservertav)?.enhet?.substringBefore(" ")
                         } else {
                             null
                         }

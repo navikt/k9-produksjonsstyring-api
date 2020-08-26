@@ -185,6 +185,21 @@ class SaksbehandlerRepository(
         return saksbehandler
     }
 
+     fun finnSaksbehandlerMedIdentIkkeSkjermet(ident: String): Saksbehandler? {
+        val saksbehandler = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select * from saksbehandler where lower(saksbehandlerid) = lower(:ident)",
+                    mapOf("ident" to ident)
+                )
+                    .map { row ->
+                        mapSaksbehandler(row)
+                    }.asSingle
+            )
+        }
+        return saksbehandler
+    }
+    
     @KtorExperimentalAPI
     suspend fun slettSaksbehandler(epost: String) {
         val skjermet = pepClient.erSkjermet()
