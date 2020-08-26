@@ -4,9 +4,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
 import info.debatty.java.stringsimilarity.Levenshtein
-import io.ktor.http.HttpHeaders
-import io.ktor.http.Url
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.http.*
+import io.ktor.util.*
 import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
@@ -125,7 +124,7 @@ class PdlServicePreprod @KtorExperimentalAPI constructor(
                 return readValue
             } catch (e: Exception) {
                 log.warn(
-                    "Feilet deserialisering ved oppslag av $aktorId", e.message
+                    "Feilet deserialisering ved oppslag av aktorId", e.message
                 )
                 null
             }
