@@ -172,7 +172,7 @@ class ReservasjonRepository(
                     ).asUpdate
                 )
                 if (refresh && forrigeReservasjon != json) {
-                   runBlocking { refreshKlienter.send((SseEvent(objectMapper().writeValueAsString(Melding("oppdaterReserverte"))))) }
+                    runBlocking { refreshKlienter.send((SseEvent(objectMapper().writeValueAsString(Melding("oppdaterReserverte"))))) }
                 }
             }
         }

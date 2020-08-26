@@ -34,7 +34,7 @@ class PepClient @KtorExperimentalAPI constructor(
     private val azureGraphService: IAzureGraphService,
     private val auditlogger: Auditlogger,
     private val config: Configuration
-) :  IPepClient {
+) : IPepClient {
     @KtorExperimentalAPI
     private val url = config.abacEndpointUrl
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
@@ -125,13 +125,12 @@ class PepClient @KtorExperimentalAPI constructor(
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
-        val decision = evaluate(requestBuilder)
-        return decision
+        return evaluate(requestBuilder)
     }
 
     @KtorExperimentalAPI
     override suspend fun erSkjermet(): Boolean {
-        return  azureGraphService.hentIdentTilInnloggetBruker().toLowerCase() == "Z994048".toLowerCase()
+        return azureGraphService.hentIdentTilInnloggetBruker().toLowerCase() == "Z994048".toLowerCase()
 //        val requestBuilder = XacmlRequestBuilder()
 //            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
 //            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
@@ -141,12 +140,12 @@ class PepClient @KtorExperimentalAPI constructor(
 //
 //        val decision = evaluate(requestBuilder)
 //        return decision
-        
+
     }
 
     @KtorExperimentalAPI
     override suspend fun erOppgaveStyrerSkjermet(): Boolean {
-      return  azureGraphService.hentIdentTilInnloggetBruker().toLowerCase() == "Z994048".toLowerCase()
+        return azureGraphService.hentIdentTilInnloggetBruker().toLowerCase() == "Z994048".toLowerCase()
 //        val requestBuilder = XacmlRequestBuilder()
 //            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
 //            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
@@ -211,8 +210,10 @@ class PepClient @KtorExperimentalAPI constructor(
                         { success -> success },
                         { error ->
                             log.error(
-                                "Error response = '${error.response.body()
-                                    .asString("text/plain")}' fra '${request.url}'"
+                                "Error response = '${
+                                    error.response.body()
+                                        .asString("text/plain")
+                                }' fra '${request.url}'"
                             )
                             log.error(error.toString())
                             throw IllegalStateException("Feil ved evaluering av abac.")
