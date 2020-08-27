@@ -117,11 +117,10 @@ class OppgaveRepository(
         }
     }
 
-    fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
+    @KtorExperimentalAPI
+    suspend fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
         var harTilgangTilSkjermet = false
-        runBlocking {
             harTilgangTilSkjermet =  pepClient.harTilgangTilSkjermet()
-        }
         
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {

@@ -35,7 +35,6 @@ fun Route.AvdelingslederOppgavekøApis() {
             )
         ) {
             call.respond(avdelingslederTjeneste.hentOppgaveKøer())
-
         }
     }
 
