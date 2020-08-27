@@ -145,7 +145,7 @@ class PepClient @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     override suspend fun harTilgangTilSkjermet(): Boolean {
-        return azureGraphService.hentIdentTilInnloggetBruker() == "Z994034"
+        return azureGraphService.hentIdentTilInnloggetBruker() == "Z994034" || azureGraphService.hentIdentTilInnloggetBruker() == "Z994168"
 //        val requestBuilder = XacmlRequestBuilder()
 //            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
 //            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
