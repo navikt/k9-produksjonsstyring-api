@@ -41,7 +41,6 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             fjernReservasjon(oppgave)
         }
         oppgaveRepository.lagre(oppgave.eksternId) {
-
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
                 if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
@@ -57,7 +56,6 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     }
                 }
             }
-
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)

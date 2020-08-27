@@ -33,7 +33,7 @@ class PdlService @KtorExperimentalAPI constructor(
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
     private val cache = Cache<String>(10_000)
     private val log: Logger = LoggerFactory.getLogger(PdlService::class.java)
-    
+
     private val personUrl = Url.buildURL(
         baseUrl = baseUrl,
         pathParts = listOf()
@@ -93,9 +93,11 @@ class PdlService @KtorExperimentalAPI constructor(
                 cache.set(query, CacheObject(json, LocalDateTime.now().plusHours(7)))
                 return readValue
             } catch (e: Exception) {
-                log.warn(
-                    "Feilet deserialisering ved oppslag av aktorId", e.message
-                )
+                try {
+                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
+                } catch (e: Exception) {
+                    log.warn("", e)
+                }
                 null
             }
         } else {
@@ -160,7 +162,11 @@ class PdlService @KtorExperimentalAPI constructor(
                 cache.set(query, CacheObject(json!!, LocalDateTime.now().plusDays(7)))
                 return objectMapper().readValue<AktøridPdl>(json)
             } catch (e: Exception) {
-                log.warn("", e.message)
+                try {
+                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
+                } catch (e: Exception) {
+                    log.warn("", e)
+                }
                 return null
             }
         } else {

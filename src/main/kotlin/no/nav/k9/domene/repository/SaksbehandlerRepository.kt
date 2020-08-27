@@ -23,7 +23,7 @@ class SaksbehandlerRepository(
         id: String,
         f: (Saksbehandler?) -> Saksbehandler
     ) {
-        val skjermet = pepClient.erSkjermet()
+        val skjermet = pepClient.harTilgangTilSkjermet()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -72,7 +72,7 @@ class SaksbehandlerRepository(
         epost: String,
         f: (Saksbehandler?) -> Saksbehandler
     ) {
-        val erSkjermet = pepClient.erSkjermet()
+        val erSkjermet = pepClient.harTilgangTilSkjermet()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -154,7 +154,7 @@ class SaksbehandlerRepository(
 
     @KtorExperimentalAPI
     suspend fun finnSaksbehandlerMedEpost(epost: String): Saksbehandler? {
-        val skjermet = pepClient.erSkjermet()
+        val skjermet = pepClient.harTilgangTilSkjermet()
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -170,7 +170,7 @@ class SaksbehandlerRepository(
     }
 
     suspend fun finnSaksbehandlerMedIdent(ident: String): Saksbehandler? {
-        val skjermet = pepClient.erSkjermet()
+        val skjermet = pepClient.harTilgangTilSkjermet()
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -202,7 +202,7 @@ class SaksbehandlerRepository(
     
     @KtorExperimentalAPI
     suspend fun slettSaksbehandler(epost: String) {
-        val skjermet = pepClient.erSkjermet()
+        val skjermet = pepClient.harTilgangTilSkjermet()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 tx.run(
@@ -219,7 +219,7 @@ class SaksbehandlerRepository(
 
     @KtorExperimentalAPI
     suspend fun hentAlleSaksbehandlere(): List<Saksbehandler> {
-        val skjermet = pepClient.erSkjermet()
+        val skjermet = pepClient.harTilgangTilSkjermet()
         val identer = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(

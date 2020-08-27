@@ -34,7 +34,7 @@ class OppgavekoTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(10000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
         
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,

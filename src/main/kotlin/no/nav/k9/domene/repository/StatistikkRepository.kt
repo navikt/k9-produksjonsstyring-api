@@ -154,7 +154,7 @@ class StatistikkRepository(
                             "fagsakYtelseType" to alleOppgaverNyeOgFerdigstilteSomPersisteres.fagsakYtelseType.kode,
                             "dato" to alleOppgaverNyeOgFerdigstilteSomPersisteres.dato,
                             "nye" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.nye),
-                            "ferdigstilte" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.ferdigstilte.toSet())
+                            "ferdigstilte" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.ferdigstilte)
                         )
                     ).asUpdate
                 )

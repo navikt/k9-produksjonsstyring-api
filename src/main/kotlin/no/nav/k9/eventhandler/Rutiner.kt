@@ -9,6 +9,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.integrasjon.abac.IPepClient
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
@@ -32,12 +33,14 @@ fun CoroutineScope.køOppdatertProsessor(
 fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
-    reservasjonRepository: ReservasjonRepository
+    reservasjonRepository: ReservasjonRepository,
+    pepClient: IPepClient
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     oppdatereKøerMedOppgave(
         channel = channel,
         oppgaveKøRepository = oppgaveKøRepository,
-        reservasjonRepository = reservasjonRepository
+        reservasjonRepository = reservasjonRepository,
+        pepClient = pepClient
     )
 }
 
@@ -104,7 +107,8 @@ private fun hentAlleElementerIkøSomSet(
 suspend fun oppdatereKøerMedOppgave(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
-    reservasjonRepository: ReservasjonRepository
+    reservasjonRepository: ReservasjonRepository,
+    pepClient: IPepClient
 ) {
     val log = LoggerFactory.getLogger("behandleOppgave")
 

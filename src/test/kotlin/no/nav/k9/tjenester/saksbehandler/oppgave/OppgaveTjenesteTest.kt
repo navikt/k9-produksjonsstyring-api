@@ -34,7 +34,7 @@ class OppgaveTjenesteTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource ,pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -221,7 +221,7 @@ class OppgaveTjenesteTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -346,7 +346,7 @@ class OppgaveTjenesteTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -437,7 +437,7 @@ class OppgaveTjenesteTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,

@@ -129,7 +129,7 @@ fun Route.innsiktGrensesnitt() {
 
 
         mutableSet
-            .removeAll(oppgaveKøRepository.hent().flatMap { it.oppgaverOgDatoer }.map { it.id }.toSet())
+            .removeAll(oppgaveKøRepository.hentIkkeTaHensyn().flatMap { it.oppgaverOgDatoer }.map { it.id }.toSet())
         mutableSet.removeAll(saksbehandlerRepository.hentAlleSaksbehandlere().flatMap { it.reservasjoner })
 
         val oppgaver = oppgaveRepository.hentOppgaver(mutableSet)

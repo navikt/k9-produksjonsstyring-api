@@ -7,10 +7,8 @@ interface IPepClient {
     suspend fun erOppgaveStyrer(): Boolean
     
     @KtorExperimentalAPI
-    suspend fun erSkjermet(): Boolean
+    suspend fun harTilgangTilSkjermet(): Boolean
    
-    suspend fun erOppgaveStyrerSkjermet(): Boolean
-
     @KtorExperimentalAPI
     suspend fun harBasisTilgang(): Boolean
 
@@ -25,6 +23,11 @@ interface IPepClient {
         
     @KtorExperimentalAPI
     suspend fun kanSendeSakTilStatistikk(
+        fagsakNummer: String
+    ): Boolean
+
+    @KtorExperimentalAPI
+    suspend fun erSakKode6(
         fagsakNummer: String
     ): Boolean
 }

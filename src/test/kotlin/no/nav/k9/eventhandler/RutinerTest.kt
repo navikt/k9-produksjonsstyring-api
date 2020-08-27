@@ -42,7 +42,7 @@ class RutinerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(100)
         val statistikkProducer = mockk<StatistikkProducer>()
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
         val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
             pepClient = PepClientLocal()
         )
@@ -89,7 +89,8 @@ class RutinerTest {
             oppdatereKøerMedOppgave(
                 channel = oppgaverSomSkalInnPåKøer,
                 oppgaveKøRepository = oppgaveKøRepository,
-                reservasjonRepository = reservasjonRepository
+                reservasjonRepository = reservasjonRepository,
+                pepClient = PepClientLocal()
             )
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()

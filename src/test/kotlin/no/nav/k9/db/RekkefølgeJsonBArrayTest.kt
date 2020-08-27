@@ -8,6 +8,7 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.integrasjon.abac.PepClientLocal
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -21,7 +22,7 @@ class RekkefølgeJsonBArrayTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
 
         val eksternId = UUID.randomUUID()
         IntRange(1, 10).forEach {

@@ -1,6 +1,8 @@
 package no.nav.k9.domene.repository
 
 import com.fasterxml.jackson.core.type.TypeReference
+import io.ktor.util.*
+import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -8,9 +10,9 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.mock.Aksjonspunkt
 import no.nav.k9.utils.Cache
 import no.nav.k9.utils.CacheObject
@@ -21,7 +23,8 @@ import javax.sql.DataSource
 
 
 class OppgaveRepository(
-    private val dataSource: DataSource
+    private val dataSource: DataSource,
+    private val pepClient: IPepClient
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveRepository::class.java)
     fun hent(): List<Oppgave> {
@@ -75,6 +78,7 @@ class OppgaveRepository(
         }
     }
 
+    @KtorExperimentalAPI
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
@@ -94,15 +98,19 @@ class OppgaveRepository(
                     f(null)
                 }
                 val json = objectMapper().writeValueAsString(oppgave)
+                var kode6 = false
+                runBlocking {
+                    kode6 = pepClient.erSakKode6(oppgave.fagsakSaksnummer)
+                }
 
                 tx.run(
                     queryOf(
                         """
-                    insert into oppgave as k (id, data)
-                    values (:id, :data :: jsonb)
+                    insert into oppgave as k (id, data, skjermet)
+                    values (:id, :data :: jsonb, :skjermet)
                     on conflict (id) do update
-                    set data =  :data :: jsonb
-                 """, mapOf("id" to uuid.toString(), "data" to json)
+                    set data = :data :: jsonb, skjermet = :skjermet
+                 """, mapOf("id" to uuid.toString(), "data" to json, "skjermet" to kode6)
                     ).asUpdate
                 )
             }
@@ -110,6 +118,11 @@ class OppgaveRepository(
     }
 
     fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
+        var harTilgangTilSkjermet = false
+        runBlocking {
+            harTilgangTilSkjermet =  pepClient.harTilgangTilSkjermet()
+        }
+        
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
             return emptyList()
@@ -118,15 +131,17 @@ class OppgaveRepository(
         var spørring = System.currentTimeMillis()
         val session = sessionOf(dataSource)
         val json: List<String> = using(session) {
+            val map = mutableMapOf("skjermet" to harTilgangTilSkjermet as Any)
+            map.putAll(IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() as Any }
+                .toMap())
             //language=PostgreSQL
             it.run(
                 queryOf(
                     "select data from oppgave " +
-                            "where id in (${IntRange(
-                                0,
-                                oppgaveiderList.size - 1
-                            ).map { t -> ":p$t" }.joinToString()}) ",
-                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() }.toMap()
+                            "where id in (${
+                                IntRange(0, oppgaveiderList.size - 1).map { t -> ":p$t" }.joinToString()
+                            }) and skjermet = :skjermet",
+                    map
                 )
                     .map { row ->
                         row.string("data")
@@ -225,15 +240,18 @@ class OppgaveRepository(
         log.info("Teller aktive oppgaver: $spørring ms")
         return count!!
     }
-    
-    internal fun hentAktiveOppgaverTotaltPerBehandlingstypeOgYtelseType(fagsakYtelseType: FagsakYtelseType, behandlingType: BehandlingType): Int {
+
+    internal fun hentAktiveOppgaverTotaltPerBehandlingstypeOgYtelseType(
+        fagsakYtelseType: FagsakYtelseType,
+        behandlingType: BehandlingType
+    ): Int {
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
                 queryOf(
                     "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean and (data -> 'behandlingType' ->> 'kode') =:behandlingType and (data -> 'fagsakYtelseType' ->> 'kode') =:fagsakYtelseType ",
-                    mapOf("behandlingType" to behandlingType.kode,"fagsakYtelseType" to fagsakYtelseType.kode )
+                    mapOf("behandlingType" to behandlingType.kode, "fagsakYtelseType" to fagsakYtelseType.kode)
                 )
                     .map { row ->
                         row.int("count")
@@ -320,12 +338,23 @@ class OppgaveRepository(
                 )
                     .map { row ->
 
-                        val map =  objectMapper().readValue(
+                        val map = objectMapper().readValue(
                             row.string("punkt"),
                             object : TypeReference<HashMap<String, String>>() {})
                         val antall = row.int("count")
                         val aksjonspunkter = map.keys.map { AksjonspunktDefinisjon.fraKode(it) }
-                            .map { Aksjonspunkt(it.kode, it.navn, it.aksjonspunktType.navn,it.behandlingSteg.navn, "", "", it.defaultTotrinnBehandling, antall = antall ) }.toList()
+                            .map {
+                                Aksjonspunkt(
+                                    it.kode,
+                                    it.navn,
+                                    it.aksjonspunktType.navn,
+                                    it.behandlingSteg.navn,
+                                    "",
+                                    "",
+                                    it.defaultTotrinnBehandling,
+                                    antall = antall
+                                )
+                            }.toList()
                         aksjonspunkter
                     }.asList
             )
@@ -333,7 +362,7 @@ class OppgaveRepository(
 
         return json.flatten().groupBy { it.kode }.map { entry ->
             val aksjonspunkt = entry.value.get(0)
-            aksjonspunkt.antall=  entry.value.map { it.antall }.sum()
+            aksjonspunkt.antall = entry.value.map { it.antall }.sum()
             aksjonspunkt
         }
     }

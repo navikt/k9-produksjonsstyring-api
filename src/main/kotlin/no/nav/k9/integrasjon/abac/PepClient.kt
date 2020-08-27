@@ -129,35 +129,18 @@ class PepClient @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    override suspend fun erSkjermet(): Boolean {
-        return azureGraphService.hentIdentTilInnloggetBruker().toLowerCase() == "Z994048".toLowerCase()
-//        val requestBuilder = XacmlRequestBuilder()
-//            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
-//            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
-//            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
-//            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
-//            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
-//
-//        val decision = evaluate(requestBuilder)
-//        return decision
+    override suspend fun harTilgangTilSkjermet(): Boolean {
+        val requestBuilder = XacmlRequestBuilder()
+            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
+            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
+        val decision = evaluate(requestBuilder)
+        return decision
     }
-
-    @KtorExperimentalAPI
-    override suspend fun erOppgaveStyrerSkjermet(): Boolean {
-        return azureGraphService.hentIdentTilInnloggetBruker().toLowerCase() == "Z994048".toLowerCase()
-//        val requestBuilder = XacmlRequestBuilder()
-//            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
-//            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
-//            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
-//            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
-//            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
-//
-//        val decision = evaluate(requestBuilder)
-//        return decision
-    }
-
-
+    
     @KtorExperimentalAPI
     override suspend fun kanSendeSakTilStatistikk(
         fagsakNummer: String
@@ -171,9 +154,20 @@ class PepClient @KtorExperimentalAPI constructor(
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
             .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
 
-        val decision = evaluate(requestBuilder)
+        return evaluate(requestBuilder)
+    }
 
-        return decision
+    @KtorExperimentalAPI
+    override suspend fun erSakKode6(fagsakNummer: String): Boolean {
+        val requestBuilder = XacmlRequestBuilder()
+            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+            .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK_KODE6)
+            .addAccessSubjectAttribute(SUBJECT_TYPE, NONE)
+            .addAccessSubjectAttribute(SUBJECTID, NONE)
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+            .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
+
+        return evaluate(requestBuilder)
     }
 
     @KtorExperimentalAPI

@@ -58,7 +58,7 @@ fun common(app: Application, config: Configuration) = module {
     single { config.koinProfile() }
     single { config }
     single { app.hikariConfig(config) as DataSource }
-    single { OppgaveRepository(get()) }
+    single { OppgaveRepository(get(), get()) }
     single {
         NokkeltallTjeneste(
             oppgaveRepository = get(),

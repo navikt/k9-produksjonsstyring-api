@@ -25,7 +25,7 @@ class OppgaveKøRepository(
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
     suspend fun hent(): List<OppgaveKø> {
-        val skjermet = pepClient.erSkjermet()
+        val skjermet = pepClient.harTilgangTilSkjermet()
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -75,7 +75,7 @@ class OppgaveKøRepository(
         refresh: Boolean = false,
         f: (OppgaveKø?) -> OppgaveKø
     ) {
-        val skjermet = pepClient.erSkjermet()
+        val skjermet = pepClient.harTilgangTilSkjermet()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -183,7 +183,7 @@ class OppgaveKøRepository(
     }
     
     suspend fun slett(id: UUID) {
-        val skjermet = pepClient.erSkjermet()
+        val skjermet = pepClient.harTilgangTilSkjermet()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 tx.run(

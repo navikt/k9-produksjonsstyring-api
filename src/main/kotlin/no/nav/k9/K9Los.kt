@@ -111,7 +111,8 @@ fun Application.k9Los() {
         oppdatereKøerMedOppgaveProsessor(
             oppgaveKøRepository = koin.get(),
             channel = koin.get<Channel<Oppgave>>(named("oppgaveChannel")),
-            reservasjonRepository = koin.get()
+            reservasjonRepository = koin.get(),
+            pepClient = koin.get()
         )
 
     val asynkronProsesseringV1Service = koin.get<AsynkronProsesseringV1Service>()
