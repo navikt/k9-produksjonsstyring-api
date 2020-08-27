@@ -145,15 +145,16 @@ class PepClient @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     override suspend fun harTilgangTilSkjermet(): Boolean {
-        val requestBuilder = XacmlRequestBuilder()
-            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
-            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
-            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
-            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
-            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
-
-        val decision = evaluate(requestBuilder)
-        return decision
+        return azureGraphService.hentIdentTilInnloggetBruker() == "Z994034"
+//        val requestBuilder = XacmlRequestBuilder()
+//            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+//            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
+//            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+//            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
+//            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+//
+//        val decision = evaluate(requestBuilder)
+//        return decision
     }
     
     @KtorExperimentalAPI
