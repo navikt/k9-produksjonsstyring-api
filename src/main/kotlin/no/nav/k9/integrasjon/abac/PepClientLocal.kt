@@ -14,6 +14,11 @@ class PepClientLocal @KtorExperimentalAPI constructor() : IPepClient {
     }
 
     @KtorExperimentalAPI
+    override suspend fun kanLeggeUtDriftsmelding(): Boolean {
+        return true
+    }
+
+    @KtorExperimentalAPI
     override suspend fun harTilgangTilLesSak(fagsakNummer: String, aktørid: String): Boolean {
         return true
     }

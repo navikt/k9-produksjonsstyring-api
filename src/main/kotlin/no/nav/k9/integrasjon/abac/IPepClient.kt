@@ -13,6 +13,9 @@ interface IPepClient {
     suspend fun harBasisTilgang(): Boolean
 
     @KtorExperimentalAPI
+    suspend fun kanLeggeUtDriftsmelding(): Boolean
+
+    @KtorExperimentalAPI
     suspend fun harTilgangTilLesSak(
         fagsakNummer: String,
         aktørid: String
