@@ -69,6 +69,21 @@ class PepClient @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
+    override suspend fun kanLeggeUtDriftsmelding(): Boolean {
+
+        val requestBuilder = XacmlRequestBuilder()
+                .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+                .addResourceAttribute(RESOURCE_TYPE, DRIFTSMELDING)
+                .addActionAttribute(ACTION_ID, "create")
+                .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+                .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
+                .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+
+        val decision = evaluate(requestBuilder)
+        return decision
+    }
+
+    @KtorExperimentalAPI
     override suspend fun harTilgangTilLesSak(
         fagsakNummer: String,
         aktørid: String
@@ -128,7 +143,7 @@ class PepClient @KtorExperimentalAPI constructor(
         val decision = evaluate(requestBuilder)
         return decision
     }
-    
+
 
 
     @KtorExperimentalAPI

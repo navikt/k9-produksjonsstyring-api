@@ -54,7 +54,7 @@ internal fun Route.NavAnsattApis() {
                     kanBehandleKode7 = pepClient.harBasisTilgang(),
                     kanOppgavestyre = pepClient.erOppgaveStyrer(),
                     kanReservere = pepClient.harTilgangTilReservingAvOppgaver(),
-                    kanDrifte = token.getUsername() == "alexandra.bandarenka@nav.no"
+                    kanDrifte = pepClient.kanLeggeUtDriftsmelding()
                 )
                 if (saksbehandlerRepository.finnSaksbehandlerMedEpost(token.getUsername()) != null) {
                     saksbehandlerRepository.addSaksbehandler(
