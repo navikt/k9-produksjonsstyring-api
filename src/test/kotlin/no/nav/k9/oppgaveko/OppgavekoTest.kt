@@ -117,7 +117,7 @@ class OppgavekoTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         val oppgave2 = Oppgave(
             behandlingId = 78567,
@@ -144,7 +144,7 @@ class OppgavekoTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }

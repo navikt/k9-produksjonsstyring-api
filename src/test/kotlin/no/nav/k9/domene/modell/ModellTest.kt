@@ -53,7 +53,7 @@ class ModellTest {
 
         val oppgave = modell.oppgave()
         assertFalse(oppgave.tilBeslutter)
-        assertFalse(oppgave.skjermet)
+        assertFalse(oppgave.kode6)
         assertFalse(oppgave.aktiv)
         assertEquals("1442456610368", oppgave.aktorId)
         assertEquals("", oppgave.behandlendeEnhet)

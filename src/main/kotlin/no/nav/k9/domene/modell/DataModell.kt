@@ -93,7 +93,7 @@ data class Modell(
             selvstendigFrilans = false,
             søktGradering = false,
             utbetalingTilBruker = false,
-            skjermet = false,
+            kode6 = false,
             årskvantum = erÅrskvantum(event),
             avklarMedlemskap = avklarMedlemskap(event),
             vurderopptjeningsvilkåret = vurderopptjeningsvilkåret(event),

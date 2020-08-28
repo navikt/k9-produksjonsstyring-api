@@ -102,7 +102,7 @@ class StatistikkRepositoryTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
             it.nye.add(oppgave.eksternId.toString())

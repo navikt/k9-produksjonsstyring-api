@@ -7,7 +7,7 @@ interface IPepClient {
     suspend fun erOppgaveStyrer(): Boolean
     
     @KtorExperimentalAPI
-    suspend fun harTilgangTilSkjermet(): Boolean
+    suspend fun harTilgangTilKode6(): Boolean
    
     @KtorExperimentalAPI
     suspend fun harBasisTilgang(): Boolean

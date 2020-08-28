@@ -29,7 +29,7 @@ class PepClientLocal @KtorExperimentalAPI constructor() : IPepClient {
     }
 
     @KtorExperimentalAPI
-    override suspend fun harTilgangTilSkjermet(): Boolean {
+    override suspend fun harTilgangTilKode6(): Boolean {
         return false
     }
 

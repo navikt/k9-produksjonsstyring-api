@@ -44,6 +44,7 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     )
 }
 
+@KtorExperimentalAPI
 suspend fun oppdatereKø(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
@@ -63,22 +64,26 @@ suspend fun oppdatereKø(
                 val oppgavekøModifisert = oppgaveKøRepository.hentOppgavekø(it)
                 oppgavekøModifisert.oppgaverOgDatoer.clear()
                 for (oppgave in aktiveOppgaver) {
-                    oppgavekøModifisert.leggOppgaveTilEllerFjernFraKø(
-                        oppgave = oppgave,
-                        reservasjonRepository = reservasjonRepository
-                    )
+                    if (oppgavekøModifisert.kode6 == oppgave.kode6) {
+                        oppgavekøModifisert.leggOppgaveTilEllerFjernFraKø(
+                            oppgave = oppgave,
+                            reservasjonRepository = reservasjonRepository
+                        )
+                    }
                 }
 
-                oppgaveKøRepository.lagre(it) { oppgaveKø ->
+                oppgaveKøRepository.lagreIkkeTaHensyn(it) { oppgaveKø ->
                     if (oppgaveKø!! == oppgavekøGammel) {
                         oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
                     } else {
                         oppgaveKø.oppgaverOgDatoer.clear()
                         for (oppgave in aktiveOppgaver) {
-                            oppgaveKø.leggOppgaveTilEllerFjernFraKø(
-                                oppgave = oppgave,
-                                reservasjonRepository = reservasjonRepository
-                            )
+                            if (oppgavekøModifisert.kode6 == oppgave.kode6) {
+                                oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                                    oppgave = oppgave,
+                                    reservasjonRepository = reservasjonRepository
+                                )
+                            }
                         }
                     }
 
@@ -128,9 +133,11 @@ suspend fun oppdatereKøerMedOppgave(
                         refresh = refresh
                     ) {
                         for (o in oppgaveListe) {
-                            val endring = it!!.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
-                            if (it.tilhørerOppgaveTilKø(o, reservasjonRepository, false)) {
-                                it.nyeOgFerdigstilteOppgaver(o).leggTilNy(o.eksternId.toString())
+                            if (o.kode6 == oppgavekø.kode6) {
+                                val endring = it!!.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
+                                if (it.tilhørerOppgaveTilKø(o, reservasjonRepository, false)) {
+                                    it.nyeOgFerdigstilteOppgaver(o).leggTilNy(o.eksternId.toString())
+                                }
                             }
                         }
                         it!!

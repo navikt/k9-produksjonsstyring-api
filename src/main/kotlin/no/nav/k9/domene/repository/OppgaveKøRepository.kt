@@ -25,7 +25,7 @@ class OppgaveKøRepository(
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
     suspend fun hent(): List<OppgaveKø> {
-        val skjermet = pepClient.harTilgangTilSkjermet()
+        val skjermet = pepClient.harTilgangTilKode6()
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -39,8 +39,8 @@ class OppgaveKøRepository(
         }
         return json.map { s -> objectMapper().readValue(s, OppgaveKø::class.java) }.toList()
     }
-    
-     fun hentIkkeTaHensyn(): List<OppgaveKø> {
+
+    fun hentIkkeTaHensyn(): List<OppgaveKø> {
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -75,25 +75,26 @@ class OppgaveKøRepository(
         refresh: Boolean = false,
         f: (OppgaveKø?) -> OppgaveKø
     ) {
-        val skjermet = pepClient.harTilgangTilSkjermet()
+        val kode6 = pepClient.harTilgangTilKode6()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
                     queryOf(
                         "select data from oppgaveko where id = :id and skjermet = :skjermet for update",
-                        mapOf("id" to uuid.toString(), "skjermet" to skjermet)
+                        mapOf("id" to uuid.toString(), "skjermet" to kode6)
                     )
                         .map { row ->
                             row.string("data")
                         }.asSingle
                 )
                 val forrigeOppgavekø: OppgaveKø?
-                val oppgaveKø = if (!run.isNullOrEmpty()) {
+                var oppgaveKø = if (!run.isNullOrEmpty()) {
                     forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
                     f(forrigeOppgavekø)
                 } else {
                     f(null)
                 }
+                oppgaveKø = oppgaveKø.copy(kode6 = kode6)
                 //Sorter oppgaver
                 if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
                     oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
@@ -106,7 +107,7 @@ class OppgaveKøRepository(
                         values (:id, :data :: jsonb, :skjermet)
                         on conflict (id) do update
                         set data = :data :: jsonb, skjermet = :skjermet
-                     """, mapOf("id" to uuid.toString(), "data" to json, "skjermet" to skjermet)
+                     """, mapOf("id" to uuid.toString(), "data" to json, "skjermet" to kode6)
                     ).asUpdate
                 )
 
@@ -181,9 +182,9 @@ class OppgaveKøRepository(
             )
         }
     }
-    
+
     suspend fun slett(id: UUID) {
-        val skjermet = pepClient.harTilgangTilSkjermet()
+        val skjermet = pepClient.harTilgangTilKode6()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 tx.run(

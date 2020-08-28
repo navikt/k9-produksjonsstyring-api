@@ -28,7 +28,8 @@ data class OppgaveKø(
     var skjermet: Boolean = false,
     var oppgaverOgDatoer: MutableList<OppgaveIdMedDato> = mutableListOf(),
 
-    var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaver>> = mutableMapOf()
+    var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaver>> = mutableMapOf(),
+    val kode6: Boolean = false
 ) {
 
     fun leggOppgaveTilEllerFjernFraKø(
@@ -94,7 +95,7 @@ data class OppgaveKø(
             return false
         }
 
-        if (oppgave.skjermet != this.skjermet) {
+        if (oppgave.kode6 != this.skjermet) {
             return false
         }
 
@@ -221,8 +222,8 @@ class Saksbehandler(
     var brukerIdent: String?,
     var navn: String?,
     var epost: String,
-    var reservasjoner : MutableSet<UUID> = mutableSetOf(),
-    var enhet : String?
+    var reservasjoner: MutableSet<UUID> = mutableSetOf(),
+    var enhet: String?
 )
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
@@ -323,7 +324,7 @@ enum class BehandlingType(override val kode: String, override val navn: String, 
     companion object {
         @JsonCreator
         @JvmStatic
-        fun fraKode(kode: String): BehandlingType = values().find { it.kode == kode }?:FORSTEGANGSSOKNAD
+        fun fraKode(kode: String): BehandlingType = values().find { it.kode == kode } ?: FORSTEGANGSSOKNAD
     }
 
 }
@@ -341,7 +342,7 @@ enum class BehandlingStatus(override val kode: String, override val navn: String
     companion object {
         @JsonCreator
         @JvmStatic
-        fun fraKode(kode: String): BehandlingStatus = values().find { it.kode == kode }?:OPPRETTET
+        fun fraKode(kode: String): BehandlingStatus = values().find { it.kode == kode } ?: OPPRETTET
     }
 }
 

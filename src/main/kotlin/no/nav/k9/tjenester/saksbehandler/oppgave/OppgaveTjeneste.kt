@@ -656,9 +656,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     suspend fun settSkjermet(oppgave: Oppgave) {
         log.info("Skjermer oppgave")
-        oppgave.skjermet = true
+        oppgave.kode6 = true
         oppgaveRepository.lagre(oppgave.eksternId) { it ->
-            it?.skjermet = true
+            it?.kode6 = true
             it!!
         }
         for (oppgaveKø in oppgaveKøRepository.hent()) {
