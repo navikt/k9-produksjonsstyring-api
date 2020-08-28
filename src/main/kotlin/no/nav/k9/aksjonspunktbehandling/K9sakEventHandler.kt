@@ -41,24 +41,28 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             fjernReservasjon(oppgave)
         }
         oppgaveRepository.lagre(oppgave.eksternId) {
-
             if (modell.starterSak()) {
                 sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
                 if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
-                    statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                    statistikkRepository.lagre(
+                        AlleOppgaverNyeOgFerdigstilte(
+                            oppgave.fagsakYtelseType,
+                            oppgave.behandlingType,
+                            oppgave.eventTid.toLocalDate()
+                        )
+                    ) {
                         it.nye.add(oppgave.eksternId.toString())
                         it
                     }
                 }
             }
 
-
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)
                 if (reservasjonRepository.finnes(oppgave.eksternId)) {
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                 }
-                for (oppgaveKø in oppgaveKøRepository.hent()) {
+                for (oppgaveKø in oppgaveKøRepository.hentIkkeTaHensyn()) {
                     val set = mutableSetOf<String>()
                     oppgaveKø.nyeOgFerdigstilteOppgaver.forEach { e ->
                         e.value.forEach {
@@ -67,7 +71,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     }
                     if (set.contains(oppgave.eksternId.toString())) {
                         runBlocking {
-                            oppgaveKøRepository.lagre(oppgaveKø.id) {
+                            oppgaveKøRepository.lagreIkkeTaHensyn(oppgaveKø.id) {
                                 it!!.nyeOgFerdigstilteOppgaver(oppgave)
                                     .leggTilFerdigstilt(oppgave.eksternId.toString())
                                 it
@@ -76,7 +80,13 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     }
                 }
                 if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
-                    statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+                    statistikkRepository.lagre(
+                        AlleOppgaverNyeOgFerdigstilte(
+                            oppgave.fagsakYtelseType,
+                            oppgave.behandlingType,
+                            oppgave.eventTid.toLocalDate()
+                        )
+                    ) {
                         it.ferdigstilte.add(oppgave.eksternId.toString())
                         it
                     }
@@ -97,7 +107,6 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         if (reservasjonRepository.finnes(oppgave.eksternId)) {
             reservasjonRepository.lagre(oppgave.eksternId, true) {
                 it!!.reservertTil = null
-
                 it
             }
         }

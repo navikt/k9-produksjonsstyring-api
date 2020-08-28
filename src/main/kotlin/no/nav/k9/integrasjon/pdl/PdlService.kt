@@ -3,16 +3,14 @@ package no.nav.k9.integrasjon.pdl
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
-import io.ktor.http.HttpHeaders
-import io.ktor.http.Url
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.http.*
+import io.ktor.util.*
 import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.Configuration
-import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
@@ -35,7 +33,7 @@ class PdlService @KtorExperimentalAPI constructor(
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
     private val cache = Cache<String>(10_000)
     private val log: Logger = LoggerFactory.getLogger(PdlService::class.java)
-    
+
     private val personUrl = Url.buildURL(
         baseUrl = baseUrl,
         pathParts = listOf()
@@ -95,9 +93,11 @@ class PdlService @KtorExperimentalAPI constructor(
                 cache.set(query, CacheObject(json, LocalDateTime.now().plusHours(7)))
                 return readValue
             } catch (e: Exception) {
-                log.warn(
-                    "Feilet deserialisering ved oppslag av $aktorId", e.message
-                )
+                try {
+                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
+                } catch (e: Exception) {
+                    log.warn("", e)
+                }
                 null
             }
         } else {
@@ -162,7 +162,11 @@ class PdlService @KtorExperimentalAPI constructor(
                 cache.set(query, CacheObject(json!!, LocalDateTime.now().plusDays(7)))
                 return objectMapper().readValue<AktøridPdl>(json)
             } catch (e: Exception) {
-                log.warn("", e.message)
+                try {
+                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
+                } catch (e: Exception) {
+                    log.warn("", e)
+                }
                 return null
             }
         } else {

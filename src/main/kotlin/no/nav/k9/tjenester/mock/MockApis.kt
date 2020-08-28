@@ -1,16 +1,14 @@
 package no.nav.k9.tjenester.mock
 
-import io.ktor.application.call
-import io.ktor.html.respondHtml
-import io.ktor.http.HttpStatusCode
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.get
-import io.ktor.locations.post
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.application.*
+import io.ktor.html.*
+import io.ktor.http.*
+import io.ktor.locations.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.util.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.html.*
 import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
@@ -27,6 +25,7 @@ import org.koin.ktor.ext.inject
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.collections.set
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -37,6 +36,7 @@ fun Route.MockGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
     val profile by inject<KoinProfile>()
+
     @Location("/")
     class main
 
@@ -44,7 +44,7 @@ fun Route.MockGrensesnitt() {
         if (profile == KoinProfile.PROD) {
             call.respond(HttpStatusCode.NotFound)
         }
-        
+
         call.respondHtml {
 
             head {
@@ -56,7 +56,7 @@ fun Route.MockGrensesnitt() {
                 div {
                     classes = setOf("container ")
                     a {
-                        href="/mock/endreBehandling"
+                        href = "/mock/endreBehandling"
                         +"Endre behandling"
                     }
                     h1 { +"Testside for k9-los" }
@@ -125,7 +125,7 @@ fun Route.MockGrensesnitt() {
     class aksjonspunkt
     post { _: aksjonspunkt ->
         if (profile == KoinProfile.PROD) {
-             call.respond(HttpStatusCode.NotFound)
+            call.respond(HttpStatusCode.NotFound)
         }
         val aksjonspunktToggle = call.receive<AksjonspunktToggle>()
 
@@ -181,7 +181,7 @@ fun Route.MockGrensesnitt() {
 
     get { _: aksjonspunkt2 ->
         if (profile == KoinProfile.PROD) {
-             call.respond(HttpStatusCode.NotFound)
+            call.respond(HttpStatusCode.NotFound)
         }
         for (i in 0..10000 step 1) {
 
@@ -214,7 +214,7 @@ fun Route.MockGrensesnitt() {
 
     get { _: endreBehandling ->
         if (profile == KoinProfile.PROD) {
-             call.respond(HttpStatusCode.NotFound)
+            call.respond(HttpStatusCode.NotFound)
         }
         val valgtKø = call.request.queryParameters.get("valgtKø")
         val ferdigStill = call.request.queryParameters.get("ferdigstill")
@@ -229,7 +229,7 @@ fun Route.MockGrensesnitt() {
             )
         }
 
-        val oppgavekøer = oppgaveKøRepository.hent()
+        val oppgavekøer = oppgaveKøRepository.hentIkkeTaHensyn()
 
         call.respondHtml {
             head {
@@ -240,8 +240,8 @@ fun Route.MockGrensesnitt() {
             body {
                 div {
                     classes = setOf("container ")
-                    a { 
-                        href="/mock"
+                    a {
+                        href = "/mock"
                         +"Mock"
                     }
                     h1 { +"Endre behandling" }
@@ -271,16 +271,17 @@ fun Route.MockGrensesnitt() {
 
                     if (valgtKø != null) {
                         val oppgaver =
-                            if (valgtKø == "reserverte") {
-                                oppgaveRepository
-                                    .hentOppgaver(
-                                        saksbehandlerRepository.hentAlleSaksbehandlere().flatMap { it.reservasjoner })
-                            } else {
-                                oppgaveRepository
-                                    .hentOppgaver(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }
-                                        .oppgaverOgDatoer.take(20).map { it.id })
+                            runBlocking {
+                                if (valgtKø == "reserverte") {
+                                    oppgaveRepository
+                                        .hentOppgaverIkkeTaHensyn(
+                                            saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn() .flatMap { it.reservasjoner })
+                                } else {
+                                    oppgaveRepository
+                                        .hentOppgaver(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }
+                                            .oppgaverOgDatoer.take(20).map { it.id })
+                                }
                             }
-
                         table {
                             classes = setOf("table")
                             thead {

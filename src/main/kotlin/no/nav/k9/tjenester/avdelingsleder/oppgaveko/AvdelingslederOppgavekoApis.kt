@@ -1,31 +1,58 @@
 package no.nav.k9.tjenester.avdelingsleder.oppgaveko
 
-import io.ktor.application.call
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.get
-import io.ktor.locations.post
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.Route
+import io.ktor.application.*
+import io.ktor.locations.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import kotlinx.coroutines.withContext
+import no.nav.k9.KoinProfile
+import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
+import no.nav.k9.tjenester.saksbehandler.IdTokenLocal
+import no.nav.k9.tjenester.saksbehandler.idToken
 import org.koin.ktor.ext.inject
 import java.util.*
 
 @KtorExperimentalLocationsAPI
 fun Route.AvdelingslederOppgavekøApis() {
     val avdelingslederTjeneste by inject<AvdelingslederTjeneste>()
+    val requestContextService by inject<IRequestContextService>()
+    val profile by inject<KoinProfile>()
+
     @Location("/")
     class hentAlleOppgaveKøer
 
     get { _: hentAlleOppgaveKøer ->
-        call.respond(avdelingslederTjeneste.hentOppgaveKøer())
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.hentOppgaveKøer())
+        }
     }
 
     class opprettOppgaveKø
 
     post { _: opprettOppgaveKø ->
-        call.respond(avdelingslederTjeneste.opprettOppgaveKø())
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.opprettOppgaveKø())
+        }
     }
 
     @Location("/navn")
@@ -33,7 +60,18 @@ fun Route.AvdelingslederOppgavekøApis() {
 
     post { _: endreOppgavekoNavn ->
         val uuid = call.receive<OppgavekøNavnDto>()
-        call.respond(avdelingslederTjeneste.endreOppgavekøNavn(uuid))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.endreOppgavekøNavn(uuid))
+        }
     }
 
     @Location("/slett")
@@ -41,7 +79,18 @@ fun Route.AvdelingslederOppgavekøApis() {
 
     post { _: slettOppgaveKø ->
         val uuid = call.receive<IdDto>()
-        call.respond(avdelingslederTjeneste.slettOppgavekø(UUID.fromString(uuid.id)))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.slettOppgavekø(UUID.fromString(uuid.id)))
+        }
     }
 
     @Location("/behandlingstype")
@@ -49,7 +98,18 @@ fun Route.AvdelingslederOppgavekøApis() {
 
     post { _: lagreBehandlingstype ->
         val behandling = call.receive<BehandlingsTypeDto>()
-        call.respond(avdelingslederTjeneste.endreBehandlingsType(behandling))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.endreBehandlingsType(behandling))
+        }
     }
 
     @Location("/skjermet")
@@ -57,15 +117,36 @@ fun Route.AvdelingslederOppgavekøApis() {
 
     post { _: lagreSkjermet ->
         val behandling = call.receive<SkjermetDto>()
-        call.respond(avdelingslederTjeneste.endreSkjerming(behandling))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.endreSkjerming(behandling))
+        }
     }
 
     @Location("/ytelsetype")
     class lagreYtelsestype
-
     post { _: lagreYtelsestype ->
         val ytelse = call.receive<YtelsesTypeDto>()
-        call.respond(avdelingslederTjeneste.endreYtelsesType(ytelse))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.endreYtelsesType(ytelse))
+        }
     }
 
     @Location("/andre-kriterier")
@@ -73,7 +154,18 @@ fun Route.AvdelingslederOppgavekøApis() {
 
     post { _: endreKriterier ->
         val kriterium = call.receive<AndreKriterierDto>()
-        call.respond(avdelingslederTjeneste.endreKriterium(kriterium))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.endreKriterium(kriterium))
+        }
     }
 
     @Location("/sortering")
@@ -81,7 +173,18 @@ fun Route.AvdelingslederOppgavekøApis() {
 
     post { _: lagreSortering ->
         val sortering = call.receive<KøSorteringDto>()
-        call.respond(avdelingslederTjeneste.endreKøSortering(sortering))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.endreKøSortering(sortering))
+        }
     }
 
     @Location("/sortering-tidsintervall-dato")
@@ -89,7 +192,18 @@ fun Route.AvdelingslederOppgavekøApis() {
 
     post { _: lagreSorteringType ->
         val sortering = call.receive<SorteringDatoDto>()
-        call.respond(avdelingslederTjeneste.endreKøSorteringDato(sortering))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.endreKøSorteringDato(sortering))
+        }
     }
 
     @Location("/saksbehandler")
@@ -97,6 +211,17 @@ fun Route.AvdelingslederOppgavekøApis() {
 
     post { _: leggFjernSaksbehandlerOppgaveko ->
         val saksbehandler = call.receive<SaksbehandlerOppgavekoDto>()
-        call.respond(avdelingslederTjeneste.leggFjernSaksbehandlerOppgavekø(saksbehandler))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.leggFjernSaksbehandlerOppgavekø(saksbehandler))
+        }
     }
 }

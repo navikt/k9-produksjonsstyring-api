@@ -1,7 +1,7 @@
 package no.nav.k9
 
-import io.ktor.application.Application
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.application.*
+import io.ktor.util.*
 import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.k9.KoinProfile.*
@@ -58,7 +58,7 @@ fun common(app: Application, config: Configuration) = module {
     single { config.koinProfile() }
     single { config }
     single { app.hikariConfig(config) as DataSource }
-    single { OppgaveRepository(get()) }
+    single { OppgaveRepository(get(), get()) }
     single {
         NokkeltallTjeneste(
             oppgaveRepository = get(),
@@ -79,13 +79,15 @@ fun common(app: Application, config: Configuration) = module {
         OppgaveKøRepository(
             dataSource = get(),
             oppgaveKøOppdatert = get(named("oppgaveKøOppdatert")),
-            refreshKlienter = get(named("refreshKlienter"))
+            refreshKlienter = get(named("refreshKlienter")),
+            pepClient = get()
         )
     }
-
+    
     single {
         SaksbehandlerRepository(
-            dataSource = get()
+            dataSource = get(),
+            pepClient = get()
         )
     }
 

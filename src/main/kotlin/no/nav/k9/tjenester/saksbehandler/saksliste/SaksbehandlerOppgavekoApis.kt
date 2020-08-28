@@ -1,14 +1,11 @@
 package no.nav.k9.tjenester.saksbehandler.saksliste
 
-import io.ktor.application.call
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.get
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.application.*
+import io.ktor.locations.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.util.*
 import kotlinx.coroutines.withContext
-import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -26,16 +23,14 @@ import java.util.*
 internal fun Route.SaksbehandlerOppgavekoApis() {
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val pepClient by inject<IPepClient>()
-    val requestContextService by inject<IRequestContextService>()
-    val configuration by inject<Configuration>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
+    val requestContextService by inject<IRequestContextService>()
     val profile by inject<KoinProfile>()
 
     @Location("/oppgaveko")
     class getSakslister
 
     get { _: getSakslister ->
-
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
@@ -47,7 +42,6 @@ internal fun Route.SaksbehandlerOppgavekoApis() {
             )
         ) {
             if (pepClient.harBasisTilgang()) {
-
                 val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
                 val list = hentOppgaveKøer
                     .filter { oppgaveKø ->
@@ -82,30 +76,20 @@ internal fun Route.SaksbehandlerOppgavekoApis() {
     class hentSakslistensSaksbehandlere
 
     get { _: hentSakslistensSaksbehandlere ->
-        call.respond(
-            oppgaveKøRepository.hentOppgavekø(UUID.fromString(call.parameters["id"])).saksbehandlere
-        )
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(
+                oppgaveKøRepository.hentOppgavekø(UUID.fromString(call.parameters["id"])).saksbehandlere
+            )
+        }
     }
 }
 
-private fun hentOppgavekøerLokalt(oppgaveTjeneste: OppgaveTjeneste): List<OppgavekøDto> {
-    val hentOppgaveKøer = oppgaveTjeneste.hentOppgaveKøer()
-    val list = hentOppgaveKøer.map { oppgaveKø ->
-        val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato)
-
-        OppgavekøDto(
-            id = oppgaveKø.id,
-            navn = oppgaveKø.navn,
-            behandlingTyper = oppgaveKø.filtreringBehandlingTyper,
-            fagsakYtelseTyper = oppgaveKø.filtreringYtelseTyper,
-            saksbehandlere = oppgaveKø.saksbehandlere,
-            antallBehandlinger = oppgaveKø.oppgaverOgDatoer.size,
-            sistEndret = oppgaveKø.sistEndret,
-            sortering = sortering,
-            skjermet = oppgaveKø.skjermet,
-            andreKriterier = oppgaveKø.filtreringAndreKriterierType
-        )
-
-    }
-    return list
-}

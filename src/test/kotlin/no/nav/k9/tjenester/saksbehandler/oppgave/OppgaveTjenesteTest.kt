@@ -1,7 +1,7 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -14,6 +14,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
+import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PersonPdl
@@ -33,13 +34,16 @@ class OppgaveTjenesteTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource ,pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal()
+        )
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -100,7 +104,7 @@ class OppgaveTjenesteTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         val oppgave2 = Oppgave(
             behandlingId = 78567,
@@ -127,7 +131,7 @@ class OppgaveTjenesteTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         val oppgave3 = Oppgave(
@@ -155,7 +159,7 @@ class OppgaveTjenesteTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         val oppgave4 = Oppgave(
@@ -183,7 +187,7 @@ class OppgaveTjenesteTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
@@ -217,13 +221,15 @@ class OppgaveTjenesteTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -286,7 +292,7 @@ class OppgaveTjenesteTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository)
@@ -340,14 +346,16 @@ class OppgaveTjenesteTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
         val pdlService = mockk<PdlService>()
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
 
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val pepClient = mockk<IPepClient>()
@@ -393,7 +401,7 @@ class OppgaveTjenesteTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
     
@@ -429,13 +437,15 @@ class OppgaveTjenesteTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource)
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter
+            refreshKlienter = refreshKlienter,
+            pepClient = PepClientLocal()
         )
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource)
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -500,7 +510,7 @@ class OppgaveTjenesteTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
-            avklarMedlemskap = false, skjermet = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository)

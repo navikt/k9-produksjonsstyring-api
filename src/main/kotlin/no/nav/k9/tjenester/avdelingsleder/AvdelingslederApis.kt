@@ -1,19 +1,15 @@
 package no.nav.k9.tjenester.avdelingsleder
 
-import io.ktor.application.call
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.get
-import io.ktor.locations.post
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.application.*
+import io.ktor.locations.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.util.*
 import kotlinx.coroutines.withContext
-import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.integrasjon.rest.IRequestContextService
-import no.nav.k9.integrasjon.rest.RequestContextService
+import no.nav.k9.tjenester.saksbehandler.IdTokenLocal
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveId
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
@@ -26,13 +22,25 @@ internal fun Route.AvdelingslederApis() {
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val avdelingslederTjeneste by inject<AvdelingslederTjeneste>()
     val requestContextService by inject<IRequestContextService>()
-    val configuration by inject<Configuration>()
+    val profile by inject<KoinProfile>()
+    
     @Location("/oppgaver/antall-totalt")
     class hentAntallOppgaverTotalt
 
     get { _: hentAntallOppgaverTotalt ->
-        val antall = oppgaveTjeneste.hentAntallOppgaverTotalt()
-        call.respond(antall)
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(oppgaveTjeneste.hentAntallOppgaverTotalt())
+        }
+
     }
 
     @Location("/oppgaver/antall")
@@ -40,14 +48,36 @@ internal fun Route.AvdelingslederApis() {
 
     get { _: hentAntallOppgaver ->
         val uuid = call.parameters["id"]
-        call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid),true))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid), true))
+        }
     }
 
     @Location("/saksbehandlere")
     class hentSaksbehandlere
 
     get { _: hentSaksbehandlere ->
-        call.respond(avdelingslederTjeneste.hentSaksbehandlere())
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.hentSaksbehandlere())
+        }
     }
 
     @Location("/saksbehandlere/sok")
@@ -55,7 +85,19 @@ internal fun Route.AvdelingslederApis() {
 
     post { _: søkSaksbehandler ->
         val epost = call.receive<EpostDto>()
-        call.respond(avdelingslederTjeneste.søkSaksbehandler(epost)) }
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.søkSaksbehandler(epost))
+        }
+    }
 
 
     @Location("/saksbehandlere/slett")
@@ -63,13 +105,24 @@ internal fun Route.AvdelingslederApis() {
 
     post { _: slettSaksbehandler ->
         val epost = call.receive<EpostDto>()
-        call.respond(avdelingslederTjeneste.fjernSaksbehandler(epost.epost)) }
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.fjernSaksbehandler(epost.epost))
+        }
+    }
 
     @Location("/reservasjoner")
     class hentReservasjoner
 
     get { _: hentReservasjoner ->
-        if (configuration.koinProfile() != KoinProfile.LOCAL) {
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
@@ -78,9 +131,7 @@ internal fun Route.AvdelingslederApis() {
             ) {
                 call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
             }
-        }else{
-            call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
-        }
+      
     }
 
     @Location("/reservasjoner/opphev")
@@ -88,6 +139,17 @@ internal fun Route.AvdelingslederApis() {
 
     post { _: opphevReservasjon ->
         val params = call.receive<OppgaveId>()
-        call.respond(avdelingslederTjeneste.opphevReservasjon(UUID.fromString(params.oppgaveId)))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.opphevReservasjon(UUID.fromString(params.oppgaveId)))
+        }
     }
 }

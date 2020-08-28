@@ -1,6 +1,6 @@
 package no.nav.k9.domene.modell
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
@@ -72,7 +72,7 @@ data class Modell(
             behandlingId = event.behandlingId,
             fagsakSaksnummer = event.saksnummer,
             aktorId = event.aktørId,
-            behandlendeEnhet = event.behandlendeEnhet?:"",
+            behandlendeEnhet = event.behandlendeEnhet ?: "",
             behandlingType = BehandlingType.fraKode(event.behandlingTypeKode),
             fagsakYtelseType = FagsakYtelseType.fraKode(event.ytelseTypeKode),
             aktiv = aktiv,
@@ -93,7 +93,7 @@ data class Modell(
             selvstendigFrilans = false,
             søktGradering = false,
             utbetalingTilBruker = false,
-            skjermet = false,
+            kode6 = false,
             årskvantum = erÅrskvantum(event),
             avklarMedlemskap = avklarMedlemskap(event),
             vurderopptjeningsvilkåret = vurderopptjeningsvilkåret(event),
@@ -238,14 +238,13 @@ data class Modell(
         return behandlingAvsluttet
     }
 
-    fun dvhBehandling(
+    suspend fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
     ): Behandling {
         val oppgave = oppgave()
         val beslutter = if (oppgave.tilBeslutter
             && reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.finnes(oppgave.eksternId)
-            && reservasjonRepository.hent(oppgave.eksternId).reservertAv != null
         ) {
             val saksbehandler =
                 saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjonRepository.hent(oppgave.eksternId).reservertAv!!)
@@ -253,16 +252,16 @@ data class Modell(
         } else {
             ""
         }
-        
-        val behandldendeEnhet= 
-        if (reservasjonRepository.finnes(oppgave.eksternId)) {
-            val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(oppgave.eksternId)
-            val first = hentMedHistorikk.filter { reservasjon -> reservasjon.reservertAv != null }
-                .map { reservasjon -> reservasjon.reservertAv }.first()
-            first?.substringBefore(" ")
-        }else {
-            null
-        }
+
+        val behandldendeEnhet =
+            if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(oppgave.eksternId)
+                val reservertav = hentMedHistorikk
+                    .map { reservasjon -> reservasjon.reservertAv }.first()
+                saksbehandlerRepository.finnSaksbehandlerMedIdentIkkeTaHensyn(reservertav)?.enhet?.substringBefore(" ")
+            } else {
+                null
+            }
         val zone = ZoneId.of("Europe/Oslo")
         return Behandling(
             sakId = oppgave.fagsakSaksnummer,
@@ -307,6 +306,7 @@ data class Modell(
         return forrigeEvent != null && !forrigeEvent.aktiveAksjonspunkt()
             .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
     }
+
     fun fikkEndretAksjonspunkt(): Boolean {
         val forrigeEvent = forrigeEvent()
         if (forrigeEvent == null) {

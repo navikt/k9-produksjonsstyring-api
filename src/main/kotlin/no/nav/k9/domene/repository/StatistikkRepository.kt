@@ -154,7 +154,7 @@ class StatistikkRepository(
                             "fagsakYtelseType" to alleOppgaverNyeOgFerdigstilteSomPersisteres.fagsakYtelseType.kode,
                             "dato" to alleOppgaverNyeOgFerdigstilteSomPersisteres.dato,
                             "nye" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.nye),
-                            "ferdigstilte" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.ferdigstilte.toSet())
+                            "ferdigstilte" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.ferdigstilte)
                         )
                     ).asUpdate
                 )
@@ -170,7 +170,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                            select behandlingtype, dato, ferdigstilte, jsonb_array_length(nye) as nye
+                            select behandlingtype, dato, ferdigstilte, nye
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                     """.trimIndent(),
                     mapOf("antall" to "\'${antall} days\'")
@@ -194,7 +194,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye as nye
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye 
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),

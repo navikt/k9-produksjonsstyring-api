@@ -1,31 +1,35 @@
 package no.nav.k9.domene.repository
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.util.*
 import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.Saksbehandler
+import no.nav.k9.integrasjon.abac.IPepClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 import javax.sql.DataSource
 
 class SaksbehandlerRepository(
-    private val dataSource: DataSource
+    private val dataSource: DataSource,
+    private val pepClient: IPepClient
 ) {
     private val log: Logger = LoggerFactory.getLogger(SaksbehandlerRepository::class.java)
-    private fun lagreMedId(
+    private suspend fun lagreMedId(
         id: String,
         f: (Saksbehandler?) -> Saksbehandler
     ) {
+        val skjermet = pepClient.harTilgangTilKode6()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
                     queryOf(
-                        "select data from saksbehandler where saksbehandlerid = :saksbehandlerid for update",
-                        mapOf("saksbehandlerid" to id)
+                        "select data from saksbehandler where saksbehandlerid = :saksbehandlerid and skjermet = :skjermet for update",
+                        mapOf("saksbehandlerid" to id, "skjermet" to skjermet)
                     )
                         .map { row ->
                             row.stringOrNull("data")
@@ -43,18 +47,20 @@ class SaksbehandlerRepository(
                 tx.run(
                     queryOf(
                         """
-                        insert into saksbehandler as k (saksbehandlerid,navn, epost, data)
-                        values (:saksbehandlerid,:navn,:epost, :data :: jsonb)
+                        insert into saksbehandler as k (saksbehandlerid,navn, epost, data, skjermet)
+                        values (:saksbehandlerid,:navn,:epost, :data :: jsonb, :skjermet)
                         on conflict (epost) do update
                         set data = :data :: jsonb, 
                             saksbehandlerid = :saksbehandlerid,
-                            navn = :navn
+                            navn = :navn,
+                            skjermet = :skjermet
                      """,
                         mapOf(
                             "saksbehandlerid" to id,
                             "epost" to saksbehandler.epost,
                             "navn" to saksbehandler.navn,
-                            "data" to json
+                            "data" to json,
+                            "skjermet" to skjermet
                         )
                     ).asUpdate
                 )
@@ -62,16 +68,17 @@ class SaksbehandlerRepository(
         }
     }
 
-    private fun lagreMedEpost(
+    private suspend fun lagreMedEpost(
         epost: String,
         f: (Saksbehandler?) -> Saksbehandler
     ) {
+        val erSkjermet = pepClient.harTilgangTilKode6()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
                     queryOf(
-                        "select data from saksbehandler where lower(epost) = lower(:epost) for update",
-                        mapOf("epost" to epost)
+                        "select data from saksbehandler where lower(epost) = lower(:epost) and skjermet = :skjermet for update",
+                        mapOf("epost" to epost, "skjermet" to erSkjermet)
                     )
                         .map { row ->
                             row.stringOrNull("data")
@@ -89,18 +96,20 @@ class SaksbehandlerRepository(
                 tx.run(
                     queryOf(
                         """
-                        insert into saksbehandler as k (saksbehandlerid, navn, epost, data)
-                        values (:saksbehandlerid,:navn,:epost, :data :: jsonb)
+                        insert into saksbehandler as k (saksbehandlerid, navn, epost, data, skjermet)
+                        values (:saksbehandlerid,:navn,:epost, :data :: jsonb, :skjermet)
                         on conflict (epost) do update
                         set data = :data :: jsonb, 
                             saksbehandlerid = :saksbehandlerid,
-                            navn = :navn
+                            navn = :navn,
+                            skjermet = :skjermet
                      """,
                         mapOf(
                             "saksbehandlerid" to saksbehandler.brukerIdent,
                             "epost" to saksbehandler.epost.toLowerCase(),
                             "navn" to saksbehandler.navn,
-                            "data" to json
+                            "data" to json,
+                            "skjermet" to erSkjermet
                         )
                     ).asUpdate
                 )
@@ -109,7 +118,7 @@ class SaksbehandlerRepository(
     }
 
 
-    fun leggTilReservasjon(saksbehandlerid: String?, reservasjon: UUID) {
+    suspend fun leggTilReservasjon(saksbehandlerid: String?, reservasjon: UUID) {
         if (saksbehandlerid == null) {
             return
         }
@@ -119,7 +128,7 @@ class SaksbehandlerRepository(
         }
     }
 
-    fun fjernReservasjon(id: String?, reservasjon: UUID) {
+    suspend fun fjernReservasjon(id: String?, reservasjon: UUID) {
         if (id == null) {
             return
         }
@@ -129,7 +138,7 @@ class SaksbehandlerRepository(
         }
     }
 
-    fun addSaksbehandler(saksbehandler: Saksbehandler) {
+    suspend fun addSaksbehandler(saksbehandler: Saksbehandler) {
         lagreMedEpost(saksbehandler.epost) {
             if (it == null) {
                 saksbehandler
@@ -143,12 +152,14 @@ class SaksbehandlerRepository(
         }
     }
 
-    fun finnSaksbehandlerMedEpost(epost: String): Saksbehandler? {
+    @KtorExperimentalAPI
+    suspend fun finnSaksbehandlerMedEpost(epost: String): Saksbehandler? {
+        val skjermet = pepClient.harTilgangTilKode6()
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select * from saksbehandler where lower(epost) = lower(:epost)",
-                    mapOf("epost" to epost)
+                    "select * from saksbehandler where lower(epost) = lower(:epost) and skjermet = :skjermet",
+                    mapOf("epost" to epost, "skjermet" to skjermet)
                 )
                     .map { row ->
                         mapSaksbehandler(row)
@@ -158,7 +169,23 @@ class SaksbehandlerRepository(
         return saksbehandler
     }
 
-    fun finnSaksbehandlerMedIdent(ident: String): Saksbehandler? {
+    suspend fun finnSaksbehandlerMedIdent(ident: String): Saksbehandler? {
+        val skjermet = pepClient.harTilgangTilKode6()
+        val saksbehandler = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select * from saksbehandler where lower(saksbehandlerid) = lower(:ident) and skjermet = :skjermet",
+                    mapOf("ident" to ident, "skjermet" to skjermet)
+                )
+                    .map { row ->
+                        mapSaksbehandler(row)
+                    }.asSingle
+            )
+        }
+        return saksbehandler
+    }
+
+     fun finnSaksbehandlerMedIdentIkkeTaHensyn(ident: String): Saksbehandler? {
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -172,23 +199,45 @@ class SaksbehandlerRepository(
         }
         return saksbehandler
     }
-
-    fun slettSaksbehandler(epost: String) {
+    
+    @KtorExperimentalAPI
+    suspend fun slettSaksbehandler(epost: String) {
+        val skjermet = pepClient.harTilgangTilKode6()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 tx.run(
                     queryOf(
                         """
                             delete from saksbehandler 
-                            where lower(epost) = lower(:epost)""",
-                        mapOf("epost" to epost.toLowerCase())
+                            where lower(epost) = lower(:epost) and skjermet = :skjermet""",
+                        mapOf("epost" to epost.toLowerCase(), "skjermet" to skjermet)
                     ).asUpdate
                 )
             }
         }
     }
 
-    fun hentAlleSaksbehandlere(): List<Saksbehandler> {
+    @KtorExperimentalAPI
+    suspend fun hentAlleSaksbehandlere(): List<Saksbehandler> {
+        val skjermet = pepClient.harTilgangTilKode6()
+        val identer = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select * from saksbehandler where skjermet = :skjermet",
+                    mapOf("skjermet" to skjermet)
+                )
+                    .map { row ->
+                        mapSaksbehandler(row)
+                    }.asList
+            )
+        }
+        log.info("Henter " + identer.size + " saksbehandlere")
+
+        return identer
+    }
+
+    @KtorExperimentalAPI
+    suspend fun hentAlleSaksbehandlereIkkeTaHensyn(): List<Saksbehandler> {
         val identer = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(

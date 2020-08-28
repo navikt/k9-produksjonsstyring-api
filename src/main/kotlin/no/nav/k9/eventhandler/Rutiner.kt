@@ -1,5 +1,6 @@
 package no.nav.k9.eventhandler
 
+import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -8,6 +9,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.integrasjon.abac.IPepClient
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
@@ -31,15 +33,18 @@ fun CoroutineScope.køOppdatertProsessor(
 fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
-    reservasjonRepository: ReservasjonRepository
+    reservasjonRepository: ReservasjonRepository,
+    pepClient: IPepClient
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     oppdatereKøerMedOppgave(
         channel = channel,
         oppgaveKøRepository = oppgaveKøRepository,
-        reservasjonRepository = reservasjonRepository
+        reservasjonRepository = reservasjonRepository,
+        pepClient = pepClient
     )
 }
 
+@KtorExperimentalAPI
 suspend fun oppdatereKø(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
@@ -59,22 +64,26 @@ suspend fun oppdatereKø(
                 val oppgavekøModifisert = oppgaveKøRepository.hentOppgavekø(it)
                 oppgavekøModifisert.oppgaverOgDatoer.clear()
                 for (oppgave in aktiveOppgaver) {
-                    oppgavekøModifisert.leggOppgaveTilEllerFjernFraKø(
-                        oppgave = oppgave,
-                        reservasjonRepository = reservasjonRepository
-                    )
+                    if (oppgavekøModifisert.kode6 == oppgave.kode6) {
+                        oppgavekøModifisert.leggOppgaveTilEllerFjernFraKø(
+                            oppgave = oppgave,
+                            reservasjonRepository = reservasjonRepository
+                        )
+                    }
                 }
 
-                oppgaveKøRepository.lagre(it) { oppgaveKø ->
+                oppgaveKøRepository.lagreIkkeTaHensyn(it) { oppgaveKø ->
                     if (oppgaveKø!! == oppgavekøGammel) {
                         oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
                     } else {
                         oppgaveKø.oppgaverOgDatoer.clear()
                         for (oppgave in aktiveOppgaver) {
-                            oppgaveKø.leggOppgaveTilEllerFjernFraKø(
-                                oppgave = oppgave,
-                                reservasjonRepository = reservasjonRepository
-                            )
+                            if (oppgavekøModifisert.kode6 == oppgave.kode6) {
+                                oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                                    oppgave = oppgave,
+                                    reservasjonRepository = reservasjonRepository
+                                )
+                            }
                         }
                     }
 
@@ -99,10 +108,12 @@ private fun hentAlleElementerIkøSomSet(
     return set
 }
 
+@KtorExperimentalAPI
 suspend fun oppdatereKøerMedOppgave(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
-    reservasjonRepository: ReservasjonRepository
+    reservasjonRepository: ReservasjonRepository,
+    pepClient: IPepClient
 ) {
     val log = LoggerFactory.getLogger("behandleOppgave")
 
@@ -112,19 +123,21 @@ suspend fun oppdatereKøerMedOppgave(
         val oppgave = channel.poll()
         if (oppgave == null) {
             val measureTimeMillis = measureTimeMillis {
-                for (oppgavekø in oppgaveKøRepository.hent()) {
+                for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
                     var refresh = false
                     for (o in oppgaveListe) {
                         refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
                     }
-                    oppgaveKøRepository.lagre(
+                    oppgaveKøRepository.lagreIkkeTaHensyn(
                         oppgavekø.id,
                         refresh = refresh
                     ) {
                         for (o in oppgaveListe) {
-                            val endring = it!!.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
-                            if (it.tilhørerOppgaveTilKø(o, reservasjonRepository, false)) {
-                                it.nyeOgFerdigstilteOppgaver(o).leggTilNy(o.eksternId.toString())
+                            if (o.kode6 == oppgavekø.kode6) {
+                                val endring = it!!.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
+                                if (it.tilhørerOppgaveTilKø(o, reservasjonRepository, false)) {
+                                    it.nyeOgFerdigstilteOppgaver(o).leggTilNy(o.eksternId.toString())
+                                }
                             }
                         }
                         it!!

@@ -5,8 +5,8 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
 import com.google.gson.GsonBuilder
-import io.ktor.http.HttpHeaders
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.http.*
+import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.helse.dusseldorf.ktor.core.Retry
@@ -34,7 +34,7 @@ class PepClient @KtorExperimentalAPI constructor(
     private val azureGraphService: IAzureGraphService,
     private val auditlogger: Auditlogger,
     private val config: Configuration
-) :  IPepClient {
+) : IPepClient {
     @KtorExperimentalAPI
     private val url = config.abacEndpointUrl
     private val log: Logger = LoggerFactory.getLogger(PepClient::class.java)
@@ -63,6 +63,21 @@ class PepClient @KtorExperimentalAPI constructor(
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+
+        val decision = evaluate(requestBuilder)
+        return decision
+    }
+
+    @KtorExperimentalAPI
+    override suspend fun kanLeggeUtDriftsmelding(): Boolean {
+
+        val requestBuilder = XacmlRequestBuilder()
+                .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+                .addResourceAttribute(RESOURCE_TYPE, DRIFTSMELDING)
+                .addActionAttribute(ACTION_ID, "create")
+                .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+                .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
+                .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
         val decision = evaluate(requestBuilder)
         return decision
@@ -125,12 +140,23 @@ class PepClient @KtorExperimentalAPI constructor(
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
 
-        val decision = evaluate(requestBuilder)
-        return decision
+        return evaluate(requestBuilder)
+    }
+
+    @KtorExperimentalAPI
+    override suspend fun harTilgangTilKode6(): Boolean {
+        return azureGraphService.hentIdentTilInnloggetBruker() == "Z994034" || azureGraphService.hentIdentTilInnloggetBruker() == "Z994168"
+//        val requestBuilder = XacmlRequestBuilder()
+//            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+//            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
+//            .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
+//            .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
+//            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+//
+//        val decision = evaluate(requestBuilder)
+//        return decision
     }
     
-
-
     @KtorExperimentalAPI
     override suspend fun kanSendeSakTilStatistikk(
         fagsakNummer: String
@@ -144,9 +170,21 @@ class PepClient @KtorExperimentalAPI constructor(
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
             .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
 
-        val decision = evaluate(requestBuilder)
+        return evaluate(requestBuilder)
+    }
 
-        return decision
+    @KtorExperimentalAPI
+    override suspend fun erSakKode6(fagsakNummer: String): Boolean {
+       return false
+//        val requestBuilder = XacmlRequestBuilder()
+//            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+//            .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK_KODE6)
+//            .addAccessSubjectAttribute(SUBJECT_TYPE, NONE)
+//            .addAccessSubjectAttribute(SUBJECTID, NONE)
+//            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+//            .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
+//
+//        return evaluate(requestBuilder)
     }
 
     @KtorExperimentalAPI
@@ -183,15 +221,17 @@ class PepClient @KtorExperimentalAPI constructor(
                         { success -> success },
                         { error ->
                             log.error(
-                                "Error response = '${error.response.body()
-                                    .asString("text/plain")}' fra '${request.url}'"
+                                "Error response = '${
+                                    error.response.body()
+                                        .asString("text/plain")
+                                }' fra '${request.url}'"
                             )
                             log.error(error.toString())
                             throw IllegalStateException("Feil ved evaluering av abac.")
                         }
                     )
                 }
-                // log.info("abac result: $json \n\n $xacmlJson\n\n" + httpRequest.toString())
+              //  log.info("abac result: $json \n\n $xacmlJson\n\n" + httpRequest.toString())
                 try {
                     objectMapper().readValue<Response>(json).response[0].decision == "Permit"
                 } catch (e: Exception) {

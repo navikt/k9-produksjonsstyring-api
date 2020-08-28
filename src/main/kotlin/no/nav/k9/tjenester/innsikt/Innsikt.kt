@@ -1,21 +1,23 @@
 package no.nav.k9.tjenester.innsikt
 
-import io.ktor.application.call
-import io.ktor.html.respondHtml
-import io.ktor.http.HttpHeaders
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.get
-import io.ktor.response.header
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.application.*
+import io.ktor.html.*
+import io.ktor.http.*
+import io.ktor.locations.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.util.*
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import kotlinx.html.*
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.domene.repository.*
+import no.nav.k9.utils.Cache
+import no.nav.k9.utils.CacheObject
 import org.koin.ktor.ext.inject
+import java.time.LocalDateTime
+import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.Semaphore
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -24,7 +26,8 @@ fun Route.innsiktGrensesnitt() {
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
     val behandlingProsessEventRepository by inject<BehandlingProsessEventRepository>()
-    
+    val reservasjonRepository by inject<ReservasjonRepository>()
+
     @Location("/")
     class main
 
@@ -81,6 +84,40 @@ fun Route.innsiktGrensesnitt() {
             behandlingProsessEventRepository.mapMellomeksternIdOgBehandlingsid()
         call.respond(mapMellomeksternIdOgBehandlingsid)
     }
+    val cache = Cache<List<MappingEnhet>>(1)
+    val semaphore = Semaphore(1)
+
+    @Location("/mappingEnhet")
+    class mappingEnhet
+    get { _: mappingEnhet ->
+        call.response.header(
+            HttpHeaders.ContentDisposition,
+            "attachment; filename=\"mapping_enhet_externid.json\""
+        )
+        if (cache.get("default") != null) {
+            call.respond(cache.get("default")!!.value)
+        } else {
+            if (semaphore.tryAcquire()) {
+                launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+                    val list = mutableListOf<MappingEnhet>()
+                    for (s in behandlingProsessEventRepository.hentAlleEventerIder()) {
+                        val enhet = if (reservasjonRepository.finnes(UUID.fromString(s))) {
+                            val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(UUID.fromString(s))
+                            val reservertav = hentMedHistorikk
+                                .map { reservasjon -> reservasjon.reservertAv }.first()
+                            saksbehandlerRepository.finnSaksbehandlerMedIdentIkkeTaHensyn(reservertav)?.enhet?.substringBefore(" ")
+                        } else {
+                            null
+                        }
+                        list.add(MappingEnhet(s, enhet))
+                    }
+                    cache.set("default", CacheObject(list, LocalDateTime.now().plusDays(2)))
+                    semaphore.release()
+                }
+            }
+            call.respond("Bygger mapping")
+        }
+    }
 
     @Location("/overflow")
     class overflow
@@ -92,7 +129,7 @@ fun Route.innsiktGrensesnitt() {
 
 
         mutableSet
-            .removeAll(oppgaveKøRepository.hent().flatMap { it.oppgaverOgDatoer }.map { it.id }.toSet())
+            .removeAll(oppgaveKøRepository.hentIkkeTaHensyn().flatMap { it.oppgaverOgDatoer }.map { it.id }.toSet())
         mutableSet.removeAll(saksbehandlerRepository.hentAlleSaksbehandlere().flatMap { it.reservasjoner })
 
         val oppgaver = oppgaveRepository.hentOppgaver(mutableSet)

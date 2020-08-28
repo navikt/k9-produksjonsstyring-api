@@ -18,6 +18,7 @@ import no.nav.k9.tjenester.saksbehandler.saksliste.SorteringDto
 import java.time.LocalDate
 import java.util.*
 
+@KtorExperimentalAPI
 class AvdelingslederTjeneste(
     private val oppgaveKøRepository: OppgaveKøRepository,
     private val saksbehandlerRepository: SaksbehandlerRepository,
@@ -27,7 +28,11 @@ class AvdelingslederTjeneste(
     private val pepClient: IPepClient,
     private val configuration: Configuration
 ) {
+    @KtorExperimentalAPI
     suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
+        if (!erOppgaveStyrer()) {
+            return emptyList()
+        }
         return oppgaveKøRepository.hent().map {
             OppgavekøDto(
                 id = it.id,
@@ -48,7 +53,15 @@ class AvdelingslederTjeneste(
         }.sortedBy { it.navn }
     }
 
+    @KtorExperimentalAPI
+    private suspend fun erOppgaveStyrer() = (pepClient.erOppgaveStyrer() || pepClient.harTilgangTilKode6())
+
+    @KtorExperimentalAPI
     suspend fun opprettOppgaveKø(): IdDto {
+        if (!erOppgaveStyrer()) {
+            return IdDto(UUID.randomUUID().toString())
+        }
+
         val uuid = UUID.randomUUID()
         oppgaveKøRepository.lagre(uuid) {
             OppgaveKø(
@@ -69,11 +82,15 @@ class AvdelingslederTjeneste(
         return IdDto(uuid.toString())
     }
 
-    fun slettOppgavekø(uuid: UUID) {
+    @KtorExperimentalAPI
+    suspend fun slettOppgavekø(uuid: UUID) {
+        if (!erOppgaveStyrer()) {
+            return 
+        }
         oppgaveKøRepository.slett(uuid)
     }
 
-    fun søkSaksbehandler(epostDto: EpostDto): Saksbehandler {
+    suspend fun søkSaksbehandler(epostDto: EpostDto): Saksbehandler {
         var saksbehandler = saksbehandlerRepository.finnSaksbehandlerMedEpost(epostDto.epost)
         if (saksbehandler == null) {
             saksbehandler = Saksbehandler(
@@ -84,19 +101,20 @@ class AvdelingslederTjeneste(
         return saksbehandler
     }
 
+    @KtorExperimentalAPI
     suspend fun fjernSaksbehandler(epost: String) {
         saksbehandlerRepository.slettSaksbehandler(epost)
         oppgaveKøRepository.hent().forEach { t: OppgaveKø ->
             oppgaveKøRepository.lagre(t.id) { oppgaveKø ->
                 oppgaveKø!!.saksbehandlere =
-                    oppgaveKø.saksbehandlere.filter { saksbehandlerRepository.finnSaksbehandlerMedEpost(it.epost) != null }
+                    oppgaveKø.saksbehandlere.filter { it.epost != epost }
                         .toMutableList()
                 oppgaveKø
             }
         }
     }
 
-    fun hentSaksbehandlere(): List<Saksbehandler> {
+    suspend fun hentSaksbehandlere(): List<Saksbehandler> {
         return saksbehandlerRepository.hentAlleSaksbehandlere()
     }
 
@@ -214,10 +232,12 @@ class AvdelingslederTjeneste(
                     continue
                 }
                 val reservasjon = reservasjonRepository.hent(uuid)
-                if (reservasjon.reservertTil == null) { continue }
+                if (reservasjon.reservertTil == null) {
+                    continue
+                }
                 list.add(
                     ReservasjonDto(
-                        reservertAvUid = saksbehandler.brukerIdent?:"",
+                        reservertAvUid = saksbehandler.brukerIdent ?: "",
                         reservertAvNavn = saksbehandler.navn ?: "",
                         reservertTilTidspunkt = reservasjon.reservertTil!!,
                         oppgaveId = reservasjon.oppgave,
@@ -235,10 +255,10 @@ class AvdelingslederTjeneste(
     suspend fun opphevReservasjon(uuid: UUID): Reservasjon {
         val reservasjon = reservasjonRepository.lagre(uuid, true) {
             it!!.begrunnelse = "Opphevet av en avdelingsleder"
-            saksbehandlerRepository.fjernReservasjon(it.reservertAv, it.oppgave)
             it.reservertTil = null
             it
         }
+         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
         for (oppgaveKø in oppgaveKøRepository.hent()) {
             oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
