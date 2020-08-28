@@ -374,22 +374,22 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return statistikkRepository.hentBehandlinger(coroutineContext.idToken().getUsername())
     }
 
-    fun flyttReservasjonTilForrigeSakbehandler(uuid: UUID) {
+    suspend fun flyttReservasjonTilForrigeSakbehandler(uuid: UUID) {
         val reservasjoner = reservasjonRepository.hentMedHistorikk(uuid).reversed()
         for (reservasjon in reservasjoner) {
             if (reservasjoner[0].reservertAv != reservasjon.reservertAv) {
-                reservasjonRepository.lagre(uuid, true) {
-                    runBlocking { saksbehandlerRepository.fjernReservasjon(it!!.reservertAv, reservasjon.oppgave) }
+              reservasjonRepository.lagre(uuid, true) {
+
                     it!!.reservertAv = reservasjon.reservertAv
-                    runBlocking {
-                        saksbehandlerRepository.leggTilReservasjon(
-                            reservasjon.reservertAv,
-                            reservasjon.oppgave
-                        )
-                    }
                     it.reservertTil = LocalDateTime.now().plusDays(3).forskyvReservasjonsDato()
                     it
                 }
+
+                    saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
+                    saksbehandlerRepository.leggTilReservasjon(
+                        reservasjon.reservertAv,
+                        reservasjon.oppgave
+                    )
                 return
             }
         }
