@@ -1,7 +1,6 @@
 package no.nav.k9.tjenester.avdelingsleder
 
 import io.ktor.util.*
-import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Reservasjon
@@ -256,10 +255,10 @@ class AvdelingslederTjeneste(
     suspend fun opphevReservasjon(uuid: UUID): Reservasjon {
         val reservasjon = reservasjonRepository.lagre(uuid, true) {
             it!!.begrunnelse = "Opphevet av en avdelingsleder"
-           runBlocking {  saksbehandlerRepository.fjernReservasjon(it.reservertAv, it.oppgave)}
             it.reservertTil = null
             it
         }
+         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
         for (oppgaveKø in oppgaveKøRepository.hent()) {
             oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {

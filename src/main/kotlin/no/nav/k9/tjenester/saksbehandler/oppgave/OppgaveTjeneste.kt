@@ -288,7 +288,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverBeholdningHistorikk> {
         val ytelsetype =
-            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(28-1)
+            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(28 - 1)
         val ret = mutableListOf<AlleOppgaverBeholdningHistorikk>()
         for (ytelseTypeEntry in ytelsetype.groupBy { it.fagsakYtelseType }) {
             val perBehandlingstype = ytelseTypeEntry.value.groupBy { it.behandlingType }
@@ -357,13 +357,14 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             return reservasjonRepository.hent(uuid)
         }
         val hentIdentTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
+        val reservasjon = reservasjonRepository.hent(uuid)
+        saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
+        saksbehandlerRepository.leggTilReservasjon(ident, reservasjon.oppgave)
         return reservasjonRepository.lagre(uuid, true) {
             it!!.reservertTil = it.reservertTil?.plusHours(24)!!.forskyvReservasjonsDato()
             it.flyttetTidspunkt = LocalDateTime.now()
-            runBlocking { saksbehandlerRepository.fjernReservasjon(it.reservertAv, it.oppgave) }
             it.reservertAv = ident
             it.flyttetAv = hentIdentTilInnloggetBruker
-            runBlocking { saksbehandlerRepository.leggTilReservasjon(ident, it.oppgave) }
             it.begrunnelse = begrunnelse
             it
         }
