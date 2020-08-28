@@ -14,6 +14,7 @@ import no.nav.k9.KoinProfile
 import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.tjenester.saksbehandler.idToken
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import no.nav.k9.tjenester.saksbehandler.oppgave.SokeResultatDto
 import org.koin.ktor.ext.inject
 
 @KtorExperimentalAPI
@@ -28,7 +29,7 @@ internal fun Route.FagsakApis() {
     post { _: søkFagsaker ->
         val søk = call.receive<QueryString>()
         if (KoinProfile.LOCAL == configuration.koinProfile()) {
-            call.respond(emptyList<FagsakDto>())
+            call.respond(SokeResultatDto(true, mutableListOf()))
         } else {
             val idToken = call.idToken()
             withContext(
