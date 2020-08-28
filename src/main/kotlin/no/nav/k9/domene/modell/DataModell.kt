@@ -258,7 +258,7 @@ data class Modell(
                 val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(oppgave.eksternId)
                 val reservertav = hentMedHistorikk
                     .map { reservasjon -> reservasjon.reservertAv }.first()
-                saksbehandlerRepository.finnSaksbehandlerMedIdent(reservertav)?.enhet?.substringBefore(" ")
+                saksbehandlerRepository.finnSaksbehandlerMedIdentIkkeTaHensyn(reservertav)?.enhet?.substringBefore(" ")
             } else {
                 null
             }

@@ -185,7 +185,7 @@ class SaksbehandlerRepository(
         return saksbehandler
     }
 
-     fun finnSaksbehandlerMedIdentIkkeSkjermet(ident: String): Saksbehandler? {
+     fun finnSaksbehandlerMedIdentIkkeTaHensyn(ident: String): Saksbehandler? {
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
