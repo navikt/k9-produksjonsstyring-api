@@ -54,7 +54,6 @@ internal fun Route.OppgaveApis() {
     class getBehandledeOppgaver
 
     get { _: getBehandledeOppgaver ->
-
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
@@ -93,11 +92,22 @@ internal fun Route.OppgaveApis() {
     class hentAntallOppgaverForOppgavekø
 
     get { _: hentAntallOppgaverForOppgavekø ->
-        var uuid = call.request.queryParameters["id"]
-        if (uuid.isNullOrBlank()) {
-            uuid = UUID.randomUUID().toString()
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            var uuid = call.request.queryParameters["id"]
+            if (uuid.isNullOrBlank()) {
+                uuid = UUID.randomUUID().toString()
+            }
+            call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid)!!))
         }
-        call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid)!!))
     }
 
     @Location("/reserver")
@@ -127,8 +137,19 @@ internal fun Route.OppgaveApis() {
     @Location("/opphev")
     class opphevReservasjon
     post { _: opphevReservasjon ->
-        val params = call.receive<OpphevReservasjonId>()
-        call.respond(oppgaveTjeneste.frigiReservasjon(UUID.fromString(params.oppgaveId), params.begrunnelse))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            val params = call.receive<OpphevReservasjonId>()
+            call.respond(oppgaveTjeneste.frigiReservasjon(UUID.fromString(params.oppgaveId), params.begrunnelse))
+        }
     }
 
     @Location("/legg-til-behandlet-sak")
@@ -159,10 +180,20 @@ internal fun Route.OppgaveApis() {
 
     @Location("/forleng")
     class forlengReservasjon
-
     post { _: forlengReservasjon ->
-        val oppgaveId = call.receive<OppgaveId>()
-        call.respond(oppgaveTjeneste.forlengReservasjonPåOppgave(UUID.fromString(oppgaveId.oppgaveId)))
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            val oppgaveId = call.receive<OppgaveId>()
+            call.respond(oppgaveTjeneste.forlengReservasjonPåOppgave(UUID.fromString(oppgaveId.oppgaveId)))
+        }
     }
 
     @Location("/flytt")
@@ -195,30 +226,63 @@ internal fun Route.OppgaveApis() {
     class endreReservasjon
 
     post { _: endreReservasjon ->
-        val params = call.receive<ReservasjonEndringDto>()
-        call.respond(
-            oppgaveTjeneste.endreReservasjonPåOppgave(params)
-        )
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            val params = call.receive<ReservasjonEndringDto>()
+            call.respond(
+                oppgaveTjeneste.endreReservasjonPåOppgave(params)
+            )
+        }
     }
 
     @Location("/flytt-til-forrige-saksbehandler")
     class flyttReservasjonTilForrigeSaksbehandler
 
     post { _: flyttReservasjonTilForrigeSaksbehandler ->
-        val params = call.receive<OppgaveId>()
-        call.respond(
-            oppgaveTjeneste.flyttReservasjonTilForrigeSakbehandler(UUID.fromString(params.oppgaveId))
-        )
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            val params = call.receive<OppgaveId>()
+            call.respond(
+                oppgaveTjeneste.flyttReservasjonTilForrigeSakbehandler(UUID.fromString(params.oppgaveId))
+            )
+        }
     }
 
     @Location("/hent-historiske-reservasjoner-på-oppgave")
     class hentHistoriskeReservasjonerPåOppgave
 
     post { _: flyttReservasjonTilForrigeSaksbehandler ->
-        val params = call.receive<OppgaveId>()
-        call.respond(
-            oppgaveTjeneste.hentReservasjonsHistorikk(UUID.fromString(params.oppgaveId))
-        )
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            val params = call.receive<OppgaveId>()
+            call.respond(
+                oppgaveTjeneste.hentReservasjonsHistorikk(UUID.fromString(params.oppgaveId))
+            )
+        }
     }
 
     @Location("/flytt/sok")
@@ -226,12 +290,22 @@ internal fun Route.OppgaveApis() {
 
     post { _: søkSaksbehandler ->
         val params = call.receive<BrukerIdentDto>()
-
-        val sokSaksbehandlerMedIdent = oppgaveTjeneste.sokSaksbehandler(params.brukerIdent)
-        if (sokSaksbehandlerMedIdent == null) {
-            call.respond("")
-        } else {
-            call.respond(sokSaksbehandlerMedIdent)
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            val sokSaksbehandlerMedIdent = oppgaveTjeneste.sokSaksbehandler(params.brukerIdent)
+            if (sokSaksbehandlerMedIdent == null) {
+                call.respond("")
+            } else {
+                call.respond(sokSaksbehandlerMedIdent)
+            }
         }
     }
 
