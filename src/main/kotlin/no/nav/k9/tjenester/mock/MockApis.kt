@@ -274,7 +274,7 @@ fun Route.MockGrensesnitt() {
                             runBlocking {
                                 if (valgtKø == "reserverte") {
                                     oppgaveRepository
-                                        .hentOppgaver(
+                                        .hentOppgaverIkkeTaHensyn(
                                             saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn() .flatMap { it.reservasjoner })
                                 } else {
                                     oppgaveRepository

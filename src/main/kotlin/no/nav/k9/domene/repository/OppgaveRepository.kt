@@ -119,8 +119,7 @@ class OppgaveRepository(
 
     @KtorExperimentalAPI
     suspend fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
-        var harTilgangTilSkjermet = false
-        harTilgangTilSkjermet = pepClient.harTilgangTilKode6()
+        var harTilgangTilSkjermet = pepClient.harTilgangTilKode6()
 
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
@@ -158,6 +157,44 @@ class OppgaveRepository(
         return list
     }
 
+    @KtorExperimentalAPI
+    fun hentOppgaverIkkeTaHensyn(oppgaveider: Collection<UUID>): List<Oppgave> {
+      
+        val oppgaveiderList = oppgaveider.toList()
+        if (oppgaveider.isEmpty()) {
+            return emptyList()
+        }
+
+        var spørring = System.currentTimeMillis()
+        val session = sessionOf(dataSource)
+        val json: List<String> = using(session) {
+          
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select data from oppgave " +
+                            "where id in (${
+                                IntRange(0, oppgaveiderList.size - 1).map { t -> ":p$t" }.joinToString()
+                            })",
+                    IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() as Any }
+                        .toMap()
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        val serialisering = System.currentTimeMillis()
+        val list =
+            json.filter { it.indexOf("oppgaver") == -1 }.map { s -> objectMapper().readValue(s, Oppgave::class.java) }
+                .toList()
+                .sortedBy { oppgave -> oppgave.behandlingOpprettet }
+
+        log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
+        return list
+    }
+    
     fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
         try {
             val json = using(sessionOf(dataSource)) {
