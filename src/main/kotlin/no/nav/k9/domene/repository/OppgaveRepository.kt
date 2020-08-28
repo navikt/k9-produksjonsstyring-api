@@ -120,8 +120,8 @@ class OppgaveRepository(
     @KtorExperimentalAPI
     suspend fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
         var harTilgangTilSkjermet = false
-            harTilgangTilSkjermet =  pepClient.harTilgangTilKode6()
-        
+        harTilgangTilSkjermet = pepClient.harTilgangTilKode6()
+
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
             return emptyList()
@@ -222,13 +222,14 @@ class OppgaveRepository(
         return json.map { objectMapper().readValue(it, Oppgave::class.java) }
     }
 
-    internal fun hentAktiveOppgaverTotalt(): Int {
+    suspend internal fun hentAktiveOppgaverTotalt(): Int {
+       val kode6 =  pepClient.harTilgangTilKode6()
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean",
-                    mapOf()
+                    "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean and skjermet =:skjermet",
+                    mapOf("skjermet" to kode6)
                 )
                     .map { row ->
                         row.int("count")

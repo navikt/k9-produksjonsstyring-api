@@ -428,7 +428,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return oppgavekø.oppgaverOgDatoer.size + reserverteOppgaverSomHørerTilKø
     }
 
-    fun hentAntallOppgaverTotalt(): Int {
+    suspend fun hentAntallOppgaverTotalt(): Int {
         return oppgaveRepository.hentAktiveOppgaverTotalt()
     }
 
