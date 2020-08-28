@@ -77,9 +77,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     val oppgave = oppgaveRepository.hent(uuid)
                     throw IllegalArgumentException("Oppgaven er allerede reservert $uuid ${oppgave.fagsakSaksnummer}, $ident prøvde å reservere saken")
                 }
-                runBlocking { saksbehandlerRepository.leggTilReservasjon(reservasjon.reservertAv, reservasjon.oppgave) }
                 reservasjon
             }
+            saksbehandlerRepository.leggTilReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
             val oppgave = oppgaveRepository.hent(uuid)
             for (oppgaveKø in oppgaveKøRepository.hent()) {
                 oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
@@ -378,18 +378,18 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         val reservasjoner = reservasjonRepository.hentMedHistorikk(uuid).reversed()
         for (reservasjon in reservasjoner) {
             if (reservasjoner[0].reservertAv != reservasjon.reservertAv) {
-              reservasjonRepository.lagre(uuid, true) {
+                reservasjonRepository.lagre(uuid, true) {
 
                     it!!.reservertAv = reservasjon.reservertAv
                     it.reservertTil = LocalDateTime.now().plusDays(3).forskyvReservasjonsDato()
                     it
                 }
 
-                    saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
-                    saksbehandlerRepository.leggTilReservasjon(
-                        reservasjon.reservertAv,
-                        reservasjon.oppgave
-                    )
+                saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
+                saksbehandlerRepository.leggTilReservasjon(
+                    reservasjon.reservertAv,
+                    reservasjon.oppgave
+                )
                 return
             }
         }
