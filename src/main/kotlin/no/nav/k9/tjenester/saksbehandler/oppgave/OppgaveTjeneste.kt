@@ -128,11 +128,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             if (aktørId != null && aktørId.data.hentIdenter != null && aktørId.data.hentIdenter!!.identer.isNotEmpty()) {
                 var aktorId = aktørId.data.hentIdenter!!.identer[0].ident
                 val person = pdlService.person(aktorId)
+                var skjermet = false
                 if (person != null) {
                     if (!(configuration.koinProfile() == KoinProfile.PROD)) {
                         aktorId = "1172507325105"
                     }
-                    var skjermet = false
                     val result = oppgaveRepository.hentOppgaverMedAktorId(aktorId).filter {
                         if (!pepClient.harTilgangTilLesSak(
                                 fagsakNummer = it.fagsakSaksnummer,
