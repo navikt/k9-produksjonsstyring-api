@@ -2,7 +2,6 @@ package no.nav.k9.domene.repository
 
 import io.ktor.util.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.sendBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -12,7 +11,6 @@ import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.tjenester.sse.Melding
 import no.nav.k9.tjenester.sse.SseEvent
-import org.koin.core.time.measureDuration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -77,46 +75,43 @@ class OppgaveKøRepository(
         f: (OppgaveKø?) -> OppgaveKø
     ) {
         val kode6 = pepClient.harTilgangTilKode6()
-        val measureDuration = measureDuration {
-            using(sessionOf(dataSource)) {
-                it.transaction { tx ->
-                    val run = tx.run(
-                        queryOf(
-                            "select data from oppgaveko where id = :id and skjermet = :skjermet for update",
-                            mapOf("id" to uuid.toString(), "skjermet" to kode6)
-                        )
-                            .map { row ->
-                                row.string("data")
-                            }.asSingle
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                val run = tx.run(
+                    queryOf(
+                        "select data from oppgaveko where id = :id and skjermet = :skjermet for update",
+                        mapOf("id" to uuid.toString(), "skjermet" to kode6)
                     )
-                    val forrigeOppgavekø: OppgaveKø?
-                    var oppgaveKø = if (!run.isNullOrEmpty()) {
-                        forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
-                        f(forrigeOppgavekø)
-                    } else {
-                        f(null)
-                    }
-                    oppgaveKø = oppgaveKø.copy(kode6 = kode6)
-                    //Sorter oppgaver
-                    if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
-                        oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
-                    }
-                    val json = objectMapper().writeValueAsString(oppgaveKø)
-                    tx.run(
-                        queryOf(
-                            """
+                        .map { row ->
+                            row.string("data")
+                        }.asSingle
+                )
+                val forrigeOppgavekø: OppgaveKø?
+                var oppgaveKø = if (!run.isNullOrEmpty()) {
+                    forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
+                    f(forrigeOppgavekø)
+                } else {
+                    f(null)
+                }
+                oppgaveKø = oppgaveKø.copy(kode6 = kode6)
+                //Sorter oppgaver
+                if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
+                    oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
+                }
+                val json = objectMapper().writeValueAsString(oppgaveKø)
+                tx.run(
+                    queryOf(
+                        """
                         insert into oppgaveko as k (id, data, skjermet)
                         values (:id, :data :: jsonb, :skjermet)
                         on conflict (id) do update
                         set data = :data :: jsonb, skjermet = :skjermet
                      """, mapOf("id" to uuid.toString(), "data" to json, "skjermet" to kode6)
-                        ).asUpdate
-                    )
+                    ).asUpdate
+                )
 
-                }
             }
         }
-        log.info("tok $measureDuration ms å lagre kø ")
         if (refresh) {
             refreshKlienter.send(
                 SseEvent(
@@ -203,8 +198,8 @@ class OppgaveKøRepository(
         }
     }
 
-    fun oppdaterKøMedOppgaver(uuid: UUID) {
-        oppgaveKøOppdatert.sendBlocking(uuid)
+    suspend fun oppdaterKøMedOppgaver(uuid: UUID) {
+        oppgaveKøOppdatert.send(uuid)
     }
 
 }
