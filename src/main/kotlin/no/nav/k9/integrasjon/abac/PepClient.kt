@@ -231,7 +231,7 @@ class PepClient @KtorExperimentalAPI constructor(
                         }
                     )
                 }
-                log.info("abac result: $json \n\n $xacmlJson\n\n" + httpRequest.toString())
+              //  log.info("abac result: $json \n\n $xacmlJson\n\n" + httpRequest.toString())
                 try {
                     objectMapper().readValue<Response>(json).response[0].decision == "Permit"
                 } catch (e: Exception) {
