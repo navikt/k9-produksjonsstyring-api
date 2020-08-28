@@ -229,7 +229,7 @@ fun Route.MockGrensesnitt() {
             )
         }
 
-        val oppgavekøer = oppgaveKøRepository.hent()
+        val oppgavekøer = oppgaveKøRepository.hentIkkeTaHensyn()
 
         call.respondHtml {
             head {
@@ -275,7 +275,7 @@ fun Route.MockGrensesnitt() {
                                 if (valgtKø == "reserverte") {
                                     oppgaveRepository
                                         .hentOppgaver(
-                                            saksbehandlerRepository.hentAlleSaksbehandlere() .flatMap { it.reservasjoner })
+                                            saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn() .flatMap { it.reservasjoner })
                                 } else {
                                     oppgaveRepository
                                         .hentOppgaver(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }

@@ -236,6 +236,24 @@ class SaksbehandlerRepository(
         return identer
     }
 
+    @KtorExperimentalAPI
+    suspend fun hentAlleSaksbehandlereIkkeTaHensyn(): List<Saksbehandler> {
+        val identer = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select * from saksbehandler",
+                    mapOf()
+                )
+                    .map { row ->
+                        mapSaksbehandler(row)
+                    }.asList
+            )
+        }
+        log.info("Henter " + identer.size + " saksbehandlere")
+
+        return identer
+    }
+
     private fun mapSaksbehandler(row: Row): Saksbehandler {
         val data = row.stringOrNull("data")
         return if (data == null) {
