@@ -317,10 +317,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun frigiReservasjon(uuid: UUID, begrunnelse: String): Reservasjon {
         val reservasjon = reservasjonRepository.lagre(uuid, true) {
             it!!.begrunnelse = begrunnelse
-            runBlocking { saksbehandlerRepository.fjernReservasjon(it.reservertAv, it.oppgave) }
             it.reservertTil = null
             it
         }
+        saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
         for (oppgaveKø in oppgaveKøRepository.hent()) {
             oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
