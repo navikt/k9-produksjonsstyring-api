@@ -108,7 +108,7 @@ class AvdelingslederTjeneste(
         oppgaveKøRepository.hent().forEach { t: OppgaveKø ->
             oppgaveKøRepository.lagre(t.id) { oppgaveKø ->
                 oppgaveKø!!.saksbehandlere =
-                    oppgaveKø.saksbehandlere.filter { runBlocking { saksbehandlerRepository.finnSaksbehandlerMedEpost(it.epost) != null } }
+                    oppgaveKø.saksbehandlere.filter { it.epost != epost }
                         .toMutableList()
                 oppgaveKø
             }
