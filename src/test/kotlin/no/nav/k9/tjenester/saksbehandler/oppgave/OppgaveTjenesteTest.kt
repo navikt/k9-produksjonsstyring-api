@@ -199,7 +199,7 @@ class OppgaveTjenesteTest {
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository)
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave3, reservasjonRepository)
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository)
-        
+
         oppgaveKøRepository.lagre(oppgaveko.id) {
             it!!.nyeOgFerdigstilteOppgaver(oppgave1).leggTilNy(oppgave1.eksternId.toString())
             it.nyeOgFerdigstilteOppgaver(oppgave2).leggTilNy(oppgave2.eksternId.toString())
@@ -211,7 +211,7 @@ class OppgaveTjenesteTest {
         val hent = oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(oppgaveko.id.toString())
         assert(hent.size == 3)
     }
-    
+
     @KtorExperimentalAPI
     @Test
     fun testSettSkjermet() = runBlocking{
@@ -326,11 +326,11 @@ class OppgaveTjenesteTest {
         )
         coEvery { pepClient.harBasisTilgang() } returns true
         coEvery { pepClient.harTilgangTilLesSak(any(),any()) } returns true
-       
+
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
         oppgaveTjeneste.settSkjermet(oppgave1)
-        
+
         oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.isEmpty())
 
@@ -404,7 +404,7 @@ class OppgaveTjenesteTest {
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
-    
+
         coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
         every { config.koinProfile() } returns KoinProfile.LOCAL
         coEvery { pepClient.harTilgangTilLesSak(any(), any()) } returns true
@@ -422,13 +422,13 @@ class OppgaveTjenesteTest {
                 doedsfall = listOf()
             )
         ))
-        
+
         runBlocking {
             val fagsaker = oppgaveTjeneste.søkFagsaker("Yz647")
-            assert(fagsaker.isNotEmpty())
+            assert(fagsaker.fagsaker.isNotEmpty())
         }
     }
-    
+
     @Test
     fun hentReservasjonsHistorikk() = runBlocking {
         val pg = EmbeddedPostgres.start()
@@ -545,15 +545,15 @@ class OppgaveTjenesteTest {
                 )
             )
         )
-        
-        
+
+
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
         val oppgave = oppgaver.get(0)
-        
+
         saksbehandlerRepository.addSaksbehandler(Saksbehandler(brukerIdent = "123", navn= null, epost = "test@test.no", enhet = null))
         saksbehandlerRepository.addSaksbehandler(Saksbehandler(brukerIdent="ny", navn=null,epost =  "test2@test.no",enhet = null))
-        
+
         oppgaveTjeneste.reserverOppgave("123", oppgave.eksternId)
         oppgaveTjeneste.flyttReservasjon(oppgave.eksternId, "ny", "Ville ikke ha oppgaven")
         val reservasjonsHistorikk = oppgaveTjeneste.hentReservasjonsHistorikk(oppgave.eksternId)
@@ -561,5 +561,5 @@ class OppgaveTjenesteTest {
         assert(reservasjonsHistorikk.reservasjoner.size == 2)
         assert(reservasjonsHistorikk.reservasjoner[0].flyttetAv == "123")
     }
-    
+
 }

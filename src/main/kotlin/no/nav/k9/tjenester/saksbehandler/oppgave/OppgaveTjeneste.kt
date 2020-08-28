@@ -107,7 +107,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    suspend fun søkFagsaker(query: String): List<FagsakDto> {
+    suspend fun søkFagsaker(query: String): SokeResultatDto {
         if (query.length == 11) {
             var aktørId = pdlService.identifikator(query)
             if (configuration.koinProfile() != KoinProfile.PROD) {
@@ -132,13 +132,15 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     if (!(configuration.koinProfile() == KoinProfile.PROD)) {
                         aktorId = "1172507325105"
                     }
-                    return oppgaveRepository.hentOppgaverMedAktorId(aktorId).filter {
+                    var skjermet = false
+                    val result = oppgaveRepository.hentOppgaverMedAktorId(aktorId).filter {
                         if (!pepClient.harTilgangTilLesSak(
                                 fagsakNummer = it.fagsakSaksnummer,
                                 aktørid = it.aktorId
                             )
                         ) {
                             settSkjermet(it)
+                            skjermet = true
                             false
                         } else {
                             true
@@ -158,7 +160,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             it.behandlingOpprettet,
                             it.aktiv
                         )
-                    }
+                    }.toMutableList()
+                    return SokeResultatDto(skjermet, result)
                 }
             }
         }
@@ -171,7 +174,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 )
             ) {
                 settSkjermet(oppgave)
-                return emptyList()
+                return SokeResultatDto(true, mutableListOf())
             }
             val person = pdlService.person(oppgave.aktorId)!!
 
@@ -192,7 +195,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 )
             )
         }
-        return ret
+        return SokeResultatDto(false, ret)
     }
 
     @KtorExperimentalAPI

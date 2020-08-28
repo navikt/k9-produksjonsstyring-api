@@ -69,7 +69,7 @@ fun common(app: Application, config: Configuration) = module {
         Channel<UUID>(Channel.UNLIMITED)
     }
     single(named("refreshKlienter")) {
-        Channel<SseEvent>()
+        Channel<SseEvent>(Channel.UNLIMITED)
     }
     single(named("oppgaveChannel")) {
         Channel<Oppgave>(Channel.UNLIMITED)
@@ -127,9 +127,7 @@ fun common(app: Application, config: Configuration) = module {
             clients = config.clients()
         )
     }
-
-
-
+    
     single {
         StatistikkProducer(
             kafkaConfig = config.getKafkaConfig(),
