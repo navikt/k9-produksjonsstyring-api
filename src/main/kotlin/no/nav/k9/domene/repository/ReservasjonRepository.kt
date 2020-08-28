@@ -73,9 +73,9 @@ class ReservasjonRepository(
             if (!reservasjon.erAktiv()) {
                 lagre(reservasjon.oppgave) {
                     it!!.reservertTil = null
-                    runBlocking { saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)}
                     it
                 }
+                saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                 oppgaveKøRepository.hent().forEach { oppgaveKø ->
                     val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
                     if (oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, this)) {
