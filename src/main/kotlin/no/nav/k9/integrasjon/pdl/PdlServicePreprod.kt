@@ -70,7 +70,7 @@ class PdlServicePreprod @KtorExperimentalAPI constructor(
     ).toString()
 
     @KtorExperimentalAPI
-    override suspend fun person(aktorId: String): PersonPdl? {
+    override suspend fun person(aktorId: String): PersonPdlResponse {
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
             mapOf("ident" to getQ2Ident(aktorId, configuration = configuration))
@@ -121,15 +121,20 @@ class PdlServicePreprod @KtorExperimentalAPI constructor(
             return try {
                 val readValue = objectMapper().readValue<PersonPdl>(json!!)
                 cache.set(query, CacheObject(json, LocalDateTime.now().plusHours(7)))
-                return readValue
+                return PersonPdlResponse(false, readValue)
             } catch (e: Exception) {
-                log.warn(
-                    "Feilet deserialisering ved oppslag av aktorId", e.message
-                )
-                null
+                try {
+                    if (objectMapper().readValue<Error>(json!!).errors.any { it.extensions.code == "unauthorized" }){
+                        return PersonPdlResponse(true, null)
+                    }
+                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
+                } catch (e: Exception) {
+                    log.warn("", e)
+                }
+                return PersonPdlResponse(false, null)
             }
         } else {
-            return objectMapper().readValue<PersonPdl>(cachedObject.value)
+            return PersonPdlResponse(false, objectMapper().readValue<PersonPdl>(cachedObject.value))
         }
     }
 
