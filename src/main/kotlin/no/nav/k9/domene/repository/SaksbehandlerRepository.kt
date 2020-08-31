@@ -166,6 +166,7 @@ class SaksbehandlerRepository(
                     }.asSingle
             )
         }
+        log.info(saksbehandler?.enhet)
         return saksbehandler
     }
 
@@ -182,6 +183,7 @@ class SaksbehandlerRepository(
                     }.asSingle
             )
         }
+        log.info(saksbehandler?.enhet)
         return saksbehandler
     }
 
