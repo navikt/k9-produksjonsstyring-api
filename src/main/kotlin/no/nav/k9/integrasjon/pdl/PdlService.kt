@@ -118,6 +118,7 @@ class PdlService @KtorExperimentalAPI constructor(
         val query = objectMapper().writeValueAsString(
             queryRequest
         )
+        
         val cachedObject = cache.get(query)
         if (cachedObject == null) {
             val httpRequest = personUrl
