@@ -145,6 +145,7 @@ class PepClient @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     override suspend fun harTilgangTilKode6(): Boolean {
+        log.info(azureGraphService.hentEnhetForInnloggetBruker())
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
