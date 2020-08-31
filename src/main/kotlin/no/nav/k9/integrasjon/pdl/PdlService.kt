@@ -88,16 +88,16 @@ class PdlService @KtorExperimentalAPI constructor(
                     }
                 )
             }
-            return try {
+             try {
                 val readValue = objectMapper().readValue<PersonPdl>(json!!)
                 cache.set(query, CacheObject(json, LocalDateTime.now().plusHours(7)))
                 return PersonPdlResponse(false, readValue)
             } catch (e: Exception) {
                 try {
+                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
                     if (objectMapper().readValue<Error>(json!!).errors.any { it.extensions.code == "unauthorized" }){
                         return PersonPdlResponse(true, null)
                     }
-                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
                 } catch (e: Exception) {
                     log.warn("", e)
                 }
@@ -166,11 +166,10 @@ class PdlService @KtorExperimentalAPI constructor(
                 return PdlResponse(false, objectMapper().readValue<AktøridPdl>(json))
             } catch (e: Exception) {
                 try {
-                    log.warn("Errors:" + objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!).errors))
+                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
                     if (objectMapper().readValue<Error>(json!!).errors.any { it.extensions.code == "unauthorized" }){
                         return PdlResponse(true, null)
                     }
-                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
                 } catch (e: Exception) {
                     log.warn("", e)
                 }
