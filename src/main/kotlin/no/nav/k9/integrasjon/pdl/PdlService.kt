@@ -163,10 +163,11 @@ class PdlService @KtorExperimentalAPI constructor(
                 return PdlResponse(false, objectMapper().readValue<AktøridPdl>(json))
             } catch (e: Exception) {
                 try {
-                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
+                    log.warn("Errors:" + objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!).errors))
                     if (objectMapper().readValue<Error>(json!!).errors.any { it.extensions.code == "unauthorized" }){
                         return PdlResponse(true, null)
                     }
+                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
                 } catch (e: Exception) {
                     log.warn("", e)
                 }
