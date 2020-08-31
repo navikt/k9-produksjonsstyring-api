@@ -68,6 +68,9 @@ spec:
     - name: COOKIE_NAME
       value: selvbetjening-idtoken
 
+    - name: APP_K9SAK_URL
+      value: https://k9-sak.nais.adeo.no/k9/sak/api
+
     - name: PDL_URL
       value: https://pdl-api.nais.adeo.no/graphql
 
