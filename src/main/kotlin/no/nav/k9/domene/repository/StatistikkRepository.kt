@@ -129,7 +129,7 @@ class StatistikkRepository(
                         .map { row ->
                             AlleOppgaverNyeOgFerdigstilte(
                                 behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
-                                fagsakYtelseType = FagsakYtelseType.OMSORGSPENGER,
+                                fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
                                 dato = row.localDate("dato"),
                                 ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte") ?: "[]"),
                                 nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
@@ -162,7 +162,7 @@ class StatistikkRepository(
             }
         }
     }
-    
+
 
     fun hentFerdigstilteOgNyeHistorikkPerAntallDager(antall: Int): List<AlleOppgaverNyeOgFerdigstilte> {
         return using(sessionOf(dataSource)) {
