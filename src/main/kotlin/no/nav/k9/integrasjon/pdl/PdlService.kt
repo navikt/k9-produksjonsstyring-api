@@ -164,7 +164,7 @@ class PdlService @KtorExperimentalAPI constructor(
             } catch (e: Exception) {
                 try {
                     log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
-                    if (objectMapper().readValue<Error>(json!!).errors.map { it.message }.contains("Ikke tilgang til å se person”")) {
+                    if (objectMapper().readValue<Error>(json!!).errors.map { it.message }.contains("Ikke tilgang til å se person")) {
                         return PdlResponse(true, null)
                     }
                 } catch (e: Exception) {
