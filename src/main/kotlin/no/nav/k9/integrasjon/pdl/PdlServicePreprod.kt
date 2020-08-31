@@ -134,7 +134,7 @@ class PdlServicePreprod @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    override suspend fun identifikator(fnummer: String): AktøridPdl? {
+    override suspend fun identifikator(fnummer: String): PdlResponse {
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentIdent.graphql"),
             mapOf(
@@ -199,13 +199,13 @@ class PdlServicePreprod @KtorExperimentalAPI constructor(
                     )
                 )
                 cache.set(query, CacheObject(json, LocalDateTime.now().plusDays(7)))
-                return objectMapper().readValue<AktøridPdl>(json)
+                return PdlResponse(false, objectMapper().readValue<AktøridPdl>(json))
             } catch (e: Exception) {
                 log.warn("", e.message)
-                return null
+                return PdlResponse(false, null)
             }
         } else {
-            return objectMapper().readValue<AktøridPdl>(cachedObject.value)
+            return PdlResponse(false, objectMapper().readValue<AktøridPdl>(cachedObject.value))
         }
     }
 

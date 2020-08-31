@@ -7,5 +7,5 @@ interface IPdlService {
     suspend fun person(aktorId: String): PersonPdl?
 
     @KtorExperimentalAPI
-    suspend fun identifikator(fnummer: String): AktøridPdl?
+    suspend fun identifikator(fnummer: String): PdlResponse
 }

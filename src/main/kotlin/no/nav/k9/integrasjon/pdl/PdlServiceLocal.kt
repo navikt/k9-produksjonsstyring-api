@@ -34,8 +34,8 @@ class PdlServiceLocal @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
-    override suspend fun identifikator(fnummer: String): AktøridPdl? {
-        return AktøridPdl(
+    override suspend fun identifikator(fnummer: String): PdlResponse {
+        return PdlResponse(false, AktøridPdl(
             data = AktøridPdl.Data(
                 hentIdenter = AktøridPdl.Data.HentIdenter(
                     identer = listOf(
@@ -47,7 +47,7 @@ class PdlServiceLocal @KtorExperimentalAPI constructor(
                     )
                 )
             )
-        )
+        ))
     }
 }
 

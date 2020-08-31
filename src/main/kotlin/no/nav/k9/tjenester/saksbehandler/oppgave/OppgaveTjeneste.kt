@@ -14,6 +14,7 @@ import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.IPdlService
+import no.nav.k9.integrasjon.pdl.PdlResponse
 import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverBeholdningHistorikk
@@ -108,10 +109,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): SokeResultatDto {
+        var skjermet = false
         if (query.length == 11) {
             var aktørId = pdlService.identifikator(query)
             if (configuration.koinProfile() != KoinProfile.PROD) {
-                aktørId = AktøridPdl(
+                aktørId = PdlResponse(false, AktøridPdl(
                     data = AktøridPdl.Data(
                         hentIdenter = AktøridPdl.Data.HentIdenter(
                             identer = listOf(
@@ -123,12 +125,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             )
                         )
                     )
-                )
+                ))
             }
-            if (aktørId != null && aktørId.data.hentIdenter != null && aktørId.data.hentIdenter!!.identer.isNotEmpty()) {
-                var aktorId = aktørId.data.hentIdenter!!.identer[0].ident
+            if (aktørId.aktorId != null && aktørId.aktorId!!.data.hentIdenter != null && aktørId.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
+                var aktorId = aktørId.aktorId!!.data.hentIdenter!!.identer[0].ident
                 val person = pdlService.person(aktorId)
-                var skjermet = false
                 if (person != null) {
                     if (!(configuration.koinProfile() == KoinProfile.PROD)) {
                         aktorId = "1172507325105"
@@ -161,7 +162,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             it.aktiv
                         )
                     }.toMutableList()
-                    return SokeResultatDto(skjermet, result)
+                    return SokeResultatDto(aktørId.ikkeTilgang, result)
                 }
             }
         }
