@@ -131,7 +131,6 @@ class PepClient @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     override suspend fun harTilgangTilReservingAvOppgaver(): Boolean {
-
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
             .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK)
@@ -152,7 +151,6 @@ class PepClient @KtorExperimentalAPI constructor(
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
-
         val decision = evaluate(requestBuilder)
         return decision
     }
