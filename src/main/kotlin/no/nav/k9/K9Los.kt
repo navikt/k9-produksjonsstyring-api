@@ -31,8 +31,6 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
@@ -141,7 +139,7 @@ fun Application.k9Los() {
     // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
 
 
-    // rekjørForGrafer(koin.get(), koin.get())
+    rekjørForGrafer(koin.get(), koin.get())
 
     install(CallIdRequired)
 
@@ -245,6 +243,7 @@ private fun Application.rekjørForGrafer(
 ) {
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
         val alleEventerIder = behandlingProsessEventRepository.hentAlleEventerIder()
+        statistikkRepository.truncateNyeOgFerdigstilte()
         for ((index, eventId) in alleEventerIder.withIndex()) {
             if (index % 1000 == 0) {
                 log.info("""Ferdig med $index av ${alleEventerIder.size}""")
@@ -252,7 +251,7 @@ private fun Application.rekjørForGrafer(
             for (modell in behandlingProsessEventRepository.hent(UUID.fromString(eventId)).alleVersjoner()) {
                 val oppgave = modell.oppgave()
                 if (modell.starterSak()) {
-                    if (oppgave.aktiv && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
+                    if (oppgave.aktiv) {
                         statistikkRepository.lagre(
                             AlleOppgaverNyeOgFerdigstilte(
                                 oppgave
@@ -264,11 +263,25 @@ private fun Application.rekjørForGrafer(
                         }
                     }
                 }
-                if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET && oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
+                if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
                     statistikkRepository.lagre(
                         AlleOppgaverNyeOgFerdigstilte(
-                            oppgave
-                                .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
+                            oppgave.fagsakYtelseType,
+                            oppgave.behandlingType,
+                            oppgave.eventTid.toLocalDate()
+                        )
+                    ) {
+                        it.nye.add(oppgave.eksternId.toString())
+                        it
+                    }
+                }
+
+                if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
+                    statistikkRepository.lagre(
+                        AlleOppgaverNyeOgFerdigstilte(
+                            oppgave.fagsakYtelseType,
+                            oppgave.behandlingType,
+                            oppgave.eventTid.toLocalDate()
                         )
                     ) {
                         it.ferdigstilte.add(oppgave.eksternId.toString())
