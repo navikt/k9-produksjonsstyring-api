@@ -274,11 +274,11 @@ fun Route.MockGrensesnitt() {
                             runBlocking {
                                 if (valgtKø == "reserverte") {
                                     oppgaveRepository
-                                        .hentOppgaverIkkeTaHensyn(
+                                        .hentOppgaver(
                                             saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn() .flatMap { it.reservasjoner })
                                 } else {
                                     oppgaveRepository
-                                        .hentOppgaverIkkeTaHensyn(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }
+                                        .hentOppgaver(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }
                                             .oppgaverOgDatoer.take(20).map { it.id })
                                 }
                             }

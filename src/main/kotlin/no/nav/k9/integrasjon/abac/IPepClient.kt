@@ -33,4 +33,8 @@ interface IPepClient {
     suspend fun erSakKode6(
         fagsakNummer: String
     ): Boolean
+    @KtorExperimentalAPI
+    suspend fun erSakKode7EllerEgenAnsatt(
+        fagsakNummer: String
+    ): Boolean
 }

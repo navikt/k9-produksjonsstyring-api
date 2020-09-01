@@ -109,7 +109,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): SokeResultatDto {
-        var skjermet = false
         if (query.length == 11) {
             var aktørId = pdlService.identifikator(query)
             if (configuration.koinProfile() != KoinProfile.PROD) {
@@ -143,7 +142,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             )
                         ) {
                             settSkjermet(it)
-                            skjermet = true
                             false
                         } else {
                             true
@@ -677,16 +675,15 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     suspend fun settSkjermet(oppgave: Oppgave) {
         log.info("Skjermer oppgave")
-        oppgave.kode6 = true
         oppgaveRepository.lagre(oppgave.eksternId) { it ->
-            it?.kode6 = true
             it!!
         }
+        val oppaveSkjermet = oppgaveRepository.hent(oppgave.eksternId)
         for (oppgaveKø in oppgaveKøRepository.hent()) {
-            val skalOppdareKø = oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+            val skalOppdareKø = oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppaveSkjermet, reservasjonRepository)
             if (skalOppdareKø) {
                 oppgaveKøRepository.lagre(oppgaveKø.id) {
-                    it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                    it!!.leggOppgaveTilEllerFjernFraKø(oppaveSkjermet, reservasjonRepository)
                     it
                 }
             }

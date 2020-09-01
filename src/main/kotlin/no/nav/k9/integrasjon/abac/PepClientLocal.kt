@@ -42,5 +42,10 @@ class PepClientLocal @KtorExperimentalAPI constructor() : IPepClient {
     override suspend fun erSakKode6(fagsakNummer: String): Boolean {
         return false
     }
+    
+    @KtorExperimentalAPI
+    override suspend fun erSakKode7EllerEgenAnsatt(fagsakNummer: String): Boolean {
+        return false
+    }
 
 }

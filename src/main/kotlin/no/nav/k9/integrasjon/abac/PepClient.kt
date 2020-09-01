@@ -185,6 +185,19 @@ class PepClient @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
+    override suspend fun erSakKode7EllerEgenAnsatt(fagsakNummer: String): Boolean {
+        val requestBuilder = XacmlRequestBuilder()
+            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+            .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK_KODE7OGEGENANSATT)
+            .addAccessSubjectAttribute(SUBJECT_TYPE, NONE)
+            .addAccessSubjectAttribute(SUBJECTID, NONE)
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+            .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
+
+        return !evaluate(requestBuilder)
+    }
+
+    @KtorExperimentalAPI
     private suspend fun evaluate(xacmlRequestBuilder: XacmlRequestBuilder): Boolean {
         val xacmlJson = gson.toJson(xacmlRequestBuilder.build())
         val get = cache.get(xacmlJson)
