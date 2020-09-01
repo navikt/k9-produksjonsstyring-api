@@ -6,8 +6,8 @@ class PdlServiceLocal @KtorExperimentalAPI constructor(
 ) : IPdlService {
 
     @KtorExperimentalAPI
-    override suspend fun person(aktorId: String): PersonPdl? {
-        return PersonPdl(
+    override suspend fun person(aktorId: String): PersonPdlResponse {
+        return PersonPdlResponse(false, PersonPdl(
             data = PersonPdl.Data(
                 hentPerson = PersonPdl.Data.HentPerson(
                     listOf(
@@ -30,12 +30,12 @@ class PdlServiceLocal @KtorExperimentalAPI constructor(
                     doedsfall = emptyList()
                 )
             )
-        )
+        ))
     }
 
     @KtorExperimentalAPI
-    override suspend fun identifikator(fnummer: String): AktøridPdl? {
-        return AktøridPdl(
+    override suspend fun identifikator(fnummer: String): PdlResponse {
+        return PdlResponse(false, AktøridPdl(
             data = AktøridPdl.Data(
                 hentIdenter = AktøridPdl.Data.HentIdenter(
                     identer = listOf(
@@ -47,7 +47,7 @@ class PdlServiceLocal @KtorExperimentalAPI constructor(
                     )
                 )
             )
-        )
+        ))
     }
 }
 

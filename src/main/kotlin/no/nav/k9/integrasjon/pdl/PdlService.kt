@@ -40,7 +40,7 @@ class PdlService @KtorExperimentalAPI constructor(
     ).toString()
 
     @KtorExperimentalAPI
-    override suspend fun person(aktorId: String): PersonPdl? {
+    override suspend fun person(aktorId: String): PersonPdlResponse {
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
             mapOf("ident" to aktorId)
@@ -88,25 +88,28 @@ class PdlService @KtorExperimentalAPI constructor(
                     }
                 )
             }
-            return try {
+             try {
                 val readValue = objectMapper().readValue<PersonPdl>(json!!)
                 cache.set(query, CacheObject(json, LocalDateTime.now().plusHours(7)))
-                return readValue
+                return PersonPdlResponse(false, readValue)
             } catch (e: Exception) {
                 try {
                     log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
+                    if (objectMapper().readValue<Error>(json!!).errors.any { it.extensions.code == "unauthorized" }){
+                        return PersonPdlResponse(true, null)
+                    }
                 } catch (e: Exception) {
                     log.warn("", e)
                 }
-                null
+                return PersonPdlResponse(false, null)
             }
         } else {
-            return objectMapper().readValue<PersonPdl>(cachedObject.value)
+            return PersonPdlResponse(false, objectMapper().readValue<PersonPdl>(cachedObject.value))
         }
     }
 
     @KtorExperimentalAPI
-    override suspend fun identifikator(fnummer: String): AktøridPdl? {
+    override suspend fun identifikator(fnummer: String): PdlResponse {
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentIdent.graphql"),
             mapOf(
@@ -160,17 +163,20 @@ class PdlService @KtorExperimentalAPI constructor(
             }
             try {
                 cache.set(query, CacheObject(json!!, LocalDateTime.now().plusDays(7)))
-                return objectMapper().readValue<AktøridPdl>(json)
+                return PdlResponse(false, objectMapper().readValue<AktøridPdl>(json))
             } catch (e: Exception) {
                 try {
                     log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
+                    if (objectMapper().readValue<Error>(json!!).errors.any { it.extensions.code == "unauthorized" }){
+                        return PdlResponse(true, null)
+                    }
                 } catch (e: Exception) {
                     log.warn("", e)
                 }
-                return null
+                return PdlResponse(false, null)
             }
         } else {
-            return objectMapper().readValue<AktøridPdl>(cachedObject.value)
+            return PdlResponse(false, objectMapper().readValue<AktøridPdl>(cachedObject.value))
         }
     }
 
