@@ -113,19 +113,21 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         if (query.length == 11) {
             var aktørId = pdlService.identifikator(query)
             if (configuration.koinProfile() != KoinProfile.PROD) {
-                aktørId = PdlResponse(false, AktøridPdl(
-                    data = AktøridPdl.Data(
-                        hentIdenter = AktøridPdl.Data.HentIdenter(
-                            identer = listOf(
-                                AktøridPdl.Data.HentIdenter.Identer(
-                                    gruppe = "AKTORID",
-                                    historisk = false,
-                                    ident = "2392173967319"
+                aktørId = PdlResponse(
+                    false, AktøridPdl(
+                        data = AktøridPdl.Data(
+                            hentIdenter = AktøridPdl.Data.HentIdenter(
+                                identer = listOf(
+                                    AktøridPdl.Data.HentIdenter.Identer(
+                                        gruppe = "AKTORID",
+                                        historisk = false,
+                                        ident = "2392173967319"
+                                    )
                                 )
                             )
                         )
                     )
-                ))
+                )
             }
             if (aktørId.aktorId != null && aktørId.aktorId!!.data.hentIdenter != null && aktørId.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
                 var aktorId = aktørId.aktorId!!.data.hentIdenter!!.identer[0].ident
@@ -184,13 +186,23 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             ret.add(
                 FagsakDto(
                     oppgave.fagsakSaksnummer,
-                    PersonDto(
-                        person.person!!.navn(),
-                        person.person!!.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                        person.person!!.data.hentPerson.kjoenn[0].kjoenn,
-                        null
+                    if (person.person != null) {
+                        PersonDto(
+                            person.person.navn(),
+                            person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                            person.person.data.hentPerson.kjoenn[0].kjoenn,
+                            null
+                            // person.data.hentPerson.doedsfall!!.doedsdato
+                        )
+                    } else {
+                        PersonDto(
+                            "Ukjent navn",
+                            "",
+                            "",
+                            null
+                        )
                         // person.data.hentPerson.doedsfall!!.doedsdato
-                    ),
+                    },
                     oppgave.fagsakYtelseType,
                     oppgave.behandlingStatus,
                     oppgave.behandlingOpprettet,

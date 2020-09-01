@@ -243,13 +243,14 @@ class OppgaveRepository(
         return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
     }
 
-    fun hentOppgaverMedSaksnummer(saksnummer: String): List<Oppgave> {
+    suspend fun hentOppgaverMedSaksnummer(saksnummer: String): List<Oppgave> {
+        val kode6 =  pepClient.harTilgangTilKode6()
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select data from oppgave where lower(data ->> 'fagsakSaksnummer') = lower(:saksnummer)",
-                    mapOf("saksnummer" to saksnummer)
+                    "select data from oppgave where lower(data ->> 'fagsakSaksnummer') = lower(:saksnummer) and skjermet = :skjermet",
+                    mapOf("saksnummer" to saksnummer, "skjermet" to kode6)
                 )
                     .map { row ->
                         row.string("data")

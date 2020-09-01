@@ -278,7 +278,7 @@ fun Route.MockGrensesnitt() {
                                             saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn() .flatMap { it.reservasjoner })
                                 } else {
                                     oppgaveRepository
-                                        .hentOppgaver(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }
+                                        .hentOppgaverIkkeTaHensyn(oppgavekøer.first { it.id == UUID.fromString(valgtKø) }
                                             .oppgaverOgDatoer.take(20).map { it.id })
                                 }
                             }
