@@ -147,7 +147,7 @@ class PepClient @KtorExperimentalAPI constructor(
         log.info(azureGraphService.hentEnhetForInnloggetBruker())
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
-            .addResourceAttribute(RESOURCE_TYPE, OPPGAVESTYRER_SKJERMET)
+            .addResourceAttribute(RESOURCE_TYPE, TILGANG_TIL_KODE_6)
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
