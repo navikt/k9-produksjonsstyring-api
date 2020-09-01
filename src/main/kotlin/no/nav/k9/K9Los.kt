@@ -334,10 +334,12 @@ private fun Application.regenererOppgaver(
             val oppgaver = oppgaveRepository.hentAktiveOppgaver()
             for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
                 for (oppgave in oppgaver) {
-                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
-                        oppgaveKøRepository.lagreIkkeTaHensyn(oppgavekø.id) { forrige ->
-                            forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                            forrige!!
+                    if (oppgavekø.kode6 == oppgave.kode6) {
+                        if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
+                            oppgaveKøRepository.lagreIkkeTaHensyn(oppgavekø.id) { forrige ->
+                                forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                                forrige!!
+                            }
                         }
                     }
                 }
