@@ -97,12 +97,12 @@ class OppgaveRepository(
                 } else {
                     f(null)
                 }
-                val json = objectMapper().writeValueAsString(oppgave)
                 var kode6 = false
                 runBlocking {
                     kode6 = pepClient.erSakKode6(oppgave.fagsakSaksnummer)
                 }
-
+                oppgave.kode6 = kode6
+                val json = objectMapper().writeValueAsString(oppgave)
                 tx.run(
                     queryOf(
                         """

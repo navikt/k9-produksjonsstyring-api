@@ -115,7 +115,7 @@ fun Route.innsiktGrensesnitt() {
                     semaphore.release()
                 }
             }
-            call.respond("Bygger mapping")
+            call.respond(HttpStatusCode.ServiceUnavailable)
         }
     }
 
