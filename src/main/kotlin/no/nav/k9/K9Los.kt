@@ -136,7 +136,13 @@ fun Application.k9Los() {
     }.broadcast()
 
     // Synkroniser oppgaver
-    // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
+     regenererOppgaver(
+         oppgaveRepository = koin.get(),
+         behandlingProsessEventRepository = koin.get(),
+         reservasjonRepository = koin.get(),
+         oppgaveKøRepository = koin.get(),
+         saksbehhandlerRepository = koin.get()
+     )
     // rekjørForGrafer(koin.get(), koin.get())
 
     install(CallIdRequired)
@@ -292,6 +298,7 @@ private fun Application.rekjørForGrafer(
 }
 
 
+@KtorExperimentalAPI
 private fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
     behandlingProsessEventRepository: BehandlingProsessEventRepository,
@@ -325,22 +332,21 @@ private fun Application.regenererOppgaver(
                 }
             }
             val oppgaver = oppgaveRepository.hentAktiveOppgaver()
-            for (oppgavekø in oppgaveKøRepository.hent()) {
+            for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
                 for (oppgave in oppgaver) {
                     if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
-                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                        oppgaveKøRepository.lagreIkkeTaHensyn(oppgavekø.id) { forrige ->
                             forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
                             forrige!!
                         }
                     }
                 }
-                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
+                oppgaveKøRepository.lagreIkkeTaHensyn(oppgavekø.id) { forrige ->
                     forrige!!
                 }
             }
         }
         log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
-
     }
 }
 
