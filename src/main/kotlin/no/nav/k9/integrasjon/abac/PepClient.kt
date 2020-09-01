@@ -181,7 +181,7 @@ class PepClient @KtorExperimentalAPI constructor(
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
             .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
 
-        return evaluate(requestBuilder)
+        return !evaluate(requestBuilder)
     }
 
     @KtorExperimentalAPI
