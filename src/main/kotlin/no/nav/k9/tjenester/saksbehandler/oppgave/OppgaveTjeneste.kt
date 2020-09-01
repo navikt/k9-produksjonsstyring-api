@@ -300,7 +300,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 behandlingType = it.behandlingType,
                 dato = it.dato,
                 antallNye = it.nye.size,
-                antallFerdigstilte = ferdigstilte!!.antall,
+                antallFerdigstilte = ferdigstilte?.antall ?: it.ferdigstilte.size,
                 antallFerdigstilteMine = antallFerdistilteMine
             )
         }
