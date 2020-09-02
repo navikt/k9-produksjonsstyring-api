@@ -191,7 +191,8 @@ class OppgaveRepository(
         }
     }
 
-    fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
+    suspend fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
+        val kode6 =  pepClient.harTilgangTilKode6()
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -204,10 +205,11 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
+        return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.filter { it.kode6 ==kode6 }.toList()
     }
 
     suspend fun hentOppgaverMedSaksnummer(saksnummer: String): List<Oppgave> {
+        val kode6 =  pepClient.harTilgangTilKode6()
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -220,7 +222,7 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { objectMapper().readValue(it, Oppgave::class.java) }
+        return json.map { objectMapper().readValue(it, Oppgave::class.java) }.filter { it.kode6 ==kode6 }
     }
 
     suspend internal fun hentAktiveOppgaverTotalt(): Int {
