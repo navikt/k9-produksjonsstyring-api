@@ -40,6 +40,14 @@ class ReservasjonRepository(
         )
     }
 
+    suspend fun fjernGamleReservasjoner(reservasjoner: Set<UUID>) {
+        fjernReservasjonerSomIkkeLengerErAktive(
+            hentReservasjoner(reservasjoner),
+            oppgaveKøRepository,
+            oppgaveRepository
+        )
+    }
+
     fun hentSelvOmDeIkkeErAktive(reservasjoner: Set<UUID>): List<Reservasjon> {
         return hentReservasjoner(reservasjoner)
     }
