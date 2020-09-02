@@ -331,21 +331,8 @@ private fun Application.regenererOppgaver(
                     oppgave
                 }
             }
-            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
             for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
-                for (oppgave in oppgaver) {
-                    if (oppgavekø.kode6 == oppgave.kode6) {
-                        if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
-                            oppgaveKøRepository.lagreIkkeTaHensyn(oppgavekø.id) { forrige ->
-                                forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                                forrige!!
-                            }
-                        }
-                    }
-                }
-                oppgaveKøRepository.lagreIkkeTaHensyn(oppgavekø.id) { forrige ->
-                    forrige!!
-                }
+                oppgaveKøRepository.oppdaterKøMedOppgaver(oppgavekø.id)
             }
         }
         log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
