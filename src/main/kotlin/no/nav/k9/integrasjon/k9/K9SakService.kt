@@ -71,11 +71,12 @@ open class K9SakService @KtorExperimentalAPI constructor(
                     log.info(success)
                     success },
                 { error ->
+                    log.error(request.toString())
                     log.error(
                         "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
                     )
                     log.error(error.toString())
-                    throw IllegalStateException("Feil ved henting av saksbehandlers id")
+                    throw IllegalStateException("Feil ved prefetch")
                 }
             )
         }
