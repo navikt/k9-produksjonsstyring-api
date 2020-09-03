@@ -49,13 +49,13 @@ open class K9SakService @KtorExperimentalAPI constructor(
                 body
             )
             .header(
-                HttpHeaders.Authorization to "Bearer ${cachedAccessTokenClient.getAccessToken(emptySet()).asAuthoriationHeader()}",
+                HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(emptySet()).asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 HttpHeaders.ContentType to "application/json"
             )
 
         val json = Retry.retry(
-            operation = "hent-ident",
+            operation = "refresh oppgave",
             initialDelay = Duration.ofMillis(200),
             factor = 2.0,
             logger = log
