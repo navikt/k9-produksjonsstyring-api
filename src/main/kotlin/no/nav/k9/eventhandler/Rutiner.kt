@@ -124,10 +124,12 @@ suspend fun oppdatereKøerMedOppgave(
     val log = LoggerFactory.getLogger("behandleOppgave")
 
     val oppgaveListe = mutableListOf<Oppgave>()
+    log.info("Starter rutine for oppdatering av køer")
     oppgaveListe.add(channel.receive())
     while (true) {
         val oppgave = channel.poll()
         if (oppgave == null) {
+            log.info("Starter oppdatering av oppgave")
             val measureTimeMillis = measureTimeMillis {
                 reservasjonRepository.fjernGamleReservasjoner(
                     saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }.toSet()
@@ -151,8 +153,7 @@ suspend fun oppdatereKøerMedOppgave(
                         }
                         it!!
                     }
-
-                    val behandlingsListe = mutableListOf<BehandlingIdDto>()
+                   val behandlingsListe = mutableListOf<BehandlingIdDto>()
                     behandlingsListe.addAll(oppgavekø.oppgaverOgDatoer.take(10).map { BehandlingIdDto(it.id) }.toList())
                     k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
                 }
