@@ -9,7 +9,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.integrasjon.abac.IPepClient
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
@@ -34,13 +34,13 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository,
-    pepClient: IPepClient
+    saksbehandlerRepository: SaksbehandlerRepository
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     oppdatereKøerMedOppgave(
         channel = channel,
         oppgaveKøRepository = oppgaveKøRepository,
         reservasjonRepository = reservasjonRepository,
-        pepClient = pepClient
+        saksbehandlerRepository = saksbehandlerRepository
     )
 }
 
@@ -113,7 +113,7 @@ suspend fun oppdatereKøerMedOppgave(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository,
-    pepClient: IPepClient
+    saksbehandlerRepository: SaksbehandlerRepository
 ) {
     val log = LoggerFactory.getLogger("behandleOppgave")
 
@@ -123,6 +123,9 @@ suspend fun oppdatereKøerMedOppgave(
         val oppgave = channel.poll()
         if (oppgave == null) {
             val measureTimeMillis = measureTimeMillis {
+                reservasjonRepository.fjernGamleReservasjoner(
+                    saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }.toSet()
+                )
                 for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
                     var refresh = false
                     for (o in oppgaveListe) {

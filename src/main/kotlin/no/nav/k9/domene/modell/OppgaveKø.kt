@@ -95,7 +95,7 @@ data class OppgaveKø(
             return false
         }
 
-        if (oppgave.kode6 != this.skjermet) {
+        if (oppgave.skjermet != this.skjermet) {
             return false
         }
 

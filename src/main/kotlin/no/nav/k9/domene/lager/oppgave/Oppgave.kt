@@ -35,7 +35,8 @@ data class Oppgave(
     val registrerPapir: Boolean,
     val årskvantum: Boolean,
     val avklarMedlemskap: Boolean,
-    var kode6: Boolean,
+    var kode6: Boolean =false,
+    var skjermet: Boolean = false,
     val utenlands: Boolean,
     val vurderopptjeningsvilkåret : Boolean = false
 ){
