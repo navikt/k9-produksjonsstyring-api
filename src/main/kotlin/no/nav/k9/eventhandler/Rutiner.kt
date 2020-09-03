@@ -134,7 +134,9 @@ suspend fun oppdatereKøerMedOppgave(
                 reservasjonRepository.fjernGamleReservasjoner(
                     saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }.toSet()
                 )
+                log.info("Fjernet gamle reservasjoner")
                 for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
+                    log.info("Fjernet gamle reservasjoner")
                     var refresh = false
                     for (o in oppgaveListe) {
                         refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
