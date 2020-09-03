@@ -18,6 +18,7 @@ import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PersonPdl
+import no.nav.k9.integrasjon.pdl.PersonPdlResponse
 import no.nav.k9.tjenester.sse.SseEvent
 import org.junit.Test
 import java.time.LocalDate
@@ -300,7 +301,7 @@ class OppgaveTjenesteTest {
             oppgaveko
         }
         every { config.koinProfile() } returns KoinProfile.LOCAL
-        coEvery { pdlService.person(any()) } returns PersonPdl(
+        coEvery { pdlService.person(any()) } returns PersonPdlResponse(false, PersonPdl(
             data = PersonPdl.Data(
                 hentPerson = PersonPdl.Data.HentPerson(
                     listOf(
@@ -323,7 +324,7 @@ class OppgaveTjenesteTest {
                     doedsfall = emptyList()
                 )
             )
-        )
+        ))
         coEvery { pepClient.harBasisTilgang() } returns true
         coEvery { pepClient.harTilgangTilLesSak(any(),any()) } returns true
 
@@ -408,7 +409,7 @@ class OppgaveTjenesteTest {
         coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
         every { config.koinProfile() } returns KoinProfile.LOCAL
         coEvery { pepClient.harTilgangTilLesSak(any(), any()) } returns true
-        coEvery { pdlService.person(any()) } returns PersonPdl(data = PersonPdl.Data(
+        coEvery { pdlService.person(any()) } returns PersonPdlResponse(false, PersonPdl(data = PersonPdl.Data(
             hentPerson = PersonPdl.Data.HentPerson(
                 folkeregisteridentifikator = listOf(PersonPdl.Data.HentPerson.Folkeregisteridentifikator("12345678901")),
                 navn = listOf(
@@ -421,7 +422,7 @@ class OppgaveTjenesteTest {
                 kjoenn = listOf(PersonPdl.Data.HentPerson.Kjoenn("K")),
                 doedsfall = listOf()
             )
-        ))
+        )))
 
         runBlocking {
             val fagsaker = oppgaveTjeneste.søkFagsaker("Yz647")
@@ -521,7 +522,7 @@ class OppgaveTjenesteTest {
         coEvery { pepClient.harBasisTilgang() } returns true
         coEvery { pepClient.harTilgangTilLesSak(any(),any()) } returns true
         coEvery { pepClient.harTilgangTilReservingAvOppgaver() } returns true
-        coEvery { pdlService.person(any()) } returns PersonPdl(
+        coEvery { pdlService.person(any()) } returns PersonPdlResponse(false, PersonPdl(
             data = PersonPdl.Data(
                 hentPerson = PersonPdl.Data.HentPerson(
                     listOf(
@@ -544,7 +545,7 @@ class OppgaveTjenesteTest {
                     doedsfall = emptyList()
                 )
             )
-        )
+        ))
 
 
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)

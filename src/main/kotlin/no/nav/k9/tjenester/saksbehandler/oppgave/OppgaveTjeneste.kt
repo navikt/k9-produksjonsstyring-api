@@ -14,6 +14,7 @@ import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.pdl.AktøridPdl
 import no.nav.k9.integrasjon.pdl.IPdlService
+import no.nav.k9.integrasjon.pdl.PdlResponse
 import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverBeholdningHistorikk
@@ -108,10 +109,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): SokeResultatDto {
+        var skjermet = false
         if (query.length == 11) {
             var aktørId = pdlService.identifikator(query)
             if (configuration.koinProfile() != KoinProfile.PROD) {
-                aktørId = AktøridPdl(
+                aktørId = PdlResponse(false, AktøridPdl(
                     data = AktøridPdl.Data(
                         hentIdenter = AktøridPdl.Data.HentIdenter(
                             identer = listOf(
@@ -123,13 +125,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             )
                         )
                     )
-                )
+                ))
             }
-            if (aktørId != null && aktørId.data.hentIdenter != null && aktørId.data.hentIdenter!!.identer.isNotEmpty()) {
-                var aktorId = aktørId.data.hentIdenter!!.identer[0].ident
+            if (aktørId.aktorId != null && aktørId.aktorId!!.data.hentIdenter != null && aktørId.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
+                var aktorId = aktørId.aktorId!!.data.hentIdenter!!.identer[0].ident
                 val person = pdlService.person(aktorId)
-                var skjermet = false
-                if (person != null) {
+                if (person.person != null) {
                     if (!(configuration.koinProfile() == KoinProfile.PROD)) {
                         aktorId = "1172507325105"
                     }
@@ -149,9 +150,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         FagsakDto(
                             it.fagsakSaksnummer,
                             PersonDto(
-                                person.navn(),
-                                person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                                person.data.hentPerson.kjoenn[0].kjoenn,
+                                person.person.navn(),
+                                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                                person.person.data.hentPerson.kjoenn[0].kjoenn,
                                 null
                                 //   person.data.hentPerson.doedsfall[0].doedsdato
                             ),
@@ -161,7 +162,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             it.aktiv
                         )
                     }.toMutableList()
-                    return SokeResultatDto(skjermet, result)
+                    return SokeResultatDto(aktørId.ikkeTilgang, result)
+                } else {
+                    return SokeResultatDto(person.ikkeTilgang, mutableListOf())
                 }
             }
         }
@@ -182,9 +185,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 FagsakDto(
                     oppgave.fagsakSaksnummer,
                     PersonDto(
-                        person.navn(),
-                        person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                        person.data.hentPerson.kjoenn[0].kjoenn,
+                        person.person!!.navn(),
+                        person.person!!.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                        person.person!!.data.hentPerson.kjoenn[0].kjoenn,
                         null
                         // person.data.hentPerson.doedsfall!!.doedsdato
                     ),
@@ -222,9 +225,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             status = oppgaveStatus,
             behandlingId = oppgave.behandlingId,
             saksnummer = oppgave.fagsakSaksnummer,
-            navn = person.navn(),
+            navn = person.person!!.navn(),
             system = oppgave.system,
-            personnummer = person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+            personnummer = person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
             behandlingstype = oppgave.behandlingType,
             fagsakYtelseType = oppgave.fagsakYtelseType,
             behandlingStatus = oppgave.behandlingStatus,
@@ -301,7 +304,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         fagsakYtelseType = ytelseTypeEntry.key,
                         behandlingType = behandlingTypeEntry.key
                     )
-                behandlingTypeEntry.value.sortedBy { it.dato }.map {
+                behandlingTypeEntry.value.sortedByDescending { it.dato }.map {
                     aktive = aktive - it.nye.size + it.ferdigstilte.size
                     ret.add(
                         AlleOppgaverBeholdningHistorikk(
@@ -463,7 +466,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                                     "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
                                 }.toList().joinToString(", ")
                     } else {
-                        person?.navn() ?: "Uten navn"
+                        person.person?.navn() ?: "Uten navn"
                     }
 
                     list.add(
@@ -479,10 +482,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             saksnummer = oppgave.fagsakSaksnummer,
                             navn = navn,
                             system = oppgave.system,
-                            personnummer = if (person == null) {
+                            personnummer = if (person.person == null) {
                                 "Ukjent fnummer"
                             } else {
-                                person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
                             },
                             behandlingstype = oppgave.behandlingType,
                             fagsakYtelseType = oppgave.fagsakYtelseType,
@@ -551,13 +554,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
                         }.toList().joinToString(", ")
             } else {
-                person?.navn() ?: "Uten navn"
+                person.person?.navn() ?: "Uten navn"
             }
             personNavn = navn
-            personFnummer = if (person == null) {
+            personFnummer = if (person.person == null) {
                 "Ukent fnummer"
             } else {
-                person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
             }
             list.add(
                 OppgaveDto(
