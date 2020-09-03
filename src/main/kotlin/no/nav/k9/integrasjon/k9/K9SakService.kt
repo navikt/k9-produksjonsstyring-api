@@ -29,7 +29,7 @@ open class K9SakService @KtorExperimentalAPI constructor(
     private val cache = Cache<Boolean>()
     private val cacheBehandlingsId = Cache<Boolean>()
     override suspend fun refreshBehandlinger(behandlingIdList: BehandlingIdListe) {
-        
+        log.info("refresher oppgaver")
         behandlingIdList.behandlingUuid.forEach{
             if (cacheBehandlingsId.get(it.toString()) == null) {
                 cache.set(it.toString(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
@@ -37,7 +37,9 @@ open class K9SakService @KtorExperimentalAPI constructor(
         }
         
         val body = objectMapper().writeValueAsString(BehandlingIdListe(cacheBehandlingsId.getKeys().map { BehandlingIdDto(UUID.fromString(it)) }))
+        log.info(body)
         if (cache.get(body.sha512()) != null) {
+            log.info("har sendt denne tidligere returnerer")
             return
         }
         cache.set(body.sha512(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
@@ -65,7 +67,9 @@ open class K9SakService @KtorExperimentalAPI constructor(
             ) { httpRequest.awaitStringResponseResult() }
 
             result.fold(
-                { success -> success },
+                { success -> 
+                    log.info(success)
+                    success },
                 { error ->
                     log.error(
                         "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
