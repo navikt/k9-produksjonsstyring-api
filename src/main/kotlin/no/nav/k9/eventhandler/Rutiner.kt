@@ -123,9 +123,6 @@ suspend fun oppdatereKøerMedOppgave(
         val oppgave = channel.poll()
         if (oppgave == null) {
             val measureTimeMillis = measureTimeMillis {
-                reservasjonRepository.fjernGamleReservasjoner(
-                    saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }.toSet()
-                )
                 for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
                     var refresh = false
                     for (o in oppgaveListe) {
