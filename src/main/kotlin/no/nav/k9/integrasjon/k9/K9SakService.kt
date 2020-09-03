@@ -22,7 +22,7 @@ import java.util.*
 
 open class K9SakService @KtorExperimentalAPI constructor(
     val configuration: Configuration,
-    accessTokenClient: AccessTokenClient
+    val accessTokenClient: AccessTokenClient
 ) : IK9SakService {
     val log = LoggerFactory.getLogger("K9SakService")
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
