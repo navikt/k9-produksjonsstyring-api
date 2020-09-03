@@ -219,18 +219,23 @@ class OppgaveTjenesteTest {
         val pg = EmbeddedPostgres.start()
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
+        val pepClient = mockk<IPepClient>()
+
+        coEvery { pepClient.harTilgangTilKode6() } returns false
+        coEvery { pepClient.erSakKode6(any()) } returns false
+        coEvery { pepClient.erSakKode7EllerEgenAnsatt(any()) } returns false
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = pepClient)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
+            pepClient = pepClient
         )
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
+            pepClient = pepClient)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -241,7 +246,7 @@ class OppgaveTjenesteTest {
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val pepClient = mockk<IPepClient>()
+    
         val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(
             oppgaveRepository,
@@ -330,8 +335,11 @@ class OppgaveTjenesteTest {
 
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
-        oppgaveTjeneste.settSkjermet(oppgave1)
+        
+        coEvery { pepClient.erSakKode7EllerEgenAnsatt(any()) } returns true
 
+        oppgaveTjeneste.settSkjermet(oppgave1)
+    
         oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.isEmpty())
 

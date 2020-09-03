@@ -90,7 +90,7 @@ class RutinerTest {
                 channel = oppgaverSomSkalInnPåKøer,
                 oppgaveKøRepository = oppgaveKøRepository,
                 reservasjonRepository = reservasjonRepository,
-                pepClient = PepClientLocal()
+                saksbehandlerRepository = saksbehandlerRepository
             )
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()

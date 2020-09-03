@@ -110,7 +110,7 @@ fun Application.k9Los() {
             oppgaveKøRepository = koin.get(),
             channel = koin.get<Channel<Oppgave>>(named("oppgaveChannel")),
             reservasjonRepository = koin.get(),
-            pepClient = koin.get()
+            saksbehandlerRepository = koin.get()
         )
 
     val asynkronProsesseringV1Service = koin.get<AsynkronProsesseringV1Service>()
@@ -136,10 +136,14 @@ fun Application.k9Los() {
     }.broadcast()
 
     // Synkroniser oppgaver
-    // regenererOppgaver(oppgaveRepository, behandlingProsessEventRepository, reservasjonRepository, oppgaveKøRepository)
-
-
-    rekjørForGrafer(koin.get(), koin.get())
+     regenererOppgaver(
+         oppgaveRepository = koin.get(),
+         behandlingProsessEventRepository = koin.get(),
+         reservasjonRepository = koin.get(),
+         oppgaveKøRepository = koin.get(),
+         saksbehhandlerRepository = koin.get()
+     )
+    // rekjørForGrafer(koin.get(), koin.get())
 
     install(CallIdRequired)
 
@@ -294,6 +298,7 @@ private fun Application.rekjørForGrafer(
 }
 
 
+@KtorExperimentalAPI
 private fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
     behandlingProsessEventRepository: BehandlingProsessEventRepository,
@@ -326,23 +331,11 @@ private fun Application.regenererOppgaver(
                     oppgave
                 }
             }
-            val oppgaver = oppgaveRepository.hentAktiveOppgaver()
-            for (oppgavekø in oppgaveKøRepository.hent()) {
-                for (oppgave in oppgaver) {
-                    if (oppgavekø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)) {
-                        oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                            forrige?.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                            forrige!!
-                        }
-                    }
-                }
-                oppgaveKøRepository.lagre(oppgavekø.id) { forrige ->
-                    forrige!!
-                }
+            for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
+                oppgaveKøRepository.oppdaterKøMedOppgaver(oppgavekø.id)
             }
         }
         log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
-
     }
 }
 

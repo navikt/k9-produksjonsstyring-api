@@ -109,23 +109,24 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): SokeResultatDto {
-        var skjermet = false
         if (query.length == 11) {
             var aktørId = pdlService.identifikator(query)
             if (configuration.koinProfile() != KoinProfile.PROD) {
-                aktørId = PdlResponse(false, AktøridPdl(
-                    data = AktøridPdl.Data(
-                        hentIdenter = AktøridPdl.Data.HentIdenter(
-                            identer = listOf(
-                                AktøridPdl.Data.HentIdenter.Identer(
-                                    gruppe = "AKTORID",
-                                    historisk = false,
-                                    ident = "2392173967319"
+                aktørId = PdlResponse(
+                    false, AktøridPdl(
+                        data = AktøridPdl.Data(
+                            hentIdenter = AktøridPdl.Data.HentIdenter(
+                                identer = listOf(
+                                    AktøridPdl.Data.HentIdenter.Identer(
+                                        gruppe = "AKTORID",
+                                        historisk = false,
+                                        ident = "2392173967319"
+                                    )
                                 )
                             )
                         )
                     )
-                ))
+                )
             }
             if (aktørId.aktorId != null && aktørId.aktorId!!.data.hentIdenter != null && aktørId.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
                 var aktorId = aktørId.aktorId!!.data.hentIdenter!!.identer[0].ident
@@ -141,7 +142,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             )
                         ) {
                             settSkjermet(it)
-                            skjermet = true
                             false
                         } else {
                             true
@@ -184,13 +184,23 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             ret.add(
                 FagsakDto(
                     oppgave.fagsakSaksnummer,
-                    PersonDto(
-                        person.person!!.navn(),
-                        person.person!!.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                        person.person!!.data.hentPerson.kjoenn[0].kjoenn,
-                        null
+                    if (person.person != null) {
+                        PersonDto(
+                            person.person.navn(),
+                            person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                            person.person.data.hentPerson.kjoenn[0].kjoenn,
+                            null
+                            // person.data.hentPerson.doedsfall!!.doedsdato
+                        )
+                    } else {
+                        PersonDto(
+                            "Ukjent navn",
+                            "",
+                            "",
+                            null
+                        )
                         // person.data.hentPerson.doedsfall!!.doedsdato
-                    ),
+                    },
                     oppgave.fagsakYtelseType,
                     oppgave.behandlingStatus,
                     oppgave.behandlingOpprettet,
@@ -225,9 +235,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             status = oppgaveStatus,
             behandlingId = oppgave.behandlingId,
             saksnummer = oppgave.fagsakSaksnummer,
-            navn = person.person!!.navn(),
+            navn = person.person?.navn()?:"Ukjent navn",
             system = oppgave.system,
-            personnummer = person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+            personnummer = if(person.person != null){person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer}else{"Ukjent fnummer"},
             behandlingstype = oppgave.behandlingType,
             fagsakYtelseType = oppgave.fagsakYtelseType,
             behandlingStatus = oppgave.behandlingStatus,
@@ -276,17 +286,19 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
+        val ferdigstilteManuelt = statistikkRepository.hentFerdigstilte()
         return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
             val hentIdentTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
             val antallFerdistilteMine =
                 reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
                     .toSet())
                     .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
+            val ferdigstilte = ferdigstilteManuelt.find { f -> f.behandlingType == it.behandlingType && f.dato == it.dato }
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = it.behandlingType,
                 dato = it.dato,
                 antallNye = it.nye.size,
-                antallFerdigstilte = it.ferdigstilte.size,
+                antallFerdigstilte = ferdigstilte?.antall ?: it.ferdigstilte.size,
                 antallFerdigstilteMine = antallFerdistilteMine
             )
         }
@@ -663,16 +675,15 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     suspend fun settSkjermet(oppgave: Oppgave) {
         log.info("Skjermer oppgave")
-        oppgave.kode6 = true
         oppgaveRepository.lagre(oppgave.eksternId) { it ->
-            it?.kode6 = true
             it!!
         }
+        val oppaveSkjermet = oppgaveRepository.hent(oppgave.eksternId)
         for (oppgaveKø in oppgaveKøRepository.hent()) {
-            val skalOppdareKø = oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+            val skalOppdareKø = oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppaveSkjermet, reservasjonRepository)
             if (skalOppdareKø) {
                 oppgaveKøRepository.lagre(oppgaveKø.id) {
-                    it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
+                    it!!.leggOppgaveTilEllerFjernFraKø(oppaveSkjermet, reservasjonRepository)
                     it
                 }
             }
