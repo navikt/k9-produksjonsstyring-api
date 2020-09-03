@@ -10,21 +10,37 @@ import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
 import no.nav.k9.utils.Cache
+import no.nav.k9.utils.CacheObject
+import no.nav.k9.utils.sha512
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.LocalDateTime
+import java.util.*
 
 open class K9SakService @KtorExperimentalAPI constructor(
     val configuration: Configuration,
     accessTokenClient: AccessTokenClient
-) {
+) : IK9SakService {
     val log = LoggerFactory.getLogger("K9SakService")
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
-    private val cache = Cache<String>()
-    suspend fun hentIdentTilInnloggetBruker(behandlingIdList: BehandlingIdListe) {
-        val body = objectMapper().writeValueAsString(behandlingIdList)
+    private val cache = Cache<Boolean>()
+    private val cacheBehandlingsId = Cache<Boolean>()
+    override suspend fun refreshBehandlinger(behandlingIdList: BehandlingIdListe) {
         
+        behandlingIdList.behandlingUuid.forEach{
+            if (cacheBehandlingsId.get(it.toString()) == null) {
+                cache.set(it.toString(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
+            }
+        }
+        
+        val body = objectMapper().writeValueAsString(BehandlingIdListe(cacheBehandlingsId.getKeys().map { BehandlingIdDto(UUID.fromString(it)) }))
+        if (cache.get(body.sha512()) != null) {
+            return
+        }
+        cache.set(body.sha512(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
         val httpRequest = "${configuration.k9Url()}/behandling/backend-root/refresh"
             .httpPost()
             .body(

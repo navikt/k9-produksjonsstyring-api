@@ -17,6 +17,9 @@ import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.azuregraph.AzureGraphServiceLocal
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
+import no.nav.k9.integrasjon.k9.IK9SakService
+import no.nav.k9.integrasjon.k9.K9SakService
+import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlService
@@ -209,6 +212,9 @@ fun localDevConfig(app: Application, config: Configuration) = module {
     single {
         PepClientLocal() as IPepClient
     }
+    single {
+        K9SakServiceLocal() as IK9SakService
+    }
     single { RequestContextServiceLocal() as IRequestContextService }
 
     single {
@@ -225,6 +231,9 @@ fun preprodConfig(app: Application, config: Configuration) = module {
     }
     single {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
+    }
+    single {
+        K9SakService(configuration = get(), accessTokenClient =get()) as IK9SakService
     }
 
     single { RequestContextService() as IRequestContextService }
@@ -248,7 +257,9 @@ fun prodConfig(app: Application, config: Configuration) = module {
     single {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
     }
-
+    single {
+        K9SakService(configuration = get(), accessTokenClient =get()) as IK9SakService
+    }
     single { RequestContextService() as IRequestContextService }
 
     single {

@@ -10,6 +10,9 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.integrasjon.k9.IK9SakService
+import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
+import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
@@ -34,13 +37,15 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository,
-    saksbehandlerRepository: SaksbehandlerRepository
+    saksbehandlerRepository: SaksbehandlerRepository,
+    k9SakService: IK9SakService
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     oppdatereKøerMedOppgave(
         channel = channel,
         oppgaveKøRepository = oppgaveKøRepository,
         reservasjonRepository = reservasjonRepository,
-        saksbehandlerRepository = saksbehandlerRepository
+        saksbehandlerRepository = saksbehandlerRepository,
+        k9SakService = k9SakService
     )
 }
 
@@ -113,7 +118,8 @@ suspend fun oppdatereKøerMedOppgave(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository,
-    saksbehandlerRepository: SaksbehandlerRepository
+    saksbehandlerRepository: SaksbehandlerRepository,
+    k9SakService: IK9SakService
 ) {
     val log = LoggerFactory.getLogger("behandleOppgave")
 
@@ -145,8 +151,13 @@ suspend fun oppdatereKøerMedOppgave(
                         }
                         it!!
                     }
+
+                    val behandlingsListe = mutableListOf<BehandlingIdDto>()
+                    behandlingsListe.addAll(oppgavekø.oppgaverOgDatoer.take(10).map { BehandlingIdDto(it.id) }.toList())
+                    k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
                 }
             }
+
             log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
             oppgaveListe.clear()
             oppgaveListe.add(channel.receive())

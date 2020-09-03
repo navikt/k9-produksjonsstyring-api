@@ -110,7 +110,8 @@ fun Application.k9Los() {
             oppgaveKøRepository = koin.get(),
             channel = koin.get<Channel<Oppgave>>(named("oppgaveChannel")),
             reservasjonRepository = koin.get(),
-            saksbehandlerRepository = koin.get()
+            saksbehandlerRepository = koin.get(),
+            k9SakService = koin.get()
         )
 
     val asynkronProsesseringV1Service = koin.get<AsynkronProsesseringV1Service>()

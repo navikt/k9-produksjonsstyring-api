@@ -49,7 +49,7 @@ internal fun Route.NavAnsattApis() {
                     kanBehandleKodeEgenAnsatt = pepClient.harBasisTilgang(),
                     kanBehandleKode6 = pepClient.harBasisTilgang(),
                     kanBehandleKode7 = pepClient.harBasisTilgang(),
-                    kanOppgavestyre = pepClient.erOppgaveStyrer() || pepClient.erOppgaveStyrerSkjermet(),
+                    kanOppgavestyre = pepClient.erOppgaveStyrer(),
                     kanReservere = pepClient.harTilgangTilReservingAvOppgaver(),
                     kanDrifte = pepClient.kanLeggeUtDriftsmelding()
                 )
