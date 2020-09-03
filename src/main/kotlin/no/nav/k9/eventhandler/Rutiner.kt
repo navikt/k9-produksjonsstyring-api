@@ -131,8 +131,11 @@ suspend fun oppdatereKøerMedOppgave(
         if (oppgave == null) {
             log.info("Starter oppdatering av oppgave")
             val measureTimeMillis = measureTimeMillis {
-                reservasjonRepository.fjernGamleReservasjoner(
+                val reservasjoner =
                     saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }.toSet()
+                log.info("Fjernet gamle reservasjoner " + reservasjoner.size)
+                reservasjonRepository.fjernGamleReservasjoner(
+                    reservasjoner
                 )
                 log.info("Fjernet gamle reservasjoner")
                 for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
