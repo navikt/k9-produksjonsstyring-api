@@ -131,15 +131,7 @@ suspend fun oppdatereKøerMedOppgave(
         if (oppgave == null) {
             log.info("Starter oppdatering av oppgave")
             val measureTimeMillis = measureTimeMillis {
-                val reservasjoner =
-                    saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }.toSet()
-                log.info("Fjernet gamle reservasjoner " + reservasjoner.size)
-                reservasjonRepository.fjernGamleReservasjoner(
-                    reservasjoner
-                )
-                log.info("Fjernet gamle reservasjoner")
                 for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
-                    log.info("Fjernet gamle reservasjoner")
                     var refresh = false
                     for (o in oppgaveListe) {
                         refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
@@ -158,7 +150,7 @@ suspend fun oppdatereKøerMedOppgave(
                         }
                         it!!
                     }
-                   val behandlingsListe = mutableListOf<BehandlingIdDto>()
+                    val behandlingsListe = mutableListOf<BehandlingIdDto>()
                     behandlingsListe.addAll(oppgavekø.oppgaverOgDatoer.take(10).map { BehandlingIdDto(it.id) }.toList())
                     k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
                 }
