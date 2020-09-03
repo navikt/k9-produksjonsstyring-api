@@ -1,7 +1,7 @@
 package no.nav.k9
 
-import io.ktor.config.ApplicationConfig
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.config.*
+import io.ktor.util.*
 import no.nav.helse.dusseldorf.ktor.auth.clients
 import no.nav.helse.dusseldorf.ktor.auth.issuers
 import no.nav.helse.dusseldorf.ktor.auth.withoutAdditionalClaimRules
@@ -27,6 +27,7 @@ data class Configuration(private val config: ApplicationConfig) {
     internal fun clients() = clients
 
     internal fun pdlUrl() = URI(config.getRequiredString("nav.register_urls.pdl_url", secret = false))
+    internal fun k9Url() = config.getRequiredString("nav.register_urls.k9_url", secret = false)
 
     internal val abacUsername = config.getRequiredString("nav.abac.system_user", secret = false)
     internal val abacPassword = config.getRequiredString("nav.abac.system_user_password", secret = false)
