@@ -1,6 +1,6 @@
 package no.nav.k9.integrasjon.sakogbehandling
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
 import no.nav.helse.dusseldorf.ktor.health.Healthy
 import no.nav.helse.dusseldorf.ktor.health.Result
@@ -55,7 +55,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
                melding
             )
         ).get()
-        log.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+//        log.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
     }
 
     @KtorExperimentalAPI
@@ -73,7 +73,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
                 melding
             )
         ).get()
-        log.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
+//        log.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
        // logger.info("AvsluttetBehandling: $melding")
     }
 
