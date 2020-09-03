@@ -107,7 +107,7 @@ fun Route.innsiktGrensesnitt() {
                                 .map { reservasjon -> reservasjon.reservertAv }.first()
                             saksbehandlerRepository.finnSaksbehandlerMedIdentIkkeTaHensyn(reservertav)?.enhet?.substringBefore(" ")
                         } else {
-                            null
+                            "SRV"
                         }
                         list.add(MappingEnhet(s, enhet))
                     }
