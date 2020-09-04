@@ -68,6 +68,52 @@ class SaksbehandlerRepository(
         }
     }
 
+    private fun lagreMedIdIkkeTaHensyn(
+        id: String,
+        f: (Saksbehandler?) -> Saksbehandler
+    ) {
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                val run = tx.run(
+                    queryOf(
+                        "select data from saksbehandler where saksbehandlerid = :saksbehandlerid update",
+                        mapOf("saksbehandlerid" to id)
+                    )
+                        .map { row ->
+                            row.stringOrNull("data")
+                        }.asSingle
+                )
+                val forrige: Saksbehandler?
+                val saksbehandler = if (!run.isNullOrEmpty()) {
+                    forrige = objectMapper().readValue(run, Saksbehandler::class.java)
+                    f(forrige)
+                } else {
+                    f(null)
+                }
+
+                val json = objectMapper().writeValueAsString(saksbehandler)
+                tx.run(
+                    queryOf(
+                        """
+                        insert into saksbehandler as k (saksbehandlerid,navn, epost, data, skjermet)
+                        values (:saksbehandlerid,:navn,:epost, :data :: jsonb, :skjermet)
+                        on conflict (epost) do update
+                        set data = :data :: jsonb, 
+                            saksbehandlerid = :saksbehandlerid,
+                            navn = :navn
+                     """,
+                        mapOf(
+                            "saksbehandlerid" to id,
+                            "epost" to saksbehandler.epost,
+                            "navn" to saksbehandler.navn,
+                            "data" to json
+                        )
+                    ).asUpdate
+                )
+            }
+        }
+    }
+    
     private suspend fun lagreMedEpost(
         epost: String,
         f: (Saksbehandler?) -> Saksbehandler
@@ -132,12 +178,26 @@ class SaksbehandlerRepository(
         if (id == null) {
             return
         }
-        lagreMedId(id) { saksbehandler ->
-            saksbehandler!!.reservasjoner.remove(reservasjon)
-            saksbehandler
+        if (finnSaksbehandlerMedIdent(id) != null) {
+            lagreMedId(id) { saksbehandler ->
+                saksbehandler!!.reservasjoner.remove(reservasjon)
+                saksbehandler
+            }
         }
     }
 
+     fun fjernReservasjonIkkeTaHensyn(id: String?, reservasjon: UUID) {
+        if (id == null) {
+            return
+        }
+        if (finnSaksbehandlerMedIdentIkkeTaHensyn(id) != null) {
+            lagreMedIdIkkeTaHensyn(id) { saksbehandler ->
+                saksbehandler!!.reservasjoner.remove(reservasjon)
+                saksbehandler
+            }
+        }
+    }
+    
     suspend fun addSaksbehandler(saksbehandler: Saksbehandler) {
         lagreMedEpost(saksbehandler.epost) {
             if (it == null) {
@@ -185,7 +245,7 @@ class SaksbehandlerRepository(
         return saksbehandler
     }
 
-     fun finnSaksbehandlerMedIdentIkkeTaHensyn(ident: String): Saksbehandler? {
+    fun finnSaksbehandlerMedIdentIkkeTaHensyn(ident: String): Saksbehandler? {
         val saksbehandler = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -199,7 +259,7 @@ class SaksbehandlerRepository(
         }
         return saksbehandler
     }
-    
+
     @KtorExperimentalAPI
     suspend fun slettSaksbehandler(epost: String) {
         val skjermet = pepClient.harTilgangTilKode6()

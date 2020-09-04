@@ -151,7 +151,8 @@ fun common(app: Application, config: Configuration) = module {
             reservasjonRepository = get(),
             statistikkProducer = get(),
             oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
-            statistikkRepository = get()
+            statistikkRepository = get(),
+            saksbehhandlerRepository = get()
         )
     }
 

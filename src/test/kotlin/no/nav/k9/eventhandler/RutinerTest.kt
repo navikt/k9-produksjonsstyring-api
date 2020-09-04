@@ -109,7 +109,8 @@ class RutinerTest {
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         k9sakEventHandler.prosesser(getEvent("5YC4K"))

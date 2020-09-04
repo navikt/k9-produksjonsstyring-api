@@ -38,7 +38,7 @@ class K9sakEventHandlerTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
         val saksbehandlerRepository = SaksbehandlerRepository(
             dataSource = dataSource,
             pepClient = PepClientLocal()
@@ -76,7 +76,7 @@ class K9sakEventHandlerTest {
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository, saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -124,9 +124,11 @@ class K9sakEventHandlerTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
+        val saksbehandlerRepository = SaksbehandlerRepository(
+            dataSource = dataSource,
+            pepClient = PepClientLocal()
+        )
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -151,7 +153,7 @@ class K9sakEventHandlerTest {
         val config = mockk<Configuration>()
         every { KoinProfile.LOCAL == config.koinProfile() } returns true
         val k9sakEventHandler = K9sakEventHandler(
-            OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal()),
+            OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal()),
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
             sakOgBehadlingProducer = sakOgBehadlingProducer,
@@ -159,7 +161,8 @@ class K9sakEventHandlerTest {
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -202,11 +205,13 @@ class K9sakEventHandlerTest {
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
+        val saksbehandlerRepository = SaksbehandlerRepository(
+            dataSource = dataSource,
+            pepClient = PepClientLocal()
+        )
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
@@ -239,7 +244,8 @@ class K9sakEventHandlerTest {
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -287,9 +293,11 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
+        val saksbehandlerRepository = SaksbehandlerRepository(
+            dataSource = dataSource,
+            pepClient = PepClientLocal()
+        )
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
@@ -322,7 +330,8 @@ class K9sakEventHandlerTest {
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -373,9 +382,11 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
+        val saksbehandlerRepository = SaksbehandlerRepository(
+            dataSource = dataSource,
+            pepClient = PepClientLocal()
+        )
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
@@ -408,7 +419,8 @@ class K9sakEventHandlerTest {
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -457,9 +469,11 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
+        val saksbehandlerRepository = SaksbehandlerRepository(
+            dataSource = dataSource,
+            pepClient = PepClientLocal()
+        )
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
@@ -492,7 +506,8 @@ class K9sakEventHandlerTest {
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =

@@ -25,7 +25,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     val reservasjonRepository: ReservasjonRepository,
     val statistikkProducer: StatistikkProducer,
     val oppgaverSomSkalInnPåKøer: Channel<Oppgave>,
-    val statistikkRepository: StatistikkRepository
+    val statistikkRepository: StatistikkRepository,
+    val saksbehhandlerRepository: SaksbehandlerRepository
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
@@ -38,6 +39,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
         if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
+
         }
         oppgaveRepository.lagre(oppgave.eksternId) {
             if (modell.starterSak()) {
@@ -80,7 +82,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     it
                 }
             }
-            
+
             if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
                 statistikkRepository.lagre(
                     AlleOppgaverNyeOgFerdigstilte(
@@ -92,8 +94,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     it.ferdigstilte.add(oppgave.eksternId.toString())
                     it
                 }
-            }            
-            
+            }
+
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)
                 if (reservasjonRepository.finnes(oppgave.eksternId)) {
@@ -129,12 +131,19 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
 
     private fun fjernReservasjon(oppgave: Oppgave) {
+
         if (reservasjonRepository.finnes(oppgave.eksternId)) {
-            reservasjonRepository.lagre(oppgave.eksternId, true) {
-                it!!.reservertTil = null
-                it
+            reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
+                reservasjon!!.reservertTil = null
+                reservasjon
             }
+            val reservasjon = reservasjonRepository.hent(oppgave.eksternId)
+            saksbehhandlerRepository.fjernReservasjonIkkeTaHensyn(
+                reservasjon.reservertAv,
+                reservasjon.oppgave
+            )
         }
+
     }
 
 }
