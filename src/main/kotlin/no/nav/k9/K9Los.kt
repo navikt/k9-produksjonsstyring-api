@@ -329,7 +329,7 @@ private fun Application.regenererOppgaver(
                 oppgaveRepository.lagre(oppgave.eksternId) {
                     oppgave
                 }
-                if (index % 1000 == 0) {
+                if (index % 10 == 0) {
                     log.info("Synkronisering " + index + " av " + hentAktiveOppgaver.size)
                 }
             }
