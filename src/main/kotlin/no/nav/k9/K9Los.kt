@@ -313,19 +313,19 @@ private fun Application.regenererOppgaver(
             for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
-                if (!oppgave.aktiv) {
-                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
-                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
-                            reservasjon!!.reservertTil = null
-                            reservasjon
-                        }
-                        val reservasjon = reservasjonRepository.hent(oppgave.eksternId)
-                        saksbehhandlerRepository.fjernReservasjon(
-                            reservasjon.reservertAv,
-                            reservasjon.oppgave
-                        )
-                    }
-                }
+//                if (!oppgave.aktiv) {
+//                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
+//                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
+//                            reservasjon!!.reservertTil = null
+//                            reservasjon
+//                        }
+//                        val reservasjon = reservasjonRepository.hent(oppgave.eksternId)
+//                        saksbehhandlerRepository.fjernReservasjon(
+//                            reservasjon.reservertAv,
+//                            reservasjon.oppgave
+//                        )
+//                    }
+//                }
                 oppgaveRepository.lagre(oppgave.eksternId) {
                     oppgave
                 }
