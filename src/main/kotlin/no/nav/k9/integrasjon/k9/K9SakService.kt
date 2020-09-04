@@ -10,6 +10,7 @@ import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
 import no.nav.k9.utils.Cache
@@ -18,6 +19,7 @@ import no.nav.k9.utils.sha512
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.*
 
 open class K9SakService @KtorExperimentalAPI constructor(
     val configuration: Configuration,
@@ -51,7 +53,8 @@ open class K9SakService @KtorExperimentalAPI constructor(
             .header(
                 HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(emptySet()).asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
-                HttpHeaders.ContentType to "application/json"
+                HttpHeaders.ContentType to "application/json",
+                NavHeaders.CallId to UUID.randomUUID().toString()
             )
 
         val json = Retry.retry(
