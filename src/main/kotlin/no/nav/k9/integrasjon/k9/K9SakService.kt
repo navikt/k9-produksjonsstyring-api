@@ -18,7 +18,6 @@ import no.nav.k9.utils.sha512
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.*
 
 open class K9SakService @KtorExperimentalAPI constructor(
     val configuration: Configuration,
@@ -29,14 +28,11 @@ open class K9SakService @KtorExperimentalAPI constructor(
     private val cache = Cache<Boolean>()
     private val cacheBehandlingsId = Cache<Boolean>()
     override suspend fun refreshBehandlinger(behandlingIdList: BehandlingIdListe) {
-        behandlingIdList.behandlingUuid.forEach{
-            if (cacheBehandlingsId.get(it.toString()) == null) {
-                cache.set(it.toString(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
-            }
-        }
-
         val behandlingIdListe =
-            BehandlingIdListe(cacheBehandlingsId.getKeys().map { BehandlingIdDto(UUID.fromString(it)) }.take(999))
+            BehandlingIdListe(behandlingIdList.behandlingUuid.filter {
+                cache.setIfEmpty(it.toString(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
+            }.map { BehandlingIdDto(it) }.take(999))
+        
         if (behandlingIdListe.behandlinger.isEmpty()) {
             return
         }
@@ -45,7 +41,7 @@ open class K9SakService @KtorExperimentalAPI constructor(
             return
         }
         cache.set(body.sha512(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
-       
+
         val httpRequest = "${configuration.k9Url()}/behandling/backend-root/refresh"
             .httpPost()
             .body(
@@ -70,9 +66,10 @@ open class K9SakService @KtorExperimentalAPI constructor(
             ) { httpRequest.awaitStringResponseResult() }
 
             result.fold(
-                { success -> 
+                { success ->
                     log.info(success)
-                    success },
+                    success
+                },
                 { error ->
                     log.error(request.toString())
                     log.error(
