@@ -25,9 +25,10 @@ open class K9SakService @KtorExperimentalAPI constructor(
 ) : IK9SakService {
     val log = LoggerFactory.getLogger("K9SakService")
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
-    private val cache = Cache<Boolean>()
-    private val cacheBehandlingsId = Cache<Boolean>()
+    private val cache = Cache<Boolean>(cacheSize = 10000)
+    @KtorExperimentalAPI
     override suspend fun refreshBehandlinger(behandlingIdList: BehandlingIdListe) {
+        // Passer på at vi ikke sender behandlingsider om igjen før det har gått 24 timer
         val behandlingIdListe =
             BehandlingIdListe(behandlingIdList.behandlingUuid.filter {
                 cache.setIfEmpty(it.toString(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
