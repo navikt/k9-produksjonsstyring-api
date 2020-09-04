@@ -306,39 +306,43 @@ private fun Application.regenererOppgaver(
     oppgaveKøRepository: OppgaveKøRepository,
     saksbehhandlerRepository: SaksbehandlerRepository
 ) {
-    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-        log.info("Starter oppgavesynkronisering")
-        val measureTimeMillis = measureTimeMillis {
+    launch(context = Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+        try {
 
-            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-            for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
-                val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
-                val oppgave = event.oppgave()
-//                if (!oppgave.aktiv) {
-//                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
-//                        reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
-//                            reservasjon!!.reservertTil = null
-//                            reservasjon
-//                        }
-//                        val reservasjon = reservasjonRepository.hent(oppgave.eksternId)
-//                        saksbehhandlerRepository.fjernReservasjon(
-//                            reservasjon.reservertAv,
-//                            reservasjon.oppgave
-//                        )
-//                    }
-//                }
-                oppgaveRepository.lagre(oppgave.eksternId) {
-                    oppgave
+            log.info("Starter oppgavesynkronisering")
+            val measureTimeMillis = measureTimeMillis {
+                val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+                for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
+                    val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
+                    val oppgave = event.oppgave()
+                    if (!oppgave.aktiv) {
+                        if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                            reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
+                                reservasjon!!.reservertTil = null
+                                reservasjon
+                            }
+                            val reservasjon = reservasjonRepository.hent(oppgave.eksternId)
+                            saksbehhandlerRepository.fjernReservasjonIkkeTaHensyn(
+                                reservasjon.reservertAv,
+                                reservasjon.oppgave
+                            )
+                        }
+                    }
+                    oppgaveRepository.lagre(oppgave.eksternId) {
+                        oppgave
+                    }
+                    if (index % 10 == 0) {
+                        log.info("Synkronisering " + index + " av " + hentAktiveOppgaver.size)
+                    }
                 }
-                if (index % 10 == 0) {
-                    log.info("Synkronisering " + index + " av " + hentAktiveOppgaver.size)
+                for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
+                    oppgaveKøRepository.oppdaterKøMedOppgaver(oppgavekø.id)
                 }
             }
-            for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
-                oppgaveKøRepository.oppdaterKøMedOppgaver(oppgavekø.id)
-            }
+            log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
+        } catch (e: Exception) {
+            log.error("", e)
         }
-        log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
     }
 }
 
