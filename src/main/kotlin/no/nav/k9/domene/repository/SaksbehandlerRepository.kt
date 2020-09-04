@@ -76,7 +76,7 @@ class SaksbehandlerRepository(
             it.transaction { tx ->
                 val run = tx.run(
                     queryOf(
-                        "select data from saksbehandler where saksbehandlerid = :saksbehandlerid update",
+                        "select data from saksbehandler where saksbehandlerid = :saksbehandlerid for update",
                         mapOf("saksbehandlerid" to id)
                     )
                         .map { row ->
