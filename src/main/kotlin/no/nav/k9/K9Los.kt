@@ -20,7 +20,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -116,7 +115,7 @@ fun Application.k9Los() {
     val asynkronProsesseringV1Service = koin.get<AsynkronProsesseringV1Service>()
     val sakOgBehadlingProducer = koin.get<SakOgBehadlingProducer>()
     val statistikkProducer = koin.get<StatistikkProducer>()
-    
+
     environment.monitor.subscribe(ApplicationStopping) {
         log.info("Stopper AsynkronProsesseringV1Service.")
         asynkronProsesseringV1Service.stop()
@@ -310,25 +309,28 @@ private fun Application.regenererOppgaver(
         log.info("Starter oppgavesynkronisering")
         val measureTimeMillis = measureTimeMillis {
 
-            for (aktivOppgave in oppgaveRepository.hentAktiveOppgaver()) {
+            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+            for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
                 val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
                 val oppgave = event.oppgave()
                 if (!oppgave.aktiv) {
                     if (reservasjonRepository.finnes(oppgave.eksternId)) {
                         reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
                             reservasjon!!.reservertTil = null
-                            runBlocking {
-                                saksbehhandlerRepository.fjernReservasjon(
-                                    reservasjon.reservertAv,
-                                    reservasjon.oppgave
-                                )
-                            }
                             reservasjon
                         }
+                        val reservasjon = reservasjonRepository.hent(oppgave.eksternId)
+                        saksbehhandlerRepository.fjernReservasjon(
+                            reservasjon.reservertAv,
+                            reservasjon.oppgave
+                        )
                     }
                 }
                 oppgaveRepository.lagre(oppgave.eksternId) {
                     oppgave
+                }
+                if (index % 1000 == 0) {
+                    log.info("Synkronisering " + index + " av " + hentAktiveOppgaver.size)
                 }
             }
             for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
