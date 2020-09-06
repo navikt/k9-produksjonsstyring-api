@@ -266,12 +266,29 @@ class OppgaveRepository(
         return count!!
     }
 
-    internal fun hentInaktiveOppgaverTotalt(): Int {
+    internal fun hentAvsluttede(): Int {
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' = 'AVSLU') ::boolean",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        log.info("Teller inaktive oppgaver: $spørring ms")
+        return count!!
+    }
+    internal fun hentInaktiveIkkeAvluttedeAvsluttede(): Int {
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' != 'AVSLU') and (data -> 'aktiv')::boolean = false",
                     mapOf()
                 )
                     .map { row ->
