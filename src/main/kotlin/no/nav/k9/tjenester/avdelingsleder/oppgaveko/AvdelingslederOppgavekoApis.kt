@@ -95,7 +95,7 @@ fun Route.AvdelingslederOppgavekøApis() {
     @Location("/hent")
     class hentOppgaveKø
     get { _: hentOppgaveKø ->
-        val uuid = call.receive<IdDto>()
+        val uuid = call.request.queryParameters.get("id")
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
@@ -106,7 +106,7 @@ fun Route.AvdelingslederOppgavekøApis() {
                 }
             )
         ) {
-            call.respond(avdelingslederTjeneste.hentOppgaveKø(UUID.fromString(uuid.id)))
+            call.respond(avdelingslederTjeneste.hentOppgaveKø(UUID.fromString(uuid)))
         }
     }
 
