@@ -297,7 +297,7 @@ class SaksbehandlerRepository(
     }
 
     @KtorExperimentalAPI
-    suspend fun hentAlleSaksbehandlereIkkeTaHensyn(): List<Saksbehandler> {
+    fun hentAlleSaksbehandlereIkkeTaHensyn(): List<Saksbehandler> {
         val identer = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(

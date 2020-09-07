@@ -28,6 +28,26 @@ class AvdelingslederTjeneste(
     private val pepClient: IPepClient,
     private val configuration: Configuration
 ) {
+    suspend fun hentOppgaveKø(uuid: UUID): OppgavekøDto {
+        val oppgaveKø = oppgaveKøRepository.hentOppgavekø(uuid)
+        return OppgavekøDto(
+            id = oppgaveKø.id,
+            navn = oppgaveKø.navn,
+            sortering = SorteringDto(
+                sorteringType = KøSortering.fraKode(oppgaveKø.sortering.kode),
+                fomDato = oppgaveKø.fomDato,
+                tomDato = oppgaveKø.tomDato
+            ),
+            behandlingTyper = oppgaveKø.filtreringBehandlingTyper,
+            fagsakYtelseTyper = oppgaveKø.filtreringYtelseTyper,
+            andreKriterier = oppgaveKø.filtreringAndreKriterierType,
+            sistEndret = oppgaveKø.sistEndret,
+            skjermet = oppgaveKø.skjermet,
+            antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(oppgaveKø.id, true),
+            saksbehandlere = oppgaveKø.saksbehandlere
+        )
+    }
+
     @KtorExperimentalAPI
     suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
         if (!erOppgaveStyrer()) {
@@ -85,7 +105,7 @@ class AvdelingslederTjeneste(
     @KtorExperimentalAPI
     suspend fun slettOppgavekø(uuid: UUID) {
         if (!erOppgaveStyrer()) {
-            return 
+            return
         }
         oppgaveKøRepository.slett(uuid)
     }
@@ -258,7 +278,7 @@ class AvdelingslederTjeneste(
             it.reservertTil = null
             it
         }
-         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
+        saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
         for (oppgaveKø in oppgaveKøRepository.hent()) {
             oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
@@ -268,4 +288,6 @@ class AvdelingslederTjeneste(
         }
         return reservasjon
     }
+
+
 }

@@ -235,9 +235,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             status = oppgaveStatus,
             behandlingId = oppgave.behandlingId,
             saksnummer = oppgave.fagsakSaksnummer,
-            navn = person.person?.navn()?:"Ukjent navn",
+            navn = person.person?.navn() ?: "Ukjent navn",
             system = oppgave.system,
-            personnummer = if(person.person != null){person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer}else{"Ukjent fnummer"},
+            personnummer = if (person.person != null) {
+                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+            } else {
+                "Ukjent fnummer"
+            },
             behandlingstype = oppgave.behandlingType,
             fagsakYtelseType = oppgave.fagsakYtelseType,
             behandlingStatus = oppgave.behandlingStatus,

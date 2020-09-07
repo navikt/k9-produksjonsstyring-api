@@ -126,7 +126,11 @@ internal fun Route.AvdelingslederApis() {
             withContext(
                 requestContextService.getCoroutineContext(
                     context = coroutineContext,
-                    idToken = call.idToken()
+                    idToken = if (profile != KoinProfile.LOCAL) {
+                        call.idToken()
+                    } else {
+                        IdTokenLocal()
+                    }
                 )
             ) {
                 call.respond(avdelingslederTjeneste.hentAlleReservasjoner())
