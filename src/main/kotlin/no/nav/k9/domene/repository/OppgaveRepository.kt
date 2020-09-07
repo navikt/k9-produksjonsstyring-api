@@ -97,68 +97,32 @@ class OppgaveRepository(
                 } else {
                     f(null)
                 }
-                val json = objectMapper().writeValueAsString(oppgave)
                 var kode6 = false
+                var skjermet = false
                 runBlocking {
                     kode6 = pepClient.erSakKode6(oppgave.fagsakSaksnummer)
+                    skjermet = pepClient.erSakKode7EllerEgenAnsatt(oppgave.fagsakSaksnummer)
                 }
-
+                oppgave.kode6 = kode6
+                oppgave.skjermet = skjermet
+                val json = objectMapper().writeValueAsString(oppgave)
                 tx.run(
                     queryOf(
                         """
-                    insert into oppgave as k (id, data, skjermet)
-                    values (:id, :data :: jsonb, :skjermet)
+                    insert into oppgave as k (id, data)
+                    values (:id, :data :: jsonb)
                     on conflict (id) do update
-                    set data = :data :: jsonb, skjermet = :skjermet
-                 """, mapOf("id" to uuid.toString(), "data" to json, "skjermet" to kode6)
+                    set data = :data :: jsonb
+                 """, mapOf("id" to uuid.toString(), "data" to json)
                     ).asUpdate
                 )
             }
         }
     }
 
+  
     @KtorExperimentalAPI
-    suspend fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
-        var harTilgangTilSkjermet = pepClient.harTilgangTilKode6()
-
-        val oppgaveiderList = oppgaveider.toList()
-        if (oppgaveider.isEmpty()) {
-            return emptyList()
-        }
-
-        var spørring = System.currentTimeMillis()
-        val session = sessionOf(dataSource)
-        val json: List<String> = using(session) {
-            val map = mutableMapOf("skjermet" to harTilgangTilSkjermet as Any)
-            map.putAll(IntRange(0, oppgaveiderList.size - 1).map { t -> "p$t" to oppgaveiderList[t].toString() as Any }
-                .toMap())
-            //language=PostgreSQL
-            it.run(
-                queryOf(
-                    "select data from oppgave " +
-                            "where id in (${
-                                IntRange(0, oppgaveiderList.size - 1).map { t -> ":p$t" }.joinToString()
-                            }) and skjermet = :skjermet",
-                    map
-                )
-                    .map { row ->
-                        row.string("data")
-                    }.asList
-            )
-        }
-        spørring = System.currentTimeMillis() - spørring
-        val serialisering = System.currentTimeMillis()
-        val list =
-            json.filter { it.indexOf("oppgaver") == -1 }.map { s -> objectMapper().readValue(s, Oppgave::class.java) }
-                .toList()
-                .sortedBy { oppgave -> oppgave.behandlingOpprettet }
-
-        log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
-        return list
-    }
-
-    @KtorExperimentalAPI
-    fun hentOppgaverIkkeTaHensyn(oppgaveider: Collection<UUID>): List<Oppgave> {
+    fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
       
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
@@ -227,7 +191,8 @@ class OppgaveRepository(
         }
     }
 
-    fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
+    suspend fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
+        val kode6 =  pepClient.harTilgangTilKode6()
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -240,15 +205,16 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
+        return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.filter { it.kode6 ==kode6 }.toList()
     }
 
-    fun hentOppgaverMedSaksnummer(saksnummer: String): List<Oppgave> {
+    suspend fun hentOppgaverMedSaksnummer(saksnummer: String): List<Oppgave> {
+        val kode6 =  pepClient.harTilgangTilKode6()
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select data from oppgave where lower(data ->> 'fagsakSaksnummer') = lower(:saksnummer)",
+                    "select data from oppgave where lower(data ->> 'fagsakSaksnummer') = lower(:saksnummer) ",
                     mapOf("saksnummer" to saksnummer)
                 )
                     .map { row ->
@@ -256,7 +222,7 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { objectMapper().readValue(it, Oppgave::class.java) }
+        return json.map { objectMapper().readValue(it, Oppgave::class.java) }.filter { it.kode6 ==kode6 }
     }
 
     suspend internal fun hentAktiveOppgaverTotalt(): Int {
@@ -265,8 +231,8 @@ class OppgaveRepository(
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean and skjermet =:skjermet",
-                    mapOf("skjermet" to kode6)
+                    "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean and (data -> 'kode6'):: Boolean =:kode6 ",
+                    mapOf("kode6" to kode6)
                 )
                     .map { row ->
                         row.int("count")
@@ -300,12 +266,29 @@ class OppgaveRepository(
         return count!!
     }
 
-    internal fun hentInaktiveOppgaverTotalt(): Int {
+    internal fun hentAvsluttede(): Int {
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
                     "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' = 'AVSLU') ::boolean",
+                    mapOf()
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        log.info("Teller inaktive oppgaver: $spørring ms")
+        return count!!
+    }
+    internal fun hentInaktiveIkkeAvluttedeAvsluttede(): Int {
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' != 'AVSLU') and (data -> 'aktiv')::boolean = false",
                     mapOf()
                 )
                     .map { row ->

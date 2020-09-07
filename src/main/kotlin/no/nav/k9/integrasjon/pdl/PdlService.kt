@@ -94,8 +94,9 @@ class PdlService @KtorExperimentalAPI constructor(
                 return PersonPdlResponse(false, readValue)
             } catch (e: Exception) {
                 try {
-                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
-                    if (objectMapper().readValue<Error>(json!!).errors.any { it.extensions.code == "unauthorized" }){
+                    val value = objectMapper().readValue<Error>(json!!)
+                    log.warn(objectMapper().writeValueAsString(value))
+                    if (value.errors.any { it.extensions.code == "unauthorized" }){
                         return PersonPdlResponse(true, null)
                     }
                 } catch (e: Exception) {
@@ -121,6 +122,7 @@ class PdlService @KtorExperimentalAPI constructor(
         val query = objectMapper().writeValueAsString(
             queryRequest
         )
+        
         val cachedObject = cache.get(query)
         if (cachedObject == null) {
             val httpRequest = personUrl
@@ -166,8 +168,9 @@ class PdlService @KtorExperimentalAPI constructor(
                 return PdlResponse(false, objectMapper().readValue<AktøridPdl>(json))
             } catch (e: Exception) {
                 try {
-                    log.warn(objectMapper().writeValueAsString(objectMapper().readValue<Error>(json!!)))
-                    if (objectMapper().readValue<Error>(json!!).errors.any { it.extensions.code == "unauthorized" }){
+                    val value = objectMapper().readValue<Error>(json!!)
+                    log.warn(objectMapper().writeValueAsString(value))
+                    if (value.errors.any { it.extensions.code == "unauthorized" }){
                         return PdlResponse(true, null)
                     }
                 } catch (e: Exception) {

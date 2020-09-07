@@ -187,7 +187,19 @@ class StatistikkRepository(
             )
         }
     }
-
+    fun truncateNyeOgFerdigstilte(){
+        using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    """
+                            truncate nye_og_ferdigstilte
+                    """.trimIndent(),
+                    mapOf()
+                ).asUpdate
+            )
+        }
+    }
     fun hentFerdigstilteOgNyeHistorikkMedYtelsetype(antall: Int): List<AlleOppgaverNyeOgFerdigstilte> {
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
