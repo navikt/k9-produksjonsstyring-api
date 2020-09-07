@@ -27,7 +27,6 @@ import kotlin.test.assertTrue
 
 
 class K9sakEventHandlerTest {
-
     @KtorExperimentalAPI
     @Test
     fun `Skal lukke oppgave dersom den ikke har noen aktive aksjonspunkter`() {
