@@ -81,7 +81,7 @@ dependencies {
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
 
     testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
-
+    testImplementation("org.koin:koin-test:$koinVersion")
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("javax.ws.rs:javax.ws.rs-api:2.0")
