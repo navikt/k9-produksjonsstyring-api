@@ -92,6 +92,23 @@ fun Route.AvdelingslederOppgavekøApis() {
             call.respond(avdelingslederTjeneste.slettOppgavekø(UUID.fromString(uuid.id)))
         }
     }
+    @Location("/hent")
+    class hentOppgaveKø
+    get { _: hentOppgaveKø ->
+        val uuid = call.receive<IdDto>()
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = if (profile != KoinProfile.LOCAL) {
+                    call.idToken()
+                } else {
+                    IdTokenLocal()
+                }
+            )
+        ) {
+            call.respond(avdelingslederTjeneste.hentOppgaveKø(UUID.fromString(uuid.id)))
+        }
+    }
 
     @Location("/behandlingstype")
     class lagreBehandlingstype
