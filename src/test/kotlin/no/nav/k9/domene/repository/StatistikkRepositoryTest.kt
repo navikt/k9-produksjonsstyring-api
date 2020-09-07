@@ -55,28 +55,28 @@ class StatistikkRepositoryTest {
 //    }
 
     @KtorExperimentalAPI
-    @Test   
+    @Test
     fun skalFylleMedTommeElementerDersomViIkkeHarDataPåDenDagen() {
         val pg = EmbeddedPostgres.start()
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
 
         val statistikkRepository = StatistikkRepository(dataSource)
-        
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(0)
+
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(1)
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
     }
-    
+
     @KtorExperimentalAPI
-    @Test   
+    @Test
     fun skalFylleMedTommeElementerDersomVdiIkkeHarDataPåDenDagenIdempotent() {
         val pg = EmbeddedPostgres.start()
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
 
         val statistikkRepository = StatistikkRepository(dataSource)
-        
+
         val oppgave = Oppgave(
             behandlingId = 78567,
             fagsakSaksnummer = "5Yagdt",
@@ -104,19 +104,19 @@ class StatistikkRepositoryTest {
             årskvantum = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
-        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate().minusDays(1))){
             it.nye.add(oppgave.eksternId.toString())
             it
         }
-        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate().minusDays(1))){
             it.nye.add(oppgave.eksternId.toString())
             it
         }
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(0)
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(1)
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
         assert(omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size == 1)
-        
+
     }
 }
 
