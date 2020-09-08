@@ -135,13 +135,13 @@ fun Application.k9Los() {
     }.broadcast()
 
     // Synkroniser oppgaver
-     regenererOppgaver(
-         oppgaveRepository = koin.get(),
-         behandlingProsessEventRepository = koin.get(),
-         reservasjonRepository = koin.get(),
-         oppgaveKøRepository = koin.get(),
-         saksbehhandlerRepository = koin.get()
-     )
+//     regenererOppgaver(
+//         oppgaveRepository = koin.get(),
+//         behandlingProsessEventRepository = koin.get(),
+//         reservasjonRepository = koin.get(),
+//         oppgaveKøRepository = koin.get(),
+//         saksbehhandlerRepository = koin.get()
+//     )
     // rekjørForGrafer(koin.get(), koin.get())
 
     install(CallIdRequired)
