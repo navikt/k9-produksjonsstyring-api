@@ -1,28 +1,35 @@
 package no.nav.k9.db
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
+import no.nav.k9.buildAndTestConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.Aksjonspunkter
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.integrasjon.abac.PepClientLocal
+import org.junit.Rule
 import org.junit.Test
+import org.koin.test.KoinTest
+import org.koin.test.KoinTestRule
+import org.koin.test.get
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 
-class RekkefølgeJsonBArrayTest {
+class RekkefølgeJsonBArrayTest : KoinTest {
+    @get:Rule
+    val koinTestRule = KoinTestRule.create {
+        modules(buildAndTestConfig())
+    }
+
     @KtorExperimentalAPI
     @Test
-    fun `EndrerRekkefølgenIArrayeneSeg`() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
+    fun `Endrer rekkefølgen i arrayene seg?`() {
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val oppgaveRepository = get<OppgaveRepository>()
 
         val eksternId = UUID.randomUUID()
         IntRange(1, 10).forEach {

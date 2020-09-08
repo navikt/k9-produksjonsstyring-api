@@ -30,17 +30,22 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-class OppgaveTjenesteTest : KoinTest {
+class OppgaveTjenesteSettSkjermetTest : KoinTest {
     @KtorExperimentalAPI
     @get:Rule
     val koinTestRule = KoinTestRule.create {
-        modules(buildAndTestConfig())
-    }
-    
+        modules(buildAndTestConfig(mockk()))
+    }    
+   
     @KtorExperimentalAPI
     @Test
-    fun `Returnerer korrekte tall for nye og ferdistilte oppgaver`() = runBlocking {
-        
+    fun testSettSkjermet() = runBlocking{
+       
+        val pepClient = get<IPepClient>()
+
+        coEvery { pepClient.harTilgangTilKode6() } returns false
+        coEvery { pepClient.erSakKode6(any()) } returns false
+        coEvery { pepClient.erSakKode7EllerEgenAnsatt(any()) } returns false
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
@@ -49,11 +54,10 @@ class OppgaveTjenesteTest : KoinTest {
             dataSource = get(),
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
+            pepClient = pepClient
         )
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = get(),
-            pepClient = PepClientLocal()
-        )
+            pepClient = pepClient)
         val reservasjonRepository = ReservasjonRepository(
             oppgaveKøRepository = oppgaveKøRepository,
             oppgaveRepository = oppgaveRepository,
@@ -64,7 +68,7 @@ class OppgaveTjenesteTest : KoinTest {
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val statistikkRepository = StatistikkRepository(dataSource = get())
-        val pepClient = mockk<IPepClient>()
+    
         val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(
             oppgaveRepository,
@@ -73,6 +77,7 @@ class OppgaveTjenesteTest : KoinTest {
             pdlService,
             reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
         )
+
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(
             id = uuid,
@@ -88,6 +93,7 @@ class OppgaveTjenesteTest : KoinTest {
             saksbehandlere = mutableListOf()
         )
         oppgaveKøRepository.lagre(uuid) { oppgaveko }
+
 
         val oppgave1 = Oppgave(
             behandlingId = 9438,
@@ -116,110 +122,49 @@ class OppgaveTjenesteTest : KoinTest {
             årskvantum = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
-        val oppgave2 = Oppgave(
-            behandlingId = 78567,
-            fagsakSaksnummer = "5Yagdt",
-            aktorId = "675864",
-            behandlendeEnhet = "Enhet",
-            behandlingsfrist = LocalDateTime.now(),
-            behandlingOpprettet = LocalDateTime.now().minusDays(23),
-            forsteStonadsdag = LocalDate.now().plusDays(6),
-            behandlingStatus = BehandlingStatus.OPPRETTET,
-            behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
-            fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-            aktiv = true,
-            system = "system",
-            oppgaveAvsluttet = null,
-            utfortFraAdmin = false,
-            eksternId = UUID.randomUUID(),
-            oppgaveEgenskap = emptyList(),
-            aksjonspunkter = Aksjonspunkter(emptyMap()),
-            tilBeslutter = true,
-            utbetalingTilBruker = false,
-            selvstendigFrilans = true,
-            kombinert = false,
-            søktGradering = false,
-            registrerPapir = true,
-            årskvantum = false,
-            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
-        )
-
-        val oppgave3 = Oppgave(
-            behandlingId = 78567,
-            fagsakSaksnummer = "rty79",
-            aktorId = "675864",
-            behandlendeEnhet = "Enhet",
-            behandlingsfrist = LocalDateTime.now(),
-            behandlingOpprettet = LocalDateTime.now().minusDays(23),
-            forsteStonadsdag = LocalDate.now().plusDays(6),
-            behandlingStatus = BehandlingStatus.OPPRETTET,
-            behandlingType = BehandlingType.INNSYN,
-            fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-            aktiv = true,
-            system = "system",
-            oppgaveAvsluttet = null,
-            utfortFraAdmin = false,
-            eksternId = UUID.randomUUID(),
-            oppgaveEgenskap = emptyList(),
-            aksjonspunkter = Aksjonspunkter(emptyMap()),
-            tilBeslutter = true,
-            utbetalingTilBruker = false,
-            selvstendigFrilans = true,
-            kombinert = false,
-            søktGradering = false,
-            registrerPapir = true,
-            årskvantum = false,
-            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
-        )
-
-        val oppgave4 = Oppgave(
-            behandlingId = 78567,
-            fagsakSaksnummer = "klgre89",
-            aktorId = "675864",
-            behandlendeEnhet = "Enhet",
-            behandlingsfrist = LocalDateTime.now(),
-            behandlingOpprettet = LocalDateTime.now().minusDays(23),
-            forsteStonadsdag = LocalDate.now().plusDays(6),
-            behandlingStatus = BehandlingStatus.AVSLUTTET,
-            behandlingType = BehandlingType.REVURDERING,
-            fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-            aktiv = true,
-            system = "system",
-            oppgaveAvsluttet = LocalDateTime.now(),
-            utfortFraAdmin = false,
-            eksternId = UUID.randomUUID(),
-            oppgaveEgenskap = emptyList(),
-            aksjonspunkter = Aksjonspunkter(emptyMap()),
-            tilBeslutter = true,
-            utbetalingTilBruker = false,
-            selvstendigFrilans = true,
-            kombinert = false,
-            søktGradering = false,
-            registrerPapir = true,
-            årskvantum = false,
-            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
-        )
-
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
-        oppgaveRepository.lagre(oppgave2.eksternId) { oppgave2 }
-        oppgaveRepository.lagre(oppgave3.eksternId) { oppgave3 }
-        oppgaveRepository.lagre(oppgave4.eksternId) { oppgave4 }
-
         oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave1, reservasjonRepository)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave2, reservasjonRepository)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave3, reservasjonRepository)
-        oppgaveko.leggOppgaveTilEllerFjernFraKø(oppgave4, reservasjonRepository)
-
         oppgaveKøRepository.lagre(oppgaveko.id) {
-            it!!.nyeOgFerdigstilteOppgaver(oppgave1).leggTilNy(oppgave1.eksternId.toString())
-            it.nyeOgFerdigstilteOppgaver(oppgave2).leggTilNy(oppgave2.eksternId.toString())
-            it.nyeOgFerdigstilteOppgaver(oppgave3).leggTilNy(oppgave3.eksternId.toString())
-            it.nyeOgFerdigstilteOppgaver(oppgave4).leggTilNy(oppgave4.eksternId.toString())
-            it
+            oppgaveko
         }
-        every { KoinProfile.LOCAL == config.koinProfile() } returns true
-        val hent = oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(oppgaveko.id.toString())
-        assert(hent.size == 3)
+        every { config.koinProfile() } returns KoinProfile.LOCAL
+        coEvery { pdlService.person(any()) } returns PersonPdlResponse(false, PersonPdl(
+            data = PersonPdl.Data(
+                hentPerson = PersonPdl.Data.HentPerson(
+                    listOf(
+                        element =
+                        PersonPdl.Data.HentPerson.Folkeregisteridentifikator("012345678901")
+                    ),
+                    navn = listOf(
+                        PersonPdl.Data.HentPerson.Navn(
+                            etternavn = "Etternavn",
+                            forkortetNavn = "ForkortetNavn",
+                            fornavn = "Fornavn",
+                            mellomnavn = null
+                        )
+                    ),
+                    kjoenn = listOf(
+                        PersonPdl.Data.HentPerson.Kjoenn(
+                            "KVINNE"
+                        )
+                    ),
+                    doedsfall = emptyList()
+                )
+            )
+        ))
+        coEvery { pepClient.harBasisTilgang() } returns true
+        coEvery { pepClient.harTilgangTilLesSak(any(),any()) } returns true
+
+        var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
+        assert(oppgaver.size == 1)
+        
+        coEvery { pepClient.erSakKode7EllerEgenAnsatt(any()) } returns true
+
+        oppgaveTjeneste.settSkjermet(oppgave1)
+    
+        oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
+        assert(oppgaver.isEmpty())
+
     }
 
     @KtorExperimentalAPI
