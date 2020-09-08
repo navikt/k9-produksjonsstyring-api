@@ -68,7 +68,7 @@ class K9sakEventHandlerTest :KoinTest{
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository, saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -151,7 +151,8 @@ class K9sakEventHandlerTest :KoinTest{
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -231,7 +232,8 @@ class K9sakEventHandlerTest :KoinTest{
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -314,7 +316,8 @@ class K9sakEventHandlerTest :KoinTest{
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -400,7 +403,8 @@ class K9sakEventHandlerTest :KoinTest{
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =
@@ -484,7 +488,8 @@ class K9sakEventHandlerTest :KoinTest{
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         @Language("JSON") val json =

@@ -40,14 +40,6 @@ class ReservasjonRepository(
         )
     }
 
-    suspend fun fjernGamleReservasjoner(reservasjoner: Set<UUID>) {
-        fjernReservasjonerSomIkkeLengerErAktive(
-            hentReservasjoner(reservasjoner),
-            oppgaveKøRepository,
-            oppgaveRepository
-        )
-    }
-
     fun hentSelvOmDeIkkeErAktive(reservasjoner: Set<UUID>): List<Reservasjon> {
         return hentReservasjoner(reservasjoner)
     }
@@ -84,8 +76,8 @@ class ReservasjonRepository(
                     it
                 }
                 saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
+                val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
                 oppgaveKøRepository.hentIkkeTaHensyn().forEach { oppgaveKø ->
-                    val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
                     if (oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, this)) {
                         oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
                             it!!.leggOppgaveTilEllerFjernFraKø(

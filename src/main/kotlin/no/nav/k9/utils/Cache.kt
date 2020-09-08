@@ -15,6 +15,14 @@ class Cache <T>(val cacheSize : Int = 1000){
         map[key] = value
     }
 
+    fun setIfEmpty(key: String, value: CacheObject<T>): Boolean {
+        if (get(key) != null) {
+            return false
+        }
+        map[key] = value
+        return true
+    }
+
     fun remove(key: String) = map.remove(key)
 
     fun get(key: String): CacheObject<T>? {
@@ -28,5 +36,9 @@ class Cache <T>(val cacheSize : Int = 1000){
 
     fun clear() {
         map.clear()
+    }
+
+    fun getKeys(): List<String> {
+       return map.keys.filter { get(it) != null }.toList()
     }
 }

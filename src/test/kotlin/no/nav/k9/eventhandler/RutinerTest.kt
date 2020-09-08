@@ -23,6 +23,7 @@ import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
+import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.sse.SseEvent
@@ -82,7 +83,8 @@ class RutinerTest {
                 channel = oppgaveKøOppdatert,
                 oppgaveKøRepository = oppgaveKøRepository,
                 oppgaveRepository = oppgaveRepository,
-                reservasjonRepository = reservasjonRepository
+                reservasjonRepository = reservasjonRepository,
+                k9SakService = K9SakServiceLocal()
             )
         }
         val launch2 = GlobalScope.launch {
@@ -90,7 +92,8 @@ class RutinerTest {
                 channel = oppgaverSomSkalInnPåKøer,
                 oppgaveKøRepository = oppgaveKøRepository,
                 reservasjonRepository = reservasjonRepository,
-                saksbehandlerRepository = saksbehandlerRepository
+                saksbehandlerRepository = saksbehandlerRepository,
+                k9SakService = K9SakServiceLocal()
             )
         }
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
@@ -107,7 +110,8 @@ class RutinerTest {
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
             oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository
+            statistikkRepository = statistikkRepository,
+            saksbehhandlerRepository = saksbehandlerRepository
         )
 
         k9sakEventHandler.prosesser(getEvent("5YC4K"))

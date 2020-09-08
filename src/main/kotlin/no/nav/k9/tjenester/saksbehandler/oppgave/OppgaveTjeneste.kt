@@ -2,6 +2,7 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import info.debatty.java.stringsimilarity.Levenshtein
 import io.ktor.util.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
@@ -43,10 +44,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val configuration: Configuration,
     private val azureGraphService: IAzureGraphService,
     private val pepClient: IPepClient,
-    private val statistikkRepository: StatistikkRepository
+    private val statistikkRepository: StatistikkRepository,
+    private val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
 ) {
 
-    suspend fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
+     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
             oppgaveRepository.hentOppgaver(oppgaveKø.oppgaverOgDatoer.take(20).map { it.id })
@@ -82,12 +84,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
             saksbehandlerRepository.leggTilReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
             val oppgave = oppgaveRepository.hent(uuid)
-            for (oppgaveKø in oppgaveKøRepository.hent()) {
-                oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
-                    it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                    it
-                }
-            }
+            oppgaverSomSkalInnPåKøer.send(oppgave)
             return OppgaveStatusDto(
                 erReservert = true,
                 reservertTilTidspunkt = reservasjon.reservertTil,
@@ -344,12 +341,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
-        for (oppgaveKø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
-                it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                it
-            }
-        }
+        oppgaverSomSkalInnPåKøer.send(oppgave)
         return reservasjon
     }
 
@@ -442,6 +434,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     .flatMap { saksbehandler -> saksbehandler.reservasjoner }.toSet()
             )
 
+            
             for (oppgave in oppgaveRepository.hentOppgaver(reservasjoner.map { it.oppgave })) {
                 if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
                     reserverteOppgaverSomHørerTilKø++

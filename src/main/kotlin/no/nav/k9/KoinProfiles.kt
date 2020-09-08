@@ -17,6 +17,9 @@ import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.azuregraph.AzureGraphServiceLocal
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
+import no.nav.k9.integrasjon.k9.IK9SakService
+import no.nav.k9.integrasjon.k9.K9SakService
+import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlService
@@ -143,7 +146,8 @@ fun common(app: Application, config: Configuration) = module {
             reservasjonRepository = get(),
             statistikkProducer = get(),
             oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
-            statistikkRepository = get()
+            statistikkRepository = get(),
+            saksbehhandlerRepository = get()
         )
     }
 
@@ -165,7 +169,8 @@ fun common(app: Application, config: Configuration) = module {
             configuration = config,
             pepClient = get(),
             azureGraphService = get(),
-            statistikkRepository = get()
+            statistikkRepository = get(), 
+            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel"))
         )
     }
 
@@ -209,6 +214,9 @@ fun localDevConfig(app: Application, config: Configuration) = module {
     single {
         PdlServiceLocal() as IPdlService
     }
+    single {
+        K9SakServiceLocal() as IK9SakService
+    }
 }
 
 @KtorExperimentalAPI
@@ -220,6 +228,9 @@ fun preprodConfig(app: Application, config: Configuration) = module {
     }
     single {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
+    }
+    single {
+        K9SakService(configuration = get(), accessTokenClient =get<AccessTokenClientResolver>().naisSts()) as IK9SakService
     }
 
     single { RequestContextService() as IRequestContextService }
@@ -243,7 +254,9 @@ fun prodConfig(app: Application, config: Configuration) = module {
     single {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
     }
-
+    single {
+        K9SakService(configuration = get(), accessTokenClient =get()) as IK9SakService
+    }
     single { RequestContextService() as IRequestContextService }
 
     single {

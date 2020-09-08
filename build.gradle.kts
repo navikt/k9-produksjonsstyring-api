@@ -58,7 +58,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.7")
     
     // Kontrakter
-    implementation("no.nav.k9.sak:kodeverk:3.1.0-20200610171459-aed7f8f")
+    implementation("no.nav.k9.sak:kodeverk:3.1.0-20200902071025-3d40c5c")
+    implementation("no.nav.k9.sak:kontrakt:3.1.0-20200902071025-3d40c5c")
     implementation("no.nav.k9.statistikk:kontrakter:2.0_20200514170610_720949d")
 
     // Div
