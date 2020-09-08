@@ -255,7 +255,7 @@ fun prodConfig(app: Application, config: Configuration) = module {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
     }
     single {
-        K9SakService(configuration = get(), accessTokenClient =get()) as IK9SakService
+        K9SakService(configuration = get(),  accessTokenClient =get<AccessTokenClientResolver>().naisSts()) as IK9SakService
     }
     single { RequestContextService() as IRequestContextService }
 
