@@ -23,6 +23,7 @@ import no.nav.k9.integrasjon.pdl.PersonPdlResponse
 import no.nav.k9.tjenester.sse.SseEvent
 import org.junit.Rule
 import org.junit.Test
+import org.koin.core.qualifier.named
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
@@ -75,7 +76,8 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository,
+            get(named("oppgaveChannel"))
         )
 
         val uuid = UUID.randomUUID()
@@ -204,7 +206,8 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository,
+            get(named("oppgaveChannel"))
         )
 
         val oppgave1 = Oppgave(
@@ -296,7 +299,8 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository,
+            get(named("oppgaveChannel"))
         )
 
         val uuid = UUID.randomUUID()

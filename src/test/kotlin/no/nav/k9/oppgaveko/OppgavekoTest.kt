@@ -8,6 +8,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
+import no.nav.k9.buildAndTestConfig
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
@@ -19,12 +20,22 @@ import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.sse.SseEvent
+import org.junit.Rule
 import org.junit.Test
+import org.koin.core.qualifier.named
+import org.koin.test.KoinTest
+import org.koin.test.KoinTestRule
+import org.koin.test.get
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-class OppgavekoTest {
+class OppgavekoTest :KoinTest{
+    @KtorExperimentalAPI
+    @get:Rule
+    val koinTestRule = KoinTestRule.create {
+        modules(buildAndTestConfig(mockk()))
+    }
     @KtorExperimentalAPI
     @Test
     fun `Oppgavene tilfredsstiller filtreringskriteriene i køen`() = runBlocking {
@@ -61,7 +72,7 @@ class OppgavekoTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository,get(named("oppgaveChannel"))
         )
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(

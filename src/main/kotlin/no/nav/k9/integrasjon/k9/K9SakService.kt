@@ -80,7 +80,6 @@ open class K9SakService @KtorExperimentalAPI constructor(
                         "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
                     )
                     log.error(error.toString())
-                    throw IllegalStateException("Feil ved prefetch")
                 }
             )
         }

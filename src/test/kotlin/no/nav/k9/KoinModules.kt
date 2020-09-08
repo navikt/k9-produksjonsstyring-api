@@ -86,7 +86,7 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             get(),
             get(),
             get(),
-            get(), get(), get(), get(), get()
+            get(), get(), get(), get(), get(), get(named("oppgaveChannel"))
         )
     }
 }

@@ -169,7 +169,8 @@ fun common(app: Application, config: Configuration) = module {
             configuration = config,
             pepClient = get(),
             azureGraphService = get(),
-            statistikkRepository = get()
+            statistikkRepository = get(), 
+            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel"))
         )
     }
 
