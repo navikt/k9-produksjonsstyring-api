@@ -1,7 +1,7 @@
 package no.nav.k9
 
-import io.ktor.config.ApplicationConfig
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.config.*
+import io.ktor.util.*
 import no.nav.helse.dusseldorf.ktor.auth.clients
 import no.nav.helse.dusseldorf.ktor.auth.issuers
 import no.nav.helse.dusseldorf.ktor.auth.withoutAdditionalClaimRules
@@ -124,7 +124,7 @@ data class Configuration(private val config: ApplicationConfig) {
         return config.getRequiredString("nav.audit.product", secret = false)
     }
 
-    var koinProfile = no.nav.k9.KoinProfile.LOCAL
+    var koinProfile = KoinProfile.LOCAL
 
     init {
         val clustername = config.getOptionalString("nav.clustername", secret = false)

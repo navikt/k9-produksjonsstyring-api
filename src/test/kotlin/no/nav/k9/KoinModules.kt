@@ -71,7 +71,7 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
     single {
         configuration
     }
-    every { KoinProfile.LOCAL == configuration.koinProfile() } returns true
+    every { configuration.koinProfile() } returns KoinProfile.LOCAL
 
     single {
         PdlServiceLocal() as IPdlService

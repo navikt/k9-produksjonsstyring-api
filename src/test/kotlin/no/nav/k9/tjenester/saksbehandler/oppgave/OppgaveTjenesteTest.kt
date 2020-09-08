@@ -1,26 +1,14 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.*
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
-import no.nav.k9.Configuration
-import no.nav.k9.KoinProfile
 import no.nav.k9.buildAndTestConfig
-import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.*
-import no.nav.k9.domene.repository.*
-import no.nav.k9.integrasjon.abac.IPepClient
-import no.nav.k9.integrasjon.abac.PepClientLocal
-import no.nav.k9.integrasjon.azuregraph.AzureGraphService
-import no.nav.k9.integrasjon.pdl.PdlService
-import no.nav.k9.integrasjon.pdl.PersonPdl
-import no.nav.k9.integrasjon.pdl.PersonPdlResponse
-import no.nav.k9.tjenester.sse.SseEvent
+import no.nav.k9.domene.repository.OppgaveKøRepository
+import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import org.junit.Rule
 import org.junit.Test
 import org.koin.test.KoinTest
@@ -36,11 +24,11 @@ class OppgaveTjenesteTest : KoinTest {
     val koinTestRule = KoinTestRule.create {
         modules(buildAndTestConfig())
     }
-    
+
     @KtorExperimentalAPI
     @Test
     fun `Returnerer korrekte tall for nye og ferdistilte oppgaver`() = runBlocking {
-        
+
         val oppgaveRepository = get<OppgaveRepository>()
         val oppgaveKøRepository = get<OppgaveKøRepository>()
         val reservasjonRepository = get<ReservasjonRepository>()
@@ -189,50 +177,16 @@ class OppgaveTjenesteTest : KoinTest {
             it.nyeOgFerdigstilteOppgaver(oppgave4).leggTilNy(oppgave4.eksternId.toString())
             it
         }
-        
+
         val hent = oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(oppgaveko.id.toString())
         assert(hent.size == 3)
     }
 
     @KtorExperimentalAPI
     @Test
-    fun `hent fagsak`(){
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-
-        val oppgaveKøOppdatert = Channel<UUID>(1)
-        val refreshKlienter = Channel<SseEvent>(1000)
-
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val oppgaveKøRepository = OppgaveKøRepository(
-            dataSource = dataSource,
-            oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
-        )
-        val pdlService = mockk<PdlService>()
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
-
-        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val pepClient = mockk<IPepClient>()
-        val azureGraphService = mockk<AzureGraphService>()
-        val config = mockk<Configuration>()
-        val reservasjonRepository = ReservasjonRepository(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            dataSource = dataSource,
-            refreshKlienter = refreshKlienter,
-            saksbehandlerRepository = saksbehandlerRepository
-        )
-        val oppgaveTjeneste = OppgaveTjeneste(
-            oppgaveRepository,
-            oppgaveKøRepository,
-            saksbehandlerRepository,
-            pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
-        )
+    fun `hent fagsak`() {
+        val oppgaveRepository = get<OppgaveRepository>()
+        val oppgaveTjeneste = get<OppgaveTjeneste>()
 
         val oppgave1 = Oppgave(
             behandlingId = 9438,
@@ -263,24 +217,6 @@ class OppgaveTjenesteTest : KoinTest {
         )
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
 
-        coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
-        every { config.koinProfile() } returns KoinProfile.LOCAL
-        coEvery { pepClient.harTilgangTilLesSak(any(), any()) } returns true
-        coEvery { pdlService.person(any()) } returns PersonPdlResponse(false, PersonPdl(data = PersonPdl.Data(
-            hentPerson = PersonPdl.Data.HentPerson(
-                folkeregisteridentifikator = listOf(PersonPdl.Data.HentPerson.Folkeregisteridentifikator("12345678901")),
-                navn = listOf(
-                    PersonPdl.Data.HentPerson.Navn(
-                        etternavn = "etternavn",
-                        forkortetNavn = null,
-                        fornavn = "fornavn",
-                        mellomnavn = null
-                    )),
-                kjoenn = listOf(PersonPdl.Data.HentPerson.Kjoenn("K")),
-                doedsfall = listOf()
-            )
-        )))
-
         runBlocking {
             val fagsaker = oppgaveTjeneste.søkFagsaker("Yz647")
             assert(fagsaker.fagsaker.isNotEmpty())
@@ -289,43 +225,12 @@ class OppgaveTjenesteTest : KoinTest {
 
     @Test
     fun hentReservasjonsHistorikk() = runBlocking {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-        val oppgaveKøOppdatert = Channel<UUID>(1)
-        val refreshKlienter = Channel<SseEvent>(1000)
-
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val oppgaveKøRepository = OppgaveKøRepository(
-            dataSource = dataSource,
-            oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
-        )
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
-        val reservasjonRepository = ReservasjonRepository(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            dataSource = dataSource,
-            refreshKlienter = refreshKlienter,
-            saksbehandlerRepository = saksbehandlerRepository
-        )
-        val config = mockk<Configuration>()
-        val pdlService = mockk<PdlService>()
-        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val pepClient = mockk<IPepClient>()
-        val azureGraphService = mockk<AzureGraphService>()
-
-        coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
-        val oppgaveTjeneste = OppgaveTjeneste(
-            oppgaveRepository,
-            oppgaveKøRepository,
-            saksbehandlerRepository,
-            pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
-        )
-
+        val oppgaveRepository = get<OppgaveRepository>()
+        val oppgaveTjeneste = get<OppgaveTjeneste>()
+        val oppgaveKøRepository = get<OppgaveKøRepository>()
+        val reservasjonRepository = get<ReservasjonRepository>()
+        val saksbehandlerRepository = get<SaksbehandlerRepository>()
+        
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(
             id = uuid,
@@ -341,8 +246,7 @@ class OppgaveTjenesteTest : KoinTest {
             saksbehandlere = mutableListOf()
         )
         oppgaveKøRepository.lagre(uuid) { oppgaveko }
-
-
+        
         val oppgave1 = Oppgave(
             behandlingId = 9438,
             fagsakSaksnummer = "Yz647",
@@ -375,49 +279,35 @@ class OppgaveTjenesteTest : KoinTest {
         oppgaveKøRepository.lagre(oppgaveko.id) {
             oppgaveko
         }
-        every { config.koinProfile() } returns KoinProfile.LOCAL
-        coEvery { pepClient.harBasisTilgang() } returns true
-        coEvery { pepClient.harTilgangTilLesSak(any(),any()) } returns true
-        coEvery { pepClient.harTilgangTilReservingAvOppgaver() } returns true
-        coEvery { pdlService.person(any()) } returns PersonPdlResponse(false, PersonPdl(
-            data = PersonPdl.Data(
-                hentPerson = PersonPdl.Data.HentPerson(
-                    listOf(
-                        element =
-                        PersonPdl.Data.HentPerson.Folkeregisteridentifikator("012345678901")
-                    ),
-                    navn = listOf(
-                        PersonPdl.Data.HentPerson.Navn(
-                            etternavn = "Etternavn",
-                            forkortetNavn = "ForkortetNavn",
-                            fornavn = "Fornavn",
-                            mellomnavn = null
-                        )
-                    ),
-                    kjoenn = listOf(
-                        PersonPdl.Data.HentPerson.Kjoenn(
-                            "KVINNE"
-                        )
-                    ),
-                    doedsfall = emptyList()
-                )
-            )
-        ))
-
+        
 
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
         val oppgave = oppgaver.get(0)
 
-        saksbehandlerRepository.addSaksbehandler(Saksbehandler(brukerIdent = "123", navn= null, epost = "test@test.no", enhet = null))
-        saksbehandlerRepository.addSaksbehandler(Saksbehandler(brukerIdent="ny", navn=null,epost =  "test2@test.no",enhet = null))
+        saksbehandlerRepository.addSaksbehandler(
+            Saksbehandler(
+                brukerIdent = "123",
+                navn = null,
+                epost = "test@test.no",
+                enhet = null
+            )
+        )
+        saksbehandlerRepository.addSaksbehandler(
+            Saksbehandler(
+                brukerIdent = "ny",
+                navn = null,
+                epost = "test2@test.no",
+                enhet = null
+            )
+        )
 
         oppgaveTjeneste.reserverOppgave("123", oppgave.eksternId)
         oppgaveTjeneste.flyttReservasjon(oppgave.eksternId, "ny", "Ville ikke ha oppgaven")
         val reservasjonsHistorikk = oppgaveTjeneste.hentReservasjonsHistorikk(oppgave.eksternId)
 
         assert(reservasjonsHistorikk.reservasjoner.size == 2)
-        assert(reservasjonsHistorikk.reservasjoner[0].flyttetAv == "123")
+        assert(reservasjonsHistorikk.reservasjoner[0].flyttetAv == "saksbehandler@nav.no")
     }
 
 }
