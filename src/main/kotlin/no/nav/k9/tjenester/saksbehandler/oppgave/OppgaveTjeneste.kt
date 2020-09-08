@@ -341,12 +341,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
-        for (oppgaveKø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
-                it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                it
-            }
-        }
+        oppgaverSomSkalInnPåKøer.send(oppgave)
         return reservasjon
     }
 

@@ -82,6 +82,6 @@ open class K9SakService @KtorExperimentalAPI constructor(
                 }
             )
         }
-        log.info("refreshet " + behandlingIdListe.behandlinger.size)
+        log.info("Refreshet " + behandlingIdListe.behandlinger.size +" i k9 sak")
     }
 }
