@@ -61,7 +61,6 @@ class ReservasjonRepository(
             )
         }
         val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
-        log.info("Hentet " + reservasjoner.size)
         return reservasjoner
     }
 

@@ -101,7 +101,8 @@ fun Application.k9Los() {
             oppgaveKøRepository = koin.get(),
             oppgaveRepository = koin.get(),
             channel = koin.get<Channel<UUID>>(named("oppgaveKøOppdatert")),
-            reservasjonRepository = koin.get()
+            reservasjonRepository = koin.get(),
+            k9SakService = koin.get()
         )
 
     val oppdatereKøerMedOppgaveProsessorJob =

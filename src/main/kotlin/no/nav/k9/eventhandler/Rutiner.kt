@@ -23,13 +23,15 @@ fun CoroutineScope.køOppdatertProsessor(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
-    reservasjonRepository: ReservasjonRepository
+    reservasjonRepository: ReservasjonRepository,
+    k9SakService: IK9SakService
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     oppdatereKø(
         channel = channel,
         oppgaveKøRepository = oppgaveKøRepository,
         oppgaveRepository = oppgaveRepository,
-        reservasjonRepository = reservasjonRepository
+        reservasjonRepository = reservasjonRepository,
+        k9SakService = k9SakService
     )
 }
 
@@ -54,7 +56,8 @@ suspend fun oppdatereKø(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
-    reservasjonRepository: ReservasjonRepository
+    reservasjonRepository: ReservasjonRepository,
+    k9SakService: IK9SakService
 ) {
     val log = LoggerFactory.getLogger("behandleOppgave")
 
@@ -76,7 +79,7 @@ suspend fun oppdatereKø(
                         )
                     }
                 }
-
+                val behandlingsListe = mutableListOf<BehandlingIdDto>()
                 oppgaveKøRepository.lagreIkkeTaHensyn(it) { oppgaveKø ->
                     if (oppgaveKø!! == oppgavekøGammel) {
                         oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
@@ -92,8 +95,10 @@ suspend fun oppdatereKø(
                         }
                     }
 
+                    behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(10).map { BehandlingIdDto(it.id) }.toList())
                     oppgaveKø
                 }
+                k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
             }
             log.info("tok ${measureTimeMillis}ms å oppdatere kø")
         }

@@ -83,7 +83,8 @@ class RutinerTest {
                 channel = oppgaveKøOppdatert,
                 oppgaveKøRepository = oppgaveKøRepository,
                 oppgaveRepository = oppgaveRepository,
-                reservasjonRepository = reservasjonRepository
+                reservasjonRepository = reservasjonRepository,
+                k9SakService = K9SakServiceLocal()
             )
         }
         val launch2 = GlobalScope.launch {

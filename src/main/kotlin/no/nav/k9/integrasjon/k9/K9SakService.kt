@@ -71,7 +71,6 @@ open class K9SakService @KtorExperimentalAPI constructor(
 
             result.fold(
                 { success ->
-                    log.info(success)
                     success
                 },
                 { error ->
@@ -83,6 +82,6 @@ open class K9SakService @KtorExperimentalAPI constructor(
                 }
             )
         }
-        log.info("refreshet " +json + " " + behandlingIdListe.behandlinger.size)
+        log.info("refreshet " + behandlingIdListe.behandlinger.size)
     }
 }
