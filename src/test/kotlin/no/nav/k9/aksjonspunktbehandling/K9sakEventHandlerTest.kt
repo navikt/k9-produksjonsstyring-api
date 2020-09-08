@@ -9,6 +9,7 @@ import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
+import no.nav.k9.buildAndTestConfig
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
@@ -20,42 +21,33 @@ import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
 import no.nav.k9.tjenester.sse.SseEvent
 import org.intellij.lang.annotations.Language
+import org.junit.Rule
 import org.junit.Test
+import org.koin.core.qualifier.named
+import org.koin.test.KoinTest
+import org.koin.test.KoinTestRule
+import org.koin.test.get
 import java.util.*
+import javax.sql.DataSource
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 
-class K9sakEventHandlerTest {
+class K9sakEventHandlerTest :KoinTest{
 
+    @get:Rule
+    val koinTestRule = KoinTestRule.create {
+        modules(buildAndTestConfig())
+    }
+    
     @KtorExperimentalAPI
     @Test
     fun `Skal lukke oppgave dersom den ikke har noen aktive aksjonspunkter`() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-
-        val oppgaveKøOppdatert = Channel<UUID>(1)
-        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
-        val refreshKlienter = Channel<SseEvent>(1)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(
-            dataSource = dataSource,
-            pepClient = PepClientLocal()
-        )
-        val oppgaveKøRepository = OppgaveKøRepository(
-            dataSource = dataSource,
-            oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
-        )
-        val reservasjonRepository = ReservasjonRepository(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            dataSource = dataSource,
-            refreshKlienter = refreshKlienter,
-            saksbehandlerRepository = saksbehandlerRepository
-        )
+       
+        val oppgaveRepository = get<OppgaveRepository>()
+        val saksbehandlerRepository = get<SaksbehandlerRepository>()
+        val oppgaveKøRepository = get<OppgaveKøRepository>()
+        val reservasjonRepository = get<ReservasjonRepository>()
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
         val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
@@ -66,16 +58,16 @@ class K9sakEventHandlerTest {
         every { statistikkProducer.send(any()) } just runs
         val config = mockk<Configuration>()
         every { KoinProfile.LOCAL == config.koinProfile() } returns true
-        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
+        val statistikkRepository = get<StatistikkRepository>()
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource),
+            BehandlingProsessEventRepository(dataSource = get<DataSource>()),
             config = config,
             sakOgBehadlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
+            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
             statistikkRepository = statistikkRepository, saksbehhandlerRepository = saksbehandlerRepository
         )
 
@@ -124,11 +116,9 @@ class K9sakEventHandlerTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(
-            dataSource = dataSource,
-            pepClient = PepClientLocal()
-        )
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -153,7 +143,7 @@ class K9sakEventHandlerTest {
         val config = mockk<Configuration>()
         every { KoinProfile.LOCAL == config.koinProfile() } returns true
         val k9sakEventHandler = K9sakEventHandler(
-            OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal()),
+            OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal()),
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
             sakOgBehadlingProducer = sakOgBehadlingProducer,
@@ -205,13 +195,11 @@ class K9sakEventHandlerTest {
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val saksbehandlerRepository = SaksbehandlerRepository(
-            dataSource = dataSource,
-            pepClient = PepClientLocal()
-        )
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
@@ -293,11 +281,9 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(
-            dataSource = dataSource,
-            pepClient = PepClientLocal()
-        )
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
@@ -382,11 +368,9 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(
-            dataSource = dataSource,
-            pepClient = PepClientLocal()
-        )
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
@@ -469,11 +453,9 @@ class K9sakEventHandlerTest {
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(1)
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(
-            dataSource = dataSource,
-            pepClient = PepClientLocal()
-        )
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
+            pepClient = PepClientLocal())
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,

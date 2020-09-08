@@ -125,7 +125,7 @@ data class Configuration(private val config: ApplicationConfig) {
         return config.getRequiredString("nav.audit.product", secret = false)
     }
 
-    var koinProfile = no.nav.k9.KoinProfile.LOCAL
+    var koinProfile = KoinProfile.LOCAL
 
     init {
         val clustername = config.getOptionalString("nav.clustername", secret = false)

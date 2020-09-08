@@ -44,16 +44,11 @@ import javax.sql.DataSource
 @KtorExperimentalAPI
 fun selectModuleBasedOnProfile(application: Application, config: Configuration): List<Module> {
     val envModule = when (config.koinProfile()) {
-        TEST -> buildAndTestConfig()
         LOCAL -> localDevConfig(application, config)
         PREPROD -> preprodConfig(application, config)
         PROD -> prodConfig(application, config)
     }
     return listOf(common(application, config), envModule)
-}
-
-fun buildAndTestConfig() = module {
-
 }
 
 @KtorExperimentalAPI

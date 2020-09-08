@@ -1,82 +1,48 @@
 package no.nav.k9.domene.repository
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.*
-import no.nav.k9.db.runMigration
+import no.nav.k9.buildAndTestConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.Aksjonspunkter
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
+import org.junit.Rule
 import org.junit.Test
+import org.koin.core.context.stopKoin
+import org.koin.test.KoinTest
+import org.koin.test.KoinTestRule
+import org.koin.test.get
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-class StatistikkRepositoryTest {
-//    @KtorExperimentalAPI
-//    @Test
-//    fun skalLagreStatistikk() {
-//        val pg = EmbeddedPostgres.start()
-//        val dataSource = pg.postgresDatabase
-//        runMigration(dataSource)
-//
-//        val statistikkRepository = StatistikkRepository(dataSource)
-//        val eksternId = UUID.randomUUID()
-//        val eksternId2 = UUID.randomUUID()
-//        val eksternId3 = UUID.randomUUID()
-//
-//        statistikkRepository.lagreFerdigstilt(BehandlingType.FORSTEGANGSSOKNAD.kode, eksternId)
-//        statistikkRepository.lagreFerdigstilt(BehandlingType.FORSTEGANGSSOKNAD.kode, eksternId2)
-//        statistikkRepository.lagreFerdigstilt(BehandlingType.FORSTEGANGSSOKNAD.kode, eksternId3)
-//
-//        val hentFerdigstilte = statistikkRepository.hentFerdigstilte()
-//        assertEquals(3, hentFerdigstilte[0].antall)
-//    }
-//    @KtorExperimentalAPI
-//    @Test
-//    fun skalHenteferdigstilteHistorikk() {
-//        val pg = EmbeddedPostgres.start()
-//        val dataSource = pg.postgresDatabase
-//        runMigration(dataSource)
-//
-//        val statistikkRepository = StatistikkRepository(dataSource)
-//        val eksternId = UUID.randomUUID()
-//        val eksternId2 = UUID.randomUUID()
-//        val eksternId3 = UUID.randomUUID()
-//
-//        statistikkRepository.lagreFerdigstiltHistorikk(BehandlingType.FORSTEGANGSSOKNAD.kode, FagsakYtelseType.OMSORGSPENGER.kode,eksternId)
-//        statistikkRepository.lagreFerdigstiltHistorikk(BehandlingType.FORSTEGANGSSOKNAD.kode, FagsakYtelseType.OMSORGSPENGER.kode,eksternId2)
-//        statistikkRepository.lagreFerdigstiltHistorikk(BehandlingType.FORSTEGANGSSOKNAD.kode, FagsakYtelseType.OMSORGSPENGER.kode,eksternId3)
-//
-//        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(5000)
-//        assert(hentFerdigstilte.isNotEmpty())
-//    }
+class StatistikkRepositoryTest : KoinTest {
+    @get:Rule
+    val koinTestRule = KoinTestRule.create {
+        modules(buildAndTestConfig())
+    }
 
     @KtorExperimentalAPI
-    @Test   
+    @Test
     fun skalFylleMedTommeElementerDersomViIkkeHarDataPåDenDagen() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-
-        val statistikkRepository = StatistikkRepository(dataSource)
         
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(0)
+        val statistikkRepository  = get<StatistikkRepository>()
+        
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(1)
+
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
+        stopKoin()
     }
-    
-    @KtorExperimentalAPI
-    @Test   
-    fun skalFylleMedTommeElementerDersomVdiIkkeHarDataPåDenDagenIdempotent() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
 
-        val statistikkRepository = StatistikkRepository(dataSource)
-        
+    @KtorExperimentalAPI
+    @Test
+    fun skalFylleMedTommeElementerDersomVdiIkkeHarDataPåDenDagenIdempotent() {
+     
+        val statistikkRepository  = get<StatistikkRepository>()
+
         val oppgave = Oppgave(
             behandlingId = 78567,
             fagsakSaksnummer = "5Yagdt",
@@ -104,19 +70,19 @@ class StatistikkRepositoryTest {
             årskvantum = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
-        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate().minusDays(1))){
             it.nye.add(oppgave.eksternId.toString())
             it
         }
-        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate().minusDays(1))){
             it.nye.add(oppgave.eksternId.toString())
             it
         }
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(0)
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(1)
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
         assert(omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size == 1)
-        
+
     }
 }
 

@@ -1,26 +1,28 @@
 package no.nav.k9.domene.repository
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import io.ktor.util.KtorExperimentalAPI
-import no.nav.k9.db.runMigration
-import no.nav.k9.tjenester.driftsmeldinger.Driftsmelding
+import io.ktor.util.*
+import no.nav.k9.buildAndTestConfig
 import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingDto
+import org.junit.Rule
 import org.junit.Test
+import org.koin.test.KoinTest
+import org.koin.test.KoinTestRule
+import org.koin.test.get
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
 
-class DriftsmeldingRepositoryTest{
+class DriftsmeldingRepositoryTest: KoinTest{
+    @get:Rule
+    val koinTestRule = KoinTestRule.create {
+        modules(buildAndTestConfig())
+    }
     @KtorExperimentalAPI
     @Test
     fun skalLagreDriftsmeldingOgHenteDenIgjen() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-
-        val driftsmeldingRepository = DriftsmeldingRepository(dataSource)
-
-
+        
+        val driftsmeldingRepository = get<DriftsmeldingRepository>()
+        
         val driftsmelding =
             DriftsmeldingDto(
                     UUID.randomUUID(),
