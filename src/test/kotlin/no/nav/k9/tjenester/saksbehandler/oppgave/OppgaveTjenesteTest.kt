@@ -41,38 +41,10 @@ class OppgaveTjenesteTest : KoinTest {
     @Test
     fun `Returnerer korrekte tall for nye og ferdistilte oppgaver`() = runBlocking {
         
-        val oppgaveKøOppdatert = Channel<UUID>(1)
-        val refreshKlienter = Channel<SseEvent>(1000)
-
         val oppgaveRepository = get<OppgaveRepository>()
-        val oppgaveKøRepository = OppgaveKøRepository(
-            dataSource = get(),
-            oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
-        )
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = get(),
-            pepClient = PepClientLocal()
-        )
-        val reservasjonRepository = ReservasjonRepository(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            dataSource = get(),
-            refreshKlienter = refreshKlienter,
-            saksbehandlerRepository = saksbehandlerRepository
-        )
-        val config = mockk<Configuration>()
-        val pdlService = mockk<PdlService>()
-        val statistikkRepository = StatistikkRepository(dataSource = get())
-        val pepClient = mockk<IPepClient>()
-        val azureGraphService = mockk<AzureGraphService>()
-        val oppgaveTjeneste = OppgaveTjeneste(
-            oppgaveRepository,
-            oppgaveKøRepository,
-            saksbehandlerRepository,
-            pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
-        )
+        val oppgaveKøRepository = get<OppgaveKøRepository>()
+        val reservasjonRepository = get<ReservasjonRepository>()
+        val oppgaveTjeneste = get<OppgaveTjeneste>()
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(
             id = uuid,
@@ -217,7 +189,7 @@ class OppgaveTjenesteTest : KoinTest {
             it.nyeOgFerdigstilteOppgaver(oppgave4).leggTilNy(oppgave4.eksternId.toString())
             it
         }
-        every { KoinProfile.LOCAL == config.koinProfile() } returns true
+        
         val hent = oppgaveTjeneste.hentNyeOgFerdigstilteOppgaver(oppgaveko.id.toString())
         assert(hent.size == 3)
     }
