@@ -182,7 +182,8 @@ fun common(app: Application, config: Configuration) = module {
             reservasjonRepository = get(),
             oppgaveRepository = get(),
             pepClient = get(),
-            configuration = config
+            configuration = config,
+            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel"))
         )
     }
 
