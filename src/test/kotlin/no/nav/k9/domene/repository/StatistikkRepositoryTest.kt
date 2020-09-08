@@ -25,19 +25,20 @@ class StatistikkRepositoryTest : KoinTest {
     }
 
     @KtorExperimentalAPI
-    @Test   
+    @Test
     fun skalFylleMedTommeElementerDersomViIkkeHarDataPåDenDagen() {
         
         val statistikkRepository  = get<StatistikkRepository>()
         
         val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(0)
+
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
         stopKoin()
     }
-    
+
     @KtorExperimentalAPI
-    @Test   
+    @Test
     fun skalFylleMedTommeElementerDersomVdiIkkeHarDataPåDenDagenIdempotent() {
      
         val statistikkRepository  = get<StatistikkRepository>()
@@ -69,19 +70,19 @@ class StatistikkRepositoryTest : KoinTest {
             årskvantum = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
-        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate().minusDays(1))){
             it.nye.add(oppgave.eksternId.toString())
             it
         }
-        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate())){
+        statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate().minusDays(1))){
             it.nye.add(oppgave.eksternId.toString())
             it
         }
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(0)
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(1)
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
         assert(omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size == 1)
-        
+
     }
 }
 

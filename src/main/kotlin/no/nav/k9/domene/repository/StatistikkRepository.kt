@@ -225,7 +225,7 @@ class StatistikkRepository(
         }
         val datoMap = list.groupBy { it.dato }
         val ret = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
-        for (i in antall downTo 0) {
+        for (i in antall downTo 1) {
             val dato = LocalDate.now().minusDays(i.toLong())
             val defaultList = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
             for (behandlingType in BehandlingType.values()) {
