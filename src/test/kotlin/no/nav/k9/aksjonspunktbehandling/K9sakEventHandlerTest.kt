@@ -2,33 +2,18 @@ package no.nav.k9.aksjonspunktbehandling
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.*
-import io.mockk.*
-import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
-import no.nav.k9.Configuration
-import no.nav.k9.KoinProfile
 import no.nav.k9.buildAndTestConfig
-import no.nav.k9.db.runMigration
-import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.repository.*
-import no.nav.k9.integrasjon.abac.PepClientLocal
-import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
-import no.nav.k9.integrasjon.gosys.GosysOppgave
-import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
+import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
-import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
-import no.nav.k9.tjenester.sse.SseEvent
 import org.intellij.lang.annotations.Language
 import org.junit.Rule
 import org.junit.Test
-import org.koin.core.qualifier.named
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
 import java.util.*
-import javax.sql.DataSource
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -43,30 +28,9 @@ class K9sakEventHandlerTest :KoinTest{
     @KtorExperimentalAPI
     @Test
     fun `Skal lukke oppgave dersom den ikke har noen aktive aksjonspunkter`() {
-       
+
+        val k9sakEventHandler = get<K9sakEventHandler>()
         val oppgaveRepository = get<OppgaveRepository>()
-        val saksbehandlerRepository = get<SaksbehandlerRepository>()
-        val oppgaveKøRepository = get<OppgaveKøRepository>()
-        val reservasjonRepository = get<ReservasjonRepository>()
-        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
-        val statistikkProducer = mockk<StatistikkProducer>()
-        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
-        every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
-        every { statistikkProducer.send(any()) } just runs
-        val config = mockk<Configuration>()
-        every { KoinProfile.LOCAL == config.koinProfile() } returns true
-        val statistikkRepository = get<StatistikkRepository>()
-        val k9sakEventHandler = K9sakEventHandler(
-            oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = get<DataSource>()),
-            config = config,
-            sakOgBehandlingProducer = sakOgBehadlingProducer,
-            oppgaveKøRepository = oppgaveKøRepository,
-            reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
-            statistikkRepository = statistikkRepository, saksbehhandlerRepository = saksbehandlerRepository
-        )
 
         @Language("JSON") val json =
             """{
@@ -107,50 +71,9 @@ class K9sakEventHandlerTest :KoinTest{
     @KtorExperimentalAPI
     @Test
     fun `Skal lukke oppgave dersom den er satt på vent`() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-        val oppgaveKøOppdatert = Channel<UUID>(1)
-        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
-        val refreshKlienter = Channel<SseEvent>(1)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
-        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveKøRepository = OppgaveKøRepository(
-            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
-        )
-        val reservasjonRepository = ReservasjonRepository(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            dataSource = dataSource,
-            refreshKlienter = refreshKlienter,
-            saksbehandlerRepository = saksbehandlerRepository
-        )
-        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
-        val statistikkProducer = mockk<StatistikkProducer>()
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
-        every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
-        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
-        every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
-        every { statistikkProducer.send(any()) } just runs
-        val config = mockk<Configuration>()
-        every { KoinProfile.LOCAL == config.koinProfile() } returns true
-        val k9sakEventHandler = K9sakEventHandler(
-            OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal()),
-            BehandlingProsessEventRepository(dataSource = dataSource),
-            config = config,
-            sakOgBehandlingProducer = sakOgBehadlingProducer,
-            oppgaveKøRepository = oppgaveKøRepository,
-            reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository,
-            saksbehhandlerRepository = saksbehandlerRepository
-        )
+        val k9sakEventHandler = get<K9sakEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
+
 
         @Language("JSON") val json =
             """{
@@ -182,56 +105,17 @@ class K9sakEventHandlerTest :KoinTest{
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
 
         k9sakEventHandler.prosesser(event)
+        val oppgave =
+            oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        assertFalse { oppgave.aktiv }
     }
 
     @KtorExperimentalAPI
     @Test
     fun `Skal opprette oppgave dersom 5009`() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-        val oppgaveKøOppdatert = Channel<UUID>(1)
-        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val refreshKlienter = Channel<SseEvent>(1)
-        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
-        val oppgaveKøRepository = OppgaveKøRepository(
-            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
-        )
-        val reservasjonRepository = ReservasjonRepository(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            dataSource = dataSource,
-            refreshKlienter = refreshKlienter,
-            saksbehandlerRepository = saksbehandlerRepository
-        )
-        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
-        val statistikkProducer = mockk<StatistikkProducer>()
-        val config = mockk<Configuration>()
+        val k9sakEventHandler = get<K9sakEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
 
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
-        every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
-        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
-        every { statistikkProducer.send(any()) } just runs
-        every { KoinProfile.LOCAL == config.koinProfile() } returns true
-
-        val k9sakEventHandler = K9sakEventHandler(
-            oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource),
-            config = config,
-            sakOgBehandlingProducer = sakOgBehadlingProducer,
-            oppgaveKøRepository = oppgaveKøRepository,
-            reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository,
-            saksbehhandlerRepository = saksbehandlerRepository
-        )
 
         @Language("JSON") val json =
             """{
@@ -271,51 +155,8 @@ class K9sakEventHandlerTest :KoinTest{
     @KtorExperimentalAPI
     @Test
     fun `Skal ha 1 oppgave med 3 aksjonspunkter`() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-        val oppgaveKøOppdatert = Channel<UUID>(1)
-        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
-        val refreshKlienter = Channel<SseEvent>(1)
-        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
-        val oppgaveKøRepository = OppgaveKøRepository(
-            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
-        )
-        val reservasjonRepository = ReservasjonRepository(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            dataSource = dataSource,
-            refreshKlienter = refreshKlienter,
-            saksbehandlerRepository = saksbehandlerRepository
-        )
-        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
-        val statistikkProducer = mockk<StatistikkProducer>()
-        val config = mockk<Configuration>()
-
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
-        every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
-        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
-        every { statistikkProducer.send(any()) } just runs
-        every { KoinProfile.LOCAL == config.koinProfile() } returns true
-
-        val k9sakEventHandler = K9sakEventHandler(
-            oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource),
-            config = config,
-            sakOgBehandlingProducer = sakOgBehadlingProducer,
-            oppgaveKøRepository = oppgaveKøRepository,
-            reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository,
-            saksbehhandlerRepository = saksbehandlerRepository
-        )
+        val k9sakEventHandler = get<K9sakEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
 
         @Language("JSON") val json =
             """{
@@ -358,51 +199,9 @@ class K9sakEventHandlerTest :KoinTest{
     @KtorExperimentalAPI
     @Test
     fun `Støtte tilbakekreving`() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-        val oppgaveKøOppdatert = Channel<UUID>(1)
-        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
-        val refreshKlienter = Channel<SseEvent>(1)
-        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
-        val oppgaveKøRepository = OppgaveKøRepository(
-            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
-        )
-        val reservasjonRepository = ReservasjonRepository(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            dataSource = dataSource,
-            refreshKlienter = refreshKlienter,
-            saksbehandlerRepository = saksbehandlerRepository
-        )
-        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
-        val statistikkProducer = mockk<StatistikkProducer>()
-        val config = mockk<Configuration>()
+        val k9sakEventHandler = get<K9sakEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
 
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
-        every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
-        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
-        every { statistikkProducer.send(any()) } just runs
-        every { KoinProfile.LOCAL == config.koinProfile() } returns true
-
-        val k9sakEventHandler = K9sakEventHandler(
-            oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource),
-            config = config,
-            sakOgBehandlingProducer = sakOgBehadlingProducer,
-            oppgaveKøRepository = oppgaveKøRepository,
-            reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository,
-            saksbehhandlerRepository = saksbehandlerRepository
-        )
 
         @Language("JSON") val json =
             """{
@@ -443,51 +242,8 @@ class K9sakEventHandlerTest :KoinTest{
     @KtorExperimentalAPI
     @Test
     fun `Støtte tilbakekreving aksjonspunkt`() {
-        val pg = EmbeddedPostgres.start()
-        val dataSource = pg.postgresDatabase
-        runMigration(dataSource)
-        val oppgaveKøOppdatert = Channel<UUID>(1)
-        val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
-        val refreshKlienter = Channel<SseEvent>(1)
-        val statistikkRepository = StatistikkRepository(dataSource = dataSource)
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
-        val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
-            pepClient = PepClientLocal())
-        val oppgaveKøRepository = OppgaveKøRepository(
-            dataSource = dataSource, oppgaveKøOppdatert = oppgaveKøOppdatert,
-            refreshKlienter = refreshKlienter,
-            pepClient = PepClientLocal()
-        )
-        val reservasjonRepository = ReservasjonRepository(
-            oppgaveKøRepository = oppgaveKøRepository,
-            oppgaveRepository = oppgaveRepository,
-            dataSource = dataSource,
-            refreshKlienter = refreshKlienter,
-            saksbehandlerRepository = saksbehandlerRepository
-        )
-        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
-        val statistikkProducer = mockk<StatistikkProducer>()
-        val config = mockk<Configuration>()
-
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 2))
-        every { gosysOppgaveGateway.opprettOppgave(any()) } returns GosysOppgave(1, 3)
-        every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
-        every { statistikkProducer.send(any()) } just runs
-        every { KoinProfile.LOCAL == config.koinProfile() } returns true
-
-        val k9sakEventHandler = K9sakEventHandler(
-            oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource),
-            config = config,
-            sakOgBehandlingProducer = sakOgBehadlingProducer,
-            oppgaveKøRepository = oppgaveKøRepository,
-            reservasjonRepository = reservasjonRepository,
-            statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = oppgaverSomSkalInnPåKøer,
-            statistikkRepository = statistikkRepository,
-            saksbehhandlerRepository = saksbehandlerRepository
-        )
+        val k9sakEventHandler = get<K9sakEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
 
         @Language("JSON") val json =
             """{
