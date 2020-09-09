@@ -33,7 +33,7 @@ open class K9SakService @KtorExperimentalAPI constructor(
         // Passer på at vi ikke sender behandlingsider om igjen før det har gått 24 timer
         val behandlingIdListe =
             BehandlingIdListe(behandlingIdList.behandlingUuid.filter {
-                cache.setIfEmpty(it.toString(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
+                cache.setIfEmpty(it.toString(), CacheObject(true, expire = LocalDateTime.now().plusHours(12)))
             }.map { BehandlingIdDto(it) }.take(999))
         
         if (behandlingIdListe.behandlinger.isEmpty()) {

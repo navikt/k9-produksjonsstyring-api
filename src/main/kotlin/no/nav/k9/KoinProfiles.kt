@@ -56,7 +56,7 @@ fun common(app: Application, config: Configuration) = module {
     single { config.koinProfile() }
     single { config }
     single { app.hikariConfig(config) as DataSource }
-    single { OppgaveRepository(get(), get()) }
+    single { OppgaveRepository(get(), get(), get()) }
     single {
         NokkeltallTjeneste(
             oppgaveRepository = get(),
@@ -70,6 +70,9 @@ fun common(app: Application, config: Configuration) = module {
         Channel<SseEvent>(Channel.UNLIMITED)
     }
     single(named("oppgaveChannel")) {
+        Channel<Oppgave>(Channel.UNLIMITED)
+    }
+    single(named("oppgaveRefreshChannel")) {
         Channel<Oppgave>(Channel.UNLIMITED)
     }
 

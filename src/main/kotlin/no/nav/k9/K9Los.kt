@@ -33,6 +33,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
+import no.nav.k9.eventhandler.refreshK9
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
@@ -107,10 +108,14 @@ fun Application.k9Los() {
 
     val oppdatereKøerMedOppgaveProsessorJob =
         oppdatereKøerMedOppgaveProsessor(
-            oppgaveKøRepository = koin.get(),
             channel = koin.get<Channel<Oppgave>>(named("oppgaveChannel")),
+            oppgaveKøRepository = koin.get(),
             reservasjonRepository = koin.get(),
-            saksbehandlerRepository = koin.get(),
+            k9SakService = koin.get()
+        )
+    val refreshOppgaveJobb =
+        refreshK9(
+            channel = koin.get<Channel<Oppgave>>(named("oppgaveRefreshChannel")),
             k9SakService = koin.get()
         )
 
@@ -127,6 +132,7 @@ fun Application.k9Los() {
         log.info("Stopper pipeline")
         køOppdatertProsessorJob.cancel()
         oppdatereKøerMedOppgaveProsessorJob.cancel()
+        refreshOppgaveJobb.cancel()
     }
 
     // Server side events

@@ -2,6 +2,7 @@ package no.nav.k9.domene.repository
 
 import com.fasterxml.jackson.core.type.TypeReference
 import io.ktor.util.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
@@ -24,7 +25,8 @@ import javax.sql.DataSource
 
 class OppgaveRepository(
     private val dataSource: DataSource,
-    private val pepClient: IPepClient
+    private val pepClient: IPepClient,
+    private val refreshOppgave: Channel<Oppgave>
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveRepository::class.java)
     fun hent(): List<Oppgave> {
@@ -205,7 +207,10 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.filter { it.kode6 == kode6 }.toList()
+        val oppgaver =
+            json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.filter { it.kode6 == kode6 }.toList()
+        oppgaver.forEach{refreshOppgave.offer(it)}
+        return oppgaver
     }
 
     suspend fun hentOppgaverMedSaksnummer(saksnummer: String): List<Oppgave> {
@@ -222,7 +227,9 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { objectMapper().readValue(it, Oppgave::class.java) }.filter { it.kode6 == kode6 }
+        val oppgaver = json.map { objectMapper().readValue(it, Oppgave::class.java) }.filter { it.kode6 == kode6 }
+        oppgaver.forEach{refreshOppgave.offer(it)}
+        return oppgaver
     }
 
     internal suspend fun hentAktiveOppgaverTotalt(): Int {
