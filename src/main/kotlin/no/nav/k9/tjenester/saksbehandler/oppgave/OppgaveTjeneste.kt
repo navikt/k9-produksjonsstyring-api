@@ -272,7 +272,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }.toList()
     }
 
-    suspend fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
+    fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
         return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId))
             .nyeOgFerdigstilteOppgaverPerAntallDager(7)
             .map {

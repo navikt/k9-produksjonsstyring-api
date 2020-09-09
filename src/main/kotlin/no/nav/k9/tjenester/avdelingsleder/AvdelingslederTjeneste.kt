@@ -1,8 +1,10 @@
 package no.nav.k9.tjenester.avdelingsleder
 
 import io.ktor.util.*
+import kotlinx.coroutines.channels.Channel
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -26,7 +28,8 @@ class AvdelingslederTjeneste(
     private val reservasjonRepository: ReservasjonRepository,
     private val oppgaveRepository: OppgaveRepository,
     private val pepClient: IPepClient,
-    private val configuration: Configuration
+    private val configuration: Configuration,
+    private val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
 ) {
     suspend fun hentOppgaveKø(uuid: UUID): OppgavekøDto {
         val oppgaveKø = oppgaveKøRepository.hentOppgavekø(uuid)
@@ -74,7 +77,7 @@ class AvdelingslederTjeneste(
     }
 
     @KtorExperimentalAPI
-    private suspend fun erOppgaveStyrer() = (pepClient.erOppgaveStyrer() || pepClient.harTilgangTilKode6())
+    private suspend fun erOppgaveStyrer() = (pepClient.erOppgaveStyrer())
 
     @KtorExperimentalAPI
     suspend fun opprettOppgaveKø(): IdDto {
@@ -280,12 +283,7 @@ class AvdelingslederTjeneste(
         }
         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
-        for (oppgaveKø in oppgaveKøRepository.hent()) {
-            oppgaveKøRepository.lagre(oppgaveKø.id, refresh = true) {
-                it!!.leggOppgaveTilEllerFjernFraKø(oppgave, reservasjonRepository)
-                it
-            }
-        }
+        oppgaverSomSkalInnPåKøer.send(oppgave)
         return reservasjon
     }
 

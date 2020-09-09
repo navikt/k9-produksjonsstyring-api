@@ -1,6 +1,5 @@
 package no.nav.k9.eventhandler
 
-import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -9,7 +8,6 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
@@ -26,43 +24,9 @@ fun CoroutineScope.køOppdatertProsessor(
     reservasjonRepository: ReservasjonRepository,
     k9SakService: IK9SakService
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-    oppdatereKø(
-        channel = channel,
-        oppgaveKøRepository = oppgaveKøRepository,
-        oppgaveRepository = oppgaveRepository,
-        reservasjonRepository = reservasjonRepository,
-        k9SakService = k9SakService
-    )
-}
-
-fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
-    channel: ReceiveChannel<Oppgave>,
-    oppgaveKøRepository: OppgaveKøRepository,
-    reservasjonRepository: ReservasjonRepository,
-    saksbehandlerRepository: SaksbehandlerRepository,
-    k9SakService: IK9SakService
-) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-    oppdatereKøerMedOppgave(
-        channel = channel,
-        oppgaveKøRepository = oppgaveKøRepository,
-        reservasjonRepository = reservasjonRepository,
-        saksbehandlerRepository = saksbehandlerRepository,
-        k9SakService = k9SakService
-    )
-}
-
-@KtorExperimentalAPI
-suspend fun oppdatereKø(
-    channel: ReceiveChannel<UUID>,
-    oppgaveKøRepository: OppgaveKøRepository,
-    oppgaveRepository: OppgaveRepository,
-    reservasjonRepository: ReservasjonRepository,
-    k9SakService: IK9SakService
-) {
     val log = LoggerFactory.getLogger("behandleOppgave")
-
     for (uuid in channel) {
-        hentAlleElementerIkøSomSet(uuid, channel).forEach {
+        hentAlleElementerIkøSomSet(uuid, channel = channel).forEach {
             val measureTimeMillis = measureTimeMillis {
                 val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
@@ -94,18 +58,101 @@ suspend fun oppdatereKø(
                             }
                         }
                     }
-
-                    behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(10).map { BehandlingIdDto(it.id) }.toList())
+                    behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
                     oppgaveKø
                 }
-                k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
+                k9SakService
+                    .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
             }
             log.info("tok ${measureTimeMillis}ms å oppdatere kø")
         }
     }
 }
 
-private fun hentAlleElementerIkøSomSet(
+fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
+    channel: ReceiveChannel<Oppgave>,
+    oppgaveKøRepository: OppgaveKøRepository,
+    reservasjonRepository: ReservasjonRepository,
+    k9SakService: IK9SakService
+) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+    val log = LoggerFactory.getLogger("behandleOppgave")
+    val oppgaveListe = mutableListOf<Oppgave>()
+    log.info("Starter rutine for oppdatering av køer")
+    oppgaveListe.add(channel.receive())
+    while (true) {
+        val oppgave = channel.poll()
+        if (oppgave == null) {
+            val measureTimeMillis = measureTimeMillis {
+                for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
+                    var refresh = false
+                    for (o in oppgaveListe) {
+                        refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(o,
+                            reservasjonRepository = reservasjonRepository
+                        )
+                    }
+                    oppgaveKøRepository.lagreIkkeTaHensyn(
+                        oppgavekø.id,
+                        refresh = refresh
+                    ) {
+                        for (o in oppgaveListe) {
+                            if (o.kode6 == oppgavekø.kode6) {
+                                val endring = it!!.leggOppgaveTilEllerFjernFraKø(o,
+                                    reservasjonRepository = reservasjonRepository
+                                )
+                                if (it.tilhørerOppgaveTilKø(o,
+                                        reservasjonRepository = reservasjonRepository,
+                                        taHensynTilReservasjon = false
+                                    )) {
+                                    it.nyeOgFerdigstilteOppgaver(o).leggTilNy(o.eksternId.toString())
+                                }
+                            }
+                        }
+                        it!!
+                    }
+                    val behandlingsListe = mutableListOf<BehandlingIdDto>()
+                    behandlingsListe.addAll(oppgavekø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
+                    k9SakService
+                        .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
+                }
+            }
+
+            log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
+            oppgaveListe.clear()
+            oppgaveListe.add(channel.receive())
+        } else {
+            oppgaveListe.add(oppgave)
+        }
+    }
+}
+
+fun CoroutineScope.refreshK9(
+    channel: ReceiveChannel<Oppgave>,
+    k9SakService: IK9SakService
+) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+    val log = LoggerFactory.getLogger("behandleOppgave")
+    val oppgaveListe = mutableListOf<Oppgave>()
+    oppgaveListe.add(channel.receive())
+    while (true) {
+        val oppgave = channel.poll()
+        if (oppgave == null) {
+           
+            val measureTimeMillis = measureTimeMillis {
+                val behandlingsListe = mutableListOf<BehandlingIdDto>()
+                behandlingsListe.addAll(oppgaveListe.map { BehandlingIdDto(it.eksternId) }.toList())
+                k9SakService
+                    .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
+            }
+            
+            log.info("Refresh oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
+            oppgaveListe.clear()
+            oppgaveListe.add(channel.receive())
+        } else {
+            oppgaveListe.add(oppgave)
+        }
+    }
+}
+
+fun hentAlleElementerIkøSomSet(
     uuid: UUID,
     channel: ReceiveChannel<UUID>
 ): MutableSet<UUID> {
@@ -118,54 +165,3 @@ private fun hentAlleElementerIkøSomSet(
     return set
 }
 
-@KtorExperimentalAPI
-suspend fun oppdatereKøerMedOppgave(
-    channel: ReceiveChannel<Oppgave>,
-    oppgaveKøRepository: OppgaveKøRepository,
-    reservasjonRepository: ReservasjonRepository,
-    saksbehandlerRepository: SaksbehandlerRepository,
-    k9SakService: IK9SakService
-) {
-    val log = LoggerFactory.getLogger("behandleOppgave")
-
-    val oppgaveListe = mutableListOf<Oppgave>()
-    log.info("Starter rutine for oppdatering av køer")
-    oppgaveListe.add(channel.receive())
-    while (true) {
-        val oppgave = channel.poll()
-        if (oppgave == null) {
-            log.info("Starter oppdatering av oppgave")
-            val measureTimeMillis = measureTimeMillis {
-                for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
-                    var refresh = false
-                    for (o in oppgaveListe) {
-                        refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
-                    }
-                    oppgaveKøRepository.lagreIkkeTaHensyn(
-                        oppgavekø.id,
-                        refresh = refresh
-                    ) {
-                        for (o in oppgaveListe) {
-                            if (o.kode6 == oppgavekø.kode6) {
-                                val endring = it!!.leggOppgaveTilEllerFjernFraKø(o, reservasjonRepository)
-                                if (it.tilhørerOppgaveTilKø(o, reservasjonRepository, false)) {
-                                    it.nyeOgFerdigstilteOppgaver(o).leggTilNy(o.eksternId.toString())
-                                }
-                            }
-                        }
-                        it!!
-                    }
-                    val behandlingsListe = mutableListOf<BehandlingIdDto>()
-                    behandlingsListe.addAll(oppgavekø.oppgaverOgDatoer.take(10).map { BehandlingIdDto(it.id) }.toList())
-                    k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
-                }
-            }
-
-            log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
-            oppgaveListe.clear()
-            oppgaveListe.add(channel.receive())
-        } else {
-            oppgaveListe.add(oppgave)
-        }
-    }
-}

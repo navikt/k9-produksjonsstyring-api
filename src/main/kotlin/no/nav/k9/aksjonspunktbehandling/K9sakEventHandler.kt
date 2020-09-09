@@ -10,7 +10,7 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
-import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import org.slf4j.LoggerFactory
 import reportMetrics
@@ -20,7 +20,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     val oppgaveRepository: OppgaveRepository,
     val behandlingProsessEventRepository: BehandlingProsessEventRepository,
     val config: Configuration,
-    val sakOgBehadlingProducer: SakOgBehadlingProducer,
+    val sakOgBehandlingProducer: SakOgBehandlingProducer,
     val oppgaveKøRepository: OppgaveKøRepository,
     val reservasjonRepository: ReservasjonRepository,
     val statistikkProducer: StatistikkProducer,
@@ -43,7 +43,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
         oppgaveRepository.lagre(oppgave.eksternId) {
             if (modell.starterSak()) {
-                sakOgBehadlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
+                sakOgBehandlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
                 if (oppgave.aktiv) {
                     statistikkRepository.lagre(
                         AlleOppgaverNyeOgFerdigstilte(
@@ -118,7 +118,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                         }
                     }
                 }
-                sakOgBehadlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
+                sakOgBehandlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
             statistikkProducer.send(modell)

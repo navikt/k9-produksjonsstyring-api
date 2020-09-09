@@ -178,8 +178,9 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
 
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
+        val oppgaverRefresh = Channel<Oppgave>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal(), refreshOppgave = oppgaverRefresh)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -271,7 +272,9 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
 
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val oppgaverRefresh = Channel<Oppgave>(1000)
+
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal(), refreshOppgave = oppgaverRefresh)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,

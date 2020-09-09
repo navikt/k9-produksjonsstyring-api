@@ -3,8 +3,11 @@ package no.nav.k9
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.*
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import kotlinx.coroutines.channels.Channel
+import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
@@ -12,8 +15,12 @@ import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphServiceLocal
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
+import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
+import no.nav.k9.integrasjon.k9.IK9SakService
+import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlServiceLocal
+import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.sse.SseEvent
 import org.koin.core.module.Module
@@ -36,10 +43,16 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
     single(named("oppgaveChannel")) {
         Channel<Oppgave>(Channel.UNLIMITED)
     }
+    single(named("oppgaveRefreshChannel")) {
+        Channel<Oppgave>(Channel.UNLIMITED)
+    }
+    single {
+        K9SakServiceLocal() as IK9SakService
+    } 
 
     single { dataSource }
     single { pepClient }
-    single { OppgaveRepository(dataSource = get(), pepClient = get()) }
+    single { OppgaveRepository(dataSource = get(), pepClient = get(), refreshOppgave = get(named("oppgaveRefreshChannel"))) }
     single { DriftsmeldingRepository(get()) }
     single { StatistikkRepository(get()) }
 
@@ -67,11 +80,11 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             saksbehandlerRepository = get()
         )
     }
-    val configuration = mockk<Configuration>()
+    val config = mockk<Configuration>()
     single {
-        configuration
+        config
     }
-    every { configuration.koinProfile() } returns KoinProfile.LOCAL
+    every { config.koinProfile() } returns KoinProfile.LOCAL
 
     single {
         PdlServiceLocal() as IPdlService
@@ -87,6 +100,26 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             get(),
             get(),
             get(), get(), get(), get(), get(), get(named("oppgaveChannel"))
+        )
+    }
+
+    val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
+    val statistikkProducer = mockk<StatistikkProducer>()
+    every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
+    every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
+    every { statistikkProducer.send(any()) } just runs
+
+    single {
+        K9sakEventHandler(
+            get(),
+            BehandlingProsessEventRepository(dataSource = get()),
+            config = config,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
+            oppgaveKøRepository = get(),
+            reservasjonRepository = get(),
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkRepository = get(), saksbehhandlerRepository = get()
         )
     }
 }

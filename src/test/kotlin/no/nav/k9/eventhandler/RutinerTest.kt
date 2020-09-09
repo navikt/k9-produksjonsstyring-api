@@ -25,12 +25,16 @@ import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
-import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
+import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
+import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
 import no.nav.k9.tjenester.sse.SseEvent
 import org.intellij.lang.annotations.Language
 import org.junit.Test
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 class RutinerTest {
     @KtorExperimentalAPI
@@ -41,9 +45,10 @@ class RutinerTest {
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
+        val oppgaverRefresh = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(100)
         val statistikkProducer = mockk<StatistikkProducer>()
-        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal())
+        val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal(), refreshOppgave = oppgaverRefresh)
         val  saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
             pepClient = PepClientLocal()
         )
@@ -79,24 +84,102 @@ class RutinerTest {
             )
         }
         val launch = GlobalScope.launch {
-            oppdatereKø(
-                channel = oppgaveKøOppdatert,
-                oppgaveKøRepository = oppgaveKøRepository,
-                oppgaveRepository = oppgaveRepository,
-                reservasjonRepository = reservasjonRepository,
-                k9SakService = K9SakServiceLocal()
-            )
+            val log = LoggerFactory.getLogger("behandleOppgave")
+            for (uuid in oppgaveKøOppdatert) {
+                hentAlleElementerIkøSomSet(uuid, oppgaveKøOppdatert).forEach {
+                    val measureTimeMillis = measureTimeMillis {
+                        val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+
+                        //oppdatert kø utenfor lås
+                        // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
+                        val oppgavekøGammel = oppgaveKøRepository.hentOppgavekø(it)
+                        val oppgavekøModifisert = oppgaveKøRepository.hentOppgavekø(it)
+                        oppgavekøModifisert.oppgaverOgDatoer.clear()
+                        for (oppgave in aktiveOppgaver) {
+                            if (oppgavekøModifisert.kode6 == oppgave.kode6) {
+                                oppgavekøModifisert.leggOppgaveTilEllerFjernFraKø(
+                                    oppgave = oppgave,
+                                    reservasjonRepository = reservasjonRepository
+                                )
+                            }
+                        }
+                        val behandlingsListe = mutableListOf<BehandlingIdDto>()
+                        oppgaveKøRepository.lagreIkkeTaHensyn(it) { oppgaveKø ->
+                            if (oppgaveKø!! == oppgavekøGammel) {
+                                oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
+                            } else {
+                                oppgaveKø.oppgaverOgDatoer.clear()
+                                for (oppgave in aktiveOppgaver) {
+                                    if (oppgavekøModifisert.kode6 == oppgave.kode6) {
+                                        oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                                            oppgave = oppgave,
+                                            reservasjonRepository = reservasjonRepository
+                                        )
+                                    }
+                                }
+                            }
+                            behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
+                            oppgaveKø
+                        }
+                        K9SakServiceLocal()
+                            .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
+                    }
+                    log.info("tok ${measureTimeMillis}ms å oppdatere kø")
+                }
+            }
         }
         val launch2 = GlobalScope.launch {
-            oppdatereKøerMedOppgave(
-                channel = oppgaverSomSkalInnPåKøer,
-                oppgaveKøRepository = oppgaveKøRepository,
-                reservasjonRepository = reservasjonRepository,
-                saksbehandlerRepository = saksbehandlerRepository,
-                k9SakService = K9SakServiceLocal()
-            )
+            val log = LoggerFactory.getLogger("behandleOppgave")
+            val oppgaveListe = mutableListOf<Oppgave>()
+            log.info("Starter rutine for oppdatering av køer")
+            oppgaveListe.add(oppgaverSomSkalInnPåKøer.receive())
+            while (true) {
+                val oppgave = oppgaverSomSkalInnPåKøer.poll()
+                if (oppgave == null) {
+                    log.info("Starter oppdatering av oppgave")
+                    val measureTimeMillis = measureTimeMillis {
+                        for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
+                            var refresh = false
+                            for (o in oppgaveListe) {
+                                refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(o,
+                                    reservasjonRepository = reservasjonRepository
+                                )
+                            }
+                            oppgaveKøRepository.lagreIkkeTaHensyn(
+                                oppgavekø.id,
+                                refresh = refresh
+                            ) {
+                                for (o in oppgaveListe) {
+                                    if (o.kode6 == oppgavekø.kode6) {
+                                        val endring = it!!.leggOppgaveTilEllerFjernFraKø(o,
+                                            reservasjonRepository = reservasjonRepository
+                                        )
+                                        if (it.tilhørerOppgaveTilKø(o,
+                                                reservasjonRepository = reservasjonRepository,
+                                                taHensynTilReservasjon = false
+                                            )) {
+                                            it.nyeOgFerdigstilteOppgaver(o).leggTilNy(o.eksternId.toString())
+                                        }
+                                    }
+                                }
+                                it!!
+                            }
+                            val behandlingsListe = mutableListOf<BehandlingIdDto>()
+                            behandlingsListe.addAll(oppgavekø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
+                            K9SakServiceLocal()
+                                .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
+                        }
+                    }
+        
+                    log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
+                    oppgaveListe.clear()
+                    oppgaveListe.add(oppgaverSomSkalInnPåKøer.receive())
+                } else {
+                    oppgaveListe.add(oppgave)
+                }
+            }
         }
-        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
@@ -105,7 +188,7 @@ class RutinerTest {
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
