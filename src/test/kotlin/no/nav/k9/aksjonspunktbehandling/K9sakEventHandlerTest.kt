@@ -18,7 +18,7 @@ import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.gosys.GosysOppgave
 import no.nav.k9.integrasjon.gosys.GosysOppgaveGateway
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
-import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.sse.SseEvent
 import org.intellij.lang.annotations.Language
 import org.junit.Rule
@@ -48,11 +48,8 @@ class K9sakEventHandlerTest :KoinTest{
         val saksbehandlerRepository = get<SaksbehandlerRepository>()
         val oppgaveKøRepository = get<OppgaveKøRepository>()
         val reservasjonRepository = get<ReservasjonRepository>()
-        val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
-        every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
-        every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         every { statistikkProducer.send(any()) } just runs
@@ -63,7 +60,7 @@ class K9sakEventHandlerTest :KoinTest{
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = get<DataSource>()),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
@@ -133,7 +130,7 @@ class K9sakEventHandlerTest :KoinTest{
             saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
         every { gosysOppgaveGateway.hentOppgaver(any()) } returns mutableListOf(GosysOppgave(1, 1))
         every { gosysOppgaveGateway.avsluttOppgave(any()) } just Runs
@@ -146,7 +143,7 @@ class K9sakEventHandlerTest :KoinTest{
             OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal()),
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
@@ -213,7 +210,7 @@ class K9sakEventHandlerTest :KoinTest{
             saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
         val config = mockk<Configuration>()
 
@@ -227,7 +224,7 @@ class K9sakEventHandlerTest :KoinTest{
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
@@ -297,7 +294,7 @@ class K9sakEventHandlerTest :KoinTest{
             saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
         val config = mockk<Configuration>()
 
@@ -311,7 +308,7 @@ class K9sakEventHandlerTest :KoinTest{
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
@@ -384,7 +381,7 @@ class K9sakEventHandlerTest :KoinTest{
             saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
         val config = mockk<Configuration>()
 
@@ -398,7 +395,7 @@ class K9sakEventHandlerTest :KoinTest{
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,
@@ -469,7 +466,7 @@ class K9sakEventHandlerTest :KoinTest{
             saksbehandlerRepository = saksbehandlerRepository
         )
         val gosysOppgaveGateway = mockk<GosysOppgaveGateway>()
-        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
         val statistikkProducer = mockk<StatistikkProducer>()
         val config = mockk<Configuration>()
 
@@ -483,7 +480,7 @@ class K9sakEventHandlerTest :KoinTest{
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,

@@ -28,7 +28,7 @@ import no.nav.k9.integrasjon.pdl.PdlServicePreprod
 import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.rest.RequestContextServiceLocal
-import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingTjeneste
@@ -114,7 +114,7 @@ fun common(app: Application, config: Configuration) = module {
     }
 
     single {
-        SakOgBehadlingProducer(
+        SakOgBehandlingProducer(
             kafkaConfig = config.getKafkaConfig(),
             config = config
         )
@@ -141,7 +141,7 @@ fun common(app: Application, config: Configuration) = module {
             oppgaveRepository = get(),
             behandlingProsessEventRepository = get(),
             config = config,
-            sakOgBehadlingProducer = get(),
+            sakOgBehandlingProducer = get(),
             oppgaveKøRepository = get(),
             reservasjonRepository = get(),
             statistikkProducer = get(),

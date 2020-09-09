@@ -35,7 +35,7 @@ import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
-import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
@@ -115,7 +115,7 @@ fun Application.k9Los() {
         )
 
     val asynkronProsesseringV1Service = koin.get<AsynkronProsesseringV1Service>()
-    val sakOgBehadlingProducer = koin.get<SakOgBehadlingProducer>()
+    val sakOgBehadlingProducer = koin.get<SakOgBehandlingProducer>()
     val statistikkProducer = koin.get<StatistikkProducer>()
 
     environment.monitor.subscribe(ApplicationStopping) {

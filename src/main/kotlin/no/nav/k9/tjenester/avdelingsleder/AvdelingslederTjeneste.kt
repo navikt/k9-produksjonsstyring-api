@@ -77,7 +77,7 @@ class AvdelingslederTjeneste(
     }
 
     @KtorExperimentalAPI
-    private suspend fun erOppgaveStyrer() = (pepClient.erOppgaveStyrer() || pepClient.harTilgangTilKode6())
+    private suspend fun erOppgaveStyrer() = (pepClient.erOppgaveStyrer())
 
     @KtorExperimentalAPI
     suspend fun opprettOppgaveKø(): IdDto {

@@ -25,7 +25,7 @@ import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
-import no.nav.k9.integrasjon.sakogbehandling.SakOgBehadlingProducer
+import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.sse.SseEvent
 import org.intellij.lang.annotations.Language
 import org.junit.Test
@@ -96,7 +96,7 @@ class RutinerTest {
                 k9SakService = K9SakServiceLocal()
             )
         }
-        val sakOgBehadlingProducer = mockk<SakOgBehadlingProducer>()
+        val sakOgBehadlingProducer = mockk<SakOgBehandlingProducer>()
         every { sakOgBehadlingProducer.behandlingOpprettet(any()) } just runs
         every { sakOgBehadlingProducer.avsluttetBehandling(any()) } just runs
         val config = mockk<Configuration>()
@@ -105,7 +105,7 @@ class RutinerTest {
             oppgaveRepository,
             BehandlingProsessEventRepository(dataSource = dataSource),
             config = config,
-            sakOgBehadlingProducer = sakOgBehadlingProducer,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,
             reservasjonRepository = reservasjonRepository,
             statistikkProducer = statistikkProducer,

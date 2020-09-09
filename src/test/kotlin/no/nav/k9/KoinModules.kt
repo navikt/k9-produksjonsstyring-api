@@ -14,6 +14,7 @@ import no.nav.k9.integrasjon.azuregraph.AzureGraphServiceLocal
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlServiceLocal
+import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.sse.SseEvent
 import org.koin.core.module.Module
@@ -67,11 +68,11 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             saksbehandlerRepository = get()
         )
     }
-    val configuration = mockk<Configuration>()
+    val config = mockk<Configuration>()
     single {
-        configuration
+        config
     }
-    every { configuration.koinProfile() } returns KoinProfile.LOCAL
+    every { config.koinProfile() } returns KoinProfile.LOCAL
 
     single {
         PdlServiceLocal() as IPdlService

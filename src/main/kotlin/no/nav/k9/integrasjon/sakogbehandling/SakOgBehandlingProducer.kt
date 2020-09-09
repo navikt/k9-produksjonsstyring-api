@@ -20,7 +20,7 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 
-class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
+class SakOgBehandlingProducer @KtorExperimentalAPI constructor(
     val kafkaConfig: KafkaConfig,
     val config: Configuration
 ) : HealthCheck {
@@ -32,7 +32,7 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
     private companion object {
         private val NAME = "SakOgBehadlingProducer"
       
-        private val log = LoggerFactory.getLogger(SakOgBehadlingProducer::class.java)
+        private val log = LoggerFactory.getLogger(SakOgBehandlingProducer::class.java)
     }
 
     private val producer: KafkaProducer<String, String> = KafkaProducer(
@@ -55,7 +55,6 @@ class SakOgBehadlingProducer @KtorExperimentalAPI constructor(
                melding
             )
         ).get()
-//        log.info("Sendt til Topic '${TOPIC_USE_SAK_OG_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
     }
 
     @KtorExperimentalAPI
