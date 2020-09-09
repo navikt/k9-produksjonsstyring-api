@@ -120,10 +120,10 @@ class OppgaveRepository(
         }
     }
 
-  
+
     @KtorExperimentalAPI
     fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {
-      
+
         val oppgaveiderList = oppgaveider.toList()
         if (oppgaveider.isEmpty()) {
             return emptyList()
@@ -132,7 +132,7 @@ class OppgaveRepository(
         var spørring = System.currentTimeMillis()
         val session = sessionOf(dataSource)
         val json: List<String> = using(session) {
-          
+
             //language=PostgreSQL
             it.run(
                 queryOf(
@@ -158,7 +158,7 @@ class OppgaveRepository(
         log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list
     }
-    
+
     fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
         try {
             val json = using(sessionOf(dataSource)) {
@@ -192,7 +192,7 @@ class OppgaveRepository(
     }
 
     suspend fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
-        val kode6 =  pepClient.harTilgangTilKode6()
+        val kode6 = pepClient.harTilgangTilKode6()
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -205,11 +205,11 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.filter { it.kode6 ==kode6 }.toList()
+        return json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.filter { it.kode6 == kode6 }.toList()
     }
 
     suspend fun hentOppgaverMedSaksnummer(saksnummer: String): List<Oppgave> {
-        val kode6 =  pepClient.harTilgangTilKode6()
+        val kode6 = pepClient.harTilgangTilKode6()
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -222,10 +222,10 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        return json.map { objectMapper().readValue(it, Oppgave::class.java) }.filter { it.kode6 ==kode6 }
+        return json.map { objectMapper().readValue(it, Oppgave::class.java) }.filter { it.kode6 == kode6 }
     }
 
-    suspend internal fun hentAktiveOppgaverTotalt(): Int {
+    internal suspend fun hentAktiveOppgaverTotalt(): Int {
        val kode6 =  pepClient.harTilgangTilKode6()
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
@@ -283,6 +283,7 @@ class OppgaveRepository(
         log.info("Teller inaktive oppgaver: $spørring ms")
         return count!!
     }
+
     internal fun hentInaktiveIkkeAvluttedeAvsluttede(): Int {
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
