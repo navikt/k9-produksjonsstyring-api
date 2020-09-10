@@ -8,6 +8,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.StatistikkRepository
 import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
@@ -73,7 +74,8 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     channel: ReceiveChannel<Oppgave>,
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository,
-    k9SakService: IK9SakService
+    k9SakService: IK9SakService,
+    statistikkRepository: StatistikkRepository
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     val log = LoggerFactory.getLogger("behandleOppgave")
     val oppgaveListe = mutableListOf<Oppgave>()
@@ -119,7 +121,7 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
                         .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
                 }
             }
-
+            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker(refresh = true)
             log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
             oppgaveListe.clear()
             oppgaveListe.add(channel.receive())

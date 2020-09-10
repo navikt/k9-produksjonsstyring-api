@@ -30,7 +30,7 @@ class StatistikkRepositoryTest : KoinTest {
         
         val statistikkRepository  = get<StatistikkRepository>()
         
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(1)
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker(1)
 
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
@@ -78,7 +78,7 @@ class StatistikkRepositoryTest : KoinTest {
             it.nye.add(oppgave.eksternId.toString())
             it
         }
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(1)
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker(1)
         val omsorgspenger = hentFerdigstilte.filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
         assert(omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size == 1)
