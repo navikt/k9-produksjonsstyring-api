@@ -86,7 +86,8 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
                 for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
                     var refresh = false
                     for (o in oppgaveListe) {
-                        refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(o,
+                        refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(
+                            o,
                             reservasjonRepository = reservasjonRepository
                         )
                     }
@@ -96,13 +97,16 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
                     ) {
                         for (o in oppgaveListe) {
                             if (o.kode6 == oppgavekø.kode6) {
-                                val endring = it!!.leggOppgaveTilEllerFjernFraKø(o,
+                                val endring = it!!.leggOppgaveTilEllerFjernFraKø(
+                                    o,
                                     reservasjonRepository = reservasjonRepository
                                 )
-                                if (it.tilhørerOppgaveTilKø(o,
+                                if (it.tilhørerOppgaveTilKø(
+                                        o,
                                         reservasjonRepository = reservasjonRepository,
                                         taHensynTilReservasjon = false
-                                    )) {
+                                    )
+                                ) {
                                     it.nyeOgFerdigstilteOppgaver(o).leggTilNy(o.eksternId.toString())
                                 }
                             }
@@ -135,15 +139,9 @@ fun CoroutineScope.refreshK9(
     while (true) {
         val oppgave = channel.poll()
         if (oppgave == null) {
-           
-            val measureTimeMillis = measureTimeMillis {
-                val behandlingsListe = mutableListOf<BehandlingIdDto>()
-                behandlingsListe.addAll(oppgaveListe.map { BehandlingIdDto(it.eksternId) }.toList())
-                k9SakService
-                    .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
-            }
-            
-            log.info("Refresh oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
+            val behandlingsListe = mutableListOf<BehandlingIdDto>()
+            behandlingsListe.addAll(oppgaveListe.map { BehandlingIdDto(it.eksternId) }.toList())
+            k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
             oppgaveListe.clear()
             oppgaveListe.add(channel.receive())
         } else {

@@ -29,6 +29,8 @@ open class K9SakService @KtorExperimentalAPI constructor(
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
     private val cache = Cache<Boolean>(cacheSize = 10000)
     @KtorExperimentalAPI
+    private val url = configuration.k9Url()
+    @KtorExperimentalAPI
     override suspend fun refreshBehandlinger(behandlingIdList: BehandlingIdListe) {
         // Passer på at vi ikke sender behandlingsider om igjen før det har gått 24 timer
         val behandlingIdListe =
@@ -43,9 +45,9 @@ open class K9SakService @KtorExperimentalAPI constructor(
         if (cache.get(body.sha512()) != null) {
             return
         }
-        cache.set(body.sha512(), CacheObject(true, expire = LocalDateTime.now().plusDays(1)))
+        cache.set(body.sha512(), CacheObject(true, expire = LocalDateTime.now().plusHours(12)))
 
-        val httpRequest = "${configuration.k9Url()}/behandling/backend-root/refresh"
+        val httpRequest = "${url}/behandling/backend-root/refresh"
             .httpPost()
             .body(
                 body
@@ -82,6 +84,6 @@ open class K9SakService @KtorExperimentalAPI constructor(
                 }
             )
         }
-        log.info("Refreshet " + behandlingIdListe.behandlinger.size +" i k9 sak (" + behandlingIdList.behandlinger.joinToString(",")+")")
+        log.info("Refreshet " + behandlingIdListe.behandlinger.size +" i k9 sak (" + behandlingIdListe.behandlinger.joinToString(",")+")")
     }
 }
