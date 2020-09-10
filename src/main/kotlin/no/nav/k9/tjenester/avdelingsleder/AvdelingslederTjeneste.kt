@@ -50,7 +50,6 @@ class AvdelingslederTjeneste(
             saksbehandlere = oppgaveKø.saksbehandlere
         )
     }
-
     @KtorExperimentalAPI
     suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
         if (!erOppgaveStyrer()) {
