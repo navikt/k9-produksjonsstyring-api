@@ -11,7 +11,10 @@ import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleFerdigstilteOppgaver
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
+import no.nav.k9.utils.Cache
+import no.nav.k9.utils.CacheObject
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
 
@@ -200,7 +203,17 @@ class StatistikkRepository(
             )
         }
     }
-    fun hentFerdigstilteOgNyeHistorikkMedYtelsetype(antall: Int): List<AlleOppgaverNyeOgFerdigstilte> {
+    private val hentFerdigstilteOgNyeHistorikkMedYtelsetypeCache = Cache<List<AlleOppgaverNyeOgFerdigstilte>>()
+    fun hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker(
+        refresh: Boolean = false
+    ): List<AlleOppgaverNyeOgFerdigstilte> {
+        if (!refresh) {
+            val cacheObject = hentFerdigstilteOgNyeHistorikkMedYtelsetypeCache.get("default")
+            if (cacheObject != null) {
+                return cacheObject.value
+            }
+        }
+        
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -210,7 +223,7 @@ class StatistikkRepository(
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
-                    mapOf("antall" to "\'${antall} days\'")
+                    mapOf("antall" to "\'${27} days\'")
                 )
                     .map { row ->
                         AlleOppgaverNyeOgFerdigstilte(
@@ -225,7 +238,7 @@ class StatistikkRepository(
         }
         val datoMap = list.groupBy { it.dato }
         val ret = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
-        for (i in antall downTo 1) {
+        for (i in 27 downTo 1) {
             val dato = LocalDate.now().minusDays(i.toLong())
             val defaultList = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
             for (behandlingType in BehandlingType.values()) {
@@ -254,6 +267,7 @@ class StatistikkRepository(
                 }
             }
         }
+        hentFerdigstilteOgNyeHistorikkMedYtelsetypeCache.set("default", CacheObject(ret, LocalDateTime.now().plusMinutes(60)))
         return ret
     }
 

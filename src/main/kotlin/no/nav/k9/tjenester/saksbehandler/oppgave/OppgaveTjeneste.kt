@@ -307,7 +307,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverBeholdningHistorikk> {
         val ytelsetype =
-            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetype(28 - 1)
+            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker()
         val ret = mutableListOf<AlleOppgaverBeholdningHistorikk>()
         for (ytelseTypeEntry in ytelsetype.groupBy { it.fagsakYtelseType }) {
             val perBehandlingstype = ytelseTypeEntry.value.groupBy { it.behandlingType }
