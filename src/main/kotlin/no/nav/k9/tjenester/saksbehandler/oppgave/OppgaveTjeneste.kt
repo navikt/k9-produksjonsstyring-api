@@ -430,7 +430,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     private val hentAntallOppgaverCache = Cache<Int>()
     suspend fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false, refresh: Boolean = false): Int {
-        val key = UUID.randomUUID().toString() + taMedReserverte
+        val key = oppgavekøId.toString() + taMedReserverte
         if (!refresh) {
             val cacheObject = hentAntallOppgaverCache.get(key)
             if (cacheObject != null) {
