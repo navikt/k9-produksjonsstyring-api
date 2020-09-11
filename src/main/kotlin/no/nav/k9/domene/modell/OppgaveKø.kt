@@ -104,7 +104,11 @@ data class OppgaveKø(
         if (oppgave.skjermet != this.skjermet) {
             return false
         }
-
+        
+        if (oppgave.kode6 != this.kode6) {
+            return false
+        }
+        
         if (filtreringAndreKriterierType.isEmpty()) {
             return true
         }
