@@ -25,6 +25,7 @@ class OppgaveKøRepository(
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
     suspend fun hent(): List<OppgaveKø> {
         val skjermet = pepClient.harTilgangTilKode6()
+        log.error("Skjermet " + skjermet)
         val json: List<String> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
