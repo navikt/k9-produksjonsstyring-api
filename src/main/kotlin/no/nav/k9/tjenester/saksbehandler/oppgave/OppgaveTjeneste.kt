@@ -23,6 +23,8 @@ import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
+import no.nav.k9.utils.Cache
+import no.nav.k9.utils.CacheObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -48,7 +50,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
 ) {
 
-     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
+    fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
         return try {
             val oppgaveKø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
             oppgaveRepository.hentOppgaver(oppgaveKø.oppgaverOgDatoer.take(20).map { it.id })
@@ -294,7 +296,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
                     .toSet())
                     .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
-            val ferdigstilte = ferdigstilteManuelt.find { f -> f.behandlingType == it.behandlingType && f.dato == it.dato }
+            val ferdigstilte =
+                ferdigstilteManuelt.find { f -> f.behandlingType == it.behandlingType && f.dato == it.dato }
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = it.behandlingType,
                 dato = it.dato,
@@ -425,23 +428,32 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         )
     }
 
-    suspend fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false): Int {
+    private val hentAntallOppgaverCache = Cache<Int>()
+    suspend fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false, refresh: Boolean = false): Int {
+        val key = UUID.randomUUID().toString() + taMedReserverte
+        if (!refresh) {
+            val cacheObject = hentAntallOppgaverCache.get(key)
+            if (cacheObject != null) {
+                return cacheObject.value
+            }
+        }
         val oppgavekø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
         var reserverteOppgaverSomHørerTilKø = 0
         if (taMedReserverte) {
             val reservasjoner = reservasjonRepository.hent(
-                saksbehandlerRepository.hentAlleSaksbehandlere()
+                saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn()
                     .flatMap { saksbehandler -> saksbehandler.reservasjoner }.toSet()
             )
 
-            
             for (oppgave in oppgaveRepository.hentOppgaver(reservasjoner.map { it.oppgave })) {
                 if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
                     reserverteOppgaverSomHørerTilKø++
                 }
             }
         }
-        return oppgavekø.oppgaverOgDatoer.size + reserverteOppgaverSomHørerTilKø
+        val antall = oppgavekø.oppgaverOgDatoer.size + reserverteOppgaverSomHørerTilKø
+        hentAntallOppgaverCache.set(key, CacheObject(antall, LocalDateTime.now().plusMinutes(30)))
+        return antall
     }
 
     suspend fun hentAntallOppgaverTotalt(): Int {

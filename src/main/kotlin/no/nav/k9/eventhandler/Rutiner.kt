@@ -1,5 +1,6 @@
 package no.nav.k9.eventhandler
 
+import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -12,16 +13,18 @@ import no.nav.k9.domene.repository.StatistikkRepository
 import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
-
+@KtorExperimentalAPI
 fun CoroutineScope.køOppdatertProsessor(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
+    oppgaveTjeneste: OppgaveTjeneste,
     reservasjonRepository: ReservasjonRepository,
     k9SakService: IK9SakService
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
@@ -62,6 +65,8 @@ fun CoroutineScope.køOppdatertProsessor(
                     behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
                     oppgaveKø
                 }
+                oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = true, refresh = true)
+                oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = false, refresh = true)
                 k9SakService
                     .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
             }
@@ -75,7 +80,8 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository,
     k9SakService: IK9SakService,
-    statistikkRepository: StatistikkRepository
+    statistikkRepository: StatistikkRepository,
+    oppgaveTjeneste: OppgaveTjeneste
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     val log = LoggerFactory.getLogger("behandleOppgave")
     val oppgaveListe = mutableListOf<Oppgave>()
@@ -119,6 +125,16 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
                     behandlingsListe.addAll(oppgavekø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
                     k9SakService
                         .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
+                    oppgaveTjeneste.hentAntallOppgaver(
+                        oppgavekøId = oppgavekø.id,
+                        taMedReserverte = true,
+                        refresh = true
+                    )
+                    oppgaveTjeneste.hentAntallOppgaver(
+                        oppgavekøId = oppgavekø.id,
+                        taMedReserverte = false,
+                        refresh = true
+                    )
                 }
             }
             statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker(refresh = true)
