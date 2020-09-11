@@ -32,12 +32,12 @@ fun CoroutineScope.køOppdatertProsessor(
     for (uuid in channel) {
         hentAlleElementerIkøSomSet(uuid, channel = channel).forEach {
             val measureTimeMillis = measureTimeMillis {
-                val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
                 //oppdatert kø utenfor lås
-                // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
                 val oppgavekøGammel = oppgaveKøRepository.hentOppgavekø(it)
+                // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
                 val oppgavekøModifisert = oppgaveKøRepository.hentOppgavekø(it)
+                val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver().filter { !oppgavekøModifisert.erOppgavenReservert(reservasjonRepository,it) }
                 oppgavekøModifisert.oppgaverOgDatoer.clear()
                 for (oppgave in aktiveOppgaver) {
                     if (oppgavekøModifisert.kode6 == oppgave.kode6) {
@@ -48,23 +48,25 @@ fun CoroutineScope.køOppdatertProsessor(
                     }
                 }
                 val behandlingsListe = mutableListOf<BehandlingIdDto>()
-                oppgaveKøRepository.lagreIkkeTaHensyn(it) { oppgaveKø ->
-                    if (oppgaveKø!! == oppgavekøGammel) {
-                        oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
-                    } else {
-                        oppgaveKø.oppgaverOgDatoer.clear()
-                        for (oppgave in aktiveOppgaver) {
-                            if (oppgavekøModifisert.kode6 == oppgave.kode6) {
-                                oppgaveKø.leggOppgaveTilEllerFjernFraKø(
-                                    oppgave = oppgave,
-                                    reservasjonRepository = reservasjonRepository
-                                )
+                    oppgaveKøRepository.lagreIkkeTaHensyn(it) { oppgaveKø ->
+                        if (oppgaveKø!! == oppgavekøGammel) {
+                            oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
+                        } else {
+                            oppgaveKø.oppgaverOgDatoer.clear()
+                            for (oppgave in aktiveOppgaver) {
+                                if (oppgavekøModifisert.kode6 == oppgave.kode6) {
+                                    oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                                        oppgave = oppgave,
+                                        reservasjonRepository = reservasjonRepository,
+                                        taHensynTilReservasjon = false
+                                    )
+                                }
                             }
                         }
+                        behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }
+                            .toList())
+                        oppgaveKø
                     }
-                    behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
-                    oppgaveKø
-                }
                 oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = true, refresh = true)
                 oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = false, refresh = true)
                 k9SakService
