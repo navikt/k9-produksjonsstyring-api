@@ -5,6 +5,7 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingDto
 import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingSwitch
+import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
 
@@ -27,7 +28,8 @@ class DriftsmeldingRepository(
                             "id" to driftsmelding.id,
                             "dato" to driftsmelding.dato,
                             "melding" to driftsmelding.melding,
-                            "aktiv" to driftsmelding.aktiv
+                            "aktiv" to driftsmelding.aktiv,
+                            "aktivert" to null
                         )
                     ).asUpdate
                 )
@@ -35,7 +37,7 @@ class DriftsmeldingRepository(
         }
     }
 
-    fun setDriftsmelding(driftsmelding: DriftsmeldingSwitch) {
+    fun setDriftsmelding(driftsmelding: DriftsmeldingSwitch, aktivert: LocalDateTime?) {
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
 
@@ -44,13 +46,14 @@ class DriftsmeldingRepository(
                         queryOf(
                                 """
                     update driftsmeldinger
-                    set aktiv = :aktiv
+                    set aktiv = :aktiv, aktivert = :aktivert
                     where id = :id                
                        
                  """,
                         mapOf(
                                 "id" to driftsmelding.id,
-                                "aktiv" to driftsmelding.aktiv
+                                "aktiv" to driftsmelding.aktiv,
+                                "aktivert" to aktivert
                         )
                 ).asUpdate
                 )
@@ -70,7 +73,8 @@ class DriftsmeldingRepository(
                             id = UUID.fromString(row.string("id")),
                             melding = row.string("melding"),
                             aktiv = row.boolean("aktiv"),
-                            dato = row.localDateTime("dato")
+                            dato = row.localDateTime("dato"),
+                            aktivert = row.localDateTimeOrNull("aktivert")
                         )
                     }.asList
             )
@@ -108,7 +112,8 @@ class DriftsmeldingRepository(
                                         id = UUID.fromString(row.string("id")),
                                         melding = row.string("melding"),
                                         aktiv = row.boolean("aktiv"),
-                                        dato = row.localDateTime("dato")
+                                        dato = row.localDateTime("dato"),
+                                        aktivert = row.localDateTime("aktivert")
                                 )
                             }.asSingle
             )
