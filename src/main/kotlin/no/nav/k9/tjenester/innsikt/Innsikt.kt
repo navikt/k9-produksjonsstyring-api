@@ -134,12 +134,13 @@ fun Route.innsiktGrensesnitt() {
 
         mutableSet
             .removeAll(oppgaveKøRepository.hentIkkeTaHensyn().flatMap { it.oppgaverOgDatoer }.map { it.id }.toSet())
-        mutableSet.removeAll(saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner })
-
+        val reservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
+        mutableSet.removeAll(reservasjonRepository.hentSelvOmDeIkkeErAktive(reservasjoner.toSet()).filter { it.erAktiv() }.map { it.oppgave })
+        
         val oppgaver = oppgaveRepository.hentOppgaver(mutableSet)
         if (oppgaver.isEmpty()) {
             call.respond("Ingen overflødige")
         }
-        call.respond(oppgaver.map { it.copy(aktorId = "") })
+        call.respond(oppgaver.size })
     }
 }
