@@ -20,15 +20,16 @@ class DriftsmeldingRepositoryTest: KoinTest{
     @KtorExperimentalAPI
     @Test
     fun skalLagreDriftsmeldingOgHenteDenIgjen() {
-        
+
         val driftsmeldingRepository = get<DriftsmeldingRepository>()
-        
+
         val driftsmelding =
             DriftsmeldingDto(
                     UUID.randomUUID(),
                     "Driftsmelding",
             LocalDateTime.now(),
-            false)
+            false,
+            null)
         driftsmeldingRepository.lagreDriftsmelding(driftsmelding)
 
         val alle = driftsmeldingRepository.hentAlle()
