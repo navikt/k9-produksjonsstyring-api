@@ -1,27 +1,29 @@
 package no.nav.k9.eventhandler
 
+import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.domene.repository.StatistikkRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
+import kotlin.concurrent.fixedRateTimer
 import kotlin.system.measureTimeMillis
 
-
+@KtorExperimentalAPI
 fun CoroutineScope.køOppdatertProsessor(
     channel: ReceiveChannel<UUID>,
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveRepository: OppgaveRepository,
+    oppgaveTjeneste: OppgaveTjeneste,
     reservasjonRepository: ReservasjonRepository,
     k9SakService: IK9SakService
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
@@ -29,12 +31,13 @@ fun CoroutineScope.køOppdatertProsessor(
     for (uuid in channel) {
         hentAlleElementerIkøSomSet(uuid, channel = channel).forEach {
             val measureTimeMillis = measureTimeMillis {
-                val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
                 //oppdatert kø utenfor lås
-                // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
                 val oppgavekøGammel = oppgaveKøRepository.hentOppgavekø(it)
+                // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
                 val oppgavekøModifisert = oppgaveKøRepository.hentOppgavekø(it)
+                val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+                    .filter { !oppgavekøModifisert.erOppgavenReservert(reservasjonRepository, it) }
                 oppgavekøModifisert.oppgaverOgDatoer.clear()
                 for (oppgave in aktiveOppgaver) {
                     if (oppgavekøModifisert.kode6 == oppgave.kode6) {
@@ -54,14 +57,18 @@ fun CoroutineScope.køOppdatertProsessor(
                             if (oppgavekøModifisert.kode6 == oppgave.kode6) {
                                 oppgaveKø.leggOppgaveTilEllerFjernFraKø(
                                     oppgave = oppgave,
-                                    reservasjonRepository = reservasjonRepository
+                                    reservasjonRepository = reservasjonRepository,
+                                    taHensynTilReservasjon = false
                                 )
                             }
                         }
                     }
-                    behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
+                    behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }
+                        .toList())
                     oppgaveKø
                 }
+                oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = true, refresh = true)
+                oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = false, refresh = true)
                 k9SakService
                     .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
             }
@@ -75,7 +82,8 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository,
     k9SakService: IK9SakService,
-    statistikkRepository: StatistikkRepository
+    statistikkRepository: StatistikkRepository,
+    oppgaveTjeneste: OppgaveTjeneste
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     val log = LoggerFactory.getLogger("behandleOppgave")
     val oppgaveListe = mutableListOf<Oppgave>()
@@ -119,6 +127,16 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
                     behandlingsListe.addAll(oppgavekø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
                     k9SakService
                         .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
+                    oppgaveTjeneste.hentAntallOppgaver(
+                        oppgavekøId = oppgavekø.id,
+                        taMedReserverte = true,
+                        refresh = true
+                    )
+                    oppgaveTjeneste.hentAntallOppgaver(
+                        oppgavekøId = oppgavekø.id,
+                        taMedReserverte = false,
+                        refresh = true
+                    )
                 }
             }
             statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker(refresh = true)
@@ -149,6 +167,21 @@ fun CoroutineScope.refreshK9(
         } else {
             oppgaveListe.add(oppgave)
         }
+    }
+}
+
+
+@KtorExperimentalAPI
+fun sjekkReserverteJobb(
+    reservasjonRepository: ReservasjonRepository,
+    saksbehandlerRepository: SaksbehandlerRepository
+): Timer {
+    return fixedRateTimer(
+        name = "sjekkReserverteTimer", daemon = true,
+        initialDelay = 0, period = 300 *1000
+    ) {
+        val reservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
+        runBlocking { reservasjonRepository.hent(reservasjoner.toSet()) }
     }
 }
 

@@ -174,12 +174,12 @@ class SaksbehandlerRepository(
         }
     }
 
-    suspend fun fjernReservasjon(id: String?, reservasjon: UUID) {
+     fun fjernReservasjon(id: String?, reservasjon: UUID) {
         if (id == null) {
             return
         }
-        if (finnSaksbehandlerMedIdent(id) != null) {
-            lagreMedId(id) { saksbehandler ->
+        if (finnSaksbehandlerMedIdentIkkeTaHensyn(id) != null) {
+            lagreMedIdIkkeTaHensyn(id) { saksbehandler ->
                 saksbehandler!!.reservasjoner.remove(reservasjon)
                 saksbehandler
             }

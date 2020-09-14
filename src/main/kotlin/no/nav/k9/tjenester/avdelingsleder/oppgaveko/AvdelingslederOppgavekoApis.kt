@@ -5,6 +5,7 @@ import io.ktor.locations.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.util.*
 import kotlinx.coroutines.withContext
 import no.nav.k9.KoinProfile
 import no.nav.k9.integrasjon.rest.IRequestContextService
@@ -14,6 +15,7 @@ import no.nav.k9.tjenester.saksbehandler.idToken
 import org.koin.ktor.ext.inject
 import java.util.*
 
+@KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 fun Route.AvdelingslederOppgavekøApis() {
     val avdelingslederTjeneste by inject<AvdelingslederTjeneste>()

@@ -34,6 +34,7 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
 import no.nav.k9.eventhandler.refreshK9
+import no.nav.k9.eventhandler.sjekkReserverteJobb
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
@@ -103,7 +104,8 @@ fun Application.k9Los() {
             oppgaveRepository = koin.get(),
             channel = koin.get<Channel<UUID>>(named("oppgaveKøOppdatert")),
             reservasjonRepository = koin.get(),
-            k9SakService = koin.get()
+            k9SakService = koin.get(),
+            oppgaveTjeneste = koin.get()
         )
 
     val oppdatereKøerMedOppgaveProsessorJob =
@@ -112,13 +114,16 @@ fun Application.k9Los() {
             oppgaveKøRepository = koin.get(),
             reservasjonRepository = koin.get(),
             k9SakService = koin.get(),
-            statistikkRepository = koin.get()
+            statistikkRepository = koin.get(),
+            oppgaveTjeneste = koin.get()
         )
     val refreshOppgaveJobb =
         refreshK9(
             channel = koin.get<Channel<Oppgave>>(named("oppgaveRefreshChannel")),
             k9SakService = koin.get()
         )
+
+    val sjekkReserverteJobb = sjekkReserverteJobb(saksbehandlerRepository = koin.get(), reservasjonRepository = koin.get())
 
     val asynkronProsesseringV1Service = koin.get<AsynkronProsesseringV1Service>()
     val sakOgBehadlingProducer = koin.get<SakOgBehandlingProducer>()
@@ -129,6 +134,7 @@ fun Application.k9Los() {
         asynkronProsesseringV1Service.stop()
         sakOgBehadlingProducer.stop()
         statistikkProducer.stop()
+        sjekkReserverteJobb.cancel()
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
         køOppdatertProsessorJob.cancel()
