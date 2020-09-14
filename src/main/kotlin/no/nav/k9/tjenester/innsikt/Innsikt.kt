@@ -141,6 +141,6 @@ fun Route.innsiktGrensesnitt() {
         if (oppgaver.isEmpty()) {
             call.respond("Ingen overflødige")
         }
-        call.respond(oppgaver.size })
+        call.respond(oppgaver.size )
     }
 }
