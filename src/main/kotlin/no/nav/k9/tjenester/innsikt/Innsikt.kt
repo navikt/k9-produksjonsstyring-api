@@ -57,7 +57,7 @@ fun Route.innsiktGrensesnitt() {
                         +"Det er nå ${aksjonspunkter.sumBy { it.antall }} åpne oppgaver, $inaktiveIkkeAvsluttedeOppgaver inaktive med annen status enn avsluttet og $avsluttede med status avsluttet, $automatiskProsesserteTotalt er prosessert automatisk"
                     }
                     p {
-                        +"Totalt ${aksjonspunkter.sumBy { it.antall }+ inaktiveIkkeAvsluttedeOppgaver + avsluttede}}"
+                        +"Totalt ${aksjonspunkter.sumBy { it.antall } + inaktiveIkkeAvsluttedeOppgaver + avsluttede}}"
                     }
                     p {
                         +"Eldste eventTid kom ${s}"
@@ -109,7 +109,9 @@ fun Route.innsiktGrensesnitt() {
                             val hentMedHistorikk = reservasjonRepository.hentMedHistorikk(UUID.fromString(s))
                             val reservertav = hentMedHistorikk
                                 .map { reservasjon -> reservasjon.reservertAv }.first()
-                            saksbehandlerRepository.finnSaksbehandlerMedIdentIkkeTaHensyn(reservertav)?.enhet?.substringBefore(" ")
+                            saksbehandlerRepository.finnSaksbehandlerMedIdentIkkeTaHensyn(reservertav)?.enhet?.substringBefore(
+                                " "
+                            )
                         } else {
                             "SRV"
                         }
@@ -135,12 +137,15 @@ fun Route.innsiktGrensesnitt() {
         mutableSet
             .removeAll(oppgaveKøRepository.hentIkkeTaHensyn().flatMap { it.oppgaverOgDatoer }.map { it.id }.toSet())
         val reservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
-        mutableSet.removeAll(reservasjonRepository.hentSelvOmDeIkkeErAktive(reservasjoner.toSet()).filter { it.erAktiv() }.map { it.oppgave })
-        
+        mutableSet.removeAll(
+            reservasjonRepository.hentSelvOmDeIkkeErAktive(reservasjoner.toSet()).filter { it.erAktiv() }
+                .map { it.oppgave })
+
         val oppgaver = oppgaveRepository.hentOppgaver(mutableSet)
         if (oppgaver.isEmpty()) {
             call.respond("Ingen overflødige")
+        } else {
+            call.respond(oppgaver.size)
         }
-        call.respond(oppgaver.size )
     }
 }
