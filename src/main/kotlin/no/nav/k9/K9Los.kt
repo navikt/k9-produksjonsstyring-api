@@ -34,6 +34,7 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
 import no.nav.k9.eventhandler.refreshK9
+import no.nav.k9.eventhandler.sjekkReserverteJobb
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
@@ -122,6 +123,8 @@ fun Application.k9Los() {
             k9SakService = koin.get()
         )
 
+    val sjekkReserverteJobb = sjekkReserverteJobb(saksbehandlerRepository = koin.get(), reservasjonRepository = koin.get())
+
     val asynkronProsesseringV1Service = koin.get<AsynkronProsesseringV1Service>()
     val sakOgBehadlingProducer = koin.get<SakOgBehandlingProducer>()
     val statistikkProducer = koin.get<StatistikkProducer>()
@@ -131,6 +134,7 @@ fun Application.k9Los() {
         asynkronProsesseringV1Service.stop()
         sakOgBehadlingProducer.stop()
         statistikkProducer.stop()
+        sjekkReserverteJobb.cancel()
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
         køOppdatertProsessorJob.cancel()
