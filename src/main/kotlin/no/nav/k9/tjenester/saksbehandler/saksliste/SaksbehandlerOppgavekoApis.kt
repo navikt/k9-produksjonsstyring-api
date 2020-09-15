@@ -11,22 +11,18 @@ import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.rest.IRequestContextService
-import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.saksbehandler.IdTokenLocal
 import no.nav.k9.tjenester.saksbehandler.idToken
-import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.koin.ktor.ext.inject
 import java.util.*
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.SaksbehandlerOppgavekoApis() {
-    val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val pepClient by inject<IPepClient>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val requestContextService by inject<IRequestContextService>()
-    val avdelingslederTjeneste by inject<AvdelingslederTjeneste>()
+    val sakslisteTjeneste by inject<SakslisteTjeneste>()
     val profile by inject<KoinProfile>()
 
     @Location("/oppgaveko")
@@ -44,8 +40,7 @@ internal fun Route.SaksbehandlerOppgavekoApis() {
             )
         ) {
             if (pepClient.harBasisTilgang()) {
-                val list = avdelingslederTjeneste.hentSaksbehandlersOppgavekoer().entries.find { it.key.epost == coroutineContext.idToken().getUsername().toLowerCase() }!!.value
-                call.respond(list)
+                call.respond(sakslisteTjeneste.hentSaksbehandlersKøer())
             } else {
                 call.respond(emptyList<OppgaveKø>())
             }
