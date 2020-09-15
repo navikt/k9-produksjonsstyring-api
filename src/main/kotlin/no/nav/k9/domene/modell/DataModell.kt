@@ -97,7 +97,9 @@ data class Modell(
             årskvantum = erÅrskvantum(event),
             avklarMedlemskap = avklarMedlemskap(event),
             vurderopptjeningsvilkåret = vurderopptjeningsvilkåret(event),
-            eventTid = event.eventTid
+            eventTid = event.eventTid,
+            ansvarligSaksbehandlerForTotrinn = event.ansvarligSaksbehandlerForTotrinn,
+            ansvarligSaksbehandlerIdent = event.ansvarligSaksbehandlerIdent
         )
     }
 

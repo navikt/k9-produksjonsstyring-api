@@ -38,7 +38,9 @@ data class Oppgave(
     var kode6: Boolean =false,
     var skjermet: Boolean = false,
     val utenlands: Boolean,
-    val vurderopptjeningsvilkåret : Boolean = false
+    val vurderopptjeningsvilkåret : Boolean = false,
+    val ansvarligSaksbehandlerForTotrinn : String? = null,
+    val ansvarligSaksbehandlerIdent : String? = null
 ){
     fun avluttet(): Boolean {
         return behandlingStatus == BehandlingStatus.AVSLUTTET
