@@ -1,18 +1,16 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.3.2.12404e4"
+val dusseldorfKtorVersion = "1.4.0.8634f4b"
 val ktorVersion = "1.4.0"
-val pdfBoxVersion = "2.0.16"
 val mainClass = "no.nav.k9.K9LosKt"
 val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
 val hikariVersion = "3.3.1"
 val flywayVersion = "6.0.8"
 val vaultJdbcVersion = "1.3.1"
 val kafkaEmbeddedEnvVersion = "2.2.3"
-val cxf = "3.3.1"
-val jaxwsTools = "2.3.1"
 val koinVersion = "2.1.6"
+val kotliqueryVersion = "1.3.1"
 
 plugins {
     kotlin("jvm") version "1.3.70"
@@ -49,7 +47,7 @@ dependencies {
     // Kafka
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
-    implementation("com.github.seratch:kotliquery:1.3.1")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     // Tilgangskontroll
     implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
