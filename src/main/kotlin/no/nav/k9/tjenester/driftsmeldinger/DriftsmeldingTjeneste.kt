@@ -23,7 +23,8 @@ class DriftsmeldingTjeneste(
                 UUID.randomUUID(),
                 melding,
                 LocalDateTime.now(),
-                false
+                false,
+                null
         )
         driftsmeldingRepository.lagreDriftsmelding(driftsmelding)
 
@@ -31,6 +32,6 @@ class DriftsmeldingTjeneste(
     }
 
     fun toggleDriftsmelding(driftsmelding: DriftsmeldingSwitch) {
-        driftsmeldingRepository.setDriftsmelding(driftsmelding)
+        driftsmeldingRepository.setDriftsmelding(driftsmelding, if (driftsmelding.aktiv) LocalDateTime.now() else null)
     }
 }

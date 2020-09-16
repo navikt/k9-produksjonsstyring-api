@@ -291,8 +291,6 @@ class SaksbehandlerRepository(
                     }.asList
             )
         }
-        log.info("Henter " + identer.size + " saksbehandlere")
-
         return identer
     }
 
@@ -309,8 +307,6 @@ class SaksbehandlerRepository(
                     }.asList
             )
         }
-        log.info("Henter " + identer.size + " saksbehandlere")
-
         return identer
     }
 

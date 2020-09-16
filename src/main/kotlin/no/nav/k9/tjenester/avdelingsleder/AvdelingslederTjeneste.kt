@@ -16,6 +16,7 @@ import no.nav.k9.tjenester.avdelingsleder.oppgaveko.*
 import no.nav.k9.tjenester.avdelingsleder.reservasjoner.ReservasjonDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.OppgavekøDto
+import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerDto
 import no.nav.k9.tjenester.saksbehandler.saksliste.SorteringDto
 import java.time.LocalDate
 import java.util.*
@@ -136,8 +137,9 @@ class AvdelingslederTjeneste(
         }
     }
 
-    suspend fun hentSaksbehandlere(): List<Saksbehandler> {
-        return saksbehandlerRepository.hentAlleSaksbehandlere()
+    suspend fun hentSaksbehandlere(): List<SaksbehandlerDto> {
+        val saksbehandlersKoer = hentSaksbehandlersOppgavekoer()
+        return saksbehandlersKoer.entries.map { SaksbehandlerDto(it.key.brukerIdent, it.key.navn, it.key.epost, it.value.map { ko -> ko.navn }) }
     }
 
     suspend fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
@@ -154,6 +156,36 @@ class AvdelingslederTjeneste(
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
 
+    }
+
+    suspend fun hentSaksbehandlersOppgavekoer(): MutableMap<Saksbehandler, List<OppgavekøDto>> {
+        val koer = oppgaveTjeneste.hentOppgaveKøer()
+        val saksbehandlere = saksbehandlerRepository.hentAlleSaksbehandlere()
+        val list = mutableMapOf<Saksbehandler, List<OppgavekøDto>>()
+        for (saksbehandler in saksbehandlere) {
+            list.put(saksbehandler, koer.filter { oppgaveKø ->
+                oppgaveKø.saksbehandlere
+                        .any { s -> s.epost == saksbehandler.epost }
+            }
+                    .map { oppgaveKø ->
+                        val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato)
+
+                        OppgavekøDto(
+                                id = oppgaveKø.id,
+                                navn = oppgaveKø.navn,
+                                behandlingTyper = oppgaveKø.filtreringBehandlingTyper,
+                                fagsakYtelseTyper = oppgaveKø.filtreringYtelseTyper,
+                                saksbehandlere = oppgaveKø.saksbehandlere,
+                                antallBehandlinger = oppgaveKø.oppgaverOgDatoer.size,
+                                sistEndret = oppgaveKø.sistEndret,
+                                skjermet = oppgaveKø.skjermet,
+                                sortering = sortering,
+                                andreKriterier = oppgaveKø.filtreringAndreKriterierType
+                        )
+
+                    })
+        }
+        return list
     }
 
     suspend fun endreSkjerming(skjermet: SkjermetDto) {

@@ -34,6 +34,7 @@ import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingTjeneste
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import no.nav.k9.tjenester.saksbehandler.saksliste.SakslisteTjeneste
 import no.nav.k9.tjenester.sse.SseEvent
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
@@ -192,6 +193,9 @@ fun common(app: Application, config: Configuration) = module {
 
     single {
         DriftsmeldingTjeneste(driftsmeldingRepository = get())
+    }
+    single {
+        SakslisteTjeneste(oppgaveTjeneste = get(), azureGraphService = get())
     }
     single {
         HentKodeverkTjeneste()

@@ -7,6 +7,7 @@ data class DriftsmeldingDto(
     val id: UUID,
     val melding: String,
     val dato: LocalDateTime,
-    val aktiv: Boolean
+    val aktiv: Boolean,
+    val aktivert: LocalDateTime?
 )
 
