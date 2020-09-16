@@ -262,7 +262,7 @@ data class Modell(
                     .map { reservasjon -> reservasjon.reservertAv }.first()
                 saksbehandlerRepository.finnSaksbehandlerMedIdentIkkeTaHensyn(reservertav)?.enhet?.substringBefore(" ")
             } else {
-                null
+                "SRV"
             }
         val zone = ZoneId.of("Europe/Oslo")
         return Behandling(
