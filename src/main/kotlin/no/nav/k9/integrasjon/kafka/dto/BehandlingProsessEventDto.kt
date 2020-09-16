@@ -36,8 +36,8 @@ data class BehandlingProsessEventDto(
     val behandlinStatus: String?,
     val behandlingSteg: String?,
     val behandlendeEnhet: String? = null,
-    val resultatType :String? = null,
-    
+    val resultatType: String? = null,
+
     /**
      * Ytelsestype i kodeform. Eksempel: FP
      */
@@ -60,9 +60,9 @@ data class BehandlingProsessEventDto(
      */
     val aksjonspunktKoderMedStatusListe: MutableMap<String, String>,
 
-    val href :String? = null,
-    val førsteFeilutbetaling :String? = null,
-    val feilutbetaltBeløp : Long?= null,
-    val ansvarligSaksbehandlerIdent :String?= null
-    
+    val href: String? = null,
+    val førsteFeilutbetaling: String? = null,
+    val feilutbetaltBeløp: Long? = null,
+    val ansvarligSaksbehandlerIdent: String? = null,
+    val ansvarligSaksbehandlerForTotrinn: String? = null
 )

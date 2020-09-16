@@ -255,7 +255,6 @@ class OppgaveRepository(
         fagsakYtelseType: FagsakYtelseType,
         behandlingType: BehandlingType
     ): Int {
-        var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -268,8 +267,6 @@ class OppgaveRepository(
                     }.asSingle
             )
         }
-        spørring = System.currentTimeMillis() - spørring
-        log.info("Teller aktive oppgaver: $spørring ms")
         return count!!
     }
 
@@ -324,7 +321,7 @@ class OppgaveRepository(
             )
         }
         spørring = System.currentTimeMillis() - spørring
-        log.info("Teller autmatiske oppgaver: $spørring ms")
+        log.info("Teller automatiske oppgaver: $spørring ms")
         return count!!
     }
 
