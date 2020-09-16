@@ -157,7 +157,7 @@ fun Application.k9Los() {
 //         oppgaveKøRepository = koin.get(),
 //         saksbehhandlerRepository = koin.get()
 //     )
-    // rekjørForGrafer(koin.get(), koin.get())
+    rekjørForGrafer(koin.get(), koin.get())
 
     install(CallIdRequired)
 

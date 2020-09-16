@@ -57,19 +57,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     }
                 }
             }
-
-            if (oppgave.aktiv) {
-                statistikkRepository.lagre(
-                    AlleOppgaverNyeOgFerdigstilte(
-                        oppgave.fagsakYtelseType,
-                        oppgave.behandlingType,
-                        oppgave.eventTid.toLocalDate()
-                    )
-                ) {
-                    it.nye.add(oppgave.eksternId.toString())
-                    it
-                }
-            }
+            
             if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
                 statistikkRepository.lagre(
                     AlleOppgaverNyeOgFerdigstilte(
