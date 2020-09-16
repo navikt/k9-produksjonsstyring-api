@@ -49,7 +49,6 @@ dependencies {
     // Kafka
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
-    implementation("com.sun.istack:istack-commons-runtime:2.2")
     implementation("com.github.seratch:kotliquery:1.3.1")
 
     // Tilgangskontroll
