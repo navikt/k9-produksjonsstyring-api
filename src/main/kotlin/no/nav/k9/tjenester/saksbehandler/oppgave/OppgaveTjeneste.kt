@@ -320,6 +320,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         fagsakYtelseType = ytelseTypeEntry.key,
                         behandlingType = behandlingTypeEntry.key
                     )
+                log.info("""Aktive for ${ytelseTypeEntry.key} ${behandlingTypeEntry.key} $aktive""")
                 behandlingTypeEntry.value.sortedByDescending { it.dato }.map {
                     aktive = aktive - it.nye.size + it.ferdigstilte.size
                     ret.add(
