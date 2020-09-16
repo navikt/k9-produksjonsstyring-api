@@ -1,6 +1,6 @@
 package no.nav.k9.integrasjon.datavarehus
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
 import no.nav.helse.dusseldorf.ktor.health.Healthy
@@ -13,7 +13,6 @@ import no.nav.k9.domene.modell.Modell
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.IPepClient
-import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.kafka.KafkaConfig
 import no.nav.k9.integrasjon.kafka.TopicEntry
 import no.nav.k9.integrasjon.kafka.TopicUse
@@ -91,7 +90,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             )
         ).get()
       //  log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-      //  log.info("Statistikk sak: $melding")
+        log.info("Statistikk sak: ${sak.saksnummer}")
     }
 
     @KtorExperimentalAPI
@@ -111,7 +110,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             )
         ).get()
 //        log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-//        log.info("Statistikk behandling: $melding")
+        log.info("Statistikk behandling: ${behandling.sakId} ${behandling.behandlingId}")
     }
 
 
