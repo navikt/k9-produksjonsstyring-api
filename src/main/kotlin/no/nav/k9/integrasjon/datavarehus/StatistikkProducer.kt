@@ -88,8 +88,14 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
                 TOPIC_USE_STATISTIKK_SAK.name,
                 melding
             )
-        ).get()
-        log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}' topic ${recordMetaData.topic()}")
+        ) { metadata, exception ->
+            if (exception != null) {
+                log.error("", exception)
+            } else {
+                log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${metadata.offset()}' til partition '${metadata.partition()}' topic ${metadata.topic()}")
+            }
+        }.get()
+
         log.info("Statistikk sak: ${sak.saksnummer}")
     }
 
@@ -101,7 +107,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             log.info("Lokal kjøring, sender ikke melding til statistikk")
             return
         }
-       
+
         val melding = objectMapper().writeValueAsString(behandling)
         val recordMetaData = producer.send(
             ProducerRecord(
@@ -110,7 +116,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             )
         ).get()
 //        log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-      //  log.info("Statistikk behandling: ${behandling.sakId} ${behandling.behandlingId}")
+        //  log.info("Statistikk behandling: ${behandling.sakId} ${behandling.behandlingId}")
     }
 
 
