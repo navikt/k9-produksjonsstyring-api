@@ -88,15 +88,12 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
                 TOPIC_USE_STATISTIKK_SAK.name,
                 melding
             )
-        ) { metadata, exception ->
+        ) { _, exception ->
             if (exception != null) {
                 log.error("", exception)
-            } else {
-                log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${metadata.offset()}' til partition '${metadata.partition()}' topic ${metadata.topic()}")
             }
         }.get()
 
-        log.info("Statistikk sak: ${sak.saksnummer}")
     }
 
     @KtorExperimentalAPI
@@ -114,11 +111,12 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
                 TOPIC_USE_STATISTIKK_BEHANDLING.name,
                 melding
             )
-        ).get()
-//        log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_BEHANDLING.name}' med offset '${recordMetaData.offset()}' til partition '${recordMetaData.partition()}'")
-        //  log.info("Statistikk behandling: ${behandling.sakId} ${behandling.behandlingId}")
+        ) { _, exception ->
+            if (exception != null) {
+                log.error("", exception)
+            }
+        }.get()
     }
-
 
     internal fun stop() = producer.close()
 
