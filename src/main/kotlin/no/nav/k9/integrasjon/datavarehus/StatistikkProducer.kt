@@ -83,7 +83,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             return
         }
         val melding = objectMapper().writeValueAsString(sak)
-        val recordMetaData = producer.send(
+        producer.send(
             ProducerRecord(
                 TOPIC_USE_STATISTIKK_SAK.name,
                 melding
@@ -106,7 +106,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
         }
 
         val melding = objectMapper().writeValueAsString(behandling)
-        val recordMetaData = producer.send(
+        producer.send(
             ProducerRecord(
                 TOPIC_USE_STATISTIKK_BEHANDLING.name,
                 melding
