@@ -28,4 +28,8 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
                 entry.value.sumBy { it.antall })
         }
     }
+
+    fun hentDagensTall(): List<AlleApneBehandlinger> {
+        return oppgaveRepository.hentApneBehandlingerPerBehandlingtypeIdag()
+    }
 }

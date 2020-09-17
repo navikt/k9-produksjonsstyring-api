@@ -39,4 +39,11 @@ fun Route.NokkeltallApis() {
         call.respond(nokkeltallTjeneste.hentFerdigstilteOppgaver())
     }
 
+    @Location("/dagens-tall")
+    class hentDagensTall
+
+    get { _: hentDagensTall ->
+        call.respond(nokkeltallTjeneste.hentDagensTall())
+    }
+
 }

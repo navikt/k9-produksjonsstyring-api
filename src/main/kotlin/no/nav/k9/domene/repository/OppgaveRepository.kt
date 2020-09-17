@@ -13,6 +13,7 @@ import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleApneBehandlinger
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
 import no.nav.k9.tjenester.mock.Aksjonspunkt
 import no.nav.k9.utils.Cache
@@ -192,6 +193,35 @@ class OppgaveRepository(
             return emptyList()
         }
     }
+
+    fun hentApneBehandlingerPerBehandlingtypeIdag(): List<AlleApneBehandlinger> {
+        try {
+            val json = using(sessionOf(dataSource)) {
+                it.run(
+                    queryOf(
+                        """
+                        select count(*) as antall,
+                        (data -> 'behandlingType' ->> 'kode') as behandlingType
+                        from oppgave o where (data -> 'aktiv') ::boolean
+                        group by  behandlingType
+                    """.trimIndent(),
+                        mapOf()
+                    )
+                        .map { row ->
+                            AlleApneBehandlinger(
+                                BehandlingType.fraKode(row.string("behandlingType")),
+                                row.int("antall")
+                            )
+                        }.asList
+                )
+            }
+            return json
+        } catch (_: Exception) {
+
+            return emptyList()
+        }
+    }
+
 
     suspend fun hentOppgaverMedAktorId(aktørId: String): List<Oppgave> {
         val kode6 = pepClient.harTilgangTilKode6()
