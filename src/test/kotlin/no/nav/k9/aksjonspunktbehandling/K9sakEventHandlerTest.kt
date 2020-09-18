@@ -20,6 +20,7 @@ import kotlin.test.assertTrue
 
 class K9sakEventHandlerTest :KoinTest{
 
+    @KtorExperimentalAPI
     @get:Rule
     val koinTestRule = KoinTestRule.create {
         modules(buildAndTestConfig())

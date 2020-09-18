@@ -3,13 +3,12 @@ package no.nav.k9.integrasjon.azuregraph
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpGet
-import io.ktor.http.HttpHeaders
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.http.*
+import io.ktor.util.*
 import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
-import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.saksbehandler.IdToken
@@ -104,14 +103,14 @@ open class AzureGraphService @KtorExperimentalAPI constructor(
 
 
             val json = Retry.retry(
-                operation = "hent-ident",
+                operation = "office-location",
                 initialDelay = Duration.ofMillis(200),
                 factor = 2.0,
                 logger = log
             ) {
                 val (request, _, result) = Operation.monitored(
                     app = "k9-los-api",
-                    operation = "hent-ident",
+                    operation = "office-location",
                     resultResolver = { 200 == it.second.statusCode }
                 ) { httpRequest.awaitStringResponseResult() }
 

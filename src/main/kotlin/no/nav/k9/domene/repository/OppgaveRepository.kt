@@ -100,14 +100,10 @@ class OppgaveRepository(
                 } else {
                     f(null)
                 }
-                var kode6 = false
-                var skjermet = false
                 runBlocking {
-                    kode6 = pepClient.erSakKode6(oppgave.fagsakSaksnummer)
-                    skjermet = pepClient.erSakKode7EllerEgenAnsatt(oppgave.fagsakSaksnummer)
+                    oppgave.kode6 = pepClient.erSakKode6(oppgave.fagsakSaksnummer)
+                    oppgave.skjermet = pepClient.erSakKode7EllerEgenAnsatt(oppgave.fagsakSaksnummer)
                 }
-                oppgave.kode6 = kode6
-                oppgave.skjermet = skjermet
                 val json = objectMapper().writeValueAsString(oppgave)
                 tx.run(
                     queryOf(
@@ -132,7 +128,6 @@ class OppgaveRepository(
             return emptyList()
         }
 
-        var spørring = System.currentTimeMillis()
         val session = sessionOf(dataSource)
         val json: List<String> = using(session) {
 
@@ -151,15 +146,11 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        spørring = System.currentTimeMillis() - spørring
-        val serialisering = System.currentTimeMillis()
-        val list =
-            json.filter { it.indexOf("oppgaver") == -1 }.map { s -> objectMapper().readValue(s, Oppgave::class.java) }
-                .toList()
-                .sortedBy { oppgave -> oppgave.behandlingOpprettet }
 
-        log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
-        return list
+        return json.filter { it.indexOf("oppgaver") == -1 }
+            .map { s -> objectMapper().readValue(s, Oppgave::class.java) }
+            .toList()
+            .sortedBy { oppgave -> oppgave.behandlingOpprettet }
     }
 
     fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
@@ -188,8 +179,8 @@ class OppgaveRepository(
                 )
             }
             return json
-        } catch (_: Exception) {
-
+        } catch (e: Exception) {
+            log.error("", e)
             return emptyList()
         }
     }
@@ -216,8 +207,8 @@ class OppgaveRepository(
                 )
             }
             return json
-        } catch (_: Exception) {
-
+        } catch (e: Exception) {
+            log.error("", e)
             return emptyList()
         }
     }
@@ -239,10 +230,11 @@ class OppgaveRepository(
         }
         val oppgaver =
             json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.filter { it.kode6 == kode6 }.toList()
-        oppgaver.forEach{refreshOppgave.offer(it)}
+        oppgaver.forEach { refreshOppgave.offer(it) }
         return oppgaver
     }
 
+    @KtorExperimentalAPI
     suspend fun hentOppgaverMedSaksnummer(saksnummer: String): List<Oppgave> {
         val kode6 = pepClient.harTilgangTilKode6()
         val json: List<String> = using(sessionOf(dataSource)) {
@@ -258,12 +250,12 @@ class OppgaveRepository(
             )
         }
         val oppgaver = json.map { objectMapper().readValue(it, Oppgave::class.java) }.filter { it.kode6 == kode6 }
-        oppgaver.forEach{refreshOppgave.offer(it)}
+        oppgaver.forEach { refreshOppgave.offer(it) }
         return oppgaver
     }
 
     internal suspend fun hentAktiveOppgaverTotalt(): Int {
-       val kode6 =  pepClient.harTilgangTilKode6()
+        val kode6 = pepClient.harTilgangTilKode6()
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
             it.run(

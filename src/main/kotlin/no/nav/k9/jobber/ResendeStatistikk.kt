@@ -1,6 +1,6 @@
 package no.nav.k9.jobber
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import no.nav.k9.domene.repository.BehandlingProsessEventRepository
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import org.slf4j.LoggerFactory

@@ -19,6 +19,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 class StatistikkRepositoryTest : KoinTest {
+    @KtorExperimentalAPI
     @get:Rule
     val koinTestRule = KoinTestRule.create {
         modules(buildAndTestConfig())
