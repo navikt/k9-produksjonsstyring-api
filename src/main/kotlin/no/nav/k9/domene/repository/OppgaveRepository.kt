@@ -132,7 +132,6 @@ class OppgaveRepository(
             return emptyList()
         }
 
-        var spørring = System.currentTimeMillis()
         val session = sessionOf(dataSource)
         val json: List<String> = using(session) {
 
@@ -151,15 +150,10 @@ class OppgaveRepository(
                     }.asList
             )
         }
-        spørring = System.currentTimeMillis() - spørring
-        val serialisering = System.currentTimeMillis()
-        val list =
-            json.filter { it.indexOf("oppgaver") == -1 }.map { s -> objectMapper().readValue(s, Oppgave::class.java) }
-                .toList()
-                .sortedBy { oppgave -> oppgave.behandlingOpprettet }
 
-        log.info("Henter oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
-        return list
+        return json.filter { it.indexOf("oppgaver") == -1 }.map { s -> objectMapper().readValue(s, Oppgave::class.java) }
+            .toList()
+            .sortedBy { oppgave -> oppgave.behandlingOpprettet }
     }
 
     fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
@@ -188,8 +182,8 @@ class OppgaveRepository(
                 )
             }
             return json
-        } catch (_: Exception) {
-
+        } catch (e: Exception) {
+            log.error("", e)
             return emptyList()
         }
     }
@@ -216,8 +210,8 @@ class OppgaveRepository(
                 )
             }
             return json
-        } catch (_: Exception) {
-
+        } catch (e: Exception) {
+            log.error("", e)
             return emptyList()
         }
     }
