@@ -14,12 +14,10 @@ import io.ktor.routing.*
 import io.ktor.util.*
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.launch
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -30,7 +28,6 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.repository.*
 import no.nav.k9.eventhandler.køOppdatertProsessor
 import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
 import no.nav.k9.eventhandler.refreshK9
@@ -40,7 +37,6 @@ import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AvdelingslederOppgavekøApis
 import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingerApis
@@ -60,8 +56,6 @@ import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.getKoin
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.Executors
-import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -255,109 +249,5 @@ private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
     }
 }
 
-private fun Application.rekjørForGrafer(
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    statistikkRepository: StatistikkRepository
-) {
-    launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-        val alleEventerIder = behandlingProsessEventRepository.hentAlleEventerIder()
-        statistikkRepository.truncateNyeOgFerdigstilte()
-        for ((index, eventId) in alleEventerIder.withIndex()) {
-            if (index % 1000 == 0) {
-                log.info("""Ferdig med $index av ${alleEventerIder.size}""")
-            }
-            for (modell in behandlingProsessEventRepository.hent(UUID.fromString(eventId)).alleVersjoner()) {
-                val oppgave = modell.oppgave()
-                if (modell.starterSak()) {
-                    if (oppgave.aktiv) {
-                        statistikkRepository.lagre(
-                            AlleOppgaverNyeOgFerdigstilte(
-                                oppgave
-                                    .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
-                            )
-                        ) {
-                            it.nye.add(oppgave.eksternId.toString())
-                            it
-                        }
-                    }
-                }
-                if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
-                    statistikkRepository.lagre(
-                        AlleOppgaverNyeOgFerdigstilte(
-                            oppgave.fagsakYtelseType,
-                            oppgave.behandlingType,
-                            oppgave.eventTid.toLocalDate()
-                        )
-                    ) {
-                        it.nye.add(oppgave.eksternId.toString())
-                        it
-                    }
-                }
-
-                if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
-                    statistikkRepository.lagre(
-                        AlleOppgaverNyeOgFerdigstilte(
-                            oppgave.fagsakYtelseType,
-                            oppgave.behandlingType,
-                            oppgave.eventTid.toLocalDate()
-                        )
-                    ) {
-                        it.ferdigstilte.add(oppgave.eksternId.toString())
-                        it
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-@KtorExperimentalAPI
-private fun Application.regenererOppgaver(
-    oppgaveRepository: OppgaveRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
-    reservasjonRepository: ReservasjonRepository,
-    oppgaveKøRepository: OppgaveKøRepository,
-    saksbehhandlerRepository: SaksbehandlerRepository
-) {
-    launch(context = Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-        try {
-
-            log.info("Starter oppgavesynkronisering")
-            val measureTimeMillis = measureTimeMillis {
-                val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-                for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
-                    val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
-                    val oppgave = event.oppgave()
-                    if (!oppgave.aktiv) {
-                        if (reservasjonRepository.finnes(oppgave.eksternId)) {
-                            reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
-                                reservasjon!!.reservertTil = null
-                                reservasjon
-                            }
-                            val reservasjon = reservasjonRepository.hent(oppgave.eksternId)
-                            saksbehhandlerRepository.fjernReservasjonIkkeTaHensyn(
-                                reservasjon.reservertAv,
-                                reservasjon.oppgave
-                            )
-                        }
-                    }
-                    oppgaveRepository.lagre(oppgave.eksternId) {
-                        oppgave
-                    }
-                    if (index % 10 == 0) {
-                        log.info("Synkronisering " + index + " av " + hentAktiveOppgaver.size)
-                    }
-                }
-                for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
-                    oppgaveKøRepository.oppdaterKøMedOppgaver(oppgavekø.id)
-                }
-            }
-            log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
-        } catch (e: Exception) {
-            log.error("", e)
-        }
-    }
-}
 
 
