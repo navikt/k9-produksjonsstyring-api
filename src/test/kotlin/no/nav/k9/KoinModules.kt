@@ -1,3 +1,5 @@
+@file:Suppress("USELESS_CAST")
+
 package no.nav.k9
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres

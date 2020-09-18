@@ -8,7 +8,6 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
-import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 
 
@@ -16,7 +15,6 @@ fun CoroutineScope.refreshK9(
     channel: ReceiveChannel<Oppgave>,
     k9SakService: IK9SakService
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-    val log = LoggerFactory.getLogger("behandleOppgave")
     val oppgaveListe = mutableListOf<Oppgave>()
     oppgaveListe.add(channel.receive())
     while (true) {
