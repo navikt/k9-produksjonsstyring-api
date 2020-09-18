@@ -33,50 +33,66 @@ fun CoroutineScope.køOppdatertProsessor(
     val log = LoggerFactory.getLogger("behandleOppgave")
     for (uuid in channel) {
         hentAlleElementerIkøSomSet(uuid, channel = channel).forEach {
-            val measureTimeMillis = measureTimeMillis {
+            val measureTimeMillis = oppdaterKø(
+                oppgaveKøRepository,
+                it,
+                oppgaveRepository,
+                reservasjonRepository,
+                oppgaveTjeneste,
+                k9SakService
+            )
+            log.info("tok ${measureTimeMillis}ms å oppdatere kø")
+        }
+    }
+}
 
-                //oppdatert kø utenfor lås
-                val oppgavekøGammel = oppgaveKøRepository.hentOppgavekø(it)
-                // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
-                val oppgavekøModifisert = oppgaveKøRepository.hentOppgavekø(it)
-                val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-                    .filter { !oppgavekøModifisert.erOppgavenReservert(reservasjonRepository, it) }
-                oppgavekøModifisert.oppgaverOgDatoer.clear()
+@KtorExperimentalAPI
+private suspend fun oppdaterKø(
+    oppgaveKøRepository: OppgaveKøRepository,
+    it: UUID,
+    oppgaveRepository: OppgaveRepository,
+    reservasjonRepository: ReservasjonRepository,
+    oppgaveTjeneste: OppgaveTjeneste,
+    k9SakService: IK9SakService
+) {
+    measureTimeMillis {
+        val oppgavekøGammel = oppgaveKøRepository.hentOppgavekø(it)
+        // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
+        val oppgavekøModifisert = oppgaveKøRepository.hentOppgavekø(it)
+        val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+            .filter { !oppgavekøModifisert.erOppgavenReservert(reservasjonRepository, it) }
+        oppgavekøModifisert.oppgaverOgDatoer.clear()
+        for (oppgave in aktiveOppgaver) {
+            if (oppgavekøModifisert.kode6 == oppgave.kode6) {
+                oppgavekøModifisert.leggOppgaveTilEllerFjernFraKø(
+                    oppgave = oppgave,
+                    reservasjonRepository = reservasjonRepository
+                )
+            }
+        }
+        val behandlingsListe = mutableListOf<BehandlingIdDto>()
+        oppgaveKøRepository.lagreIkkeTaHensyn(it) { oppgaveKø ->
+            if (oppgaveKø!! == oppgavekøGammel) {
+                oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
+            } else {
+                oppgaveKø.oppgaverOgDatoer.clear()
                 for (oppgave in aktiveOppgaver) {
                     if (oppgavekøModifisert.kode6 == oppgave.kode6) {
-                        oppgavekøModifisert.leggOppgaveTilEllerFjernFraKø(
+                        oppgaveKø.leggOppgaveTilEllerFjernFraKø(
                             oppgave = oppgave,
-                            reservasjonRepository = reservasjonRepository
+                            reservasjonRepository = reservasjonRepository,
+                            taHensynTilReservasjon = false
                         )
                     }
                 }
-                val behandlingsListe = mutableListOf<BehandlingIdDto>()
-                oppgaveKøRepository.lagreIkkeTaHensyn(it) { oppgaveKø ->
-                    if (oppgaveKø!! == oppgavekøGammel) {
-                        oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
-                    } else {
-                        oppgaveKø.oppgaverOgDatoer.clear()
-                        for (oppgave in aktiveOppgaver) {
-                            if (oppgavekøModifisert.kode6 == oppgave.kode6) {
-                                oppgaveKø.leggOppgaveTilEllerFjernFraKø(
-                                    oppgave = oppgave,
-                                    reservasjonRepository = reservasjonRepository,
-                                    taHensynTilReservasjon = false
-                                )
-                            }
-                        }
-                    }
-                    behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }
-                        .toList())
-                    oppgaveKø
-                }
-                oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = true, refresh = true)
-                oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = false, refresh = true)
-                k9SakService
-                    .refreshBehandlinger(BehandlingIdListe(behandlingsListe))
             }
-            log.info("tok ${measureTimeMillis}ms å oppdatere kø")
+            behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }
+                .toList())
+            oppgaveKø
         }
+        oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = true, refresh = true)
+        oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = false, refresh = true)
+        k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
     }
 }
 

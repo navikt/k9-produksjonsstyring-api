@@ -22,13 +22,20 @@ fun CoroutineScope.refreshK9(
     while (true) {
         val oppgave = channel.poll()
         if (oppgave == null) {
-            val behandlingsListe = mutableListOf<BehandlingIdDto>()
-            behandlingsListe.addAll(oppgaveListe.map { BehandlingIdDto(it.eksternId) }.toList())
-            k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
+            refreshK9(oppgaveListe, k9SakService)
             oppgaveListe.clear()
             oppgaveListe.add(channel.receive())
         } else {
             oppgaveListe.add(oppgave)
         }
     }
+}
+
+private suspend fun refreshK9(
+    oppgaveListe: MutableList<Oppgave>,
+    k9SakService: IK9SakService
+) {
+    val behandlingsListe = mutableListOf<BehandlingIdDto>()
+    behandlingsListe.addAll(oppgaveListe.map { BehandlingIdDto(it.eksternId) }.toList())
+    k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
 }
