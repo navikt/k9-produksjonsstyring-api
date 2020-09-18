@@ -1,10 +1,7 @@
 package no.nav.k9.tjenester.saksbehandler
 
-import no.nav.k9.domene.oppslag.Ident
-
 interface IIdToken {
      val value: String
-     val ident: Ident 
     val jwt: JWTToken?
     fun getName(): String
     fun getUsername(): String

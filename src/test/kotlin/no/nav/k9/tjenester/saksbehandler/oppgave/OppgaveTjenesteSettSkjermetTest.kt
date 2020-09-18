@@ -264,6 +264,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         }
     }
 
+    @KtorExperimentalAPI
     @Test
     fun hentReservasjonsHistorikk() = runBlocking {
         val pg = EmbeddedPostgres.start()

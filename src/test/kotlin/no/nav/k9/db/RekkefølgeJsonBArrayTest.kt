@@ -20,6 +20,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 
 class RekkefølgeJsonBArrayTest : KoinTest {
+    @KtorExperimentalAPI
     @get:Rule
     val koinTestRule = KoinTestRule.create {
         modules(buildAndTestConfig())
@@ -39,6 +40,7 @@ class RekkefølgeJsonBArrayTest : KoinTest {
 
     }
 
+    @KtorExperimentalAPI
     private fun lagreOppgave(
         eksternId: UUID,
         oppgaveRepository: OppgaveRepository,

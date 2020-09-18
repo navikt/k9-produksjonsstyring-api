@@ -1,18 +1,13 @@
 package no.nav.k9.tjenester.saksbehandler
 
-import com.auth0.jwt.JWT
-import io.ktor.application.ApplicationCall
-import io.ktor.auth.parseAuthorizationHeader
+import io.ktor.application.*
+import io.ktor.auth.*
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.oppslag.Ident
 import java.nio.charset.Charset
 import java.util.*
 
 data class IdToken(
     override val value: String,
-    override val ident: Ident = Ident(
-        JWT.decode(value).subject ?: throw IllegalStateException("Token mangler 'sub' claim.")
-    )
 ) : IIdToken {
     override val jwt = try {
         val split = value.split(".")

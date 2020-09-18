@@ -15,7 +15,6 @@ import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.tjenester.avdelingsleder.InnloggetNavAnsattDto
 import org.koin.ktor.ext.inject
-import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -27,9 +26,7 @@ internal fun Route.NavAnsattApis() {
     val configuration by inject<Configuration>()
     @Location("/saksbehandler")
     class getInnloggetBruker
-
-    val log = LoggerFactory.getLogger("Route.NavAnsattApis")
-
+    
     get { _: getInnloggetBruker ->
         if (configuration.koinProfile() != KoinProfile.LOCAL) {
             val idtoken = call.idToken()

@@ -223,6 +223,7 @@ class OppgaveTjenesteTest : KoinTest {
         }
     }
 
+    @KtorExperimentalAPI
     @Test
     fun hentReservasjonsHistorikk() = runBlocking {
         val oppgaveRepository = get<OppgaveRepository>()

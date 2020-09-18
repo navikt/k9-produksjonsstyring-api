@@ -85,8 +85,8 @@ class RutinerTest {
         }
         val launch = GlobalScope.launch {
             val log = LoggerFactory.getLogger("behandleOppgave")
-            for (uuid in oppgaveKøOppdatert) {
-                hentAlleElementerIkøSomSet(uuid, oppgaveKøOppdatert).forEach {
+            for (oppgaveKøUuid in oppgaveKøOppdatert) {
+                hentAlleElementerIkøSomSet(oppgaveKøUuid, oppgaveKøOppdatert).forEach {
                     val measureTimeMillis = measureTimeMillis {
                         val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
 
@@ -151,7 +151,7 @@ class RutinerTest {
                             ) {
                                 for (o in oppgaveListe) {
                                     if (o.kode6 == oppgavekø.kode6) {
-                                        val endring = it!!.leggOppgaveTilEllerFjernFraKø(o,
+                                        it!!.leggOppgaveTilEllerFjernFraKø(o,
                                             reservasjonRepository = reservasjonRepository
                                         )
                                         if (it.tilhørerOppgaveTilKø(o,
