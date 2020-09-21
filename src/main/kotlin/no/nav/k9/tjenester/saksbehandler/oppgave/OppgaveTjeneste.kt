@@ -683,7 +683,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     suspend fun settSkjermet(oppgave: Oppgave) {
-        log.info("Skjermer oppgave " + oppgave.fagsakSaksnummer)
         oppgaveRepository.lagre(oppgave.eksternId) { it ->
             it!!
         }
