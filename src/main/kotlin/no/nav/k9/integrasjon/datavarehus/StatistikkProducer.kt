@@ -92,7 +92,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             if (exception != null) {
                 log.error("", exception)
             } else {
-                log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${metadata.offset()}' til partition '${metadata.partition()}' topic ${metadata.topic()}")
+            //    log.info("Sendt til Topic '${TOPIC_USE_STATISTIKK_SAK.name}' med offset '${metadata.offset()}' til partition '${metadata.partition()}' topic ${metadata.topic()}")
             }
         }.get()
 
