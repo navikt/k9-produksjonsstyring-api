@@ -204,7 +204,7 @@ class StatistikkRepository(
         }
     }
     private val hentFerdigstilteOgNyeHistorikkMedYtelsetypeCache = Cache<List<AlleOppgaverNyeOgFerdigstilte>>()
-    fun hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker(
+    fun hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(
         refresh: Boolean = false
     ): List<AlleOppgaverNyeOgFerdigstilte> {
         if (!refresh) {
@@ -213,7 +213,7 @@ class StatistikkRepository(
                 return cacheObject.value
             }
         }
-        
+
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -223,7 +223,7 @@ class StatistikkRepository(
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
-                    mapOf("antall" to "\'${27} days\'")
+                    mapOf("antall" to "\'${55} days\'")
                 )
                     .map { row ->
                         AlleOppgaverNyeOgFerdigstilte(

@@ -28,10 +28,10 @@ class StatistikkRepositoryTest : KoinTest {
     @KtorExperimentalAPI
     @Test
     fun skalFylleMedTommeElementerDersomViIkkeHarDataPåDenDagen() {
-        
+
         val statistikkRepository  = get<StatistikkRepository>()
-        
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker()
+
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker()
 
         val omsorgspenger = hentFerdigstilte.take(25).filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
@@ -41,7 +41,7 @@ class StatistikkRepositoryTest : KoinTest {
     @KtorExperimentalAPI
     @Test
     fun skalFylleMedTommeElementerDersomVdiIkkeHarDataPåDenDagenIdempotent() {
-     
+
         val statistikkRepository  = get<StatistikkRepository>()
 
         val oppgave = Oppgave(
@@ -79,7 +79,7 @@ class StatistikkRepositoryTest : KoinTest {
             it.nye.add(oppgave.eksternId.toString())
             it
         }
-        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker()
+        val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker()
         val omsorgspenger = hentFerdigstilte.reversed().take(25).filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assert(omsorgspenger.size == 5)
         assert(omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size == 1)
