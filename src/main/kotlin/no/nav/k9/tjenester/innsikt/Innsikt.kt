@@ -58,7 +58,7 @@ fun Route.innsiktGrensesnitt() {
                         +"Det er nå ${aksjonspunkter.sumBy { it.antall }} åpne aksjonspunkter fordelt på $oppgaverTotaltAktive, $inaktiveIkkeAvsluttedeOppgaver inaktive med annen status enn avsluttet og $avsluttede med status avsluttet, $automatiskProsesserteTotalt er prosessert automatisk"
                     }
                     p {
-                        +"Totalt ${aksjonspunkter.sumBy { it.antall } + inaktiveIkkeAvsluttedeOppgaver + avsluttede}}"
+                        +"Totalt ${aksjonspunkter.sumBy { it.antall } + inaktiveIkkeAvsluttedeOppgaver + avsluttede}"
                     }
                     p {
                         +"Eldste eventTid kom ${s}"
