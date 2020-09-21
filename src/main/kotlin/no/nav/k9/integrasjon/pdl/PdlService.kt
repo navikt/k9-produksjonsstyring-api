@@ -84,7 +84,7 @@ class PdlService @KtorExperimentalAPI constructor(
                         log.warn(
                             "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
                         )
-                        log.warn(error.toString() + "aktorId callId: " + callId)
+                        log.warn(error.toString() + "aktorId callId: " + callId + " " + coroutineContext.idToken().getUsername())
                         null
                     }
                 )
@@ -171,7 +171,7 @@ class PdlService @KtorExperimentalAPI constructor(
             } catch (e: Exception) {
                 try {
                     val value = objectMapper().readValue<Error>(json!!)
-                    log.warn(objectMapper().writeValueAsString(value) + "identifikator callId: " + callId)
+                    log.warn(objectMapper().writeValueAsString(value) + "identifikator callId: " + callId + " " + coroutineContext.idToken().getUsername())
                     if (value.errors.any { it.extensions.code == "unauthorized" }){
                         return PdlResponse(true, null)
                     }
