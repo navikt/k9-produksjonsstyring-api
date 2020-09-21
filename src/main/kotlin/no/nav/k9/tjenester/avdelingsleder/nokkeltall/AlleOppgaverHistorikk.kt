@@ -5,7 +5,7 @@ import no.nav.k9.domene.modell.FagsakYtelseType
 import java.time.LocalDate
 
 
-data class AlleOppgaverBeholdningHistorikk(
+data class AlleOppgaverHistorikk(
     val fagsakYtelseType: FagsakYtelseType,
     val behandlingType: BehandlingType,
     val dato: LocalDate,
