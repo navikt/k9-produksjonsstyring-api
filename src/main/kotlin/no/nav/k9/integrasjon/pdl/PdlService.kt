@@ -100,7 +100,6 @@ class PdlService @KtorExperimentalAPI constructor(
                         """${objectMapper().writeValueAsString(value)} $aktorId aktorId callId: $callId ${
                             coroutineContext.idToken().getUsername()
                         }
-                        $query
                         """
                     )
                     if (value.errors.any { it.extensions.code == "unauthorized" }){
