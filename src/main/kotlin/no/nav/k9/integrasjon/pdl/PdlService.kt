@@ -50,6 +50,7 @@ class PdlService @KtorExperimentalAPI constructor(
         )
         val cachedObject = cache.get(query)
         if (cachedObject == null) {
+            val callId = UUID.randomUUID().toString()
             val httpRequest = personUrl
                 .httpPost()
                 .body(
@@ -62,7 +63,7 @@ class PdlService @KtorExperimentalAPI constructor(
                     HttpHeaders.Accept to "application/json",
                     HttpHeaders.ContentType to "application/json",
                     NavHeaders.Tema to "OMS",
-                    NavHeaders.CallId to UUID.randomUUID().toString()
+                    NavHeaders.CallId to callId
                 )
 
             val json = Retry.retry(
@@ -83,7 +84,7 @@ class PdlService @KtorExperimentalAPI constructor(
                         log.warn(
                             "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
                         )
-                        log.warn(error.toString())
+                        log.warn(error.toString() + "aktorId callId: " + callId)
                         null
                     }
                 )
@@ -125,6 +126,7 @@ class PdlService @KtorExperimentalAPI constructor(
         
         val cachedObject = cache.get(query)
         if (cachedObject == null) {
+            val callId = UUID.randomUUID().toString()
             val httpRequest = personUrl
                 .httpPost()
                 .body(
@@ -137,7 +139,7 @@ class PdlService @KtorExperimentalAPI constructor(
                     HttpHeaders.Accept to "application/json",
                     HttpHeaders.ContentType to "application/json",
                     NavHeaders.Tema to "OMS",
-                    NavHeaders.CallId to UUID.randomUUID().toString()
+                    NavHeaders.CallId to callId
                 )
 
             val json = Retry.retry(
@@ -169,7 +171,7 @@ class PdlService @KtorExperimentalAPI constructor(
             } catch (e: Exception) {
                 try {
                     val value = objectMapper().readValue<Error>(json!!)
-                    log.warn(objectMapper().writeValueAsString(value))
+                    log.warn(objectMapper().writeValueAsString(value) + "identifikator callId: " + callId)
                     if (value.errors.any { it.extensions.code == "unauthorized" }){
                         return PdlResponse(true, null)
                     }
