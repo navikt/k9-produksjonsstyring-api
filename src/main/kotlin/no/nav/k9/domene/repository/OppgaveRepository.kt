@@ -273,6 +273,25 @@ class OppgaveRepository(
         return count!!
     }
 
+    internal  fun hentAktiveOppgaverTotaltIkkeSkjermede(): Int {
+        val kode6 = false
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select count(*) as count from oppgave where (data -> 'aktiv') ::boolean and (data -> 'kode6'):: Boolean =:kode6 ",
+                    mapOf("kode6" to kode6)
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        log.info("Teller aktive oppgaver: $spørring ms")
+        return count!!
+    }
+
     internal fun hentAktiveOppgaverTotaltPerBehandlingstypeOgYtelseType(
         fagsakYtelseType: FagsakYtelseType,
         behandlingType: BehandlingType
