@@ -178,7 +178,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 settSkjermet(oppgave)
                 return SokeResultatDto(true, mutableListOf())
             }
-            val person = pdlService.person(oppgave.aktorId)!!
+            val person = pdlService.person(oppgave.aktorId)
 
             ret.add(
                 FagsakDto(
@@ -229,7 +229,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     flyttetReservasjon = null
                 )
             }
-        val person = pdlService.person(oppgave.aktorId)!!
+        val person = pdlService.person(oppgave.aktorId)
         return OppgaveDto(
             status = oppgaveStatus,
             behandlingId = oppgave.behandlingId,
