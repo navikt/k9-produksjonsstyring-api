@@ -53,4 +53,10 @@ fun Route.NokkeltallApis() {
         call.respond(nokkeltallTjeneste.hentFerdigstilteSiste8Uker())
     }
 
+    @Location("/nye-historikk")
+    class hentNyeSiste8Uker
+
+    get { _: hentNyeSiste8Uker ->
+        call.respond(nokkeltallTjeneste.hentNyeSiste8Uker())
+    }
 }

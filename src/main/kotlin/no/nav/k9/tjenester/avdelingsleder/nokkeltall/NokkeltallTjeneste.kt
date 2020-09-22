@@ -30,12 +30,23 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentFerdigstilteSiste8Uker(): List<AlleOppgaverHistorikk> {
-        return statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker().map {
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkSiste8Uker().map {
             AlleOppgaverHistorikk(
                     it.fagsakYtelseType,
                     it.behandlingType,
                     it.dato,
                     it.ferdigstilte.size
+            )
+        }
+    }
+
+    fun hentNyeSiste8Uker(): List<AlleOppgaverHistorikk> {
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkSiste8Uker().map {
+            AlleOppgaverHistorikk(
+                    it.fagsakYtelseType,
+                    it.behandlingType,
+                    it.dato,
+                    it.nye.size
             )
         }
     }
