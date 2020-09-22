@@ -45,7 +45,7 @@ internal class AksjonspunktTilbakeStream @KtorExperimentalAPI constructor(
             val builder = StreamsBuilder()
             val fromTopic = Topic(
                 name = configuration.getAksjonspunkthendelseTilbakeTopic(),
-                serDes = AksjonspunktLaget()
+                serDes = AksjonspunktLagetTilbake()
             )
             builder
                 .stream(
