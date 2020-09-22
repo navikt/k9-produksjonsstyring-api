@@ -477,15 +477,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         settSkjermet(oppgave)
                         continue
                     }
+                    
                     val person = pdlService.person(oppgave.aktorId)
 
                     val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                        "${oppgave.fagsakSaksnummer} " +
-                                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                                    val a = Aksjonspunkter().aksjonspunkter()
-                                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                                    "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                                }.toList().joinToString(", ")
+                        preprodNavn(oppgave)
                     } else {
                         person.person?.navn() ?: "Uten navn"
                     }
@@ -531,6 +527,15 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             log.warn("har ikke basistilgang")
         }
         return emptyList()
+    }
+
+    private fun preprodNavn(oppgave: Oppgave): String {
+        return "${oppgave.fagsakSaksnummer} " +
+                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                    val a = Aksjonspunkter().aksjonspunkter()
+                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                    "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                }.toList().joinToString(", ")
     }
 
     @KtorExperimentalAPI

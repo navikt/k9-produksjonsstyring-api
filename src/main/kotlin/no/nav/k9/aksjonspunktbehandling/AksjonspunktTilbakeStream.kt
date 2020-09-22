@@ -1,6 +1,6 @@
 package no.nav.k9.aksjonspunktbehandling
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import no.nav.helse.kafka.ManagedKafkaStreams
 import no.nav.helse.kafka.ManagedStreamHealthy
 import no.nav.helse.kafka.ManagedStreamReady
@@ -54,6 +54,7 @@ internal class AksjonspunktTilbakeStream @KtorExperimentalAPI constructor(
                 )
                 .foreach { _, entry ->
                     if (entry != null) {
+                        log.info("Prosesserer entry fra tilbakekreving")
                         k9sakEventHandler.prosesser(entry)
                     }
                 }
