@@ -395,8 +395,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     fun påVentTilbake(): Boolean {
         return this.liste.any { 
             when (it.key){
-                "7001" -> true
-                "7002" -> true
+                "7001", "7002" -> true
                 else -> false
             }
         }
