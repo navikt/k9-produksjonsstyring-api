@@ -263,8 +263,8 @@ class K9sakEventHandlerTest :KoinTest{
   "behandlingTypeKode": "BT-007",
   "opprettetBehandling": "2020-09-11T11:50:49.025",
   "aksjonspunktKoderMedStatusListe": {
-    "7002": "UTFO",
-    "7003": "OPPR"
+    "5002": "UTFO",
+    "5001": "OPPR"
   },
   "href": "/fpsak/fagsak/63P3S/behandling/202/?punkt=default&fakta=default",
   "førsteFeilutbetaling": "2020-06-01",
