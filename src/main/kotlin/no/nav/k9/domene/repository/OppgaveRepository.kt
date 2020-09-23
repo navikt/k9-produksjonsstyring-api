@@ -399,7 +399,7 @@ class OppgaveRepository(
         val json: List<List<Aksjonspunkt>> = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select (data -> 'aksjonspunkter' -> 'liste') punkt,  count(*) from oppgave where (data -> 'aktiv') and (data -> 'system' = 'K9SAK')  ::boolean group by data -> 'aksjonspunkter' -> 'liste' ",
+                    "select (data -> 'aksjonspunkter' -> 'liste') punkt,  count(*) from oppgave where (data -> 'aktiv') ::boolean  and (data ->> 'system') = 'K9SAK' group by data -> 'aksjonspunkter' -> 'liste'",
                     mapOf()
                 )
                     .map { row ->
