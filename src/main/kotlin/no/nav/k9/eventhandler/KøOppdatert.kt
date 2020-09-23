@@ -56,28 +56,30 @@ private suspend fun oppdaterKø(
     k9SakService: IK9SakService
 ) {
     measureTimeMillis {
-        val oppgavekøGammel = oppgaveKøRepository.hentOppgavekø(it)
+        val kø = oppgaveKøRepository.hentOppgavekø(it)
+        val opprinnelige = kø.oppgaverOgDatoer
+        
         // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
-        val oppgavekøModifisert = oppgaveKøRepository.hentOppgavekø(it)
         val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-            .filter { !oppgavekøModifisert.erOppgavenReservert(reservasjonRepository, it) }
-        oppgavekøModifisert.oppgaverOgDatoer.clear()
+            .filter { !kø.erOppgavenReservert(reservasjonRepository, it) }
+        kø.oppgaverOgDatoer.clear()
         for (oppgave in aktiveOppgaver) {
-            if (oppgavekøModifisert.kode6 == oppgave.kode6) {
-                oppgavekøModifisert.leggOppgaveTilEllerFjernFraKø(
+            if (kø.kode6 == oppgave.kode6) {
+                kø.leggOppgaveTilEllerFjernFraKø(
                     oppgave = oppgave,
-                    reservasjonRepository = reservasjonRepository
+                    reservasjonRepository = reservasjonRepository,
+                    taHensynTilReservasjon = false
                 )
             }
         }
         val behandlingsListe = mutableListOf<BehandlingIdDto>()
         oppgaveKøRepository.lagreIkkeTaHensyn(it) { oppgaveKø ->
-            if (oppgaveKø!! == oppgavekøGammel) {
-                oppgaveKø.oppgaverOgDatoer = oppgavekøModifisert.oppgaverOgDatoer
+            if (oppgaveKø!!.oppgaverOgDatoer == opprinnelige) {
+                oppgaveKø.oppgaverOgDatoer = kø.oppgaverOgDatoer
             } else {
                 oppgaveKø.oppgaverOgDatoer.clear()
                 for (oppgave in aktiveOppgaver) {
-                    if (oppgavekøModifisert.kode6 == oppgave.kode6) {
+                    if (kø.kode6 == oppgave.kode6) {
                         oppgaveKø.leggOppgaveTilEllerFjernFraKø(
                             oppgave = oppgave,
                             reservasjonRepository = reservasjonRepository,
