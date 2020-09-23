@@ -98,19 +98,7 @@ private suspend fun oppdaterKø(
     }
 }
 
-@KtorExperimentalAPI
-fun sjekkReserverteJobb(
-    reservasjonRepository: ReservasjonRepository,
-    saksbehandlerRepository: SaksbehandlerRepository
-): Timer {
-    return fixedRateTimer(
-        name = "sjekkReserverteTimer", daemon = true,
-        initialDelay = 0, period = 300 * 1000
-    ) {
-        val reservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
-        runBlocking { reservasjonRepository.hent(reservasjoner.toSet()) }
-    }
-}
+
 
 fun hentAlleElementerIkøSomSet(
     uuid: UUID,
