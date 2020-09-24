@@ -274,19 +274,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }.toList()
     }
 
-    fun hentNyeOgFerdigstilteOppgaver(oppgavekoId: String): List<NyeOgFerdigstilteOppgaverDto> {
-        return oppgaveKøRepository.hentOppgavekø(UUID.fromString(oppgavekoId))
-            .nyeOgFerdigstilteOppgaverPerAntallDager(7)
-            .map {
-                NyeOgFerdigstilteOppgaverDto(
-                    behandlingType = it.behandlingType,
-                    dato = it.dato,
-                    antallNye = it.nye.size,
-                    antallFerdigstilte = it.ferdigstilte.size
-                )
-            }
-    }
-
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
         val ferdigstilteManuelt = statistikkRepository.hentFerdigstilte()
