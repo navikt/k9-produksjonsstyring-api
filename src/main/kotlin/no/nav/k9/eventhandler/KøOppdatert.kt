@@ -5,11 +5,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
@@ -17,7 +15,6 @@ import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
-import kotlin.concurrent.fixedRateTimer
 import kotlin.system.measureTimeMillis
 
 
@@ -54,8 +51,8 @@ private suspend fun oppdaterKø(
     reservasjonRepository: ReservasjonRepository,
     oppgaveTjeneste: OppgaveTjeneste,
     k9SakService: IK9SakService
-) {
-    measureTimeMillis {
+): Long {
+  return  measureTimeMillis {
         val kø = oppgaveKøRepository.hentOppgavekø(it)
         val opprinnelige = kø.oppgaverOgDatoer
         
