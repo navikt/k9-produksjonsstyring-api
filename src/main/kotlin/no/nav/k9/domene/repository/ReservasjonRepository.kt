@@ -79,7 +79,7 @@ class ReservasjonRepository(
                 val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
                 oppgaveKøRepository.hentIkkeTaHensyn().forEach { oppgaveKø ->
                     if (oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave, this)) {
-                        oppgaveKøRepository.lagreIkkeTaHensyn(oppgaveKø.id, refresh = true) {
+                        oppgaveKøRepository.lagreIkkeTaHensyn(oppgaveKø.id) {
                             it!!.leggOppgaveTilEllerFjernFraKø(
                                 oppgave = oppgave,
                                 reservasjonRepository = this

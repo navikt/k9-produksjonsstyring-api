@@ -54,7 +54,7 @@ private suspend fun oppdaterKø(
 ): Long {
   return  measureTimeMillis {
         val kø = oppgaveKøRepository.hentOppgavekø(it)
-        val opprinnelige = kø.oppgaverOgDatoer
+        val opprinnelige = kø.oppgaverOgDatoer.toMutableList()
         
         // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
         val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()

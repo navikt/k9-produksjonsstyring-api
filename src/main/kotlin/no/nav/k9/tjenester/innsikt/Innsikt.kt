@@ -63,7 +63,11 @@ fun Route.innsiktGrensesnitt() {
                     p {
                         +"Eldste eventTid kom ${s}"
                     }
-
+                    val list =
+                        oppgaveKøRepository.hentIkkeTaHensyn().filter { !it.kode6 }.map { it.oppgaverOgDatoer.size }
+                    p {
+                        +"Kølengder ${list.joinToString()}"
+                    }
                     for (aksjonspunkt in aksjonspunkter.stream().sorted { o1, o2 -> o2.antall.compareTo(o1.antall) }) {
                         if (aksjonspunkt.antall == 0) {
                             continue

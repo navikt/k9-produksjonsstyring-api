@@ -72,8 +72,7 @@ private suspend fun oppdaterKø(
                 )
             }
             oppgaveKøRepository.lagreIkkeTaHensyn(
-                oppgavekø.id,
-                refresh = refresh
+                oppgavekø.id
             ) {
                 for (oppgave in oppgaveListe) {
                     if (oppgave.kode6 == oppgavekø.kode6) {

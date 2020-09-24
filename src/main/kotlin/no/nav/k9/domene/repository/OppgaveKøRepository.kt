@@ -6,6 +6,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.domene.modell.OppgaveIdMedDato
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.tjenester.sse.Melding
@@ -126,9 +127,11 @@ class OppgaveKøRepository(
     @KtorExperimentalAPI
     suspend fun lagreIkkeTaHensyn(
         uuid: UUID,
-        refresh: Boolean = false,
         f: (OppgaveKø?) -> OppgaveKø
     ) {
+        
+        var hintRefresh = false
+        
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -140,16 +143,19 @@ class OppgaveKøRepository(
                             row.string("data")
                         }.asSingle
                 )
+                val første20OppgaverSomVar: List<OppgaveIdMedDato>
                 val forrigeOppgavekø: OppgaveKø?
                 val oppgaveKø = if (!run.isNullOrEmpty()) {
                     forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
+                    første20OppgaverSomVar = forrigeOppgavekø.oppgaverOgDatoer.take(20)
                     f(forrigeOppgavekø)
                 } else {
+                    første20OppgaverSomVar = listOf()
                     f(null)
                 }
                 //Sorter oppgaver
                 oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
-
+                hintRefresh = første20OppgaverSomVar != oppgaveKø.oppgaverOgDatoer.take(20)
                 val json = objectMapper().writeValueAsString(oppgaveKø)
                 tx.run(
                     queryOf(
@@ -164,7 +170,8 @@ class OppgaveKøRepository(
 
             }
         }
-        if (refresh) {
+        
+        if (hintRefresh) {
             refreshKlienter.send(
                 SseEvent(
                     objectMapper().writeValueAsString(

@@ -146,8 +146,7 @@ class RutinerTest {
                                 )
                             }
                             oppgaveKøRepository.lagreIkkeTaHensyn(
-                                oppgavekø.id,
-                                refresh = refresh
+                                oppgavekø.id
                             ) {
                                 for (o in oppgaveListe) {
                                     if (o.kode6 == oppgavekø.kode6) {
