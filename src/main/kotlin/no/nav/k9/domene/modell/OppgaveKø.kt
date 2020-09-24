@@ -7,6 +7,7 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaver
+import no.nav.k9.tjenester.sse.log
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -56,7 +57,6 @@ data class OppgaveKø(
                 )
                 return true
             }
-
         } else {
             if (this.oppgaverOgDatoer.any { it.id == oppgave.eksternId }) {
                 this.oppgaverOgDatoer.remove(this.oppgaverOgDatoer.first { it.id == oppgave.eksternId })
