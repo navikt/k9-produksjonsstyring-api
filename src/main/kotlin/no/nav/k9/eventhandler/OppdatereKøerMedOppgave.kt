@@ -88,7 +88,7 @@ private suspend fun oppdaterKø(
             }
             refreshK9(oppgavekø, k9SakService)
             refreshHentAntallOppgaver(oppgaveTjeneste, oppgavekø)
-            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker(refresh = true)
+            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(refresh = true)
         }
     }
 }

@@ -32,7 +32,7 @@ fun Route.NokkeltallApis() {
         call.respond(oppgaveTjeneste.hentBeholdningAvOppgaverPerAntallDager())
     }
 
-    @Location("/ferdigstilte-behandlinger-historikk")
+    @Location("/ferdigstilte-oppsummering")
     class getFerdigstilteOppgaver
 
     get { _: getFerdigstilteOppgaver ->
@@ -46,4 +46,17 @@ fun Route.NokkeltallApis() {
         call.respond(nokkeltallTjeneste.hentDagensTall())
     }
 
+    @Location("/ferdigstilte-historikk")
+    class hentFerdigstilteSiste8Uker
+
+    get { _: hentFerdigstilteSiste8Uker ->
+        call.respond(nokkeltallTjeneste.hentFerdigstilteSiste8Uker())
+    }
+
+    @Location("/nye-historikk")
+    class hentNyeSiste8Uker
+
+    get { _: hentNyeSiste8Uker ->
+        call.respond(nokkeltallTjeneste.hentNyeSiste8Uker())
+    }
 }

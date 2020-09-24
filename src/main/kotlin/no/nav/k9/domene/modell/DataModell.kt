@@ -6,6 +6,7 @@ import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
+import no.nav.k9.integrasjon.kafka.dto.Fagsystem
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
@@ -26,7 +27,11 @@ data class Modell(
 
     fun oppgave(sisteEvent: BehandlingProsessEventDto = sisteEvent()): Oppgave {
         val event = sisteEvent
-        val eventResultat = sisteEvent.aktiveAksjonspunkt().eventResultat()
+        val eventResultat = if (event.fagsystem == Fagsystem.K9SAK) {
+            sisteEvent.aktiveAksjonspunkt().eventResultat()
+        } else {
+            sisteEvent.aktiveAksjonspunkt().eventResultatTilbake()
+        }
         var aktiv = true
         var oppgaveAvsluttet: LocalDateTime? = null
         var beslutterOppgave = false
@@ -370,6 +375,38 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
         }
 
         return EventResultat.OPPRETT_OPPGAVE
+    }
+    
+    fun eventResultatTilbake(): EventResultat {
+        if (erTom()) {
+            return EventResultat.LUKK_OPPGAVE
+        }
+
+        if (påVentTilbake()) {
+            return EventResultat.LUKK_OPPGAVE_VENT
+        }
+
+        if (tilBeslutterTilbake()) {
+            return EventResultat.OPPRETT_BESLUTTER_OPPGAVE
+        }
+
+        return EventResultat.OPPRETT_OPPGAVE
+    }
+    fun påVentTilbake(): Boolean {
+        return this.liste.any { 
+            when (it.key){
+                "7001", "7002" -> true
+                else -> false
+            }
+        }
+    }
+    fun tilBeslutterTilbake(): Boolean {
+        return this.liste.any { 
+            when (it.key){
+                "5005" -> true
+                else -> false
+            }
+        }
     }
 }
 

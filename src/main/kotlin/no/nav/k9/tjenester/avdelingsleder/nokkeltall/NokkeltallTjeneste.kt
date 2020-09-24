@@ -29,6 +29,28 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
+    fun hentFerdigstilteSiste8Uker(): List<AlleOppgaverHistorikk> {
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkSiste8Uker().map {
+            AlleOppgaverHistorikk(
+                    it.fagsakYtelseType,
+                    it.behandlingType,
+                    it.dato,
+                    it.ferdigstilte.size
+            )
+        }
+    }
+
+    fun hentNyeSiste8Uker(): List<AlleOppgaverHistorikk> {
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkSiste8Uker().map {
+            AlleOppgaverHistorikk(
+                    it.fagsakYtelseType,
+                    it.behandlingType,
+                    it.dato,
+                    it.nye.size
+            )
+        }
+    }
+
     fun hentDagensTall(): List<AlleApneBehandlinger> {
         return oppgaveRepository.hentApneBehandlingerPerBehandlingtypeIdag()
     }

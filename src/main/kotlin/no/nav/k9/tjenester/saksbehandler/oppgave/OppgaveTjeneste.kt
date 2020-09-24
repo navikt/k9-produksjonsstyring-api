@@ -18,7 +18,7 @@ import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlResponse
 import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverBeholdningHistorikk
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverHistorikk
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
@@ -308,10 +308,10 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverBeholdningHistorikk> {
+    fun hentBeholdningAvOppgaverPerAntallDager(): List<AlleOppgaverHistorikk> {
         val ytelsetype =
-            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker()
-        val ret = mutableListOf<AlleOppgaverBeholdningHistorikk>()
+            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker()
+        val ret = mutableListOf<AlleOppgaverHistorikk>()
         for (ytelseTypeEntry in ytelsetype.groupBy { it.fagsakYtelseType }) {
             val perBehandlingstype = ytelseTypeEntry.value.groupBy { it.behandlingType }
             for (behandlingTypeEntry in perBehandlingstype) {
@@ -323,7 +323,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 behandlingTypeEntry.value.sortedByDescending { it.dato }.map {
                     aktive = aktive - it.nye.size + it.ferdigstilte.size
                     ret.add(
-                        AlleOppgaverBeholdningHistorikk(
+                        AlleOppgaverHistorikk(
                             it.fagsakYtelseType,
                             it.behandlingType,
                             it.dato,
@@ -477,15 +477,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         settSkjermet(oppgave)
                         continue
                     }
+                    
                     val person = pdlService.person(oppgave.aktorId)
 
                     val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                        "${oppgave.fagsakSaksnummer} " +
-                                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                                    val a = Aksjonspunkter().aksjonspunkter()
-                                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                                    "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                                }.toList().joinToString(", ")
+                        preprodNavn(oppgave)
                     } else {
                         person.person?.navn() ?: "Uten navn"
                     }
@@ -531,6 +527,15 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             log.warn("har ikke basistilgang")
         }
         return emptyList()
+    }
+
+    private fun preprodNavn(oppgave: Oppgave): String {
+        return "${oppgave.fagsakSaksnummer} " +
+                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                    val a = Aksjonspunkter().aksjonspunkter()
+                        .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                    "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                }.toList().joinToString(", ")
     }
 
     @KtorExperimentalAPI

@@ -204,7 +204,7 @@ class StatistikkRepository(
         }
     }
     private val hentFerdigstilteOgNyeHistorikkMedYtelsetypeCache = Cache<List<AlleOppgaverNyeOgFerdigstilte>>()
-    fun hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste4Uker(
+    fun hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(
         refresh: Boolean = false
     ): List<AlleOppgaverNyeOgFerdigstilte> {
         if (!refresh) {
@@ -213,7 +213,7 @@ class StatistikkRepository(
                 return cacheObject.value
             }
         }
-        
+
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -223,7 +223,7 @@ class StatistikkRepository(
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
-                    mapOf("antall" to "\'${27} days\'")
+                    mapOf("antall" to "\'${55} days\'")
                 )
                     .map { row ->
                         AlleOppgaverNyeOgFerdigstilte(
@@ -238,7 +238,7 @@ class StatistikkRepository(
         }
         val datoMap = list.groupBy { it.dato }
         val ret = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
-        for (i in 27 downTo 1) {
+        for (i in 55 downTo 1) {
             val dato = LocalDate.now().minusDays(i.toLong())
             val defaultList = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
             for (behandlingType in BehandlingType.values()) {
@@ -269,6 +269,36 @@ class StatistikkRepository(
         }
         hentFerdigstilteOgNyeHistorikkMedYtelsetypeCache.set("default", CacheObject(ret, LocalDateTime.now().plusMinutes(60)))
         return ret
+    }
+
+
+    fun hentFerdigstilteOgNyeHistorikkSiste8Uker(): List<AlleOppgaverNyeOgFerdigstilte> {
+
+        val list = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                    queryOf(
+                            """
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye 
+                            from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
+                            group by behandlingtype, fagsakYtelseType, dato
+                    """.trimIndent(),
+                            mapOf("antall" to "\'${55} days\'")
+                    )
+                            .map { row ->
+                                AlleOppgaverNyeOgFerdigstilte(
+                                        behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
+                                        fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                                        dato = row.localDate("dato"),
+                                        ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte")
+                                                ?: "[]"),
+                                        nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
+                                )
+                            }.asList
+            )
+        }
+
+        return list
     }
 
     private fun tomListe(

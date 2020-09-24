@@ -1,6 +1,6 @@
 package no.nav.k9.integrasjon.kafka
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.AksjonspunktStreamK9
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
@@ -33,13 +33,13 @@ internal class AsynkronProsesseringV1Service @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     private val healthChecks = setOf(
-        aksjonspunktStream.healthy
+        aksjonspunktStream.healthy,
 //        aksjonspunkTilbaketStream.healthy
     )
 
     @KtorExperimentalAPI
     private val isReadyChecks = setOf(
-        aksjonspunktStream.ready
+        aksjonspunktStream.ready,
 //        aksjonspunkTilbaketStream.ready
     )
 

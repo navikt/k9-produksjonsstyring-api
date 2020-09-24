@@ -39,7 +39,6 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 
         if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
-
         }
         oppgaveRepository.lagre(oppgave.eksternId) {
             if (modell.starterSak()) {
