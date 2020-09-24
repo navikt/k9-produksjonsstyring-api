@@ -6,8 +6,6 @@ import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
-import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaver
-import no.nav.k9.tjenester.sse.log
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -28,8 +26,6 @@ data class OppgaveKø(
     var saksbehandlere: MutableList<Saksbehandler>,
     var skjermet: Boolean = false,
     var oppgaverOgDatoer: MutableList<OppgaveIdMedDato> = mutableListOf(),
-
-    var nyeOgFerdigstilteOppgaver: MutableMap<LocalDate, MutableMap<String, NyeOgFerdigstilteOppgaver>> = mutableMapOf(),
     val kode6: Boolean = false
 ) {
 
@@ -64,17 +60,6 @@ data class OppgaveKø(
             }
         }
         return false
-    }
-
-    fun nyeOgFerdigstilteOppgaver(oppgave: Oppgave): NyeOgFerdigstilteOppgaver {
-        return nyeOgFerdigstilteOppgaver.getOrPut(oppgave.eventTid.toLocalDate()) {
-            mutableMapOf()
-        }.getOrPut(oppgave.behandlingType.kode) {
-            NyeOgFerdigstilteOppgaver(
-                behandlingType = oppgave.behandlingType,
-                dato = oppgave.eventTid.toLocalDate()
-            )
-        }
     }
 
     fun tilhørerOppgaveTilKø(
@@ -126,10 +111,6 @@ data class OppgaveKø(
         }
 
         return false
-    }
-
-    fun nyeOgFerdigstilteOppgaverPerAntallDager(antallDager: Int): List<NyeOgFerdigstilteOppgaver> {
-        return nyeOgFerdigstilteOppgaver.values.flatMap { it.values }.sortedByDescending { it.dato }.take(antallDager)
     }
 
     private fun erInnenforOppgavekøensPeriode(oppgave: Oppgave): Boolean {

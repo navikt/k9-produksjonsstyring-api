@@ -153,12 +153,6 @@ class RutinerTest {
                                         it!!.leggOppgaveTilEllerFjernFraKø(o,
                                             reservasjonRepository = reservasjonRepository
                                         )
-                                        if (it.tilhørerOppgaveTilKø(o,
-                                                reservasjonRepository = reservasjonRepository,
-                                                taHensynTilReservasjon = false
-                                            )) {
-                                            it.nyeOgFerdigstilteOppgaver(o).leggTilNy(o.eksternId.toString())
-                                        }
                                     }
                                 }
                                 it!!

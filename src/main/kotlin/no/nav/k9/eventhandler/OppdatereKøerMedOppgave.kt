@@ -80,14 +80,6 @@ private suspend fun oppdaterKø(
                             oppgave,
                             reservasjonRepository = reservasjonRepository
                         )
-                        if (it.tilhørerOppgaveTilKø(
-                                oppgave,
-                                reservasjonRepository = reservasjonRepository,
-                                taHensynTilReservasjon = true
-                            )
-                        ) {
-                            it.nyeOgFerdigstilteOppgaver(oppgave).leggTilNy(oppgave.eksternId.toString())
-                        }
                     }
                 }
                 it!!

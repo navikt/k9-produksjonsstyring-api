@@ -85,7 +85,6 @@ class BeslutterSkalIkkePlukkeEgenSakTest : KoinTest {
             saksbehandlere = mutableListOf(),
             skjermet = false,
             oppgaverOgDatoer = mutableListOf(),
-            nyeOgFerdigstilteOppgaver = hashMapOf(),
             kode6 = false
         )
         

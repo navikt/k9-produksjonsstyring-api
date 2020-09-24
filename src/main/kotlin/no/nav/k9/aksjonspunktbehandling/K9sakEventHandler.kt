@@ -3,7 +3,6 @@ package no.nav.k9.aksjonspunktbehandling
 import io.ktor.util.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
-import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
@@ -88,23 +87,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 if (reservasjonRepository.finnes(oppgave.eksternId)) {
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                 }
-                for (oppgaveKø in oppgaveKøRepository.hentIkkeTaHensyn()) {
-                    val set = mutableSetOf<String>()
-                    oppgaveKø.nyeOgFerdigstilteOppgaver.forEach { e ->
-                        e.value.forEach {
-                            set.addAll(it.value.nye)
-                        }
-                    }
-                    if (set.contains(oppgave.eksternId.toString())) {
-                        runBlocking {
-                            oppgaveKøRepository.lagreIkkeTaHensyn(oppgaveKø.id) {
-                                it!!.nyeOgFerdigstilteOppgaver(oppgave)
-                                    .leggTilFerdigstilt(oppgave.eksternId.toString())
-                                it
-                            }
-                        }
-                    }
-                }
+             
                 sakOgBehandlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 

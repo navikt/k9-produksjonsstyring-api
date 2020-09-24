@@ -151,7 +151,6 @@ class AvdelingslederTjeneste(
                     it != behandling.behandlingType
                 }.toMutableList()
             }
-            oppgaveKø.nyeOgFerdigstilteOppgaver.clear()
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(behandling.id))
@@ -191,7 +190,6 @@ class AvdelingslederTjeneste(
     suspend fun endreSkjerming(skjermet: SkjermetDto) {
         oppgaveKøRepository.lagre(UUID.fromString(skjermet.id)) { oppgaveKø ->
             oppgaveKø!!.skjermet = skjermet.skjermet
-            oppgaveKø.nyeOgFerdigstilteOppgaver.clear()
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(skjermet.id))
@@ -204,7 +202,6 @@ class AvdelingslederTjeneste(
             if (ytelse.fagsakYtelseType != null) {
                 oppgaveKø.filtreringYtelseTyper.add(FagsakYtelseType.fraKode(ytelse.fagsakYtelseType))
             }
-            oppgaveKø.nyeOgFerdigstilteOppgaver.clear()
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(ytelse.id))
@@ -222,7 +219,6 @@ class AvdelingslederTjeneste(
             } else oppgaveKø!!.filtreringAndreKriterierType = oppgaveKø.filtreringAndreKriterierType.filter {
                 it.andreKriterierType != kriteriumDto.andreKriterierType
             }.toMutableList()
-            oppgaveKø.nyeOgFerdigstilteOppgaver.clear()
             oppgaveKø
         }
         oppgaveKøRepository.oppdaterKøMedOppgaver(UUID.fromString(kriteriumDto.id))
