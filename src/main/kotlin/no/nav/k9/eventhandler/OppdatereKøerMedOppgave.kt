@@ -36,7 +36,14 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
         val oppgave = channel.poll()
         if (oppgave == null) {
             val measureTimeMillis =
-                oppdaterKø(oppgaveKøRepository, oppgaveListe, reservasjonRepository, k9SakService, oppgaveTjeneste, statistikkRepository)
+                oppdaterKø(
+                    oppgaveKøRepository,
+                    oppgaveListe,
+                    reservasjonRepository,
+                    k9SakService,
+                    oppgaveTjeneste,
+                    statistikkRepository
+                )
             log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
             oppgaveListe.clear()
             oppgaveListe.add(channel.receive())
@@ -77,7 +84,7 @@ private suspend fun oppdaterKø(
                         if (it.tilhørerOppgaveTilKø(
                                 oppgave,
                                 reservasjonRepository = reservasjonRepository,
-                                taHensynTilReservasjon = false
+                                taHensynTilReservasjon = true
                             )
                         ) {
                             it.nyeOgFerdigstilteOppgaver(oppgave).leggTilNy(oppgave.eksternId.toString())

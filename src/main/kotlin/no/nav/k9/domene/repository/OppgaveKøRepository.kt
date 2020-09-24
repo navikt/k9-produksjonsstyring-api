@@ -6,7 +6,6 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.tjenester.sse.Melding
@@ -95,9 +94,7 @@ class OppgaveKøRepository(
                 }
                 oppgaveKø = oppgaveKø.copy(kode6 = kode6)
                 //Sorter oppgaver
-                if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
-                    oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
-                }
+                oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
                 val json = objectMapper().writeValueAsString(oppgaveKø)
                 tx.run(
                     queryOf(
@@ -151,9 +148,8 @@ class OppgaveKøRepository(
                     f(null)
                 }
                 //Sorter oppgaver
-                if (oppgaveKø.sortering == KøSortering.FORSTE_STONADSDAG) {
-                    oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
-                }
+                oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
+
                 val json = objectMapper().writeValueAsString(oppgaveKø)
                 tx.run(
                     queryOf(
