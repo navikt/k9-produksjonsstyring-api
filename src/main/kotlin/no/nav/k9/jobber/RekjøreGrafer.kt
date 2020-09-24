@@ -11,7 +11,7 @@ import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
 
-private fun Application.rekjørForGrafer(
+fun Application.rekjørForGrafer(
     behandlingProsessEventRepository: BehandlingProsessEventRepository,
     statistikkRepository: StatistikkRepository
 ) {
@@ -69,7 +69,7 @@ private fun Application.rekjørForGrafer(
 
 
 @KtorExperimentalAPI
-private fun Application.regenererOppgaver(
+ fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
     behandlingProsessEventRepository: BehandlingProsessEventRepository,
     reservasjonRepository: ReservasjonRepository,
