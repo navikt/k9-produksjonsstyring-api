@@ -109,6 +109,9 @@ fun Application.rekjørForGrafer(
                     oppgaveKøRepository.oppdaterKøMedOppgaver(oppgavekø.id)
                 }
             }
+            for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
+                oppgaveKøRepository.oppdaterKøMedOppgaver(oppgavekø.id)
+            }
             log.info("Avslutter oppgavesynkronisering: $measureTimeMillis ms")
         } catch (e: Exception) {
             log.error("", e)
