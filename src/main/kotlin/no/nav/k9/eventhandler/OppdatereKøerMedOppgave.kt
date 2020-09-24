@@ -14,6 +14,7 @@ import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import no.nav.k9.tjenester.sse.log
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
@@ -36,7 +37,14 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
         val oppgave = channel.poll()
         if (oppgave == null) {
             val measureTimeMillis =
-                oppdaterKø(oppgaveKøRepository, oppgaveListe, reservasjonRepository, k9SakService, oppgaveTjeneste, statistikkRepository)
+                oppdaterKø(
+                    oppgaveKøRepository,
+                    oppgaveListe,
+                    reservasjonRepository,
+                    k9SakService,
+                    oppgaveTjeneste,
+                    statistikkRepository
+                )
             log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
             oppgaveListe.clear()
             oppgaveListe.add(channel.receive())
@@ -70,17 +78,22 @@ private suspend fun oppdaterKø(
             ) {
                 for (oppgave in oppgaveListe) {
                     if (oppgave.kode6 == oppgavekø.kode6) {
-                        it!!.leggOppgaveTilEllerFjernFraKø(
+                        val endretAttributt = it!!.leggOppgaveTilEllerFjernFraKø(
                             oppgave,
                             reservasjonRepository = reservasjonRepository
                         )
                         if (it.tilhørerOppgaveTilKø(
                                 oppgave,
                                 reservasjonRepository = reservasjonRepository,
-                                taHensynTilReservasjon = false
+                                taHensynTilReservasjon = true
                             )
                         ) {
+                            log.info("""La til oppgave i kø ${oppgavekø.id}""")
                             it.nyeOgFerdigstilteOppgaver(oppgave).leggTilNy(oppgave.eksternId.toString())
+                        } else {
+                            if (endretAttributt) {
+                                log.info("""Fjernet oppgave i kø ${oppgavekø.id}""")
+                            }
                         }
                     }
                 }

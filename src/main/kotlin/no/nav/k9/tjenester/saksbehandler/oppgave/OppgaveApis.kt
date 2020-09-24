@@ -11,7 +11,6 @@ import no.nav.k9.KoinProfile
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.integrasjon.rest.idToken
-import no.nav.k9.tjenester.saksbehandler.IdToken
 import no.nav.k9.tjenester.saksbehandler.IdTokenLocal
 import no.nav.k9.tjenester.saksbehandler.idToken
 import org.koin.ktor.ext.inject
@@ -127,7 +126,7 @@ internal fun Route.OppgaveApis() {
         ) {
             call.respond(
                 oppgaveTjeneste.reserverOppgave(
-                    saksbehandlerRepository.finnSaksbehandlerMedEpost(IdToken(kotlin.coroutines.coroutineContext.idToken().value).getUsername())!!.brukerIdent!!,
+                    saksbehandlerRepository.finnSaksbehandlerMedEpost(kotlin.coroutines.coroutineContext.idToken().getUsername())!!.brukerIdent!!,
                     UUID.fromString(oppgaveId.oppgaveId)
                 )
             )
@@ -157,7 +156,7 @@ internal fun Route.OppgaveApis() {
 
     post { _: leggTilBehandletSak ->
         val params = call.receive<BehandletOppgave>()
-        val idToken = call.idToken()
+       
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
@@ -170,7 +169,7 @@ internal fun Route.OppgaveApis() {
         ) {
             call.respond(
                 oppgaveTjeneste.leggTilBehandletOppgave(
-                    idToken.getUsername(),
+                    kotlin.coroutines.coroutineContext.idToken().getUsername(),
                     params
                 )
             )
