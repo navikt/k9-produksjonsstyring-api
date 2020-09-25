@@ -4,17 +4,13 @@ import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
-import no.nav.k9.domene.repository.StatistikkRepository
-import no.nav.k9.integrasjon.k9.IK9SakService
-import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
-import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
-import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.slf4j.LoggerFactory
+import java.util.*
 import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
@@ -22,11 +18,10 @@ import kotlin.system.measureTimeMillis
 @KtorExperimentalAPI
 fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     channel: ReceiveChannel<Oppgave>,
+    oppgaveRefreshChannel: SendChannel<UUID>,
+    statistikkRefreshChannel: SendChannel<Boolean>,
     oppgaveKøRepository: OppgaveKøRepository,
-    reservasjonRepository: ReservasjonRepository,
-    k9SakService: IK9SakService,
-    statistikkRepository: StatistikkRepository,
-    oppgaveTjeneste: OppgaveTjeneste
+    reservasjonRepository: ReservasjonRepository
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     val log = LoggerFactory.getLogger("behandleOppgave")
     val oppgaveListe = mutableListOf<Oppgave>()
@@ -37,12 +32,11 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
         if (oppgave == null) {
             val measureTimeMillis =
                 oppdaterKø(
-                    oppgaveKøRepository,
-                    oppgaveListe,
-                    reservasjonRepository,
-                    k9SakService,
-                    oppgaveTjeneste,
-                    statistikkRepository
+                    oppgaveKøRepository = oppgaveKøRepository,
+                    oppgaveListe = oppgaveListe,
+                    reservasjonRepository = reservasjonRepository,
+                    oppgaveRefreshChannel = oppgaveRefreshChannel,
+                    statistikkRefreshChannel = statistikkRefreshChannel
                 )
             log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
             oppgaveListe.clear()
@@ -58,9 +52,8 @@ private suspend fun oppdaterKø(
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveListe: MutableList<Oppgave>,
     reservasjonRepository: ReservasjonRepository,
-    k9SakService: IK9SakService,
-    oppgaveTjeneste: OppgaveTjeneste,
-    statistikkRepository: StatistikkRepository
+    oppgaveRefreshChannel: SendChannel<UUID>,
+    statistikkRefreshChannel: SendChannel<Boolean>,
 ): Long {
     return measureTimeMillis {
         for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
@@ -84,35 +77,9 @@ private suspend fun oppdaterKø(
                 }
                 it!!
             }
-            refreshK9(oppgavekø, k9SakService)
-            refreshHentAntallOppgaver(oppgaveTjeneste, oppgavekø)
-            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(refresh = true)
+            oppgavekø.oppgaverOgDatoer.take(20).forEach { oppgaveRefreshChannel.send(it.id)}
+            statistikkRefreshChannel.send(true)
         }
     }
 }
 
-private suspend fun refreshK9(
-    oppgavekø: OppgaveKø,
-    k9SakService: IK9SakService
-) {
-    val behandlingsListe = mutableListOf<BehandlingIdDto>()
-    behandlingsListe.addAll(oppgavekø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }.toList())
-    k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
-}
-
-@KtorExperimentalAPI
-private suspend fun refreshHentAntallOppgaver(
-    oppgaveTjeneste: OppgaveTjeneste,
-    oppgavekø: OppgaveKø
-) {
-    oppgaveTjeneste.hentAntallOppgaver(
-        oppgavekøId = oppgavekø.id,
-        taMedReserverte = true,
-        refresh = true
-    )
-    oppgaveTjeneste.hentAntallOppgaver(
-        oppgavekøId = oppgavekø.id,
-        taMedReserverte = false,
-        refresh = true
-    )
-}
