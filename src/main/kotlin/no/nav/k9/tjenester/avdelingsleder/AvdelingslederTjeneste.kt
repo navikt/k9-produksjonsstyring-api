@@ -51,6 +51,7 @@ class AvdelingslederTjeneste(
             saksbehandlere = oppgaveKø.saksbehandlere
         )
     }
+
     @KtorExperimentalAPI
     suspend fun hentOppgaveKøer(): List<OppgavekøDto> {
         if (!erOppgaveStyrer()) {
@@ -139,7 +140,13 @@ class AvdelingslederTjeneste(
 
     suspend fun hentSaksbehandlere(): List<SaksbehandlerDto> {
         val saksbehandlersKoer = hentSaksbehandlersOppgavekoer()
-        return saksbehandlersKoer.entries.map { SaksbehandlerDto(it.key.brukerIdent, it.key.navn, it.key.epost, it.value.map { ko -> ko.navn }) }
+        return saksbehandlersKoer.entries.map {
+            SaksbehandlerDto(
+                it.key.brukerIdent,
+                it.key.navn,
+                it.key.epost,
+                it.value.map { ko -> ko.navn })
+        }.sortedBy { it.navn }
     }
 
     suspend fun endreBehandlingsType(behandling: BehandlingsTypeDto) {
@@ -157,34 +164,31 @@ class AvdelingslederTjeneste(
 
     }
 
-    suspend fun hentSaksbehandlersOppgavekoer(): MutableMap<Saksbehandler, List<OppgavekøDto>> {
+    suspend fun hentSaksbehandlersOppgavekoer(): Map<Saksbehandler, List<OppgavekøDto>> {
         val koer = oppgaveTjeneste.hentOppgaveKøer()
         val saksbehandlere = saksbehandlerRepository.hentAlleSaksbehandlere()
-        val list = mutableMapOf<Saksbehandler, List<OppgavekøDto>>()
+        val map = mutableMapOf<Saksbehandler, List<OppgavekøDto>>()
         for (saksbehandler in saksbehandlere) {
-            list.put(saksbehandler, koer.filter { oppgaveKø ->
+            map[saksbehandler] = koer.filter { oppgaveKø ->
                 oppgaveKø.saksbehandlere
-                        .any { s -> s.epost == saksbehandler.epost }
+                    .any { s -> s.epost == saksbehandler.epost }
             }
-                    .map { oppgaveKø ->
-                        val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato)
-
-                        OppgavekøDto(
-                                id = oppgaveKø.id,
-                                navn = oppgaveKø.navn,
-                                behandlingTyper = oppgaveKø.filtreringBehandlingTyper,
-                                fagsakYtelseTyper = oppgaveKø.filtreringYtelseTyper,
-                                saksbehandlere = oppgaveKø.saksbehandlere,
-                                antallBehandlinger = oppgaveKø.oppgaverOgDatoer.size,
-                                sistEndret = oppgaveKø.sistEndret,
-                                skjermet = oppgaveKø.skjermet,
-                                sortering = sortering,
-                                andreKriterier = oppgaveKø.filtreringAndreKriterierType
-                        )
-
-                    })
+                .map { oppgaveKø ->
+                    OppgavekøDto(
+                        id = oppgaveKø.id,
+                        navn = oppgaveKø.navn,
+                        behandlingTyper = oppgaveKø.filtreringBehandlingTyper,
+                        fagsakYtelseTyper = oppgaveKø.filtreringYtelseTyper,
+                        saksbehandlere = oppgaveKø.saksbehandlere,
+                        antallBehandlinger = oppgaveKø.oppgaverOgDatoer.size,
+                        sistEndret = oppgaveKø.sistEndret,
+                        skjermet = oppgaveKø.skjermet,
+                        sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato),
+                        andreKriterier = oppgaveKø.filtreringAndreKriterierType
+                    )
+                }
         }
-        return list
+        return map
     }
 
     suspend fun endreSkjerming(skjermet: SkjermetDto) {
