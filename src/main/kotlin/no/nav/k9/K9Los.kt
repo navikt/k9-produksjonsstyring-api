@@ -28,10 +28,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.eventhandler.køOppdatertProsessor
-import no.nav.k9.eventhandler.oppdatereKøerMedOppgaveProsessor
-import no.nav.k9.eventhandler.refreshK9
-import no.nav.k9.eventhandler.sjekkReserverteJobb
+import no.nav.k9.eventhandler.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
@@ -102,22 +99,32 @@ fun Application.k9Los() {
             oppgaveTjeneste = koin.get()
         )
 
-    val oppdatereKøerMedOppgaveProsessorJob =
-        oppdatereKøerMedOppgaveProsessor(
-            channel = koin.get<Channel<Oppgave>>(named("oppgaveChannel")),
-            oppgaveKøRepository = koin.get(),
-            reservasjonRepository = koin.get(),
-            k9SakService = koin.get(),
-            statistikkRepository = koin.get(),
-            oppgaveTjeneste = koin.get()
-        )
+
     val refreshOppgaveJobb =
         refreshK9(
-            channel = koin.get<Channel<Oppgave>>(named("oppgaveRefreshChannel")),
+            channel = koin.get<Channel<UUID>>(named("oppgaveRefreshChannel")),
             k9SakService = koin.get()
         )
 
-    val sjekkReserverteJobb = sjekkReserverteJobb(saksbehandlerRepository = koin.get(), reservasjonRepository = koin.get())
+    val oppdaterStatistikkJobb =
+        oppdaterStatistikk(
+            channel = koin.get<Channel<Boolean>>(named("statistikkRefreshChannel")),
+            statistikkRepository = koin.get(),
+            oppgaveTjeneste = koin.get(),
+            oppgaveKøRepository = koin.get()
+        )
+    
+    val oppdatereKøerMedOppgaveProsessorJob =
+        oppdatereKøerMedOppgaveProsessor(
+            channel = koin.get<Channel<Oppgave>>(named("oppgaveChannel")),
+            oppgaveRefreshChannel = koin.get<Channel<UUID>>(named("oppgaveRefreshChannel")),
+            statistikkRefreshChannel = koin.get<Channel<Boolean>>(named("statistikkRefreshChannel")),
+            oppgaveKøRepository = koin.get(),
+            reservasjonRepository = koin.get()
+        )
+    
+    val sjekkReserverteJobb =
+        sjekkReserverteJobb(saksbehandlerRepository = koin.get(), reservasjonRepository = koin.get())
 
     val asynkronProsesseringV1Service = koin.get<AsynkronProsesseringV1Service>()
     val sakOgBehadlingProducer = koin.get<SakOgBehandlingProducer>()
@@ -134,6 +141,7 @@ fun Application.k9Los() {
         køOppdatertProsessorJob.cancel()
         oppdatereKøerMedOppgaveProsessorJob.cancel()
         refreshOppgaveJobb.cancel()
+        oppdaterStatistikkJobb.cancel()
     }
 
     // Server side events

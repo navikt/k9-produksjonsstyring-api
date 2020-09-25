@@ -73,7 +73,10 @@ fun common(app: Application, config: Configuration) = module {
         Channel<Oppgave>(Channel.UNLIMITED)
     }
     single(named("oppgaveRefreshChannel")) {
-        Channel<Oppgave>(Channel.UNLIMITED)
+        Channel<UUID>(Channel.UNLIMITED)
+    }
+    single(named("statistikkRefreshChannel")) {
+        Channel<Boolean>(Channel.CONFLATED)
     }
 
     single { OppgaveRepository(get(), get(), get(named("oppgaveRefreshChannel"))) }
