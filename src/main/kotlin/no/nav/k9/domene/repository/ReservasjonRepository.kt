@@ -70,6 +70,7 @@ class ReservasjonRepository(
         oppgaveRepository: OppgaveRepository
     ): List<Reservasjon> {
         reservasjoner.forEach { reservasjon ->
+
             if (!reservasjon.erAktiv()) {
                 lagre(reservasjon.oppgave) {
                     it!!.reservertTil = null
@@ -87,6 +88,15 @@ class ReservasjonRepository(
                             it
                         }
                     }
+                }
+            } else {
+                val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
+                if (!oppgave.aktiv) {
+                    lagre(reservasjon.oppgave) {
+                        it!!.reservertTil = null
+                        it
+                    }
+                    saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                 }
             }
         }
