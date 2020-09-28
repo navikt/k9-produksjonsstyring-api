@@ -21,7 +21,7 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentNyeFerdigstilteOppgaverOppsummering(): List<AlleOppgaverNyeOgFerdigstilte> {
-        return statistikkRepository.hentFerdigstilteOgNyeHistorikkSiste8Uker()
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7)
     }
 
     fun hentFerdigstilteSiste8Uker(): List<AlleOppgaverHistorikk> {
