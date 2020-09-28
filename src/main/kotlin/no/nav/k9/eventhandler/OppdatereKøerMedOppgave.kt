@@ -48,7 +48,7 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
 }
 
 @KtorExperimentalAPI
-private suspend fun oppdaterKø(
+ suspend fun oppdaterKø(
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveListe: MutableList<Oppgave>,
     reservasjonRepository: ReservasjonRepository,

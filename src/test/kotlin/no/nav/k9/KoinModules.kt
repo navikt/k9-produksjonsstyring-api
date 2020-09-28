@@ -48,6 +48,9 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
     single(named("oppgaveRefreshChannel")) {
         Channel<Oppgave>(Channel.UNLIMITED)
     }
+    single(named("statistikkRefreshChannel")) {
+        Channel<Boolean>(Channel.CONFLATED)
+    }
     single {
         K9SakServiceLocal() as IK9SakService
     } 

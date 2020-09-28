@@ -3,29 +3,39 @@ package no.nav.k9.aksjonspunktbehandling
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.util.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.buildAndTestConfig
+import no.nav.k9.domene.modell.Enhet
+import no.nav.k9.domene.modell.KøSortering
+import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.eventhandler.oppdaterKø
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import org.intellij.lang.annotations.Language
 import org.junit.Rule
 import org.junit.Test
+import org.koin.core.qualifier.named
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
+import java.time.LocalDate
 import java.util.*
 import kotlin.test.assertFalse
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 
-class K9sakEventHandlerTest :KoinTest{
+class K9sakEventHandlerTest : KoinTest {
 
     @KtorExperimentalAPI
     @get:Rule
     val koinTestRule = KoinTestRule.create {
         modules(buildAndTestConfig())
     }
-    
+
     @KtorExperimentalAPI
     @Test
     fun `Skal lukke oppgave dersom den ikke har noen aktive aksjonspunkter`() {
@@ -279,5 +289,85 @@ class K9sakEventHandlerTest :KoinTest{
         val oppgave =
             oppgaveRepository.hent(UUID.fromString("29cbdc33-0e59-4559-96a8-c2154bf17e5a"))
         assertTrue { !oppgave.aktiv }
+    }
+
+    @KtorExperimentalAPI
+    @Test
+    fun `Oppgave skal ende opp i kø`() {
+        val k9sakEventHandler = get<K9sakEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
+
+        @Language("JSON") val json =
+            """{
+                  "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+                  "fagsystem": {
+                    "kode": "K9SAK",
+                    "kodeverk": "FAGSYSTEM"
+                  },
+                  "saksnummer": "5YC4K",
+                  "aktørId": "9906098522415",
+                  "behandlingId": 1000001,
+                  "eventTid": "2020-02-20T07:38:49",
+                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+                  "behandlinStatus": "UTRED",
+                   "behandlingstidFrist": "2020-03-31",
+                  "behandlingStatus": "UTRED",
+                  "behandlingSteg": "INREG_AVSL",
+                  "behandlendeEnhet": "0300",
+                  "ytelseTypeKode": "OMP",
+                  "behandlingTypeKode": "BT-002",
+                  "opprettetBehandling": "2020-02-20T07:38:49",
+                  "aksjonspunktKoderMedStatusListe": {
+                    "5009": "OPPR"
+                  }
+                }"""
+        val objectMapper = jacksonObjectMapper()
+            .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+
+        val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
+
+        k9sakEventHandler.prosesser(event)
+        val oppgaveKøRepository = get<OppgaveKøRepository>()
+
+        runBlocking {
+            val uuid = UUID.randomUUID()
+            oppgaveKøRepository.lagre(uuid) {
+                OppgaveKø(
+                    id = uuid,
+                    navn = "Alle",
+                    sistEndret = LocalDate.now(),
+                    sortering = KøSortering.OPPRETT_BEHANDLING,
+                    filtreringBehandlingTyper = arrayListOf(),
+                    filtreringYtelseTyper = arrayListOf(),
+                    filtreringAndreKriterierType = arrayListOf(),
+                    enhet = Enhet.NASJONAL,
+                    fomDato = null,
+                    tomDato = null,
+                    saksbehandlere = arrayListOf(),
+                    skjermet = false,
+                    oppgaverOgDatoer = mutableListOf(),
+                    kode6 = false
+                )
+            }
+        }
+        
+        val oppgave =
+            oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        assertTrue { oppgave.aktiv }
+        assertTrue(oppgave.aksjonspunkter.lengde() == 1)
+
+
+        val i = runBlocking {
+            oppdaterKø(
+                oppgaveKøRepository = oppgaveKøRepository,
+                oppgaveListe = mutableListOf(oppgave),
+                reservasjonRepository = get(),
+                oppgaveRefreshChannel = get<Channel<UUID>>(named("oppgaveRefreshChannel")),
+                statistikkRefreshChannel = get<Channel<Boolean>>(named("statistikkRefreshChannel"))
+            )
+            oppgaveKøRepository.hent()[0].oppgaverOgDatoer.size
+
+        }
+        assertSame(1, i)
     }
 }
