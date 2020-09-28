@@ -32,11 +32,11 @@ fun Route.NokkeltallApis() {
         call.respond(oppgaveTjeneste.hentBeholdningAvOppgaverPerAntallDager())
     }
 
-    @Location("/ferdigstilte-oppsummering")
-    class getFerdigstilteOppgaver
+    @Location("/nye-ferdigstilte-oppsummering")
+    class getNyeFerdigstilteOppgaver
 
-    get { _: getFerdigstilteOppgaver ->
-        call.respond(nokkeltallTjeneste.hentFerdigstilteOppgaver())
+    get { _: getNyeFerdigstilteOppgaver ->
+        call.respond(nokkeltallTjeneste.hentNyeFerdigstilteOppgaverOppsummering())
     }
 
     @Location("/dagens-tall")
