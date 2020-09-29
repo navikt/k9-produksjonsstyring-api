@@ -173,7 +173,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                            select behandlingtype, dato, ferdigstilte, nye
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                     """.trimIndent(),
                     mapOf("antall" to "\'${antall} days\'")
@@ -181,7 +181,7 @@ class StatistikkRepository(
                     .map { row ->
                         AlleOppgaverNyeOgFerdigstilte(
                             behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
-                            fagsakYtelseType = FagsakYtelseType.OMSORGSPENGER,
+                            fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
                             dato = row.localDate("dato"),
                             ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte") ?: "[]"),
                             nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
@@ -273,6 +273,35 @@ class StatistikkRepository(
 
 
     fun hentFerdigstilteOgNyeHistorikkSiste8Uker(): List<AlleOppgaverNyeOgFerdigstilte> {
+
+        val list = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                    queryOf(
+                            """
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye 
+                            from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
+                            group by behandlingtype, fagsakYtelseType, dato
+                    """.trimIndent(),
+                            mapOf("antall" to "\'${55} days\'")
+                    )
+                            .map { row ->
+                                AlleOppgaverNyeOgFerdigstilte(
+                                        behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
+                                        fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                                        dato = row.localDate("dato"),
+                                        ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte")
+                                                ?: "[]"),
+                                        nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
+                                )
+                            }.asList
+            )
+        }
+
+        return list
+    }
+
+    fun hentFerdigstilteOgNyeHistorikkSiste7dager(): List<AlleOppgaverNyeOgFerdigstilte> {
 
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
