@@ -57,15 +57,15 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
     )
 
     @KtorExperimentalAPI
-    fun send(k9SakModell: IModell) {
+    fun send(modell: IModell) {
         if (config.koinProfile() == KoinProfile.LOCAL) {
             return
         }
         runBlocking {
-            if (pepClient.kanSendeSakTilStatistikk(k9SakModell.sisteEvent().saksnummer)) {
-                sendSak(k9SakModell.dvhSak())
+            if (pepClient.kanSendeSakTilStatistikk(modell.sisteEvent().saksnummer)) {
+                sendSak(modell.dvhSak())
                 sendBehandling(
-                    k9SakModell.dvhBehandling(
+                    modell.dvhBehandling(
                         saksbehandlerRepository = saksbehandlerRepository,
                         reservasjonRepository = reservasjonRepository
                     )
