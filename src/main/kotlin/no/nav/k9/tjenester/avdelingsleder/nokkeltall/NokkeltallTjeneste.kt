@@ -7,6 +7,7 @@ import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import java.util.*
 
 private val log: Logger =
     LoggerFactory.getLogger(NokkeltallTjeneste::class.java)
@@ -20,12 +21,18 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
         return oppgaveRepository.hentAlleOppgaverUnderArbeid()
     }
 
-    fun hentFerdigstilteOppgaver(): List<AlleFerdigstilteOppgaverDto> {
-        return statistikkRepository.hentFerdigstilte().groupBy { it.behandlingType }.entries.map { entry ->
-            AlleFerdigstilteOppgaverDto(
-                entry.key,
-                if (entry.value.any { it.dato == LocalDate.now() }) entry.value.find { it.dato == LocalDate.now() }!!.antall else 0,
-                entry.value.sumBy { it.antall })
+    fun hentNyeFerdigstilteOppgaverOppsummering(): List<AlleOppgaverNyeOgFerdigstilteDto> {
+        val ferdigstilteManuelt = statistikkRepository.hentFerdigstilte()
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
+            val ferdigstilte =
+                    ferdigstilteManuelt.find { f -> f.behandlingType == it.behandlingType && f.dato == it.dato }
+            AlleOppgaverNyeOgFerdigstilteDto(
+                    it.fagsakYtelseType,
+                    it.behandlingType,
+                    it.dato,
+                    it.nye.size,
+                    ferdigstilte?.antall ?: it.ferdigstilte.size,
+                    )
         }
     }
 
