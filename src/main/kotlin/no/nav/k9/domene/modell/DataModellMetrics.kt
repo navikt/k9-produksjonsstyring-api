@@ -2,7 +2,7 @@
 import io.prometheus.client.Counter
 import io.prometheus.client.Histogram
 import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.modell.Modell
+import no.nav.k9.domene.modell.K9SakModell
 import no.nav.k9.domene.repository.ReservasjonRepository
 import java.time.Duration
 
@@ -36,7 +36,7 @@ private val ledetid = Histogram.build()
     .help("Ledetid behandling av oppgaver")
     .register()
 
-internal fun Modell.reportMetrics(reservasjonRepository: ReservasjonRepository) {
+internal fun K9SakModell.reportMetrics(reservasjonRepository: ReservasjonRepository) {
     val oppgave = oppgave()
     if (starterSak()) {
         oppgaveOpprettet.inc()

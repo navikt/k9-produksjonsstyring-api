@@ -5,13 +5,11 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventTilbakeDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
-import no.nav.k9.integrasjon.kafka.dto.Fagsystem
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
-import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktKodeDefinisjon.*
-import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktStatus
 import no.nav.k9.statistikk.kontrakter.Aktør
 import no.nav.k9.statistikk.kontrakter.Behandling
 import no.nav.k9.statistikk.kontrakter.Sak
@@ -20,18 +18,14 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
 
-data class Modell(
+data class K9TilbakeModell(
     val eventer: List<BehandlingProsessEventDto>
-) {
+) : IModell{
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
-
-    fun oppgave(sisteEvent: BehandlingProsessEventDto = sisteEvent()): Oppgave {
+    override fun oppgave(sisteEvent: BehandlingProsessEventDto): Oppgave {
         val event = sisteEvent
-        val eventResultat = if (event.fagsystem == Fagsystem.K9SAK) {
-            sisteEvent.aktiveAksjonspunkt().eventResultat()
-        } else {
-            sisteEvent.aktiveAksjonspunkt().eventResultatTilbake()
-        }
+        val eventResultat = sisteEvent.aktiveAksjonspunkt().eventResultatTilbake()
+
         var aktiv = true
         var oppgaveAvsluttet: LocalDateTime? = null
         var beslutterOppgave = false
@@ -91,7 +85,7 @@ data class Modell(
             system = event.fagsystem.name,
             oppgaveEgenskap = emptyList(),
             aksjonspunkter = event.aktiveAksjonspunkt(),
-            utenlands = erUtenlands(event),
+            utenlands = false,
             tilBeslutter = beslutterOppgave,
             kombinert = false,
             registrerPapir = registrerPapir,
@@ -99,86 +93,14 @@ data class Modell(
             søktGradering = false,
             utbetalingTilBruker = false,
             kode6 = false,
-            årskvantum = erÅrskvantum(event),
-            avklarMedlemskap = avklarMedlemskap(event),
-            vurderopptjeningsvilkåret = vurderopptjeningsvilkåret(event),
+            årskvantum = false,
+            avklarMedlemskap = false,
+            vurderopptjeningsvilkåret = false,
             eventTid = event.eventTid,
             ansvarligSaksbehandlerForTotrinn = event.ansvarligSaksbehandlerForTotrinn,
             ansvarligSaksbehandlerIdent = event.ansvarligSaksbehandlerIdent
         )
     }
-
-    private fun avklarMedlemskap(event: BehandlingProsessEventDto): Boolean {
-        return event.aktiveAksjonspunkt().liste.any { entry ->
-            (entry.key == AVKLAR_FORTSATT_MEDLEMSKAP_KODE)
-        }
-    }
-
-    private fun vurderopptjeningsvilkåret(event: BehandlingProsessEventDto): Boolean {
-        return event.aktiveAksjonspunkt().liste.any { entry ->
-            (entry.key == VURDER_OPPTJENINGSVILKÅRET_KODE || entry.key == VURDER_PERIODER_MED_OPPTJENING_KODE || entry.key == OVERSTYRING_AV_OPPTJENINGSVILKÅRET_KODE)
-        }
-    }
-
-    private fun erÅrskvantum(event: BehandlingProsessEventDto): Boolean {
-        return event.aktiveAksjonspunkt().liste.any { entry ->
-            (entry.key == VURDER_ÅRSKVANTUM_KVOTE)
-        }
-    }
-
-    private fun erUtenlands(event: BehandlingProsessEventDto): Boolean {
-        return event.aktiveAksjonspunkt().liste.any { entry ->
-            (entry.key == AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE
-                    || entry.key == MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE) && entry.value != AksjonspunktStatus.AVBRUTT.kode
-        }
-    }
-
-    fun sisteEvent(): BehandlingProsessEventDto {
-        return this.eventer[this.eventer.lastIndex]
-    }
-
-    fun forrigeEvent(): BehandlingProsessEventDto? {
-        return if (this.eventer.lastIndex > 0) {
-            this.eventer[this.eventer.lastIndex - 1]
-        } else {
-            null
-        }
-    }
-
-    fun førsteEvent(): BehandlingProsessEventDto {
-        return this.eventer[0]
-    }
-
-    fun starterSak(): Boolean {
-        return this.eventer.size == 1
-    }
-
-    fun erTom(): Boolean {
-        return this.eventer.isEmpty()
-    }
-
-    fun dvhSak(): Sak {
-        val oppgave = oppgave()
-        val zone = ZoneId.of("Europe/Oslo")
-        return Sak(
-            saksnummer = oppgave.fagsakSaksnummer,
-            sakId = oppgave.fagsakSaksnummer,
-            funksjonellTid = sisteEvent().eventTid.atOffset(zone.rules.getOffset(sisteEvent().eventTid)),
-            tekniskTid = OffsetDateTime.now(),
-            opprettetDato = oppgave.behandlingOpprettet.toLocalDate(),
-            aktorId = oppgave.aktorId.toLong(),
-            aktorer = listOf(Aktør(oppgave.aktorId.toLong(), "Søker", "Søker")),
-            ytelseType = oppgave.fagsakYtelseType.navn,
-            underType = null,
-            sakStatus = oppgave.behandlingStatus.navn,
-            ytelseTypeBeskrivelse = null,
-            underTypeBeskrivelse = null,
-            sakStatusBeskrivelse = null,
-            avsender = "K9sak",
-            versjon = 1
-        )
-    }
-
     @KtorExperimentalAPI
     fun behandlingOpprettetSakOgBehandling(
 
@@ -197,8 +119,8 @@ data class Modell(
             ),
             sakstema = BehandlingOpprettet.Sakstema("", "", "OMS"),
             behandlingstema = BehandlingOpprettet.Behandlingstema(
-                "ab0149",
-                "ab0149",
+                `Omsorgspenger, Pleiepenger og opplæringspenger`,
+                `Omsorgspenger, Pleiepenger og opplæringspenger`,
                 `Omsorgspenger, Pleiepenger og opplæringspenger`
             ),
             aktoerREF = listOf(BehandlingOpprettet.AktoerREF(sisteEvent.aktørId)),
@@ -211,7 +133,6 @@ data class Modell(
         )
         return behandlingOpprettet
     }
-
     @KtorExperimentalAPI
     fun behandlingAvsluttetSakOgBehandling(
     ): BehandlingAvsluttet {
@@ -244,8 +165,82 @@ data class Modell(
         )
         return behandlingAvsluttet
     }
+    override fun sisteEvent(): BehandlingProsessEventDto {
+        return this.eventer[this.eventer.lastIndex]
+    }
 
-    suspend fun dvhBehandling(
+    override fun forrigeEvent(): BehandlingProsessEventDto? {
+        return if (this.eventer.lastIndex > 0) {
+            this.eventer[this.eventer.lastIndex - 1]
+        } else {
+            null
+        }
+    }
+
+    override fun førsteEvent(): BehandlingProsessEventDto {
+        return this.eventer[0]
+    }
+
+    override fun starterSak(): Boolean {
+        return this.eventer.size == 1
+    }
+
+    override fun erTom(): Boolean {
+        return this.eventer.isEmpty()
+    }
+    
+    fun bleBeslutter(): Boolean {
+        val forrigeEvent = forrigeEvent()
+        return forrigeEvent != null && !forrigeEvent.aktiveAksjonspunkt()
+            .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
+    }
+
+    fun fikkEndretAksjonspunkt(): Boolean {
+        val forrigeEvent = forrigeEvent()
+        if (forrigeEvent == null) {
+            return false
+        }
+
+        val forrigeAksjonspunkter = forrigeEvent.aktiveAksjonspunkt()
+            .liste
+        val nåværendeAksjonspunkter = sisteEvent().aktiveAksjonspunkt().liste
+        return forrigeAksjonspunkter != nåværendeAksjonspunkter
+    }
+
+    // Array med alle versjoner av modell basert på eventene, brukes når man skal spille av eventer
+    override fun alleVersjoner(): MutableList<K9SakModell> {
+        val eventListe = mutableListOf<BehandlingProsessEventDto>()
+        val modeller = mutableListOf<K9SakModell>()
+        for (behandlingProsessEventDto in eventer) {
+            eventListe.add(behandlingProsessEventDto)
+            modeller.add(K9SakModell(eventListe.toMutableList()))
+        }
+        return modeller
+    }
+
+    override fun dvhSak(): Sak {
+        val oppgave = oppgave()
+        val zone = ZoneId.of("Europe/Oslo")
+        return Sak(
+            saksnummer = oppgave.fagsakSaksnummer,
+            sakId = oppgave.fagsakSaksnummer,
+            funksjonellTid = sisteEvent().eventTid.atOffset(zone.rules.getOffset(sisteEvent().eventTid)),
+            tekniskTid = OffsetDateTime.now(),
+            opprettetDato = oppgave.behandlingOpprettet.toLocalDate(),
+            aktorId = oppgave.aktorId.toLong(),
+            aktorer = listOf(Aktør(oppgave.aktorId.toLong(), "Søker", "Søker")),
+            ytelseType = oppgave.fagsakYtelseType.navn,
+            underType = null,
+            sakStatus = oppgave.behandlingStatus.navn,
+            ytelseTypeBeskrivelse = null,
+            underTypeBeskrivelse = null,
+            sakStatusBeskrivelse = null,
+            avsender = "K9los",
+            versjon = 1
+        )
+    }
+    
+    override fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
     ): Behandling {
@@ -307,43 +302,13 @@ data class Modell(
             versjon = 1
         )
     }
-
-    fun bleBeslutter(): Boolean {
-        val forrigeEvent = forrigeEvent()
-        return forrigeEvent != null && !forrigeEvent.aktiveAksjonspunkt()
-            .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
-    }
-
-    fun fikkEndretAksjonspunkt(): Boolean {
-        val forrigeEvent = forrigeEvent()
-        if (forrigeEvent == null) {
-            return false
-        }
-
-        val forrigeAksjonspunkter = forrigeEvent.aktiveAksjonspunkt()
-            .liste
-        val nåværendeAksjonspunkter = sisteEvent().aktiveAksjonspunkt().liste
-        return forrigeAksjonspunkter != nåværendeAksjonspunkter
-    }
-
-    // Array med alle versjoner av modell basert på eventene, brukes når man skal spille av eventer
-    fun alleVersjoner(): MutableList<Modell> {
-        val eventListe = mutableListOf<BehandlingProsessEventDto>()
-        val modeller = mutableListOf<Modell>()
-        for (behandlingProsessEventDto in eventer) {
-            eventListe.add(behandlingProsessEventDto)
-            modeller.add(Modell(eventListe.toMutableList()))
-        }
-        return modeller
-    }
-
 }
 
-fun BehandlingProsessEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
-    return Aksjonspunkter(this.aksjonspunktKoderMedStatusListe.filter { entry -> entry.value == "OPPR" })
+fun BehandlingProsessEventTilbakeDto.aktiveAksjonspunkt(): AksjonspunkterTilbake {
+    return AksjonspunkterTilbake(this.aksjonspunktKoderMedStatusListe.filter { entry -> entry.value == "OPPR" })
 }
 
-data class Aksjonspunkter(val liste: Map<String, String>) {
+data class AksjonspunkterTilbake(val liste: Map<String, String>) {
     fun lengde(): Int {
         return liste.size
     }
@@ -376,7 +341,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
 
         return EventResultat.OPPRETT_OPPGAVE
     }
-    
+
     fun eventResultatTilbake(): EventResultat {
         if (erTom()) {
             return EventResultat.LUKK_OPPGAVE
@@ -392,17 +357,19 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
 
         return EventResultat.OPPRETT_OPPGAVE
     }
+
     fun påVentTilbake(): Boolean {
-        return this.liste.any { 
-            when (it.key){
+        return this.liste.any {
+            when (it.key) {
                 "7001", "7002" -> true
                 else -> false
             }
         }
     }
+
     fun tilBeslutterTilbake(): Boolean {
-        return this.liste.any { 
-            when (it.key){
+        return this.liste.any {
+            when (it.key) {
                 "5005" -> true
                 else -> false
             }

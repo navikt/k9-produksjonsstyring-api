@@ -3,13 +3,15 @@ package no.nav.k9.integrasjon.kafka
 import io.ktor.util.*
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.AksjonspunktStreamK9
+import no.nav.k9.aksjonspunktbehandling.K9TilbakeEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import org.slf4j.LoggerFactory
 
 internal class AsynkronProsesseringV1Service @KtorExperimentalAPI constructor(
     kafkaConfig: KafkaConfig,
     configuration: Configuration,
-    k9sakEventHandler: K9sakEventHandler
+    k9sakEventHandler: K9sakEventHandler,
+    k9TilbakeEventHandler: K9TilbakeEventHandler
 ) {
 
     private companion object {
@@ -28,7 +30,7 @@ internal class AsynkronProsesseringV1Service @KtorExperimentalAPI constructor(
 //    private val aksjonspunkTilbaketStream = AksjonspunktTilbakeStream(
 //        kafkaConfig = kafkaConfig,
 //        configuration = configuration,
-//        k9sakEventHandler = k9sakEventHandler
+//        k9TilbakeEventHandler = k9TilbakeEventHandler
 //    )
 
     @KtorExperimentalAPI

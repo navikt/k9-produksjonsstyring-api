@@ -4,19 +4,20 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.modell.Modell
+import no.nav.k9.domene.modell.K9SakModell
+import no.nav.k9.domene.modell.K9TilbakeModell
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.tjenester.innsikt.Mapping
 import java.util.*
 import javax.sql.DataSource
 
 
-class BehandlingProsessEventRepository(private val dataSource: DataSource) {
-    fun hent(uuid: UUID): Modell {
+class BehandlingProsessEventTilbakeRepository(private val dataSource: DataSource) {
+    fun hent(uuid: UUID): K9SakModell {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select data from behandling_prosess_events_k9 where id = :id",
+                    "select data from behandling_prosess_events_tilbake where id = :id",
                     mapOf("id" to uuid.toString())
                 )
                     .map { row ->
@@ -25,16 +26,16 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
             )
         }
         if (json.isNullOrEmpty()) {
-            return Modell(emptyList())
+            return K9SakModell(emptyList())
         }
-        val modell = objectMapper().readValue(json, Modell::class.java)
+        val modell = objectMapper().readValue(json, K9SakModell::class.java)
      
-        return  Modell(  modell.eventer.sortedBy { it.eventTid })
+        return K9SakModell(  modell.eventer.sortedBy { it.eventTid })
     }
 
     fun lagre(
         event: BehandlingProsessEventDto
-    ): Modell {
+    ): K9TilbakeModell {
         val json = objectMapper().writeValueAsString(event)
 
         val id = event.eksternId.toString()
@@ -43,7 +44,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
                 tx.run(
                     queryOf(
                         """
-                    insert into behandling_prosess_events_k9 as k (id, data)
+                    insert into behandling_prosess_events_tilbake as k (id, data)
                     values (:id, :dataInitial :: jsonb)
                     on conflict (id) do update
                     set data = jsonb_set(k.data, '{eventer,999999}', :data :: jsonb, true)
@@ -52,7 +53,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
                 )
                 tx.run(
                     queryOf(
-                        "select data from behandling_prosess_events_k9 where id = :id",
+                        "select data from behandling_prosess_events_tilbake where id = :id",
                         mapOf("id" to id)
                     )
                         .map { row ->
@@ -62,7 +63,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
             }
 
         }
-        return objectMapper().readValue(out!!, Modell::class.java)
+        return objectMapper().readValue(out!!, K9TilbakeModell::class.java)
 
     }
 
@@ -73,7 +74,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
             it.transaction { tx ->
                 tx.run(
                     queryOf(
-                        "select id from behandling_prosess_events_k9",
+                        "select id from behandling_prosess_events_tilbake",
                         mapOf()
                     )
                         .map { row ->
@@ -92,7 +93,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    """select sort_array(data->'eventer', 'eventTid') -> 0 ->'eventTid' as data from behandling_prosess_events_k9 order by (sort_array(data->'eventer', 'eventTid') -> 0 ->'eventTid') limit 1;""",
+                    """select sort_array(data->'eventer', 'eventTid') -> 0 ->'eventTid' as data from behandling_prosess_events_tilbake order by (sort_array(data->'eventer', 'eventTid') -> 0 ->'eventTid') limit 1;""",
                     mapOf()
                 )
                     .map { row ->
@@ -108,7 +109,7 @@ class BehandlingProsessEventRepository(private val dataSource: DataSource) {
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    """select id, (data-> 'eventer' -> -1 ->'behandlingId' ) as behandlingid from behandling_prosess_events_k9""",
+                    """select id, (data-> 'eventer' -> -1 ->'behandlingId' ) as behandlingid from behandling_prosess_events_tilbake""",
                     mapOf()
                 )
                     .map { row ->

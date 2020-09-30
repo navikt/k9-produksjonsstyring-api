@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 internal class AksjonspunktTilbakeStream @KtorExperimentalAPI constructor(
     kafkaConfig: KafkaConfig,
     configuration: Configuration,
-    k9sakEventHandler: K9sakEventHandler
+    k9TilbakeEventHandler: K9TilbakeEventHandler
 ) {
 
     @KtorExperimentalAPI
@@ -23,7 +23,7 @@ internal class AksjonspunktTilbakeStream @KtorExperimentalAPI constructor(
         properties = kafkaConfig.stream(NAME),
         topology = topology(
             configuration = configuration,
-            k9sakEventHandler = k9sakEventHandler
+            k9TilbakeEventHandler = k9TilbakeEventHandler
         ),
         unreadyAfterStreamStoppedIn = kafkaConfig.unreadyAfterStreamStoppedIn
     )
@@ -40,7 +40,7 @@ internal class AksjonspunktTilbakeStream @KtorExperimentalAPI constructor(
         @KtorExperimentalAPI
         private fun topology(
             configuration: Configuration,
-            k9sakEventHandler: K9sakEventHandler
+            k9TilbakeEventHandler: K9TilbakeEventHandler
         ): Topology {
             val builder = StreamsBuilder()
             val fromTopic = Topic(
@@ -55,7 +55,7 @@ internal class AksjonspunktTilbakeStream @KtorExperimentalAPI constructor(
                 .foreach { _, entry ->
                     if (entry != null) {
                         log.info("Prosesserer entry fra tilbakekreving")
-                        k9sakEventHandler.prosesser(entry)
+                        k9TilbakeEventHandler.prosesser(entry)
                     }
                 }
             return builder.build()

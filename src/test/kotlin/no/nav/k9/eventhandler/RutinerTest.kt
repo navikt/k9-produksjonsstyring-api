@@ -179,7 +179,7 @@ class RutinerTest {
         every { KoinProfile.LOCAL == config.koinProfile() } returns true
         val k9sakEventHandler = K9sakEventHandler(
             oppgaveRepository,
-            BehandlingProsessEventRepository(dataSource = dataSource),
+            BehandlingProsessEventK9Repository(dataSource = dataSource),
             config = config,
             sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = oppgaveKøRepository,

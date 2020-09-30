@@ -9,7 +9,7 @@ import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.modell.Modell
+import no.nav.k9.domene.modell.IModell
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.abac.IPepClient
@@ -57,15 +57,15 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
     )
 
     @KtorExperimentalAPI
-    fun send(modell: Modell) {
+    fun send(k9SakModell: IModell) {
         if (config.koinProfile() == KoinProfile.LOCAL) {
             return
         }
         runBlocking {
-            if (pepClient.kanSendeSakTilStatistikk(modell.sisteEvent().saksnummer)) {
-                sendSak(modell.dvhSak())
+            if (pepClient.kanSendeSakTilStatistikk(k9SakModell.sisteEvent().saksnummer)) {
+                sendSak(k9SakModell.dvhSak())
                 sendBehandling(
-                    modell.dvhBehandling(
+                    k9SakModell.dvhBehandling(
                         saksbehandlerRepository = saksbehandlerRepository,
                         reservasjonRepository = reservasjonRepository
                     )

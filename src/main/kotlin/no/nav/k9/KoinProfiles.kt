@@ -5,6 +5,7 @@ import io.ktor.util.*
 import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.k9.KoinProfile.*
+import no.nav.k9.aksjonspunktbehandling.K9TilbakeEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -113,9 +114,13 @@ fun common(app: Application, config: Configuration) = module {
     }
 
     single {
-        BehandlingProsessEventRepository(get())
+        BehandlingProsessEventK9Repository(get())
     }
 
+    single {
+        BehandlingProsessEventTilbakeRepository(get())
+    }
+    
     single {
         StatistikkRepository(get())
     }
@@ -146,7 +151,7 @@ fun common(app: Application, config: Configuration) = module {
     single {
         K9sakEventHandler(
             oppgaveRepository = get(),
-            behandlingProsessEventRepository = get(),
+            behandlingProsessEventK9Repository = get(),
             config = config,
             sakOgBehandlingProducer = get(),
             oppgaveKøRepository = get(),
@@ -159,10 +164,26 @@ fun common(app: Application, config: Configuration) = module {
     }
 
     single {
+        K9TilbakeEventHandler(
+            oppgaveRepository = get(),
+            behandlingProsessEventTilbakeRepository = get(),
+            config = config,
+            sakOgBehandlingProducer = get(),
+            oppgaveKøRepository = get(),
+            reservasjonRepository = get(),
+            statistikkProducer = get(),
+            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkRepository = get(),
+            saksbehhandlerRepository = get()
+        )
+    }
+    
+    single {
         AsynkronProsesseringV1Service(
             kafkaConfig = config.getKafkaConfig(),
             configuration = config,
-            k9sakEventHandler = get()
+            k9sakEventHandler = get(),
+            k9TilbakeEventHandler = get()
         )
     }
 

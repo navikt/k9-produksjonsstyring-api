@@ -13,7 +13,7 @@ import kotlinx.html.*
 import no.nav.k9.KoinProfile
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.repository.BehandlingProsessEventRepository
+import no.nav.k9.domene.repository.BehandlingProsessEventK9Repository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
@@ -31,7 +31,7 @@ import kotlin.collections.set
 @KtorExperimentalLocationsAPI
 fun Route.MockGrensesnitt() {
     val k9sakEventHandler by inject<K9sakEventHandler>()
-    val behandlingProsessEventRepository by inject<BehandlingProsessEventRepository>()
+    val behandlingProsessEventRepository by inject<BehandlingProsessEventK9Repository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val oppgaveRepository by inject<OppgaveRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()

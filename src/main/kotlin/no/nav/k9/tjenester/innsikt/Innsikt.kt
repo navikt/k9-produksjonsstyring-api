@@ -25,7 +25,7 @@ fun Route.innsiktGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
-    val behandlingProsessEventRepository by inject<BehandlingProsessEventRepository>()
+    val behandlingProsessEventRepository by inject<BehandlingProsessEventK9Repository>()
     val reservasjonRepository by inject<ReservasjonRepository>()
 
     @Location("/")
