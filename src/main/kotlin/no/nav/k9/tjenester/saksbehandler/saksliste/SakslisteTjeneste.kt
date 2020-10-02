@@ -17,7 +17,7 @@ class SakslisteTjeneste @KtorExperimentalAPI constructor(
         return hentOppgaveKøer
             .filter { oppgaveKø ->
                 oppgaveKø.saksbehandlere
-                    .any { saksbehandler -> saksbehandler.epost == coroutineContext.idToken().getUsername() }
+                    .any { saksbehandler -> saksbehandler.epost.toLowerCase() == coroutineContext.idToken().getUsername().toLowerCase() }
             }
             .map { oppgaveKø ->
                 val sortering = SorteringDto(oppgaveKø.sortering, oppgaveKø.fomDato, oppgaveKø.tomDato)
