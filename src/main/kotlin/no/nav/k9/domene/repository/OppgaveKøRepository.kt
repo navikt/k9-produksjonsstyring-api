@@ -13,6 +13,7 @@ import no.nav.k9.tjenester.sse.Melding
 import no.nav.k9.tjenester.sse.SseEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.util.*
 import javax.sql.DataSource
 
@@ -95,6 +96,7 @@ class OppgaveKøRepository(
                 }
                 oppgaveKø = oppgaveKø.copy(kode6 = kode6)
                 //Sorter oppgaver
+                oppgaveKø.sistEndret = LocalDate.now()
                 oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
                 val json = objectMapper().writeValueAsString(oppgaveKø)
                 tx.run(
@@ -129,9 +131,9 @@ class OppgaveKøRepository(
         uuid: UUID,
         f: (OppgaveKø?) -> OppgaveKø
     ) {
-        
+
         var hintRefresh = false
-        
+
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -170,7 +172,7 @@ class OppgaveKøRepository(
 
             }
         }
-        
+
         if (hintRefresh) {
             refreshKlienter.send(
                 SseEvent(
