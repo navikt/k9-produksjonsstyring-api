@@ -77,11 +77,15 @@ fun Route.innsiktGrensesnitt() {
                             +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
                     }
-                    
-                    p {
-                        + "${Databasekall.map}"
+                    ul {
+                        for (mutableEntry in Databasekall.map.entries.toList()
+                            .sortedBy { mutableEntry -> mutableEntry.key }) {
+                            li {
+                                +"${mutableEntry.key}: ${mutableEntry.value} "
+                            }
+                        }
                     }
-                    
+
                 }
             }
         }
