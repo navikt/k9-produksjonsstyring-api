@@ -1,5 +1,6 @@
 package no.nav.k9.domene.repository
 
+import io.ktor.util.*
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -7,8 +8,10 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.K9SakModell
 import no.nav.k9.domene.modell.K9TilbakeModell
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.tjenester.innsikt.Databasekall
 import no.nav.k9.tjenester.innsikt.Mapping
 import java.util.*
+import java.util.concurrent.atomic.LongAdder
 import javax.sql.DataSource
 
 
@@ -25,6 +28,7 @@ class BehandlingProsessEventTilbakeRepository(private val dataSource: DataSource
                     }.asSingle
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){ LongAdder() }.increment()
         if (json.isNullOrEmpty()) {
             return K9SakModell(emptyList())
         }
@@ -63,6 +67,7 @@ class BehandlingProsessEventTilbakeRepository(private val dataSource: DataSource
             }
 
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return objectMapper().readValue(out!!, K9TilbakeModell::class.java)
 
     }
@@ -84,6 +89,7 @@ class BehandlingProsessEventTilbakeRepository(private val dataSource: DataSource
             }
 
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return ider
 
     }
@@ -101,10 +107,12 @@ class BehandlingProsessEventTilbakeRepository(private val dataSource: DataSource
                     }.asSingle
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return  json!!
     }
     
     fun mapMellomeksternIdOgBehandlingsid(): List<Mapping> {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(

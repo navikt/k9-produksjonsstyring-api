@@ -1,6 +1,7 @@
 package no.nav.k9.domene.repository
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.util.*
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -10,18 +11,21 @@ import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleFerdigstilteOppgaver
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
+import no.nav.k9.tjenester.innsikt.Databasekall
 import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import no.nav.k9.utils.Cache
 import no.nav.k9.utils.CacheObject
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.atomic.LongAdder
 import javax.sql.DataSource
 
 class StatistikkRepository(
     private val dataSource: DataSource
 ) {
     fun lagreBehandling(brukerIdent: String, f: (BehandletOppgave?) -> BehandletOppgave) {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){ LongAdder() }.increment()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -56,6 +60,7 @@ class StatistikkRepository(
     }
 
     fun hentBehandlinger(ident: String): List<BehandletOppgave> {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -74,6 +79,7 @@ class StatistikkRepository(
     }
 
     fun lagreFerdigstilt(bt: String, eksternId: UUID) {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 //language=PostgreSQL
@@ -95,6 +101,7 @@ class StatistikkRepository(
     }
 
     fun hentFerdigstilte(): List<AlleFerdigstilteOppgaver> {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -120,6 +127,7 @@ class StatistikkRepository(
         alleOppgaverNyeOgFerdigstilte: AlleOppgaverNyeOgFerdigstilte,
         f: (AlleOppgaverNyeOgFerdigstilte) -> AlleOppgaverNyeOgFerdigstilte
     ) {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -168,6 +176,7 @@ class StatistikkRepository(
 
 
     fun hentFerdigstilteOgNyeHistorikkPerAntallDager(antall: Int): List<AlleOppgaverNyeOgFerdigstilte> {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -191,6 +200,7 @@ class StatistikkRepository(
         }
     }
     fun truncateNyeOgFerdigstilte(){
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -214,6 +224,7 @@ class StatistikkRepository(
             }
         }
 
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -274,6 +285,7 @@ class StatistikkRepository(
 
     fun hentFerdigstilteOgNyeHistorikkSiste8Uker(): List<AlleOppgaverNyeOgFerdigstilte> {
 
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -303,6 +315,7 @@ class StatistikkRepository(
 
     fun hentFerdigstilteOgNyeHistorikkSiste7dager(): List<AlleOppgaverNyeOgFerdigstilte> {
 
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(

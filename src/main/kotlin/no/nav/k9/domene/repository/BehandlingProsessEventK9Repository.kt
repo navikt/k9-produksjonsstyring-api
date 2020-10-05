@@ -1,17 +1,21 @@
 package no.nav.k9.domene.repository
 
+import io.ktor.util.*
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.K9SakModell
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.tjenester.innsikt.Databasekall
 import no.nav.k9.tjenester.innsikt.Mapping
 import java.util.*
+import java.util.concurrent.atomic.LongAdder
 import javax.sql.DataSource
 
 
 class BehandlingProsessEventK9Repository(private val dataSource: DataSource) {
+   
     fun hent(uuid: UUID): K9SakModell {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
@@ -24,6 +28,7 @@ class BehandlingProsessEventK9Repository(private val dataSource: DataSource) {
                     }.asSingle
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         if (json.isNullOrEmpty()) {
             return K9SakModell(emptyList())
         }
@@ -62,6 +67,7 @@ class BehandlingProsessEventK9Repository(private val dataSource: DataSource) {
             }
 
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return objectMapper().readValue(out!!, K9SakModell::class.java)
 
     }
@@ -100,10 +106,12 @@ class BehandlingProsessEventK9Repository(private val dataSource: DataSource) {
                     }.asSingle
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return  json!!
     }
     
     fun mapMellomeksternIdOgBehandlingsid(): List<Mapping> {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(

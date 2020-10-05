@@ -77,6 +77,11 @@ fun Route.innsiktGrensesnitt() {
                             +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
                     }
+                    
+                    p {
+                        + "${Databasekall.map}"
+                    }
+                    
                 }
             }
         }
