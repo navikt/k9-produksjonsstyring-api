@@ -79,7 +79,7 @@ fun Route.innsiktGrensesnitt() {
                     }
                     ul {
                         for (mutableEntry in Databasekall.map.entries.toList()
-                            .sortedBy { mutableEntry -> mutableEntry.key }) {
+                            .sortedByDescending { mutableEntry -> mutableEntry.value.sum() }) {
                             li {
                                 +"${mutableEntry.key}: ${mutableEntry.value} "
                             }
