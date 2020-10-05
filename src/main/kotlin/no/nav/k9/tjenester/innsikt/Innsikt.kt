@@ -77,19 +77,37 @@ fun Route.innsiktGrensesnitt() {
                             +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
                     }
-                    ul {
-                        for (mutableEntry in Databasekall.map.entries.toList()
-                            .sortedByDescending { mutableEntry -> mutableEntry.value.sum() }) {
-                            li {
-                                +"${mutableEntry.key}: ${mutableEntry.value} "
-                            }
-                        }
-                    }
+
 
                 }
             }
         }
     }
+
+    @Location("/db")
+    class db
+    get { _: db ->
+        call.respondHtml {
+
+            head {
+                title { +"Innsikt i k9-los" }
+                styleLink("/static/bootstrap.css")
+                script(src = "/static/script.js") {}
+            }
+            body {
+                ul {
+                    for (mutableEntry in Databasekall.map.entries.toList()
+                        .sortedByDescending { mutableEntry -> mutableEntry.value.sum() }) {
+                        li {
+                            +"${mutableEntry.key}: ${mutableEntry.value} "
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
     @Location("/mapping")
     class mapping
 
@@ -150,7 +168,8 @@ fun Route.innsiktGrensesnitt() {
 
         mutableSet
             .removeAll(oppgaveKøRepository.hentIkkeTaHensyn().flatMap { it.oppgaverOgDatoer }.map { it.id }.toSet())
-        val reservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
+        val reservasjoner =
+            saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
         mutableSet.removeAll(
             reservasjonRepository.hentSelvOmDeIkkeErAktive(reservasjoner.toSet()).filter { it.erAktiv() }
                 .map { it.oppgave })
