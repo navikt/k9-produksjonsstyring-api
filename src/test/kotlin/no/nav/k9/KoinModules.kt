@@ -9,6 +9,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import kotlinx.coroutines.channels.Channel
+import no.nav.k9.aksjonspunktbehandling.K9TilbakeEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -117,7 +118,20 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
     single {
         K9sakEventHandler(
             get(),
-            BehandlingProsessEventRepository(dataSource = get()),
+            BehandlingProsessEventK9Repository(dataSource = get()),
+            config = config,
+            sakOgBehandlingProducer = sakOgBehadlingProducer,
+            oppgaveKøRepository = get(),
+            reservasjonRepository = get(),
+            statistikkProducer = statistikkProducer,
+            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkRepository = get(), saksbehhandlerRepository = get()
+        )
+    }
+    single {
+        K9TilbakeEventHandler(
+            get(),
+            BehandlingProsessEventTilbakeRepository(dataSource = get()),
             config = config,
             sakOgBehandlingProducer = sakOgBehadlingProducer,
             oppgaveKøRepository = get(),

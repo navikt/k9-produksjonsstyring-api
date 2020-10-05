@@ -310,6 +310,7 @@ enum class BehandlingType(override val kode: String, override val navn: String, 
     KLAGE("BT-003", "Klage", "ae0058"),
     REVURDERING("BT-004", "Revurdering", "ae0028"),
     INNSYN("BT-006", "Innsyn", "ae0042"),
+    TILBAKE("BT-007", "Tilbakekreving", ""),
     ANKE("BT-008", "Anke", "ae0046");
 
     companion object {

@@ -1,6 +1,7 @@
 package no.nav.k9.domene.repository
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.util.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
@@ -8,11 +9,13 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.tjenester.innsikt.Databasekall
 import no.nav.k9.tjenester.sse.Melding
 import no.nav.k9.tjenester.sse.SseEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.atomic.LongAdder
 import javax.sql.DataSource
 
 class ReservasjonRepository(
@@ -59,7 +62,9 @@ class ReservasjonRepository(
                         row.string("data")
                     }.asList
             )
-        }
+        }         
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){ LongAdder() }.increment()
+
         val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
         return reservasjoner
     }
@@ -100,6 +105,8 @@ class ReservasjonRepository(
                 }
             }
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return reservasjoner.filter { it.erAktiv() }
     }
 
@@ -114,6 +121,8 @@ class ReservasjonRepository(
                 }.asSingle
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return objectMapper().readValue(json!!, Reservasjon::class.java)
     }
 
@@ -128,6 +137,8 @@ class ReservasjonRepository(
                 }.asSingle
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return objectMapper().readValue(json!!)
     }
 
@@ -142,6 +153,8 @@ class ReservasjonRepository(
                 }.asSingle
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return json != null
     }
 
@@ -186,6 +199,8 @@ class ReservasjonRepository(
                 }
             }
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return reservasjon!!
     }
 }

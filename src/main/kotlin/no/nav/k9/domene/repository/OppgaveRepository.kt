@@ -15,12 +15,14 @@ import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleApneBehandlinger
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
+import no.nav.k9.tjenester.innsikt.Databasekall
 import no.nav.k9.tjenester.mock.Aksjonspunkt
 import no.nav.k9.utils.Cache
 import no.nav.k9.utils.CacheObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.atomic.LongAdder
 import javax.sql.DataSource
 
 
@@ -46,12 +48,15 @@ class OppgaveRepository(
         spørring = System.currentTimeMillis() - spørring
         val serialisering = System.currentTimeMillis()
         val list = json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.toList()
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){ LongAdder() }.increment()
 
         log.info("Henter: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         return list
     }
 
     fun hent(uuid: UUID): Oppgave {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         try {
             val json: String? = using(sessionOf(dataSource)) {
                 it.run(
@@ -83,6 +88,8 @@ class OppgaveRepository(
 
     @KtorExperimentalAPI
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -146,6 +153,7 @@ class OppgaveRepository(
                     }.asList
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
 
         return json.filter { it.indexOf("oppgaver") == -1 }
             .map { s -> objectMapper().readValue(s, Oppgave::class.java) }
@@ -178,6 +186,8 @@ class OppgaveRepository(
                         }.asList
                 )
             }
+            Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
             return json
         } catch (e: Exception) {
             log.error("", e)
@@ -206,6 +216,8 @@ class OppgaveRepository(
                         }.asList
                 )
             }
+            Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
             return json
         } catch (e: Exception) {
             log.error("", e)
@@ -231,6 +243,8 @@ class OppgaveRepository(
         val oppgaver =
             json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.filter { it.kode6 == kode6 }.toList()
         oppgaver.forEach { refreshOppgave.offer(it) }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return oppgaver
     }
 
@@ -251,6 +265,8 @@ class OppgaveRepository(
         }
         val oppgaver = json.map { objectMapper().readValue(it, Oppgave::class.java) }.filter { it.kode6 == kode6 }
         oppgaver.forEach { refreshOppgave.offer(it) }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return oppgaver
     }
 
@@ -270,6 +286,8 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         log.info("Teller aktive oppgaver: $spørring ms")
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return count!!
     }
 
@@ -289,6 +307,8 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         log.info("Teller aktive oppgaver: $spørring ms")
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return count!!
     }
 
@@ -309,6 +329,8 @@ class OppgaveRepository(
             )
         }
         return count!!
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
     }
 
     internal fun hentAvsluttede(): Int {
@@ -326,6 +348,8 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         log.info("Teller inaktive oppgaver: $spørring ms")
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return count!!
     }
 
@@ -344,6 +368,8 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         log.info("Teller inaktive oppgaver: $spørring ms")
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return count!!
     }
 
@@ -363,6 +389,8 @@ class OppgaveRepository(
         }
         spørring = System.currentTimeMillis() - spørring
         log.info("Teller automatiske oppgaver: $spørring ms")
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return count!!
     }
 
@@ -391,10 +419,13 @@ class OppgaveRepository(
 
         log.info("Henter aktive oppgaver: " + list.size + " oppgaver" + " serialisering: " + (System.currentTimeMillis() - serialisering) + " spørring: " + spørring)
         aktiveOppgaverCache.set("default", CacheObject(list))
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return list
     }
 
     internal fun hentAktiveOppgaversAksjonspunktliste(): List<Aksjonspunkt> {
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
 
         val json: List<List<Aksjonspunkt>> = using(sessionOf(dataSource)) {
             it.run(

@@ -80,8 +80,8 @@ class StatistikkRepositoryTest : KoinTest {
             it
         }
         val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker()
-        val omsorgspenger = hentFerdigstilte.reversed().take(25).filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
-        assert(omsorgspenger.size == 5)
+        val omsorgspenger = hentFerdigstilte.reversed().take(30).filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
+        assert(omsorgspenger.size == 6)
         assert(omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size == 1)
 
     }

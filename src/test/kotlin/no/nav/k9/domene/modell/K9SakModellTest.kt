@@ -16,7 +16,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-class ModellTest {
+class K9SakModellTest {
 
     private val uuid = UUID.randomUUID()
 
@@ -39,7 +39,7 @@ class ModellTest {
             opprettetBehandling = LocalDateTime.now(),
             aksjonspunktKoderMedStatusListe = mutableMapOf()
         )
-        val modell = Modell(
+        val modell = K9SakModell(
             eventer = listOf(
                 eventDto
             )
@@ -81,7 +81,7 @@ class ModellTest {
             opprettetBehandling = LocalDateTime.now(),
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktDefinisjon.FATTER_VEDTAK.kode to AksjonspunktStatus.OPPRETTET.kode)
         )
-        val modell = Modell(
+        val modell = K9SakModell(
             eventer = listOf(
                 eventDto
             )
@@ -110,7 +110,7 @@ class ModellTest {
             opprettetBehandling = LocalDateTime.now(),
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktDefinisjon.FATTER_VEDTAK.kode to AksjonspunktStatus.UTFØRT.kode)
         )
-        val modell = Modell(
+        val modell = K9SakModell(
             eventer = listOf(
                 eventDto
             )
@@ -140,7 +140,7 @@ class ModellTest {
             opprettetBehandling = LocalDateTime.now(),
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktDefinisjon.FATTER_VEDTAK.kode to AksjonspunktStatus.AVBRUTT.kode)
         )
-        val modell = Modell(
+        val modell = K9SakModell(
             eventer = listOf(
                 eventDto
             )
@@ -169,7 +169,7 @@ class ModellTest {
             opprettetBehandling = LocalDateTime.now(),
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE to AksjonspunktStatus.OPPRETTET.kode)
         )
-        val modell = Modell(
+        val modell = K9SakModell(
             eventer = listOf(
                 eventDto
             )
@@ -198,7 +198,7 @@ class ModellTest {
             opprettetBehandling = LocalDateTime.now(),
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE to AksjonspunktStatus.OPPRETTET.kode)
         )
-        val modell = Modell(
+        val modell = K9SakModell(
             eventer = listOf(
                 eventDto
             )
@@ -228,7 +228,7 @@ class ModellTest {
             opprettetBehandling = LocalDateTime.now(),
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.VURDER_ÅRSKVANTUM_KVOTE to AksjonspunktStatus.OPPRETTET.kode)
         )
-        val modell = Modell(
+        val modell = K9SakModell(
             eventer = listOf(
                 eventDto
             )
@@ -257,7 +257,7 @@ class ModellTest {
             opprettetBehandling = LocalDateTime.now(),
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.AVKLAR_FORTSATT_MEDLEMSKAP_KODE to AksjonspunktStatus.OPPRETTET.kode)
         )
-        val modell = Modell(
+        val modell = K9SakModell(
             eventer = listOf(
                 eventDto
             )

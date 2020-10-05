@@ -12,17 +12,17 @@ import kotlin.system.measureTimeMillis
 
 
 fun Application.rekjørForGrafer(
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
     statistikkRepository: StatistikkRepository
 ) {
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-        val alleEventerIder = behandlingProsessEventRepository.hentAlleEventerIder()
+        val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
         statistikkRepository.truncateNyeOgFerdigstilte()
         for ((index, eventId) in alleEventerIder.withIndex()) {
             if (index % 1000 == 0) {
                 log.info("""Ferdig med $index av ${alleEventerIder.size}""")
             }
-            for (modell in behandlingProsessEventRepository.hent(UUID.fromString(eventId)).alleVersjoner()) {
+            for (modell in behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()) {
                 val oppgave = modell.oppgave()
                 if (modell.starterSak()) {
                     if (oppgave.aktiv) {
@@ -71,7 +71,7 @@ fun Application.rekjørForGrafer(
 @KtorExperimentalAPI
  fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
-    behandlingProsessEventRepository: BehandlingProsessEventRepository,
+    behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
     reservasjonRepository: ReservasjonRepository,
     oppgaveKøRepository: OppgaveKøRepository,
     saksbehhandlerRepository: SaksbehandlerRepository
@@ -83,7 +83,7 @@ fun Application.rekjørForGrafer(
             val measureTimeMillis = measureTimeMillis {
                 val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
                 for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
-                    val event = behandlingProsessEventRepository.hent(aktivOppgave.eksternId)
+                    val event = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
                     val oppgave = event.oppgave()
                     if (!oppgave.aktiv) {
                         if (reservasjonRepository.finnes(oppgave.eksternId)) {

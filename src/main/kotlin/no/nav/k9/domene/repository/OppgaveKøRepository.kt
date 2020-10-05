@@ -9,12 +9,14 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.OppgaveIdMedDato
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.integrasjon.abac.IPepClient
+import no.nav.k9.tjenester.innsikt.Databasekall
 import no.nav.k9.tjenester.sse.Melding
 import no.nav.k9.tjenester.sse.SseEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.*
+import java.util.concurrent.atomic.LongAdder
 import javax.sql.DataSource
 
 class OppgaveKøRepository(
@@ -37,6 +39,8 @@ class OppgaveKøRepository(
                     }.asList
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){ LongAdder() }.increment()
+
         return json.map { s -> objectMapper().readValue(s, OppgaveKø::class.java) }.toList()
     }
 
@@ -52,6 +56,8 @@ class OppgaveKøRepository(
                     }.asList
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return json.map { s -> objectMapper().readValue(s, OppgaveKø::class.java) }.toList()
     }
 
@@ -66,6 +72,8 @@ class OppgaveKøRepository(
                 }.asSingle
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
         return objectMapper().readValue(json!!, OppgaveKø::class.java)
     }
 
@@ -124,6 +132,7 @@ class OppgaveKøRepository(
                 )
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
     }
 
     @KtorExperimentalAPI
@@ -185,6 +194,8 @@ class OppgaveKøRepository(
                 )
             )
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
     }
 
     suspend fun slett(id: UUID) {
@@ -201,6 +212,8 @@ class OppgaveKøRepository(
                 )
             }
         }
+        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
     }
 
     suspend fun oppdaterKøMedOppgaver(uuid: UUID) {

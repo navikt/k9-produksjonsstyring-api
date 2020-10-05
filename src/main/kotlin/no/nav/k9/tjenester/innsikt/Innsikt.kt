@@ -25,7 +25,7 @@ fun Route.innsiktGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
-    val behandlingProsessEventRepository by inject<BehandlingProsessEventRepository>()
+    val behandlingProsessEventRepository by inject<BehandlingProsessEventK9Repository>()
     val reservasjonRepository by inject<ReservasjonRepository>()
 
     @Location("/")
@@ -53,15 +53,15 @@ fun Route.innsiktGrensesnitt() {
                     val automatiskProsesserteTotalt = oppgaveRepository.hentAutomatiskProsesserteTotalt()
                     val aksjonspunkter = oppgaveRepository.hentAktiveOppgaversAksjonspunktliste()
                     val oppgaverTotaltAktive = oppgaveRepository.hentAktiveOppgaverTotaltIkkeSkjermede()
-                    val s = behandlingProsessEventRepository.eldsteEventTid()
+                    val eldsteEventTidspunkt = behandlingProsessEventRepository.eldsteEventTid()
                     p {
                         +"Det er nå ${aksjonspunkter.sumBy { it.antall }} åpne aksjonspunkter fordelt på $oppgaverTotaltAktive oppgaver, $inaktiveIkkeAvsluttedeOppgaver inaktive med annen status enn avsluttet og $avsluttede med status avsluttet, $automatiskProsesserteTotalt er prosessert automatisk"
                     }
                     p {
-                        +"Totalt ${aksjonspunkter.sumBy { it.antall } + inaktiveIkkeAvsluttedeOppgaver + avsluttede}"
+                        +"Totalt ${oppgaverTotaltAktive + inaktiveIkkeAvsluttedeOppgaver + avsluttede}"
                     }
                     p {
-                        +"Eldste eventTid kom ${s}"
+                        +"Eldste eventTid kom $eldsteEventTidspunkt"
                     }
                     val list =
                         oppgaveKøRepository.hentIkkeTaHensyn().filter { !it.kode6 }.map { it.oppgaverOgDatoer.size }
@@ -77,6 +77,15 @@ fun Route.innsiktGrensesnitt() {
                             +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
                     }
+                    ul {
+                        for (mutableEntry in Databasekall.map.entries.toList()
+                            .sortedByDescending { mutableEntry -> mutableEntry.value.sum() }) {
+                            li {
+                                +"${mutableEntry.key}: ${mutableEntry.value} "
+                            }
+                        }
+                    }
+
                 }
             }
         }
