@@ -427,7 +427,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         val oppgavekø = oppgaveKøRepository.hentOppgavekø(oppgavekøId)
         var reserverteOppgaverSomHørerTilKø = 0
         if (taMedReserverte) {
-            val reservasjoner = reservasjonRepository.hent(
+            val reservasjoner = reservasjonRepository.hentSelvOmDeIkkeErAktive(
                 saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn()
                     .flatMap { saksbehandler -> saksbehandler.reservasjoner }.toSet()
             )

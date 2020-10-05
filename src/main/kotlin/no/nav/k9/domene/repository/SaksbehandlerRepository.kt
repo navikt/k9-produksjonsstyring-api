@@ -329,7 +329,6 @@ class SaksbehandlerRepository(
     }
 
     private fun mapSaksbehandler(row: Row): Saksbehandler {
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         val data = row.stringOrNull("data")
         return if (data == null) {
             Saksbehandler(

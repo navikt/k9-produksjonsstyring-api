@@ -1,7 +1,6 @@
 package no.nav.k9.domene.repository
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.util.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
@@ -105,8 +104,7 @@ class ReservasjonRepository(
                 }
             }
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
-
+      
         return reservasjoner.filter { it.erAktiv() }
     }
 
