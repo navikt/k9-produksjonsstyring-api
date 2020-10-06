@@ -188,7 +188,7 @@ class OppgaveKøRepository(
                 if (!endring) {
                     log.info("Ingen endring i oppgavekø " + oppgaveKø.navn)
                     gjennomførteTransaksjon = false
-                    throw RuntimeException() //Rollback
+                    return@transaction
                 }
                 //Sorter oppgaver
                 oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
@@ -263,7 +263,7 @@ class OppgaveKøRepository(
                 if (json == gammelJson) {
                     log.info("Ingen endring i oppgavekø " + oppgaveKø.navn)
                     gjennomførteTransaksjon = false
-                    throw RuntimeException() //Rollback
+                    return@transaction 
                 }
                 tx.run(
                     queryOf(
