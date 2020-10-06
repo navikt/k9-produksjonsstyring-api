@@ -63,9 +63,7 @@ private suspend fun oppdaterKø(
         for (oppgave in aktiveOppgaver) {
             if (kø.kode6 == oppgave.kode6) {
                 kø.leggOppgaveTilEllerFjernFraKø(
-                    oppgave = oppgave,
-                    reservasjonRepository = reservasjonRepository,
-                    taHensynTilReservasjon = false
+                    oppgave = oppgave
                 )
             }
         }
@@ -78,9 +76,7 @@ private suspend fun oppdaterKø(
                 for (oppgave in aktiveOppgaver) {
                     if (kø.kode6 == oppgave.kode6) {
                         oppgaveKø.leggOppgaveTilEllerFjernFraKø(
-                            oppgave = oppgave,
-                            reservasjonRepository = reservasjonRepository,
-                            taHensynTilReservasjon = false
+                            oppgave = oppgave
                         )
                     }
                 }

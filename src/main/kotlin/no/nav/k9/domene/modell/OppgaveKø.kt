@@ -31,13 +31,11 @@ data class OppgaveKø(
 
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
-        reservasjonRepository: ReservasjonRepository,
-        taHensynTilReservasjon: Boolean = true
+        reservasjonRepository: ReservasjonRepository? = null
     ): Boolean {
         if (tilhørerOppgaveTilKø(
                 oppgave = oppgave,
-                reservasjonRepository = reservasjonRepository,
-                taHensynTilReservasjon = taHensynTilReservasjon
+                reservasjonRepository = reservasjonRepository
             )
         ) {
             if (this.oppgaverOgDatoer.none { it.id == oppgave.eksternId }) {
@@ -64,14 +62,13 @@ data class OppgaveKø(
 
     fun tilhørerOppgaveTilKø(
         oppgave: Oppgave,
-        reservasjonRepository: ReservasjonRepository,
-        taHensynTilReservasjon: Boolean = true
+        reservasjonRepository: ReservasjonRepository?
     ): Boolean {
         if (!oppgave.aktiv) {
             return false
         }
 
-        if (taHensynTilReservasjon && erOppgavenReservert(reservasjonRepository, oppgave)) {
+        if (reservasjonRepository!=null && erOppgavenReservert(reservasjonRepository, oppgave)) {
             return false
         }
         if (!erInnenforOppgavekøensPeriode(oppgave)) {

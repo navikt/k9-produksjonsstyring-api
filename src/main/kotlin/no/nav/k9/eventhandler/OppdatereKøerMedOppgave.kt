@@ -56,21 +56,8 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     statistikkRefreshChannel: SendChannel<Boolean>,
 ): Long {
     return measureTimeMillis {
-        for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
-            oppgaveKøRepository.lagreIkkeTaHensyn(
-                oppgavekø.id
-            ) {
-                for (oppgave in oppgaveListe) {
-                    if (oppgave.kode6 == oppgavekø.kode6) {
-                        it!!.leggOppgaveTilEllerFjernFraKø(
-                            oppgave,
-                            reservasjonRepository = reservasjonRepository
-                        )
-                    }
-                }
-                it!!
-            }
-            oppgavekø.oppgaverOgDatoer.take(20).forEach { oppgaveRefreshChannel.send(it.id)}
+        for (oppgavekø in oppgaveKøRepository.hentKøIdIkkeTaHensyn()) {
+            oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, oppgaveListe)
             statistikkRefreshChannel.send(true)
         }
     }

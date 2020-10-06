@@ -2,10 +2,12 @@ package no.nav.k9.domene.repository
 
 import io.ktor.util.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.OppgaveIdMedDato
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.integrasjon.abac.IPepClient
@@ -23,6 +25,7 @@ class OppgaveKøRepository(
     private val dataSource: DataSource,
     private val oppgaveKøOppdatert: Channel<UUID>,
     private val refreshKlienter: Channel<SseEvent>,
+    private val oppgaveRefreshChannel: Channel<UUID>,
     private val pepClient: IPepClient
 ) {
     private val log: Logger = LoggerFactory.getLogger(OppgaveKøRepository::class.java)
@@ -63,6 +66,24 @@ class OppgaveKøRepository(
         return json.map { s -> objectMapper().readValue(s, OppgaveKø::class.java) }.toList()
     }
 
+    fun hentKøIdIkkeTaHensyn(): List<UUID> {
+        val uuidListe: List<UUID> = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select id from oppgaveko",
+                    mapOf()
+                )
+                    .map { row ->
+                        UUID.fromString(row.string("id"))
+                    }.asList
+            )
+        }
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
+
+        return uuidListe
+    }
+    
     fun hentOppgavekø(id: UUID): OppgaveKø {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
@@ -139,6 +160,73 @@ class OppgaveKøRepository(
             .increment()
     }
 
+    suspend fun leggTilOppgaverTilKø(køUUID: UUID, oppgaver: List<Oppgave>) {
+        var hintRefresh = false
+        var gjennomførteTransaksjon = true
+        using(sessionOf(dataSource)) {
+            it.transaction { tx ->
+                val gammelJson = tx.run(
+                    queryOf(
+                        "select data from oppgaveko where id = :id  for update",
+                        mapOf("id" to køUUID.toString())
+                    )
+                        .map { row ->
+                            row.string("data")
+                        }.asSingle
+                )
+                val oppgaveKø =  objectMapper().readValue(gammelJson, OppgaveKø::class.java)
+                val første20OppgaverSomVar= oppgaveKø.oppgaverOgDatoer.take(20).toList()
+                
+                var endring = false
+                for (oppgave in oppgaver) {
+                    if (oppgaveKø.kode6 == oppgave.kode6) {
+                        endring = endring || oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                            oppgave = oppgave
+                        )
+                    }
+                }
+                if (!endring) {
+                    log.info("Ingen endring i oppgavekø " + oppgaveKø.navn)
+                    gjennomførteTransaksjon = false
+                    throw RuntimeException() //Rollback
+                }
+                //Sorter oppgaver
+                oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
+                hintRefresh = første20OppgaverSomVar != oppgaveKø.oppgaverOgDatoer.take(20).toList()
+                oppgaveKø.oppgaverOgDatoer.take(20).forEach { runBlocking { oppgaveRefreshChannel.send(it.id) }}
+                tx.run(
+                    queryOf(
+                        """
+                        insert into oppgaveko as k (id, data, skjermet)
+                        values (:id, :data :: jsonb, :skjermet)
+                        on conflict (id) do update
+                        set data = :data :: jsonb
+                     """, mapOf("id" to køUUID.toString(), "data" to objectMapper().writeValueAsString(oppgaveKø))
+                    ).asUpdate
+                )
+
+            }
+        }
+
+        if (hintRefresh) {
+            
+            refreshKlienter.send(
+                SseEvent(
+                    objectMapper().writeValueAsString(
+                        Melding(
+                            "oppdaterTilBehandling",
+                            køUUID.toString()
+                        )
+                    )
+                )
+            )
+        }
+        if (gjennomførteTransaksjon) {
+            Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+                .increment()
+        }
+    }
+    
     @KtorExperimentalAPI
     suspend fun lagreIkkeTaHensyn(
         uuid: UUID,

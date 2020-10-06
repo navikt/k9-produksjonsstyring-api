@@ -44,6 +44,7 @@ class RutinerTest {
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaveRefresh = Channel<UUID>(100)
         val oppgaverSomSkalInnPåKøer = Channel<Oppgave>(100)
         val oppgaverRefresh = Channel<Oppgave>(100)
         val refreshKlienter = Channel<SseEvent>(100)
@@ -56,6 +57,7 @@ class RutinerTest {
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
+            oppgaveRefreshChannel = oppgaveRefresh,
             pepClient = PepClientLocal()
         )
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)

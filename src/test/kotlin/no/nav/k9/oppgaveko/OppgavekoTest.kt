@@ -16,7 +16,6 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
-import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
@@ -44,6 +43,7 @@ class OppgavekoTest :KoinTest{
         val dataSource = pg.postgresDatabase
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaverRefreshOppdatert = Channel<UUID>(100)
         val refreshKlienter = Channel<SseEvent>(10000)
         val oppgaverRefresh = Channel<Oppgave>(10000)
 
@@ -53,6 +53,7 @@ class OppgavekoTest :KoinTest{
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
+            oppgaveRefreshChannel = oppgaverRefreshOppdatert,            
             pepClient = PepClientLocal()
         )
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,

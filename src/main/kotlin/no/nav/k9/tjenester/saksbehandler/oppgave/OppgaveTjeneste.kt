@@ -433,7 +433,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             )
 
             for (oppgave in oppgaveRepository.hentOppgaver(reservasjoner.map { it.oppgave })) {
-                if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository, false)) {
+                if (oppgavekø.tilhørerOppgaveTilKø(oppgave, reservasjonRepository)) {
                     reserverteOppgaverSomHørerTilKø++
                 }
             }

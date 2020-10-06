@@ -48,6 +48,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         coEvery { pepClient.erSakKode6(any()) } returns false
         coEvery { pepClient.erSakKode7EllerEgenAnsatt(any()) } returns false
         val oppgaveKøOppdatert = Channel<UUID>(1)
+        val oppgaveRefreshOppdatert = Channel<UUID>(100)
         val refreshKlienter = Channel<SseEvent>(1000)
 
         val oppgaveRepository = get<OppgaveRepository>()
@@ -55,6 +56,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             dataSource = get(),
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
+            oppgaveRefreshChannel = oppgaveRefreshOppdatert,
             pepClient = pepClient
         )
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = get(),
@@ -179,12 +181,14 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
         val oppgaverRefresh = Channel<Oppgave>(1000)
+        val oppgaveRefreshOppdatert = Channel<UUID>(100)
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource,pepClient = PepClientLocal(), refreshOppgave = oppgaverRefresh)
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
+            oppgaveRefreshChannel = oppgaveRefreshOppdatert,
             pepClient = PepClientLocal()
         )
         val pdlService = mockk<PdlService>()
@@ -272,6 +276,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         runMigration(dataSource)
         val oppgaveKøOppdatert = Channel<UUID>(1)
         val refreshKlienter = Channel<SseEvent>(1000)
+        val oppgaveRefreshOppdatert = Channel<UUID>(100)
 
         val oppgaverRefresh = Channel<Oppgave>(1000)
 
@@ -280,6 +285,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
+            oppgaveRefreshChannel = oppgaveRefreshOppdatert,
             pepClient = PepClientLocal()
         )
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,

@@ -89,9 +89,7 @@ class BeslutterSkalIkkePlukkeEgenSakTest : KoinTest {
         )
         
         val nesteOppgaverIKø = runBlocking {
-            oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave,
-                reservasjonRepository = get(),
-                taHensynTilReservasjon = false)
+            oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave)
             
             oppgaveKøRepository.lagreIkkeTaHensyn(oppgaveKø.id) {
                 oppgaveKø

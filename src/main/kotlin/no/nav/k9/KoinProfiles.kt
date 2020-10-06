@@ -86,6 +86,7 @@ fun common(app: Application, config: Configuration) = module {
             dataSource = get(),
             oppgaveKøOppdatert = get(named("oppgaveKøOppdatert")),
             refreshKlienter = get(named("refreshKlienter")),
+            oppgaveRefreshChannel = get(named("oppgaveRefreshChannel")),
             pepClient = get()
         )
     }
