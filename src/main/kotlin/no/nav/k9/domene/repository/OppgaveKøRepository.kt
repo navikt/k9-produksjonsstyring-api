@@ -145,7 +145,7 @@ class OppgaveKøRepository(
 
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
-                val run = tx.run(
+                val gammelJson = tx.run(
                     queryOf(
                         "select data from oppgaveko where id = :id  for update",
                         mapOf("id" to uuid.toString())
@@ -156,8 +156,8 @@ class OppgaveKøRepository(
                 )
                 val første20OppgaverSomVar: List<OppgaveIdMedDato>
                 val forrigeOppgavekø: OppgaveKø?
-                val oppgaveKø = if (!run.isNullOrEmpty()) {
-                    forrigeOppgavekø = objectMapper().readValue(run, OppgaveKø::class.java)
+                val oppgaveKø = if (!gammelJson.isNullOrEmpty()) {
+                    forrigeOppgavekø = objectMapper().readValue(gammelJson, OppgaveKø::class.java)
                     første20OppgaverSomVar = forrigeOppgavekø.oppgaverOgDatoer.take(20)
                     f(forrigeOppgavekø)
                 } else {
@@ -168,6 +168,9 @@ class OppgaveKøRepository(
                 oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
                 hintRefresh = første20OppgaverSomVar != oppgaveKø.oppgaverOgDatoer.take(20)
                 val json = objectMapper().writeValueAsString(oppgaveKø)
+                if (json == gammelJson) {
+                    throw RuntimeException() //Rollback
+                }
                 tx.run(
                     queryOf(
                         """
@@ -195,7 +198,6 @@ class OppgaveKøRepository(
             )
         }
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
-
     }
 
     suspend fun slett(id: UUID) {

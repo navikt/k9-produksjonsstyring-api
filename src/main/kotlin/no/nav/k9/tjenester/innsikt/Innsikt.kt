@@ -33,7 +33,6 @@ fun Route.innsiktGrensesnitt() {
 
     get { _: main ->
         call.respondHtml {
-
             head {
                 title { +"Innsikt i k9-los" }
                 styleLink("/static/bootstrap.css")
@@ -106,8 +105,7 @@ fun Route.innsiktGrensesnitt() {
             }
         }
     }
-
-
+    
     @Location("/mapping")
     class mapping
 
