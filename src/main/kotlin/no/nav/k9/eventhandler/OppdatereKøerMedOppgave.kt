@@ -57,13 +57,6 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
 ): Long {
     return measureTimeMillis {
         for (oppgavekø in oppgaveKøRepository.hentIkkeTaHensyn()) {
-            var refresh = false
-            for (o in oppgaveListe) {
-                refresh = refresh || oppgavekø.leggOppgaveTilEllerFjernFraKø(
-                    o,
-                    reservasjonRepository = reservasjonRepository
-                )
-            }
             oppgaveKøRepository.lagreIkkeTaHensyn(
                 oppgavekø.id
             ) {

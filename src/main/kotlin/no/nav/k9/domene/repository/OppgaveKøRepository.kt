@@ -169,6 +169,7 @@ class OppgaveKøRepository(
                 hintRefresh = første20OppgaverSomVar != oppgaveKø.oppgaverOgDatoer.take(20)
                 val json = objectMapper().writeValueAsString(oppgaveKø)
                 if (json == gammelJson) {
+                    log.info("Ingen endring i oppgavekø " + oppgaveKø.navn)
                     throw RuntimeException() //Rollback
                 }
                 tx.run(
