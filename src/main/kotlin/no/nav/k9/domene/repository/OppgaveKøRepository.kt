@@ -39,7 +39,8 @@ class OppgaveKøRepository(
                     }.asList
             )
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){ LongAdder() }.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
 
         return json.map { s -> objectMapper().readValue(s, OppgaveKø::class.java) }.toList()
     }
@@ -56,7 +57,8 @@ class OppgaveKøRepository(
                     }.asList
             )
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
 
         return json.map { s -> objectMapper().readValue(s, OppgaveKø::class.java) }.toList()
     }
@@ -72,7 +74,8 @@ class OppgaveKøRepository(
                 }.asSingle
             )
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
 
         return objectMapper().readValue(json!!, OppgaveKø::class.java)
     }
@@ -132,7 +135,8 @@ class OppgaveKøRepository(
                 )
             )
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
     }
 
     @KtorExperimentalAPI
@@ -142,7 +146,7 @@ class OppgaveKøRepository(
     ) {
 
         var hintRefresh = false
-
+        var gjennomførteTransaksjon = true
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val gammelJson = tx.run(
@@ -170,6 +174,7 @@ class OppgaveKøRepository(
                 val json = objectMapper().writeValueAsString(oppgaveKø)
                 if (json == gammelJson) {
                     log.info("Ingen endring i oppgavekø " + oppgaveKø.navn)
+                    gjennomførteTransaksjon = false
                     throw RuntimeException() //Rollback
                 }
                 tx.run(
@@ -198,7 +203,10 @@ class OppgaveKøRepository(
                 )
             )
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        if (gjennomførteTransaksjon) {
+            Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+                .increment()
+        }
     }
 
     suspend fun slett(id: UUID) {
@@ -215,7 +223,8 @@ class OppgaveKøRepository(
                 )
             }
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
 
     }
 
