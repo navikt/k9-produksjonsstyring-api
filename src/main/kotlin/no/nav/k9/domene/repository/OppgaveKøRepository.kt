@@ -186,7 +186,6 @@ class OppgaveKøRepository(
                     }
                 }
                 if (!endring) {
-                    log.info("Ingen endring i oppgavekø " + oppgaveKø.navn)
                     gjennomførteTransaksjon = false
                     return@transaction
                 }
