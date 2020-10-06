@@ -14,7 +14,7 @@ fun sjekkReserverteJobb(
 ): Timer {
     return fixedRateTimer(
         name = "sjekkReserverteTimer", daemon = true,
-        initialDelay = 0, period = 300 * 1000
+        initialDelay = 0, period = 900 * 1000
     ) {
         val reservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
         runBlocking { reservasjonRepository.hent(reservasjoner.toSet()) }
