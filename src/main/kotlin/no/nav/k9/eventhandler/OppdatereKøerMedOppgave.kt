@@ -57,7 +57,7 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
 ): Long {
     return measureTimeMillis {
         for (oppgavekø in oppgaveKøRepository.hentKøIdIkkeTaHensyn()) {
-            oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, oppgaveListe)
+            oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, oppgaveListe, reservasjonRepository)
             statistikkRefreshChannel.send(true)
         }
     }

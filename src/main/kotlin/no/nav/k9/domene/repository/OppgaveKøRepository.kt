@@ -160,7 +160,7 @@ class OppgaveKøRepository(
             .increment()
     }
 
-    suspend fun leggTilOppgaverTilKø(køUUID: UUID, oppgaver: List<Oppgave>) {
+    suspend fun leggTilOppgaverTilKø(køUUID: UUID, oppgaver: List<Oppgave>,reservasjonRepository: ReservasjonRepository) {
         var hintRefresh = false
         var gjennomførteTransaksjon = true
         using(sessionOf(dataSource)) {
@@ -181,7 +181,8 @@ class OppgaveKøRepository(
                 for (oppgave in oppgaver) {
                     if (oppgaveKø.kode6 == oppgave.kode6) {
                         endring = endring || oppgaveKø.leggOppgaveTilEllerFjernFraKø(
-                            oppgave = oppgave
+                            oppgave = oppgave,
+                            reservasjonRepository = reservasjonRepository
                         )
                     }
                 }
