@@ -32,6 +32,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Bygge JAR
+        env:
+          GITHUB_USERNAME: x-access-token
+          GITHUB_TOKEN: ${{ secrets.KEY }}
         run: |
           ./gradlew test shadowjar
           echo "::set-env name=TAG::$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)"
