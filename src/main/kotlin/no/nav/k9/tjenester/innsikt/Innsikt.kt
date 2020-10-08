@@ -105,7 +105,7 @@ fun Route.innsiktGrensesnitt() {
             }
         }
     }
-    
+
     @Location("/mapping")
     class mapping
 
@@ -178,5 +178,14 @@ fun Route.innsiktGrensesnitt() {
         } else {
             call.respond(oppgaver.size)
         }
+    }
+
+    @Location("/debug")
+    class debug
+    get { _: debug ->
+        val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer("6X6U0")
+        call.respond(oppgaver.map {
+            it.copy(aktorId = "")
+        })
     }
 }
