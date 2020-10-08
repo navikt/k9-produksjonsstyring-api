@@ -123,6 +123,91 @@ class K9sakEventHandlerTest : KoinTest {
 
     @KtorExperimentalAPI
     @Test
+    fun `Skal i beslutter kø bare dersom beslutter aksjonspunktet forekommer alene`() {
+        val k9sakEventHandler = get<K9sakEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
+
+
+        @Language("JSON") val json =
+            """{
+              "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+              "fagsystem": {
+                "kode": "K9SAK",
+                "kodeverk": "FAGSYSTEM"
+              },
+              "saksnummer": "5YC4K",
+              "aktørId": "9906098522415",
+              "behandlingId": 1000001,
+              "eventTid": "2020-02-20T07:38:49",
+              "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+              "behandlinStatus": "UTRED",
+               "behandlingstidFrist": "2020-03-31",
+              "behandlingStatus": "UTRED",
+              "behandlingSteg": "INREG_AVSL",
+              "behandlendeEnhet": "0300",
+              "ytelseTypeKode": "PSB",
+              "behandlingTypeKode": "BT-002",
+              "opprettetBehandling": "2020-02-20T07:38:49",
+              "aksjonspunktKoderMedStatusListe": {
+                "5016": "OPPR",
+                "5080": "OPPR"
+              }
+            }"""
+        val objectMapper = jacksonObjectMapper()
+            .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+
+        val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
+
+        k9sakEventHandler.prosesser(event)
+        val oppgave =
+            oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        assertFalse { oppgave.tilBeslutter }
+    }
+
+    @KtorExperimentalAPI
+    @Test
+    fun `Skal i beslutter kø bare dersom beslutter aksjonspunktet forekommer alene positiv test`() {
+        val k9sakEventHandler = get<K9sakEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
+
+
+        @Language("JSON") val json =
+            """{
+              "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+              "fagsystem": {
+                "kode": "K9SAK",
+                "kodeverk": "FAGSYSTEM"
+              },
+              "saksnummer": "5YC4K",
+              "aktørId": "9906098522415",
+              "behandlingId": 1000001,
+              "eventTid": "2020-02-20T07:38:49",
+              "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+              "behandlinStatus": "UTRED",
+               "behandlingstidFrist": "2020-03-31",
+              "behandlingStatus": "UTRED",
+              "behandlingSteg": "INREG_AVSL",
+              "behandlendeEnhet": "0300",
+              "ytelseTypeKode": "PSB",
+              "behandlingTypeKode": "BT-002",
+              "opprettetBehandling": "2020-02-20T07:38:49",
+              "aksjonspunktKoderMedStatusListe": {
+                "5016": "OPPR"
+              }
+            }"""
+        val objectMapper = jacksonObjectMapper()
+            .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+
+        val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
+
+        k9sakEventHandler.prosesser(event)
+        val oppgave =
+            oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
+        assertTrue { oppgave.tilBeslutter }
+    }
+    
+    @KtorExperimentalAPI
+    @Test
     fun `Skal opprette oppgave dersom 5009`() {
         val k9sakEventHandler = get<K9sakEventHandler>()
         val oppgaveRepository = get<OppgaveRepository>()
@@ -252,47 +337,6 @@ class K9sakEventHandlerTest : KoinTest {
 
     @KtorExperimentalAPI
     @Test
-    fun `Støtte tilbakekreving aksjonspunkt`() {
-        val k9sakEventHandler = get<K9TilbakeEventHandler>()
-        val oppgaveRepository = get<OppgaveRepository>()
-
-        @Language("JSON") val json =
-            """{
-  "eksternId": "29cbdc33-0e59-4559-96a8-c2154bf17e5a",
-  "fagsystem": "FPTILBAKE",
-  "saksnummer": "63P3S",
-  "aktørId": "1073276027910",
-  "behandlingId": null,
-  "eventTid": "2020-09-11T11:50:51.189546",
-  "eventHendelse": "AKSJONSPUNKT_OPPRETTET",
-  "behandlinStatus": null,
-  "behandlingStatus": "UTRED",
-  "behandlingSteg": "FAKTFEILUTSTEG",
-  "behandlendeEnhet": "4863",
-  "ytelseTypeKode": "FRISINN",
-  "behandlingTypeKode": "BT-007",
-  "opprettetBehandling": "2020-09-11T11:50:49.025",
-  "aksjonspunktKoderMedStatusListe": {
-    "5002": "UTFO",
-    "5001": "OPPR"
-  },
-  "href": "/fpsak/fagsak/63P3S/behandling/202/?punkt=default&fakta=default",
-  "førsteFeilutbetaling": "2020-06-01",
-  "feilutbetaltBeløp": 616,
-  "ansvarligSaksbehandlerIdent": null
-}   """
-
-
-        val event = AksjonspunktLagetTilbake().deserialize(null, json.toByteArray())!!
-
-        k9sakEventHandler.prosesser(event)
-        val oppgave =
-            oppgaveRepository.hent(UUID.fromString("29cbdc33-0e59-4559-96a8-c2154bf17e5a"))
-        assertTrue { !oppgave.aktiv }
-    }
-
-    @KtorExperimentalAPI
-    @Test
     fun `Oppgave skal ende opp i kø`() {
         val k9sakEventHandler = get<K9sakEventHandler>()
         val oppgaveRepository = get<OppgaveRepository>()
@@ -350,7 +394,7 @@ class K9sakEventHandlerTest : KoinTest {
                 )
             }
         }
-        
+
         val oppgave =
             oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
         assertTrue { oppgave.aktiv }

@@ -357,7 +357,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
 
     fun tilBeslutter(): Boolean {
         return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }
-            .any { it == AksjonspunktDefinisjon.FATTER_VEDTAK }
+            .all { it == AksjonspunktDefinisjon.FATTER_VEDTAK }
     }
 
     fun eventResultat(): EventResultat {
