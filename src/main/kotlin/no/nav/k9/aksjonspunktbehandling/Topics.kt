@@ -61,18 +61,13 @@ internal class AksjonspunktLaget : SerDes<BehandlingProsessEventDto>() {
     }
 }
 
-internal class AksjonspunktLagetTilbake : SerDes<BehandlingProsessEventDto>() {
-    override fun deserialize(topic: String?, data: ByteArray?): BehandlingProsessEventDto? {
+internal class AksjonspunktLagetTilbake : SerDes<BehandlingProsessEventTilbakeDto>() {
+    override fun deserialize(topic: String?, data: ByteArray?): BehandlingProsessEventTilbakeDto? {
         return data?.let {
             return try {
-                objectMapper.readValue(
-                    objectMapper.writeValueAsBytes(
-                        objectMapper.readValue<BehandlingProsessEventTilbakeDto>(
-                            it
-                        )
-                    )
+                objectMapper.readValue<BehandlingProsessEventTilbakeDto>(
+                    it
                 )
-
             } catch (e: Exception) {
                 log.warn("", e)
                 log.warn(String(it))

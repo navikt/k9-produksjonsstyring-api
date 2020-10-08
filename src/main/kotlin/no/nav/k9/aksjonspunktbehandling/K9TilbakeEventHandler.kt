@@ -9,6 +9,7 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventTilbakeDto
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import org.slf4j.LoggerFactory
@@ -30,10 +31,10 @@ class K9TilbakeEventHandler @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     fun prosesser(
-        event: BehandlingProsessEventDto
+        event: BehandlingProsessEventTilbakeDto
     ) {
         val modell = behandlingProsessEventTilbakeRepository.lagre(event)
-        val oppgave = modell.oppgave()
+        val oppgave = modell.oppgave(modell.sisteEvent())
 
         if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
@@ -54,7 +55,7 @@ class K9TilbakeEventHandler @KtorExperimentalAPI constructor(
                 }
             }
             
-            if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
+            if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave(modell.sisteEvent()).aktiv) {
                 statistikkRepository.lagre(
                     AlleOppgaverNyeOgFerdigstilte(
                         oppgave.fagsakYtelseType,
@@ -67,7 +68,7 @@ class K9TilbakeEventHandler @KtorExperimentalAPI constructor(
                 }
             }
 
-            if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
+            if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave(modell.sisteEvent()).aktiv) {
                 statistikkRepository.lagre(
                     AlleOppgaverNyeOgFerdigstilte(
                         oppgave.fagsakYtelseType,

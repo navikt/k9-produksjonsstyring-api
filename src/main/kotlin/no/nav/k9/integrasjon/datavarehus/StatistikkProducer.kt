@@ -62,7 +62,7 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             return
         }
         runBlocking {
-            if (pepClient.kanSendeSakTilStatistikk(modell.sisteEvent().saksnummer)) {
+            if (pepClient.kanSendeSakTilStatistikk(modell.sisteSaksNummer())) {
                 sendSak(modell.dvhSak())
                 sendBehandling(
                     modell.dvhBehandling(

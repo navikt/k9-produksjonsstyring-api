@@ -24,7 +24,7 @@ data class K9SakModell(
 ) : IModell {
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
 
-    override fun oppgave(sisteEvent: BehandlingProsessEventDto): Oppgave {
+    fun oppgave(sisteEvent: BehandlingProsessEventDto = sisteEvent()): Oppgave {
         val event = sisteEvent
         val eventResultat = sisteEvent.aktiveAksjonspunkt().eventResultat()
 
@@ -129,11 +129,11 @@ data class K9SakModell(
         }
     }
 
-    override fun sisteEvent(): BehandlingProsessEventDto {
+    fun sisteEvent(): BehandlingProsessEventDto {
         return this.eventer[this.eventer.lastIndex]
     }
 
-    override fun forrigeEvent(): BehandlingProsessEventDto? {
+    fun forrigeEvent(): BehandlingProsessEventDto? {
         return if (this.eventer.lastIndex > 0) {
             this.eventer[this.eventer.lastIndex - 1]
         } else {
@@ -141,7 +141,7 @@ data class K9SakModell(
         }
     }
 
-    override fun førsteEvent(): BehandlingProsessEventDto {
+    fun førsteEvent(): BehandlingProsessEventDto {
         return this.eventer[0]
     }
 
@@ -241,6 +241,9 @@ data class K9SakModell(
         return behandlingAvsluttet
     }
 
+    override fun sisteSaksNummer(): String {
+       return sisteEvent().saksnummer
+    }
     override fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
@@ -323,7 +326,7 @@ data class K9SakModell(
     }
 
     // Array med alle versjoner av modell basert på eventene, brukes når man skal spille av eventer
-    override fun alleVersjoner(): MutableList<K9SakModell> {
+    fun alleVersjoner(): MutableList<K9SakModell> {
         val eventListe = mutableListOf<BehandlingProsessEventDto>()
         val modeller = mutableListOf<K9SakModell>()
         for (behandlingProsessEventDto in eventer) {

@@ -8,6 +8,7 @@ import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.modell.K9SakModell
 import no.nav.k9.domene.modell.K9TilbakeModell
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
+import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventTilbakeDto
 import no.nav.k9.tjenester.innsikt.Databasekall
 import no.nav.k9.tjenester.innsikt.Mapping
 import java.util.*
@@ -38,7 +39,7 @@ class BehandlingProsessEventTilbakeRepository(private val dataSource: DataSource
     }
 
     fun lagre(
-        event: BehandlingProsessEventDto
+        event: BehandlingProsessEventTilbakeDto
     ): K9TilbakeModell {
         val json = objectMapper().writeValueAsString(event)
 
