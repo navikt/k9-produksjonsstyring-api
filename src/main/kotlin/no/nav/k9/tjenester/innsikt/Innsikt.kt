@@ -184,6 +184,7 @@ fun Route.innsiktGrensesnitt() {
     class debug
     get { _: debug ->
         val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummerIkkeTaHensyn("6X6U0")
+            .map { behandlingProsessEventRepository.hent(it.eksternId).oppgave() }
         call.respond(oppgaver.map {
             it.copy(aktorId = "")
         })
