@@ -264,6 +264,25 @@ class OppgaveRepository(
         return oppgaver
     }
 
+    @KtorExperimentalAPI
+    suspend fun hentOppgaverMedSaksnummerIkkeTaHensyn(saksnummer: String): List<Oppgave> {
+        val json: List<String> = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select data from oppgave where lower(data ->> 'fagsakSaksnummer') = lower(:saksnummer) ",
+                    mapOf("saksnummer" to saksnummer)
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asList
+            )
+        }
+        val oppgaver = json.map { objectMapper().readValue(it, Oppgave::class.java) }
+       
+        return oppgaver
+    }
+
     internal suspend fun hentAktiveOppgaverTotalt(): Int {
         val kode6 = pepClient.harTilgangTilKode6()
         var spørring = System.currentTimeMillis()

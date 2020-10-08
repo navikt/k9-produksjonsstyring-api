@@ -183,7 +183,7 @@ fun Route.innsiktGrensesnitt() {
     @Location("/debug")
     class debug
     get { _: debug ->
-        val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer("6X6U0")
+        val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummerIkkeTaHensyn("6X6U0")
         call.respond(oppgaver.map {
             it.copy(aktorId = "")
         })
