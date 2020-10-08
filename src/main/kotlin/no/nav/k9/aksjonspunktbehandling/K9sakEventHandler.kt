@@ -34,7 +34,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         event: BehandlingProsessEventDto
     ) {
         val modell = behandlingProsessEventK9Repository.lagre(event)
-        val oppgave = modell.oppgave()
+        val oppgave = modell.oppgave(modell.sisteEvent())
 
         if (modell.fikkEndretAksjonspunkt()) {
             fjernReservasjon(oppgave)
@@ -56,7 +56,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 }
             }
             
-            if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
+            if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave(modell.sisteEvent()).aktiv) {
                 statistikkRepository.lagre(
                     AlleOppgaverNyeOgFerdigstilte(
                         oppgave.fagsakYtelseType,
@@ -69,7 +69,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 }
             }
 
-            if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
+            if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave(modell.sisteEvent()).aktiv) {
                 statistikkRepository.lagre(
                     AlleOppgaverNyeOgFerdigstilte(
                         oppgave.fagsakYtelseType,

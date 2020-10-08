@@ -83,8 +83,8 @@ fun Application.rekjørForGrafer(
             val measureTimeMillis = measureTimeMillis {
                 val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
                 for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
-                    val event = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
-                    val oppgave = event.oppgave()
+                    val modell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
+                    val oppgave = modell.oppgave()
                     if (!oppgave.aktiv) {
                         if (reservasjonRepository.finnes(oppgave.eksternId)) {
                             reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->

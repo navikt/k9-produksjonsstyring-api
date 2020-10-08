@@ -4,7 +4,6 @@ import io.ktor.util.*
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
-import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventTilbakeDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
@@ -19,13 +18,12 @@ import java.time.ZoneId
 import java.util.*
 
 data class K9TilbakeModell(
-    val eventer: List<BehandlingProsessEventDto>
+    val eventer: List<BehandlingProsessEventTilbakeDto>
 ) : IModell{
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
-    override fun oppgave(sisteEvent: BehandlingProsessEventDto): Oppgave {
+    fun oppgave(sisteEvent: BehandlingProsessEventTilbakeDto): Oppgave {
         val event = sisteEvent
         val eventResultat = sisteEvent.aktiveAksjonspunkt().eventResultatTilbake()
-
         var aktiv = true
         var oppgaveAvsluttet: LocalDateTime? = null
         var beslutterOppgave = false
@@ -82,9 +80,9 @@ data class K9TilbakeModell(
             eksternId = event.eksternId ?: UUID.randomUUID(),
             behandlingOpprettet = event.opprettetBehandling,
             oppgaveAvsluttet = oppgaveAvsluttet,
-            system = event.fagsystem.name,
+            system = event.fagsystem,
             oppgaveEgenskap = emptyList(),
-            aksjonspunkter = event.aktiveAksjonspunkt(),
+            aksjonspunkter = Aksjonspunkter(event.aktiveAksjonspunkt().liste),
             utenlands = false,
             tilBeslutter = beslutterOppgave,
             kombinert = false,
@@ -97,7 +95,7 @@ data class K9TilbakeModell(
             avklarMedlemskap = false,
             vurderopptjeningsvilkåret = false,
             eventTid = event.eventTid,
-            ansvarligSaksbehandlerForTotrinn = event.ansvarligSaksbehandlerForTotrinn,
+            ansvarligSaksbehandlerForTotrinn = null,
             ansvarligSaksbehandlerIdent = event.ansvarligSaksbehandlerIdent
         )
     }
@@ -165,11 +163,11 @@ data class K9TilbakeModell(
         )
         return behandlingAvsluttet
     }
-    override fun sisteEvent(): BehandlingProsessEventDto {
+     fun sisteEvent(): BehandlingProsessEventTilbakeDto {
         return this.eventer[this.eventer.lastIndex]
     }
 
-    override fun forrigeEvent(): BehandlingProsessEventDto? {
+     fun forrigeEvent(): BehandlingProsessEventTilbakeDto? {
         return if (this.eventer.lastIndex > 0) {
             this.eventer[this.eventer.lastIndex - 1]
         } else {
@@ -177,7 +175,7 @@ data class K9TilbakeModell(
         }
     }
 
-    override fun førsteEvent(): BehandlingProsessEventDto {
+     fun førsteEvent(): BehandlingProsessEventTilbakeDto {
         return this.eventer[0]
     }
 
@@ -208,18 +206,18 @@ data class K9TilbakeModell(
     }
 
     // Array med alle versjoner av modell basert på eventene, brukes når man skal spille av eventer
-    override fun alleVersjoner(): MutableList<K9SakModell> {
-        val eventListe = mutableListOf<BehandlingProsessEventDto>()
-        val modeller = mutableListOf<K9SakModell>()
+     fun alleVersjoner(): MutableList<K9TilbakeModell> {
+        val eventListe = mutableListOf<BehandlingProsessEventTilbakeDto>()
+        val modeller = mutableListOf<K9TilbakeModell>()
         for (behandlingProsessEventDto in eventer) {
             eventListe.add(behandlingProsessEventDto)
-            modeller.add(K9SakModell(eventListe.toMutableList()))
+            modeller.add(K9TilbakeModell(eventListe.toMutableList()))
         }
         return modeller
     }
 
     override fun dvhSak(): Sak {
-        val oppgave = oppgave()
+        val oppgave = oppgave(sisteEvent = sisteEvent())
         val zone = ZoneId.of("Europe/Oslo")
         return Sak(
             saksnummer = oppgave.fagsakSaksnummer,
@@ -239,12 +237,14 @@ data class K9TilbakeModell(
             versjon = 1
         )
     }
-    
+    override fun sisteSaksNummer(): String {
+        return sisteEvent().saksnummer
+    }
     override fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
     ): Behandling {
-        val oppgave = oppgave()
+        val oppgave = oppgave(sisteEvent())
         val beslutter = if (oppgave.tilBeslutter
             && reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.finnes(oppgave.eksternId)
         ) {

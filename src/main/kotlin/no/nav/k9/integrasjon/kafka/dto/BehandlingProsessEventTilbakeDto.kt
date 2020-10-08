@@ -16,7 +16,7 @@ data class BehandlingProsessEventTilbakeDto(
      * Benytt samme id for alle oppdateringer av aksjonspunkt/prosess innenfor samme behandling.
      */
     val eksternId: UUID?,
-    val fagsystem: FagsystemTilbake,
+    val fagsystem: String,
     val saksnummer: String,
     val aktørId: String,
 

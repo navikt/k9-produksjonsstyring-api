@@ -210,7 +210,7 @@ class K9sakEventHandlerTest : KoinTest {
     @KtorExperimentalAPI
     @Test
     fun `Støtte tilbakekreving`() {
-        val k9sakEventHandler = get<K9sakEventHandler>()
+        val k9TilbakeEventHandler = get<K9TilbakeEventHandler>()
         val oppgaveRepository = get<OppgaveRepository>()
 
 
@@ -244,7 +244,7 @@ class K9sakEventHandlerTest : KoinTest {
 
         val event = AksjonspunktLagetTilbake().deserialize(null, json.toByteArray())!!
 
-        k9sakEventHandler.prosesser(event)
+        k9TilbakeEventHandler.prosesser(event)
         val oppgave =
             oppgaveRepository.hent(UUID.fromString("5c7be441-ebf3-4878-9ebc-399635b0a179"))
         assertTrue { !oppgave.aktiv }
@@ -253,7 +253,7 @@ class K9sakEventHandlerTest : KoinTest {
     @KtorExperimentalAPI
     @Test
     fun `Støtte tilbakekreving aksjonspunkt`() {
-        val k9sakEventHandler = get<K9sakEventHandler>()
+        val k9sakEventHandler = get<K9TilbakeEventHandler>()
         val oppgaveRepository = get<OppgaveRepository>()
 
         @Language("JSON") val json =
