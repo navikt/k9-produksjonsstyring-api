@@ -273,7 +273,8 @@ enum class FagsakYtelseType constructor(override val kode: String, override val 
     OMSORGSPENGER("OMP", "Omsorgspenger"),
     FRISINN("FRISINN", "Frisinn"),
     PPN("PPN", "PPN"),
-    OLP("OLP", "OLP");
+    OLP("OLP", "OLP"),
+    PUNSJ("PUNSJ", "PUNSJ");
 
     override val kodeverk = "FAGSAK_YTELSE_TYPE"
 
@@ -308,6 +309,7 @@ enum class BehandlingType(override val kode: String, override val navn: String, 
     REVURDERING("BT-004", "Revurdering", "ae0028"),
     INNSYN("BT-006", "Innsyn", "ae0042"),
     TILBAKE("BT-007", "Tilbakekreving", ""),
+    PUNSJ("BT-009", "Punsj", ""),
     ANKE("BT-008", "Anke", "ae0046");
 
     companion object {

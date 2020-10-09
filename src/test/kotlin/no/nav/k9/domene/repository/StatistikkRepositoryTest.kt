@@ -17,6 +17,7 @@ import org.koin.test.get
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.test.assertSame
 
 class StatistikkRepositoryTest : KoinTest {
     @KtorExperimentalAPI
@@ -33,8 +34,8 @@ class StatistikkRepositoryTest : KoinTest {
 
         val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker()
 
-        val omsorgspenger = hentFerdigstilte.take(25).filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
-        assert(omsorgspenger.size == 5)
+        val omsorgspenger = hentFerdigstilte.take(30).filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
+        assertSame(5, omsorgspenger.size)
         stopKoin()
     }
 
@@ -80,9 +81,8 @@ class StatistikkRepositoryTest : KoinTest {
             it
         }
         val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker()
-        val omsorgspenger = hentFerdigstilte.reversed().take(30).filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
-        assert(omsorgspenger.size == 6)
-        assert(omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size == 1)
+        val omsorgspenger = hentFerdigstilte.reversed().filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
+        assertSame(1, omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size )
 
     }
 }
