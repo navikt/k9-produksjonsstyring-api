@@ -72,11 +72,11 @@ spec:
     - name: COOKIE_NAME
       value: selvbetjening-idtoken
 
-    - name: APP_K9SAK_URL
-      value: https://k9-sak.nais.adeo.no/k9/sak/api
-
     - name: PDL_URL
       value: https://pdl-api.nais.adeo.no/graphql
+      
+    - name: APP_K9SAK_URL
+      value: https://k9-sak.nais.adeo.no/k9/sak/api
 
       # Kafka 
     - name: BOOTSTRAP_SERVERS
@@ -105,10 +105,9 @@ spec:
     - name: APPDYNAMICS_CONTROLLER_SSL_ENABLED
       value: "true"
     - name: APPDYNAMICS_AGENT_ACCOUNT_NAME
-      value: PROD
-      
+      value: PROD 
 
-    # Audit logging
+      # Audit logging
     - name: AUDITLOGGER_ENABLED
       value: "true"
     - name: AUDITLOGGER_VENDOR
