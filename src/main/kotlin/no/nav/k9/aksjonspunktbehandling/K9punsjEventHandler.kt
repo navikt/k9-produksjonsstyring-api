@@ -15,11 +15,6 @@ import org.slf4j.LoggerFactory
 class K9punsjEventHandler @KtorExperimentalAPI constructor(
     val oppgaveRepository: OppgaveRepository,
     val punsjEventK9Repository: PunsjEventK9Repository,
-    val config: Configuration,
-    val sakOgBehandlingProducer: SakOgBehandlingProducer,
-    val oppgaveKøRepository: OppgaveKøRepository,
-    val reservasjonRepository: ReservasjonRepository,
-    val statistikkProducer: StatistikkProducer,
     val oppgaverSomSkalInnPåKøer: Channel<Oppgave>,
     val statistikkRepository: StatistikkRepository,
     val saksbehhandlerRepository: SaksbehandlerRepository

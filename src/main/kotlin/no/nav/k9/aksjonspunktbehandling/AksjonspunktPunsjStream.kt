@@ -11,7 +11,7 @@ import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Consumed
 import org.slf4j.LoggerFactory
 
-internal class AksjonspunktStreamPunsj @KtorExperimentalAPI constructor(
+internal class AksjonspunktPunsjStream @KtorExperimentalAPI constructor(
     kafkaConfig: KafkaConfig,
     configuration: Configuration,
     K9punsjEventHandler: K9punsjEventHandler
