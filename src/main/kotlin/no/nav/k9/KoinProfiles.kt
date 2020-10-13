@@ -6,6 +6,7 @@ import kotlinx.coroutines.channels.Channel
 import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.k9.KoinProfile.*
 import no.nav.k9.aksjonspunktbehandling.K9TilbakeEventHandler
+import no.nav.k9.aksjonspunktbehandling.K9punsjEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -90,7 +91,7 @@ fun common(app: Application, config: Configuration) = module {
             pepClient = get()
         )
     }
-    
+
     single {
         SaksbehandlerRepository(
             dataSource = get(),
@@ -117,11 +118,15 @@ fun common(app: Application, config: Configuration) = module {
     single {
         BehandlingProsessEventK9Repository(get())
     }
+    
+    single {
+        PunsjEventK9Repository(get())
+    }
 
     single {
         BehandlingProsessEventTilbakeRepository(get())
     }
-    
+
     single {
         StatistikkRepository(get())
     }
@@ -138,7 +143,7 @@ fun common(app: Application, config: Configuration) = module {
             clients = config.clients()
         )
     }
-    
+
     single {
         StatistikkProducer(
             kafkaConfig = config.getKafkaConfig(),
@@ -178,13 +183,25 @@ fun common(app: Application, config: Configuration) = module {
             saksbehhandlerRepository = get()
         )
     }
-    
+
+    single {
+        K9punsjEventHandler(
+            oppgaveRepository = get(),
+            punsjEventK9Repository = get(),
+            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkRepository = get(),
+            saksbehhandlerRepository = get()
+        )
+    }
+
+
     single {
         AsynkronProsesseringV1Service(
             kafkaConfig = config.getKafkaConfig(),
             configuration = config,
             k9sakEventHandler = get(),
-            k9TilbakeEventHandler = get()
+            k9TilbakeEventHandler = get(),
+            punsjEventHandler = get()
         )
     }
 
@@ -198,7 +215,7 @@ fun common(app: Application, config: Configuration) = module {
             configuration = config,
             pepClient = get(),
             azureGraphService = get(),
-            statistikkRepository = get(), 
+            statistikkRepository = get(),
             oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel"))
         )
     }
@@ -263,7 +280,10 @@ fun preprodConfig(app: Application, config: Configuration) = module {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
     }
     single {
-        K9SakService(configuration = get(), accessTokenClient =get<AccessTokenClientResolver>().naisSts()) as IK9SakService
+        K9SakService(
+            configuration = get(),
+            accessTokenClient = get<AccessTokenClientResolver>().naisSts()
+        ) as IK9SakService
     }
 
     single { RequestContextService() as IRequestContextService }
@@ -288,7 +308,10 @@ fun prodConfig(app: Application, config: Configuration) = module {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
     }
     single {
-        K9SakService(configuration = get(),  accessTokenClient =get<AccessTokenClientResolver>().naisSts()) as IK9SakService
+        K9SakService(
+            configuration = get(),
+            accessTokenClient = get<AccessTokenClientResolver>().naisSts()
+        ) as IK9SakService
     }
     single { RequestContextService() as IRequestContextService }
 

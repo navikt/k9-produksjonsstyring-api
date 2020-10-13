@@ -10,3 +10,5 @@ Start k9-verdikjede. Er avhengig av vtp, postgresql og nav-auth-mock.
 Start klassen `no.nav.k9.K9LosDev` med parameter 
 
 `-Djavax.net.ssl.trustStore=/Users/.../.modig/trustStore.jks -Djavax.net.ssl.keyStore=/Users/.../.modig/keyStore.jks -Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.keyStorePassword=devillokeystore1234'`
+
+![logo](Los.png)
