@@ -298,7 +298,7 @@ data class K9TilbakeModell(
             datoForUttak = null,
             datoForUtbetaling = null,
             totrinnsbehandling = oppgave.tilBeslutter,
-            avsender = "K9sak",
+            avsender = "K9los",
             versjon = 1
         )
     }
