@@ -62,7 +62,7 @@ class K9punsjModell(
            selvstendigFrilans = false,
            kombinert = false,
            søktGradering = false,
-           registrerPapir = false,
+           registrerPapir = true,
            årskvantum = false,
            avklarMedlemskap = false,
            kode6 = false,
