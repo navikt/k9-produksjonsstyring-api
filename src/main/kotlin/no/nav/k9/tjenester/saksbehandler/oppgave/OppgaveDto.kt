@@ -3,12 +3,14 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.sak.typer.JournalpostId
 import java.time.LocalDateTime
 import java.util.*
 
 class OppgaveDto(
     val status: OppgaveStatusDto,
     val behandlingId: Long?,
+    val journalpostId: String?,
     val saksnummer: String,
     val navn: String,
     val system: String,
