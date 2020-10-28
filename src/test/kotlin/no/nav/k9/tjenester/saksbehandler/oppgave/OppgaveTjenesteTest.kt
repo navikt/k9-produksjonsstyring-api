@@ -24,7 +24,7 @@ class OppgaveTjenesteTest : KoinTest {
     val koinTestRule = KoinTestRule.create {
         modules(buildAndTestConfig())
     }
-    
+
     @KtorExperimentalAPI
     @Test
     fun `hent fagsak`() {
@@ -34,6 +34,7 @@ class OppgaveTjenesteTest : KoinTest {
         val oppgave1 = Oppgave(
             behandlingId = 9438,
             fagsakSaksnummer = "Yz647",
+            journalpostId = null,
             aktorId = "273857",
             behandlendeEnhet = "Enhet",
             behandlingsfrist = LocalDateTime.now(),
@@ -74,7 +75,7 @@ class OppgaveTjenesteTest : KoinTest {
         val oppgaveKøRepository = get<OppgaveKøRepository>()
         val reservasjonRepository = get<ReservasjonRepository>()
         val saksbehandlerRepository = get<SaksbehandlerRepository>()
-        
+
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(
             id = uuid,
@@ -90,11 +91,12 @@ class OppgaveTjenesteTest : KoinTest {
             saksbehandlere = mutableListOf()
         )
         oppgaveKøRepository.lagre(uuid) { oppgaveko }
-        
+
         val oppgave1 = Oppgave(
             behandlingId = 9438,
             fagsakSaksnummer = "Yz647",
             aktorId = "273857",
+            journalpostId = null,
             behandlendeEnhet = "Enhet",
             behandlingsfrist = LocalDateTime.now(),
             behandlingOpprettet = LocalDateTime.now(),
@@ -123,7 +125,7 @@ class OppgaveTjenesteTest : KoinTest {
         oppgaveKøRepository.lagre(oppgaveko.id) {
             oppgaveko
         }
-        
+
 
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
