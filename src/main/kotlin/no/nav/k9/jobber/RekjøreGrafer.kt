@@ -25,6 +25,9 @@ fun Application.rekjørForGrafer(
             }
             val alleVersjoner = behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()
             for ((index, modell) in alleVersjoner.withIndex()) {
+                if (index % 100 == 0 && index > 1) {
+                    log.info("""Ferdig med $index av ${alleEventerIder.size}""")
+                }
                 val oppgave = modell.oppgave()
                 if (modell.starterSak()) {
                     if (oppgave.aktiv) {
