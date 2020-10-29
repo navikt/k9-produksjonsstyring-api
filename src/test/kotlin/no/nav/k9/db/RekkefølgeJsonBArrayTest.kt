@@ -50,6 +50,7 @@ class RekkefølgeJsonBArrayTest : KoinTest {
             behandlingId = 9438,
             fagsakSaksnummer = "Yz647",
             aktorId = "273857",
+            journalpostId = null,
             behandlendeEnhet = "Enhet$i",
             behandlingsfrist = LocalDateTime.now(),
             behandlingOpprettet = LocalDateTime.now().minusDays(23),

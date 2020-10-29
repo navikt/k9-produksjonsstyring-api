@@ -38,6 +38,7 @@ class BeslutterSkalIkkePlukkeEgenSakTest : KoinTest {
             behandlingId = null,
             fagsakSaksnummer = "123456",
             aktorId = "",
+            journalpostId = null,
             behandlendeEnhet = "",
             behandlingsfrist = LocalDateTime.now(),
             behandlingOpprettet = LocalDateTime.now(),
@@ -87,18 +88,18 @@ class BeslutterSkalIkkePlukkeEgenSakTest : KoinTest {
             oppgaverOgDatoer = mutableListOf(),
             kode6 = false
         )
-        
+
         val nesteOppgaverIKø = runBlocking {
             oppgaveKø.leggOppgaveTilEllerFjernFraKø(oppgave)
-            
+
             oppgaveKøRepository.lagreIkkeTaHensyn(oppgaveKø.id) {
                 oppgaveKø
             }
-            
+
             val nesteOppgaverIKø = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveKø.id)
             nesteOppgaverIKø
         }
-        
+
         assertSame(1, nesteOppgaverIKø.size )
     }
 

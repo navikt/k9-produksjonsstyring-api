@@ -156,7 +156,7 @@ internal fun Route.OppgaveApis() {
 
     post { _: leggTilBehandletSak ->
         val params = call.receive<BehandletOppgave>()
-       
+
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,
@@ -266,7 +266,7 @@ internal fun Route.OppgaveApis() {
     @Location("/hent-historiske-reservasjoner-på-oppgave")
     class hentHistoriskeReservasjonerPåOppgave
 
-    post { _: flyttReservasjonTilForrigeSaksbehandler ->
+    post { _: hentHistoriskeReservasjonerPåOppgave ->
         withContext(
             requestContextService.getCoroutineContext(
                 context = coroutineContext,

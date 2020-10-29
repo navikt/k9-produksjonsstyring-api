@@ -233,6 +233,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return OppgaveDto(
             status = oppgaveStatus,
             behandlingId = oppgave.behandlingId,
+            journalpostId = oppgave.journalpostId,
             saksnummer = oppgave.fagsakSaksnummer,
             navn = person.person?.navn() ?: "Ukjent navn",
             system = oppgave.system,
@@ -464,7 +465,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         settSkjermet(oppgave)
                         continue
                     }
-                    
+
                     val person = pdlService.person(oppgave.aktorId)
 
                     val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
@@ -484,6 +485,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             ),
                             behandlingId = oppgave.behandlingId,
                             saksnummer = oppgave.fagsakSaksnummer,
+                            journalpostId = oppgave.journalpostId,
                             navn = navn,
                             system = oppgave.system,
                             personnummer = if (person.person == null) {
@@ -580,6 +582,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     status = status,
                     behandlingId = oppgave.behandlingId,
                     saksnummer = oppgave.fagsakSaksnummer,
+                    journalpostId = oppgave.journalpostId,
                     navn = personNavn,
                     system = oppgave.system,
                     personnummer = personFnummer,

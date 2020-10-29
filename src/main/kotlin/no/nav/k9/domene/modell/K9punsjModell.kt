@@ -10,7 +10,7 @@ import no.nav.k9.statistikk.kontrakter.Sak
 class K9punsjModell(
     val eventer: List<PunsjEventDto>
 )  : IModell {
-    
+
     override fun starterSak(): Boolean {
         TODO("Not yet implemented")
     }
@@ -41,20 +41,21 @@ class K9punsjModell(
         return Oppgave(
            behandlingId = null,
            fagsakSaksnummer = "",
+           journalpostId = førsteEvent.journalpostId.verdi,
            aktorId = "",
            behandlendeEnhet = "",
-           behandlingsfrist =førsteEvent.eventTid.toLocalDate().plusDays(21).atStartOfDay(),
-           behandlingOpprettet =førsteEvent.eventTid,
-           forsteStonadsdag =førsteEvent.eventTid.toLocalDate(),
-           behandlingStatus =BehandlingStatus.OPPRETTET,
-           behandlingType =BehandlingType.PUNSJ,
-           fagsakYtelseType =FagsakYtelseType.PPN,
-           eventTid =sisteEvent.eventTid,
+           behandlingsfrist = førsteEvent.eventTid.toLocalDate().plusDays(21).atStartOfDay(),
+           behandlingOpprettet = førsteEvent.eventTid,
+           forsteStonadsdag = førsteEvent.eventTid.toLocalDate(),
+           behandlingStatus = BehandlingStatus.OPPRETTET,
+           behandlingType = BehandlingType.PUNSJ,
+           fagsakYtelseType = FagsakYtelseType.PPN,
+           eventTid = sisteEvent.eventTid,
            aktiv = false,
            system = FagsakYtelseType.PUNSJ.kode,
            oppgaveAvsluttet = null,
            utfortFraAdmin = false,
-           eksternId =sisteEvent.eksternId,
+           eksternId = sisteEvent.eksternId,
            oppgaveEgenskap = listOf(),
            aksjonspunkter = Aksjonspunkter(liste = mapOf()),
            tilBeslutter = false,

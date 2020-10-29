@@ -73,6 +73,7 @@ data class K9SakModell(
             behandlingId = event.behandlingId,
             fagsakSaksnummer = event.saksnummer,
             aktorId = event.aktørId,
+            journalpostId = null,
             behandlendeEnhet = event.behandlendeEnhet ?: "",
             behandlingType = BehandlingType.fraKode(event.behandlingTypeKode),
             fagsakYtelseType = FagsakYtelseType.fraKode(event.ytelseTypeKode),
