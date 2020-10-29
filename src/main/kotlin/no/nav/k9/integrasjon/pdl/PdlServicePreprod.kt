@@ -63,7 +63,7 @@ class PdlServicePreprod @KtorExperimentalAPI constructor(
 
         private val log: Logger = LoggerFactory.getLogger(PdlServicePreprod::class.java)
     }
-
+    
     private val personUrl = Url.buildURL(
         baseUrl = baseUrl,
         pathParts = listOf()
