@@ -20,14 +20,11 @@ fun Application.rekjørForGrafer(
         val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
         statistikkRepository.truncateNyeOgFerdigstilte()
         for ((index, eventId) in alleEventerIder.withIndex()) {
-            if (index % 1000 == 0) {
+            if (index % 100 == 0) {
                 log.info("""Ferdig med $index av ${alleEventerIder.size}""")
             }
             val alleVersjoner = behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()
             for ((index, modell) in alleVersjoner.withIndex()) {
-                if (index % 100 == 0) {
-                    log.info("""Ferdig med $index av ${alleVersjoner.size}""")
-                }
                 val oppgave = modell.oppgave()
                 if (modell.starterSak()) {
                     if (oppgave.aktiv) {
@@ -81,6 +78,7 @@ fun Application.rekjørForGrafer(
                 }
             }
         }
+            log.info("""Ferdig med ${alleEventerIder.size} av ${alleEventerIder.size}""")
     }
 }
 
