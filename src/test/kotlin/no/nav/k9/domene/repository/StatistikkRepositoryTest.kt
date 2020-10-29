@@ -49,6 +49,7 @@ class StatistikkRepositoryTest : KoinTest {
             behandlingId = 78567,
             fagsakSaksnummer = "5Yagdt",
             aktorId = "675864",
+            journalpostId = null,
             behandlendeEnhet = "Enhet",
             behandlingsfrist = LocalDateTime.now(),
             behandlingOpprettet = LocalDateTime.now().minusDays(23),

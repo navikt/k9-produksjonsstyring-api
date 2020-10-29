@@ -13,63 +13,90 @@ import kotlin.system.measureTimeMillis
 
 fun Application.rekjørForGrafer(
     behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
-    statistikkRepository: StatistikkRepository
+    statistikkRepository: StatistikkRepository,
+    reservasjonRepository: ReservasjonRepository
 ) {
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-        val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
-        statistikkRepository.truncateNyeOgFerdigstilte()
-        for ((index, eventId) in alleEventerIder.withIndex()) {
-            if (index % 1000 == 0) {
-                log.info("""Ferdig med $index av ${alleEventerIder.size}""")
-            }
-            for (modell in behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()) {
-                val oppgave = modell.oppgave()
-                if (modell.starterSak()) {
-                    if (oppgave.aktiv) {
-                        statistikkRepository.lagre(
-                            AlleOppgaverNyeOgFerdigstilte(
-                                oppgave
-                                    .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
-                            )
-                        ) {
-                            it.nye.add(oppgave.eksternId.toString())
-                            it
-                        }
-                    }
+        try {
+            val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
+            statistikkRepository.truncateNyeOgFerdigstilte()
+            for ((index, eventId) in alleEventerIder.withIndex()) {
+                if (index % 100 == 0) {
+                    log.info("""Ferdig med $index av ${alleEventerIder.size}""")
                 }
-                if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
-                    statistikkRepository.lagre(
-                        AlleOppgaverNyeOgFerdigstilte(
-                            oppgave.fagsakYtelseType,
-                            oppgave.behandlingType,
-                            oppgave.eventTid.toLocalDate()
-                        )
-                    ) {
-                        it.nye.add(oppgave.eksternId.toString())
-                        it
+                val alleVersjoner = behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()
+                for ((index, modell) in alleVersjoner.withIndex()) {
+                    if (index % 100 == 0 && index > 1) {
+                        log.info("""Ferdig med $index av ${alleEventerIder.size}""")
                     }
-                }
+                    try {
+                        val oppgave = modell.oppgave()
 
-                if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
-                    statistikkRepository.lagre(
-                        AlleOppgaverNyeOgFerdigstilte(
-                            oppgave.fagsakYtelseType,
-                            oppgave.behandlingType,
-                            oppgave.eventTid.toLocalDate()
-                        )
-                    ) {
-                        it.ferdigstilte.add(oppgave.eksternId.toString())
-                        it
+                        if (modell.starterSak()) {
+                            if (oppgave.aktiv) {
+                                statistikkRepository.lagre(
+                                    AlleOppgaverNyeOgFerdigstilte(
+                                        oppgave
+                                            .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
+                                    )
+                                ) {
+                                    it.nye.add(oppgave.eksternId.toString())
+                                    it
+                                }
+                            }
+                        }
+                        if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
+                            statistikkRepository.lagre(
+                                AlleOppgaverNyeOgFerdigstilte(
+                                    oppgave.fagsakYtelseType,
+                                    oppgave.behandlingType,
+                                    oppgave.eventTid.toLocalDate()
+                                )
+                            ) {
+                                it.nye.add(oppgave.eksternId.toString())
+                                it
+                            }
+                        }
+
+                        if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
+                            statistikkRepository.lagre(
+                                AlleOppgaverNyeOgFerdigstilte(
+                                    oppgave.fagsakYtelseType,
+                                    oppgave.behandlingType,
+                                    oppgave.eventTid.toLocalDate()
+                                )
+                            ) {
+                                it.ferdigstilte.add(oppgave.eksternId.toString())
+                                it
+                            }
+                            if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                                statistikkRepository.lagre(
+                                    AlleOppgaverNyeOgFerdigstilte(
+                                        oppgave.fagsakYtelseType,
+                                        oppgave.behandlingType,
+                                        oppgave.eventTid.toLocalDate()
+                                    )
+                                ) {
+                                    it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+                                    it
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        continue
                     }
                 }
             }
+            log.info("""Ferdig med ${alleEventerIder.size} av ${alleEventerIder.size}""")
+        } catch (e: Exception) {
+            log.error(e)
         }
     }
 }
 
 
 @KtorExperimentalAPI
- fun Application.regenererOppgaver(
+fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
     behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
     reservasjonRepository: ReservasjonRepository,

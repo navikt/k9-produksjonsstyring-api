@@ -4,6 +4,7 @@ import no.nav.k9.domene.modell.Aksjonspunkter
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.sak.typer.JournalpostId
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -11,6 +12,7 @@ import java.util.*
 data class Oppgave(
     val behandlingId: Long?,
     val fagsakSaksnummer: String,
+    val journalpostId: String?,
     val aktorId: String,
     val behandlendeEnhet: String,
     val behandlingsfrist: LocalDateTime,

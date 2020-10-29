@@ -48,12 +48,12 @@ class OppgavekoTest :KoinTest{
         val oppgaverRefresh = Channel<Oppgave>(10000)
 
         val oppgaveRepository = OppgaveRepository(dataSource = dataSource, pepClient = PepClientLocal(), refreshOppgave = oppgaverRefresh)
-        
+
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = dataSource,
             oppgaveKøOppdatert = oppgaveKøOppdatert,
             refreshKlienter = refreshKlienter,
-            oppgaveRefreshChannel = oppgaverRefreshOppdatert,            
+            oppgaveRefreshChannel = oppgaverRefreshOppdatert,
             pepClient = PepClientLocal()
         )
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
@@ -110,6 +110,7 @@ class OppgavekoTest :KoinTest{
             behandlingId = 9438,
             fagsakSaksnummer = "Yz647",
             aktorId = "273857",
+            journalpostId = null,
             behandlendeEnhet = "Enhet",
             behandlingsfrist = LocalDateTime.now(),
             behandlingOpprettet = LocalDateTime.now().minusDays(23),
@@ -137,6 +138,7 @@ class OppgavekoTest :KoinTest{
             behandlingId = 78567,
             fagsakSaksnummer = "5Yagdt",
             aktorId = "675864",
+            journalpostId = null,
             behandlendeEnhet = "Enhet",
             behandlingsfrist = LocalDateTime.now(),
             behandlingOpprettet = LocalDateTime.now().minusDays(23),

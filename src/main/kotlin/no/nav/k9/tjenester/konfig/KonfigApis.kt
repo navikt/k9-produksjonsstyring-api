@@ -16,12 +16,21 @@ fun Route.KonfigApis() {
     val sseUrlDev = "https://k9-los-oidc-auth-proxy.dev.adeo.no/api/k9-los-api/sse"
     val sseUrlProd = "https://k9-los-oidc-auth-proxy.nais.adeo.no/api/k9-los-api/sse"
     val sseUrlLocal = "api/sse"
+    val k9punsjUrlDev = "https://k9-punsj-frontend.dev.adeo.no"
+    val k9punsjUrlProd = "https://k9-punsj-frontend.nais.adeo.no"
 
     @Location("/k9-sak-url")
     class hentK9SakUrl
 
     get { _: hentK9SakUrl ->
         if (KoinProfile.PREPROD == configuration.koinProfile()) call.respond(Konfig(k9sakUrlDev)) else call.respond(Konfig(k9sakUrlProd))
+    }
+
+    @Location("/k9-punsj-url")
+    class hentK9PunsjUrl
+
+    get { _: hentK9PunsjUrl ->
+        if (KoinProfile.PREPROD == configuration.koinProfile()) call.respond(Konfig(k9punsjUrlDev)) else call.respond(Konfig(k9punsjUrlProd))
     }
 
     @Location("/sse-url")

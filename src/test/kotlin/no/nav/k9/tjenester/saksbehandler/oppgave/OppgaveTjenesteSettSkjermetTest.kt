@@ -36,12 +36,12 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
     @get:Rule
     val koinTestRule = KoinTestRule.create {
         modules(buildAndTestConfig(mockk()))
-    }    
-   
+    }
+
     @KtorExperimentalAPI
     @Test
     fun testSettSkjermet() = runBlocking{
-       
+
         val pepClient = get<IPepClient>()
 
         coEvery { pepClient.harTilgangTilKode6() } returns false
@@ -71,7 +71,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
         val statistikkRepository = StatistikkRepository(dataSource = get())
-    
+
         val azureGraphService = mockk<AzureGraphService>()
         val oppgaveTjeneste = OppgaveTjeneste(
             oppgaveRepository,
@@ -103,6 +103,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             behandlingId = 9438,
             fagsakSaksnummer = "Yz647",
             aktorId = "273857",
+            journalpostId = null,
             behandlendeEnhet = "Enhet",
             behandlingsfrist = LocalDateTime.now(),
             behandlingOpprettet = LocalDateTime.now(),
@@ -161,11 +162,11 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
 
         var oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.size == 1)
-        
+
         coEvery { pepClient.erSakKode7EllerEgenAnsatt(any()) } returns true
 
         oppgaveTjeneste.settSkjermet(oppgave1)
-    
+
         oppgaver = oppgaveTjeneste.hentNesteOppgaverIKø(oppgaveko.id)
         assert(oppgaver.isEmpty())
 
@@ -219,6 +220,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             behandlingId = 9438,
             fagsakSaksnummer = "Yz647",
             aktorId = "273857",
+            journalpostId = null,
             behandlendeEnhet = "Enhet",
             behandlingsfrist = LocalDateTime.now(),
             behandlingOpprettet = LocalDateTime.now(),
@@ -334,6 +336,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             behandlingId = 9438,
             fagsakSaksnummer = "Yz647",
             aktorId = "273857",
+            journalpostId = null,
             behandlendeEnhet = "Enhet",
             behandlingsfrist = LocalDateTime.now(),
             behandlingOpprettet = LocalDateTime.now(),

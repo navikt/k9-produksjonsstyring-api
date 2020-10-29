@@ -69,6 +69,7 @@ data class K9TilbakeModell(
             behandlingId = event.behandlingId,
             fagsakSaksnummer = event.saksnummer,
             aktorId = event.aktørId,
+            journalpostId = null,
             behandlendeEnhet = event.behandlendeEnhet ?: "",
             behandlingType = BehandlingType.fraKode(event.behandlingTypeKode),
             fagsakYtelseType = FagsakYtelseType.fraKode(event.ytelseTypeKode),
@@ -186,7 +187,7 @@ data class K9TilbakeModell(
     override fun erTom(): Boolean {
         return this.eventer.isEmpty()
     }
-    
+
     fun bleBeslutter(): Boolean {
         val forrigeEvent = forrigeEvent()
         return forrigeEvent != null && !forrigeEvent.aktiveAksjonspunkt()
