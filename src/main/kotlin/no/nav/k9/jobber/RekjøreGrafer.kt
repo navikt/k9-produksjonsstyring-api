@@ -17,56 +17,33 @@ fun Application.rekjørForGrafer(
     reservasjonRepository: ReservasjonRepository
 ) {
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-        val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
-        statistikkRepository.truncateNyeOgFerdigstilte()
-        for ((index, eventId) in alleEventerIder.withIndex()) {
-            if (index % 100 == 0) {
-                log.info("""Ferdig med $index av ${alleEventerIder.size}""")
-            }
-            val alleVersjoner = behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()
-            for ((index, modell) in alleVersjoner.withIndex()) {
-                if (index % 100 == 0 && index > 1) {
+        try {
+            val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
+            statistikkRepository.truncateNyeOgFerdigstilte()
+            for ((index, eventId) in alleEventerIder.withIndex()) {
+                if (index % 100 == 0) {
                     log.info("""Ferdig med $index av ${alleEventerIder.size}""")
                 }
-                val oppgave = modell.oppgave()
-                if (modell.starterSak()) {
-                    if (oppgave.aktiv) {
-                        statistikkRepository.lagre(
-                            AlleOppgaverNyeOgFerdigstilte(
-                                oppgave
-                                    .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
-                            )
-                        ) {
-                            it.nye.add(oppgave.eksternId.toString())
-                            it
+                val alleVersjoner = behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()
+                for ((index, modell) in alleVersjoner.withIndex()) {
+                    if (index % 100 == 0 && index > 1) {
+                        log.info("""Ferdig med $index av ${alleEventerIder.size}""")
+                    }
+                    val oppgave = modell.oppgave()
+                    if (modell.starterSak()) {
+                        if (oppgave.aktiv) {
+                            statistikkRepository.lagre(
+                                AlleOppgaverNyeOgFerdigstilte(
+                                    oppgave
+                                        .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
+                                )
+                            ) {
+                                it.nye.add(oppgave.eksternId.toString())
+                                it
+                            }
                         }
                     }
-                }
-                if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
-                    statistikkRepository.lagre(
-                        AlleOppgaverNyeOgFerdigstilte(
-                            oppgave.fagsakYtelseType,
-                            oppgave.behandlingType,
-                            oppgave.eventTid.toLocalDate()
-                        )
-                    ) {
-                        it.nye.add(oppgave.eksternId.toString())
-                        it
-                    }
-                }
-
-                if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
-                    statistikkRepository.lagre(
-                        AlleOppgaverNyeOgFerdigstilte(
-                            oppgave.fagsakYtelseType,
-                            oppgave.behandlingType,
-                            oppgave.eventTid.toLocalDate()
-                        )
-                    ) {
-                        it.ferdigstilte.add(oppgave.eksternId.toString())
-                        it
-                    }
-                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                    if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
                         statistikkRepository.lagre(
                             AlleOppgaverNyeOgFerdigstilte(
                                 oppgave.fagsakYtelseType,
@@ -74,14 +51,41 @@ fun Application.rekjørForGrafer(
                                 oppgave.eventTid.toLocalDate()
                             )
                         ) {
-                            it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+                            it.nye.add(oppgave.eksternId.toString())
                             it
+                        }
+                    }
+
+                    if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
+                        statistikkRepository.lagre(
+                            AlleOppgaverNyeOgFerdigstilte(
+                                oppgave.fagsakYtelseType,
+                                oppgave.behandlingType,
+                                oppgave.eventTid.toLocalDate()
+                            )
+                        ) {
+                            it.ferdigstilte.add(oppgave.eksternId.toString())
+                            it
+                        }
+                        if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                            statistikkRepository.lagre(
+                                AlleOppgaverNyeOgFerdigstilte(
+                                    oppgave.fagsakYtelseType,
+                                    oppgave.behandlingType,
+                                    oppgave.eventTid.toLocalDate()
+                                )
+                            ) {
+                                it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+                                it
+                            }
                         }
                     }
                 }
             }
-        }
             log.info("""Ferdig med ${alleEventerIder.size} av ${alleEventerIder.size}""")
+        } catch (e: Exception) {
+            log.error(e)
+        }
     }
 }
 
