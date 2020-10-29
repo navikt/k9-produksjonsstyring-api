@@ -243,9 +243,8 @@ data class K9SakModell(
     }
 
     override fun sisteSaksNummer(): String {
-        return sisteEvent().saksnummer
+       return sisteEvent().saksnummer
     }
-
     override fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
@@ -350,14 +349,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     }
 
     fun påVent(): Boolean {
-        return this.liste.filter {
-            return try {
-                AksjonspunktDefinisjon.fraKode(it.key)
-                true
-            } catch (e: Exception) {
-                false
-            }
-        }.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any { it.erAutopunkt() }
+        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any { it.erAutopunkt() }
     }
 
     fun erTom(): Boolean {

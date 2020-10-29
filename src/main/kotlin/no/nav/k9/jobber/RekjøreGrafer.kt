@@ -29,45 +29,23 @@ fun Application.rekjørForGrafer(
                     if (index % 100 == 0 && index > 1) {
                         log.info("""Ferdig med $index av ${alleEventerIder.size}""")
                     }
-                    val oppgave = modell.oppgave()
-                    if (modell.starterSak()) {
-                        if (oppgave.aktiv) {
-                            statistikkRepository.lagre(
-                                AlleOppgaverNyeOgFerdigstilte(
-                                    oppgave
-                                        .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
-                                )
-                            ) {
-                                it.nye.add(oppgave.eksternId.toString())
-                                it
+                    try {
+                        val oppgave = modell.oppgave()
+
+                        if (modell.starterSak()) {
+                            if (oppgave.aktiv) {
+                                statistikkRepository.lagre(
+                                    AlleOppgaverNyeOgFerdigstilte(
+                                        oppgave
+                                            .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
+                                    )
+                                ) {
+                                    it.nye.add(oppgave.eksternId.toString())
+                                    it
+                                }
                             }
                         }
-                    }
-                    if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
-                        statistikkRepository.lagre(
-                            AlleOppgaverNyeOgFerdigstilte(
-                                oppgave.fagsakYtelseType,
-                                oppgave.behandlingType,
-                                oppgave.eventTid.toLocalDate()
-                            )
-                        ) {
-                            it.nye.add(oppgave.eksternId.toString())
-                            it
-                        }
-                    }
-
-                    if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
-                        statistikkRepository.lagre(
-                            AlleOppgaverNyeOgFerdigstilte(
-                                oppgave.fagsakYtelseType,
-                                oppgave.behandlingType,
-                                oppgave.eventTid.toLocalDate()
-                            )
-                        ) {
-                            it.ferdigstilte.add(oppgave.eksternId.toString())
-                            it
-                        }
-                        if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                        if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
                             statistikkRepository.lagre(
                                 AlleOppgaverNyeOgFerdigstilte(
                                     oppgave.fagsakYtelseType,
@@ -75,10 +53,37 @@ fun Application.rekjørForGrafer(
                                     oppgave.eventTid.toLocalDate()
                                 )
                             ) {
-                                it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+                                it.nye.add(oppgave.eksternId.toString())
                                 it
                             }
                         }
+
+                        if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
+                            statistikkRepository.lagre(
+                                AlleOppgaverNyeOgFerdigstilte(
+                                    oppgave.fagsakYtelseType,
+                                    oppgave.behandlingType,
+                                    oppgave.eventTid.toLocalDate()
+                                )
+                            ) {
+                                it.ferdigstilte.add(oppgave.eksternId.toString())
+                                it
+                            }
+                            if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                                statistikkRepository.lagre(
+                                    AlleOppgaverNyeOgFerdigstilte(
+                                        oppgave.fagsakYtelseType,
+                                        oppgave.behandlingType,
+                                        oppgave.eventTid.toLocalDate()
+                                    )
+                                ) {
+                                    it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+                                    it
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        continue
                     }
                 }
             }
