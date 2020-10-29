@@ -23,7 +23,11 @@ fun Application.rekjørForGrafer(
             if (index % 1000 == 0) {
                 log.info("""Ferdig med $index av ${alleEventerIder.size}""")
             }
-            for (modell in behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()) {
+            val alleVersjoner = behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()
+            for ((index, modell) in alleVersjoner.withIndex()) {
+                if (index % 100 == 0) {
+                    log.info("""Ferdig med $index av ${alleVersjoner.size}""")
+                }
                 val oppgave = modell.oppgave()
                 if (modell.starterSak()) {
                     if (oppgave.aktiv) {
