@@ -13,7 +13,8 @@ import kotlin.system.measureTimeMillis
 
 fun Application.rekjørForGrafer(
     behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
-    statistikkRepository: StatistikkRepository
+    statistikkRepository: StatistikkRepository,
+    reservasjonRepository: ReservasjonRepository
 ) {
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
         val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
@@ -59,6 +60,9 @@ fun Application.rekjørForGrafer(
                         )
                     ) {
                         it.ferdigstilte.add(oppgave.eksternId.toString())
+                        if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                            it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+                        }
                         it
                     }
                 }
@@ -69,7 +73,7 @@ fun Application.rekjørForGrafer(
 
 
 @KtorExperimentalAPI
- fun Application.regenererOppgaver(
+fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
     behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
     reservasjonRepository: ReservasjonRepository,

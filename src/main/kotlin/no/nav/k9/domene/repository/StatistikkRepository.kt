@@ -25,7 +25,8 @@ class StatistikkRepository(
     private val dataSource: DataSource
 ) {
     fun lagreBehandling(brukerIdent: String, f: (BehandletOppgave?) -> BehandletOppgave) {
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){ LongAdder() }.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -60,7 +61,8 @@ class StatistikkRepository(
     }
 
     fun hentBehandlinger(ident: String): List<BehandletOppgave> {
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -79,7 +81,8 @@ class StatistikkRepository(
     }
 
     fun lagreFerdigstilt(bt: String, eksternId: UUID) {
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 //language=PostgreSQL
@@ -101,7 +104,8 @@ class StatistikkRepository(
     }
 
     fun hentFerdigstilte(): List<AlleFerdigstilteOppgaver> {
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         return using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -127,15 +131,18 @@ class StatistikkRepository(
         alleOppgaverNyeOgFerdigstilte: AlleOppgaverNyeOgFerdigstilte,
         f: (AlleOppgaverNyeOgFerdigstilte) -> AlleOppgaverNyeOgFerdigstilte
     ) {
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
                     queryOf(
                         "select * from nye_og_ferdigstilte where behandlingType = :behandlingType and fagsakYtelseType = :fagsakYtelseType and dato = :dato for update",
-                        mapOf(  "behandlingType" to alleOppgaverNyeOgFerdigstilte.behandlingType.kode,
+                        mapOf(
+                            "behandlingType" to alleOppgaverNyeOgFerdigstilte.behandlingType.kode,
                             "fagsakYtelseType" to alleOppgaverNyeOgFerdigstilte.fagsakYtelseType.kode,
-                            "dato" to alleOppgaverNyeOgFerdigstilte.dato)
+                            "dato" to alleOppgaverNyeOgFerdigstilte.dato
+                        )
                     )
                         .map { row ->
                             AlleOppgaverNyeOgFerdigstilte(
@@ -143,6 +150,9 @@ class StatistikkRepository(
                                 fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
                                 dato = row.localDate("dato"),
                                 ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte") ?: "[]"),
+                                ferdigstilteSaksbehandler = objectMapper().readValue(
+                                    row.stringOrNull("ferdigstiltesaksbehandler") ?: "[]"
+                                ),
                                 nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
                             )
                         }.asSingle
@@ -156,8 +166,8 @@ class StatistikkRepository(
                 tx.run(
                     queryOf(
                         """
-                                    insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, nye,ferdigstilte)
-                                    values (:behandlingType, :fagsakYtelseType, :dato, :nye ::jsonb, :ferdigstilte ::jsonb)
+                                    insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, nye,ferdigstilte,ferdigstiltesaksbehandler)
+                                    values (:behandlingType, :fagsakYtelseType, :dato, :nye ::jsonb, :ferdigstilte ::jsonb, :ferdigstiltesaksbehandler ::jsonb)
                                     on conflict (behandlingType, fagsakYtelseType, dato) do update
                                     set nye = :nye ::jsonb , ferdigstilte = :ferdigstilte ::jsonb 
                      """, mapOf(
@@ -165,7 +175,12 @@ class StatistikkRepository(
                             "fagsakYtelseType" to alleOppgaverNyeOgFerdigstilteSomPersisteres.fagsakYtelseType.kode,
                             "dato" to alleOppgaverNyeOgFerdigstilteSomPersisteres.dato,
                             "nye" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.nye),
-                            "ferdigstilte" to objectMapper().writeValueAsString(alleOppgaverNyeOgFerdigstilteSomPersisteres.ferdigstilte)
+                            "ferdigstilte" to objectMapper().writeValueAsString(
+                                alleOppgaverNyeOgFerdigstilteSomPersisteres.ferdigstilte
+                            ),
+                            "ferdigstiltesaksbehandler" to objectMapper().writeValueAsString(
+                                alleOppgaverNyeOgFerdigstilteSomPersisteres.ferdigstilteSaksbehandler
+                            )
                         )
                     ).asUpdate
                 )
@@ -176,7 +191,8 @@ class StatistikkRepository(
 
 
     fun hentFerdigstilteOgNyeHistorikkPerAntallDager(antall: Int): List<AlleOppgaverNyeOgFerdigstilte> {
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         return using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -199,8 +215,10 @@ class StatistikkRepository(
             )
         }
     }
-    fun truncateNyeOgFerdigstilte(){
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+
+    fun truncateNyeOgFerdigstilte() {
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -213,6 +231,7 @@ class StatistikkRepository(
             )
         }
     }
+
     private val hentFerdigstilteOgNyeHistorikkMedYtelsetypeCache = Cache<List<AlleOppgaverNyeOgFerdigstilte>>()
     fun hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(
         refresh: Boolean = false
@@ -224,7 +243,8 @@ class StatistikkRepository(
             }
         }
 
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
@@ -278,35 +298,45 @@ class StatistikkRepository(
                 }
             }
         }
-        hentFerdigstilteOgNyeHistorikkMedYtelsetypeCache.set("default", CacheObject(ret, LocalDateTime.now().plusMinutes(60)))
+        hentFerdigstilteOgNyeHistorikkMedYtelsetypeCache.set(
+            "default",
+            CacheObject(ret, LocalDateTime.now().plusMinutes(60))
+        )
         return ret
     }
 
 
     fun hentFerdigstilteOgNyeHistorikkSiste8Uker(): List<AlleOppgaverNyeOgFerdigstilte> {
 
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
-                    queryOf(
-                            """
-                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye 
+                queryOf(
+                    """
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, ferdigstiltesaksbehandler, nye 
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
-                            mapOf("antall" to "\'${55} days\'")
-                    )
-                            .map { row ->
-                                AlleOppgaverNyeOgFerdigstilte(
-                                        behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
-                                        fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
-                                        dato = row.localDate("dato"),
-                                        ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte")
-                                                ?: "[]"),
-                                        nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
-                                )
-                            }.asList
+                    mapOf("antall" to "\'${55} days\'")
+                )
+                    .map { row ->
+                        AlleOppgaverNyeOgFerdigstilte(
+                            behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
+                            fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                            dato = row.localDate("dato"),
+                            ferdigstilte = objectMapper().readValue(
+                                row.stringOrNull("ferdigstilte")
+                                    ?: "[]"
+                            ),
+                            ferdigstilteSaksbehandler = objectMapper().readValue(
+                                row.stringOrNull("ferdigstiltesaksbehandler")
+                                    ?: "[]"
+                            ),
+                            nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
+                        )
+                    }.asList
             )
         }
 
@@ -315,28 +345,34 @@ class StatistikkRepository(
 
     fun hentFerdigstilteOgNyeHistorikkSiste7dager(): List<AlleOppgaverNyeOgFerdigstilte> {
 
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         val list = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(
-                    queryOf(
-                            """
-                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye 
+                queryOf(
+                    """
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, ferdigstiltesaksbehandler, nye 
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
-                            mapOf("antall" to "\'${55} days\'")
-                    )
-                            .map { row ->
-                                AlleOppgaverNyeOgFerdigstilte(
-                                        behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
-                                        fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
-                                        dato = row.localDate("dato"),
-                                        ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte")
-                                                ?: "[]"),
-                                        nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
-                                )
-                            }.asList
+                    mapOf("antall" to "\'${55} days\'")
+                )
+                    .map { row ->
+                        AlleOppgaverNyeOgFerdigstilte(
+                            behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
+                            fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
+                            dato = row.localDate("dato"),
+                            ferdigstilte = objectMapper().readValue(
+                                row.stringOrNull("ferdigstilte")
+                                    ?: "[]"
+                            ), ferdigstilteSaksbehandler = objectMapper().readValue(
+                                row.stringOrNull("ferdigstiltesaksbehandler")
+                                    ?: "[]"
+                            ),
+                            nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
+                        )
+                    }.asList
             )
         }
 

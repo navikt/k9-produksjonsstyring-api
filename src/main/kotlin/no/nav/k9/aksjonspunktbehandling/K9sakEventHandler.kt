@@ -78,6 +78,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     )
                 ) {
                     it.ferdigstilte.add(oppgave.eksternId.toString())
+                    if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                        it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+                    }
                     it
                 }
             }
