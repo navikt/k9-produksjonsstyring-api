@@ -169,7 +169,7 @@ class StatistikkRepository(
                                     insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, nye,ferdigstilte,ferdigstiltesaksbehandler)
                                     values (:behandlingType, :fagsakYtelseType, :dato, :nye ::jsonb, :ferdigstilte ::jsonb, :ferdigstiltesaksbehandler ::jsonb)
                                     on conflict (behandlingType, fagsakYtelseType, dato) do update
-                                    set nye = :nye ::jsonb , ferdigstilte = :ferdigstilte ::jsonb 
+                                    set nye = :nye ::jsonb , ferdigstilte = :ferdigstilte ::jsonb , ferdigstiltesaksbehandler = :ferdigstiltesaksbehandler ::jsonb
                      """, mapOf(
                             "behandlingType" to alleOppgaverNyeOgFerdigstilteSomPersisteres.behandlingType.kode,
                             "fagsakYtelseType" to alleOppgaverNyeOgFerdigstilteSomPersisteres.fagsakYtelseType.kode,
