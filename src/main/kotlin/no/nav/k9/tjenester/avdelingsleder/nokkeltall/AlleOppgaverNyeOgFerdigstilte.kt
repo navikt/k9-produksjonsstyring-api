@@ -9,5 +9,6 @@ data class AlleOppgaverNyeOgFerdigstilte(
     val behandlingType: BehandlingType,
     val dato: LocalDate,
     val nye: MutableSet<String> = mutableSetOf(),
-    val ferdigstilte: MutableSet<String> = mutableSetOf()
+    val ferdigstilte: MutableSet<String> = mutableSetOf(),
+    val ferdigstilteSaksbehandler: MutableSet<String> = mutableSetOf()
 )
