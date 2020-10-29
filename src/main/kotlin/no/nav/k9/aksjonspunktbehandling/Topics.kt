@@ -70,7 +70,7 @@ internal class AksjonspunktPunsjLaget : SerDes<PunsjEventDto>() {
             } catch (e: Exception) {
                 log.warn("", e)
                 log.warn(String(it))
-              //  throw e
+                throw e
             }
         }
     }
