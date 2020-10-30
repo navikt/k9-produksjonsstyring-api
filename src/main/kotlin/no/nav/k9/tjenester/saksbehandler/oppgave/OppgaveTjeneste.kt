@@ -366,7 +366,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         saksbehandlerRepository.leggTilReservasjon(ident, reservasjon.oppgave)
         return reservasjonRepository.lagre(uuid, true) {
-            it!!.reservertTil = it.reservertTil?.plusHours(24)!!.forskyvReservasjonsDato()
+            if (it!!.reservertTil == null) {
+                it.reservertTil = LocalDateTime.now().plusHours(24).forskyvReservasjonsDato()
+            } else {
+                it.reservertTil = it.reservertTil?.plusHours(24)!!.forskyvReservasjonsDato()
+            }
             it.flyttetTidspunkt = LocalDateTime.now()
             it.reservertAv = ident
             it.flyttetAv = hentIdentTilInnloggetBruker
