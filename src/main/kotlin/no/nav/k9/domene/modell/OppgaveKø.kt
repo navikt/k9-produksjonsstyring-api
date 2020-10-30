@@ -43,7 +43,6 @@ data class OppgaveKø(
             )
         ) {
             if (this.oppgaverOgDatoer.none { it.id == oppgave.eksternId }) {
-                log.info("Legger til oppgave" + oppgave + " til køen" + this.navn)
                 this.oppgaverOgDatoer.add(
                     OppgaveIdMedDato(
                         oppgave.eksternId,

@@ -39,7 +39,6 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
                     statistikkRefreshChannel = statistikkRefreshChannel
                 )
             log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
-            log.info("Batch oppdaterer køer med ${oppgaveListe[0]} ")
             oppgaveListe.clear()
             oppgaveListe.add(channel.receive())
         } else {
