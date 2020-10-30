@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.k9.domene.lager.oppgave.Kodeverdi
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -29,6 +31,8 @@ data class OppgaveKø(
     val kode6: Boolean = false
 ) {
 
+    private val log = LoggerFactory.getLogger(OppgaveKø::class.java)
+
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository? = null
@@ -39,6 +43,7 @@ data class OppgaveKø(
             )
         ) {
             if (this.oppgaverOgDatoer.none { it.id == oppgave.eksternId }) {
+                log.info("Legger til oppgave" + oppgave + " til køen" + this.navn)
                 this.oppgaverOgDatoer.add(
                     OppgaveIdMedDato(
                         oppgave.eksternId,
@@ -86,11 +91,11 @@ data class OppgaveKø(
         if (oppgave.skjermet != this.skjermet) {
             return false
         }
-        
+
         if (oppgave.kode6 != this.kode6) {
             return false
         }
-        
+
         if (filtreringAndreKriterierType.isEmpty()) {
             return true
         }
@@ -273,8 +278,7 @@ enum class FagsakYtelseType constructor(override val kode: String, override val 
     OMSORGSPENGER("OMP", "Omsorgspenger"),
     FRISINN("FRISINN", "Frisinn"),
     PPN("PPN", "PPN"),
-    OLP("OLP", "OLP"),
-    PUNSJ("PUNSJ", "PUNSJ");
+    OLP("OLP", "OLP");
 
     override val kodeverk = "FAGSAK_YTELSE_TYPE"
 
@@ -309,7 +313,6 @@ enum class BehandlingType(override val kode: String, override val navn: String, 
     REVURDERING("BT-004", "Revurdering", "ae0028"),
     INNSYN("BT-006", "Innsyn", "ae0042"),
     TILBAKE("BT-007", "Tilbakekreving", ""),
-    PUNSJ("BT-009", "Punsj", ""),
     ANKE("BT-008", "Anke", "ae0046");
 
     companion object {
