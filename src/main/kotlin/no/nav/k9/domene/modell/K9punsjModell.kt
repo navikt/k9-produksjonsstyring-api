@@ -51,7 +51,7 @@ class K9punsjModell(
            behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
            fagsakYtelseType = FagsakYtelseType.PPN,
            eventTid = sisteEvent.eventTid,
-           aktiv = false,
+           aktiv = true,
            system = "PUNSJ",
            oppgaveAvsluttet = null,
            utfortFraAdmin = false,
