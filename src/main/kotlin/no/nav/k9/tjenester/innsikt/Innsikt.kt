@@ -112,7 +112,7 @@ fun Route.innsiktGrensesnitt() {
                     for (l in list) {
                         
                         li {
-                            +"${l.navn}: ${l.oppgaverOgDatoer.size} vs ${køer.first { it.navn == l.navn }}" 
+                            +"${l.navn}: ${l.oppgaverOgDatoer.size} vs ${køer.first { it.navn == l.navn }.oppgaverOgDatoer.size}" 
                         }
                     }
                 }
