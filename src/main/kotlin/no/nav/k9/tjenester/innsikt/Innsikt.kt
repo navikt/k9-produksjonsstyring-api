@@ -17,7 +17,7 @@ import org.koin.ktor.ext.inject
 fun Route.innsiktGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
-    
+
     @Location("/")
     class main
 
@@ -81,10 +81,11 @@ fun Route.innsiktGrensesnitt() {
     }
 
     var køer = listOf<OppgaveKø>()
+
     @Location("/db")
     class db
     get { _: db ->
-        
+
         val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
         if (køer.isEmpty()) {
             val k = oppgaveKøRepository.hentIkkeTaHensyn()
@@ -95,9 +96,9 @@ fun Route.innsiktGrensesnitt() {
                 }
             }
             køer = k
-            call.respondHtml {  }
+            call.respondHtml { }
         }
-        
+
         call.respondHtml {
 
             head {
@@ -110,9 +111,9 @@ fun Route.innsiktGrensesnitt() {
                     oppgaveKøRepository.hentIkkeTaHensyn().filter { !it.kode6 }
                 ul {
                     for (l in list) {
-                        
+                        val oppgaverOgDatoer = køer.first { it.navn == l.navn }.oppgaverOgDatoer
                         li {
-                            +"${l.navn}: ${l.oppgaverOgDatoer.size} vs ${køer.first { it.navn == l.navn }.oppgaverOgDatoer.size}" 
+                            +"${l.navn}: ${l.oppgaverOgDatoer.size} vs ${oppgaverOgDatoer.size} forskjellige ${oppgaverOgDatoer.removeAll(l.oppgaverOgDatoer)}"
                         }
                     }
                 }
