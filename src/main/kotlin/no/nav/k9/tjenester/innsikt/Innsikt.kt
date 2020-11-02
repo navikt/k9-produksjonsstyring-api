@@ -7,6 +7,7 @@ import io.ktor.routing.*
 import io.ktor.util.*
 import kotlinx.html.*
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import org.koin.ktor.ext.inject
@@ -16,7 +17,7 @@ import org.koin.ktor.ext.inject
 fun Route.innsiktGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
-
+    
     @Location("/")
     class main
 
@@ -46,10 +47,14 @@ fun Route.innsiktGrensesnitt() {
                     OPPRETTET("OPPRE", "Opprettet"),
                     UTREDES("UTRED", "Utredes");
                      */
-                    val fatterVedtakAvsluttet = oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.FATTER_VEDTAK)
-                    val iverksetterVedtakAvsluttet = oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.IVERKSETTER_VEDTAK)
-                    val opprettetAvsluttet = oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.OPPRETTET)
-                    val utredesAvsluttet = oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.UTREDES)
+                    val fatterVedtakAvsluttet =
+                        oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.FATTER_VEDTAK)
+                    val iverksetterVedtakAvsluttet =
+                        oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.IVERKSETTER_VEDTAK)
+                    val opprettetAvsluttet =
+                        oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.OPPRETTET)
+                    val utredesAvsluttet =
+                        oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.UTREDES)
                     val automatiskProsesserteTotalt = oppgaveRepository.hentAutomatiskProsesserteTotalt()
                     val aksjonspunkter = oppgaveRepository.hentAktiveOppgaversAksjonspunktliste()
                     val oppgaverTotaltAktive = oppgaveRepository.hentAktiveOppgaverTotaltIkkeSkjermede()
@@ -75,9 +80,24 @@ fun Route.innsiktGrensesnitt() {
         }
     }
 
+    var køer = listOf<OppgaveKø>()
     @Location("/db")
     class db
     get { _: db ->
+        
+        val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+        if (køer.isEmpty()) {
+            val k = oppgaveKøRepository.hentIkkeTaHensyn()
+            for (b in k.filter { !it.kode6 }) {
+                b.oppgaverOgDatoer.clear()
+                for (oppgave in hentAktiveOppgaver) {
+                    b.leggOppgaveTilEllerFjernFraKø(oppgave)
+                }
+            }
+            køer = k
+            call.respondHtml {  }
+        }
+        
         call.respondHtml {
 
             head {
@@ -87,11 +107,16 @@ fun Route.innsiktGrensesnitt() {
             }
             body {
                 val list =
-                    oppgaveKøRepository.hentIkkeTaHensyn().filter { !it.kode6 }.map { it.oppgaverOgDatoer.size }
-                p {
-                    +"Kølengder ${list.joinToString()}"
+                    oppgaveKøRepository.hentIkkeTaHensyn().filter { !it.kode6 }
+                ul {
+                    for (l in list) {
+                        
+                        li {
+                            +"${l.navn}: ${l.oppgaverOgDatoer.size} vs ${køer.first { it.navn == l.navn }}" 
+                        }
+                    }
                 }
-                
+
                 ul {
                     for (mutableEntry in Databasekall.map.entries.toList()
                         .sortedByDescending { mutableEntry -> mutableEntry.value.sum() }) {
