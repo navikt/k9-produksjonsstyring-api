@@ -400,7 +400,7 @@ class OppgaveRepository(
             //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' == :status) and (data -> 'aktiv')::boolean = false",
+                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' = :status) and (data -> 'aktiv')::boolean = false",
                     mapOf("status" to behandlingStatus.kode)
                 )
                     .map { row ->
