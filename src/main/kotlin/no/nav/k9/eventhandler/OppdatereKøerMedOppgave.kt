@@ -28,21 +28,24 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
 
     oppgaveListe.add(channel.receive())
     while (true) {
-        val oppgave = channel.poll()
-        if (oppgave == null) {
-            val measureTimeMillis =
-                oppdaterKø(
-                    oppgaveKøRepository = oppgaveKøRepository,
-                    oppgaveListe = oppgaveListe,
-                    reservasjonRepository = reservasjonRepository,
-                    oppgaveRefreshChannel = oppgaveRefreshChannel,
-                    statistikkRefreshChannel = statistikkRefreshChannel
-                )
-            log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
-            oppgaveListe.clear()
-            oppgaveListe.add(channel.receive())
-        } else {
-            oppgaveListe.add(oppgave)
+        try {
+            val oppgave = channel.poll()
+            if (oppgave == null) {
+                val measureTimeMillis =
+                    oppdaterKø(
+                        oppgaveKøRepository = oppgaveKøRepository,
+                        oppgaveListe = oppgaveListe,
+                        reservasjonRepository = reservasjonRepository,
+                        statistikkRefreshChannel = statistikkRefreshChannel
+                    )
+                log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
+                oppgaveListe.clear()
+                oppgaveListe.add(channel.receive())
+            } else {
+                oppgaveListe.add(oppgave)
+            }
+        } catch (e: Exception) {
+            log.error("", e)
         }
     }
 }
@@ -52,7 +55,6 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveListe: MutableList<Oppgave>,
     reservasjonRepository: ReservasjonRepository,
-    oppgaveRefreshChannel: SendChannel<UUID>,
     statistikkRefreshChannel: SendChannel<Boolean>,
 ): Long {
     return measureTimeMillis {

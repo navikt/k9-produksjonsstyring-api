@@ -126,7 +126,6 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 reservasjon.oppgave
             )
         }
-
     }
 
 }
