@@ -7,7 +7,7 @@ import no.nav.k9.integrasjon.kafka.dto.PunsjEventDto
 import no.nav.k9.statistikk.kontrakter.Behandling
 import no.nav.k9.statistikk.kontrakter.Sak
 
-class K9punsjModell(
+data class K9punsjModell(
     val eventer: List<PunsjEventDto>
 )  : IModell {
 
@@ -48,11 +48,11 @@ class K9punsjModell(
            behandlingOpprettet = førsteEvent.eventTid,
            forsteStonadsdag = førsteEvent.eventTid.toLocalDate(),
            behandlingStatus = BehandlingStatus.OPPRETTET,
-           behandlingType = BehandlingType.PUNSJ,
+           behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
            fagsakYtelseType = FagsakYtelseType.PPN,
            eventTid = sisteEvent.eventTid,
-           aktiv = false,
-           system = FagsakYtelseType.PUNSJ.kode,
+           aktiv = true,
+           system = "PUNSJ",
            oppgaveAvsluttet = null,
            utfortFraAdmin = false,
            eksternId = sisteEvent.eksternId,

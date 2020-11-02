@@ -1,6 +1,5 @@
 package no.nav.k9.domene.repository
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -69,8 +68,8 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
 
         }
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
-        return objectMapper().readValue(out!!)
-
+        val modell = objectMapper().readValue(out!!, K9punsjModell::class.java)
+        return modell.copy(eventer = modell.eventer.sortedBy { it.eventTid })
     }
 
     fun hentAlleEventerIder(

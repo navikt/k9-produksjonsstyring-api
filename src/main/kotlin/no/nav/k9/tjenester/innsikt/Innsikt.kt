@@ -6,8 +6,11 @@ import io.ktor.locations.*
 import io.ktor.routing.*
 import io.ktor.util.*
 import kotlinx.html.*
+import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import org.koin.ktor.ext.inject
 
 @KtorExperimentalAPI
@@ -15,6 +18,7 @@ import org.koin.ktor.ext.inject
 fun Route.innsiktGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
+    val saksbehandlerRepository by inject<SaksbehandlerRepository>()
 
     @Location("/")
     class main
@@ -35,13 +39,29 @@ fun Route.innsiktGrensesnitt() {
                         +"Antall åpne oppgaver fordelt på aksjonspunkt."
                     }
 
-                    val avsluttede = oppgaveRepository.hentAvsluttede()
-                    val inaktiveIkkeAvsluttedeOppgaver = oppgaveRepository.hentInaktiveIkkeAvluttedeAvsluttede()
+                    val avsluttede = oppgaveRepository.hentMedBehandlingsstatus(BehandlingStatus.AVSLUTTET)
+                    val inaktiveIkkeAvsluttedeOppgaver = oppgaveRepository.hentInaktiveIkkeAvluttet()
+
+                    /**
+                     *  AVSLUTTET("AVSLU", "Avsluttet"),
+                    FATTER_VEDTAK("FVED", "Fatter vedtak"),
+                    IVERKSETTER_VEDTAK("IVED", "Iverksetter vedtak"),
+                    OPPRETTET("OPPRE", "Opprettet"),
+                    UTREDES("UTRED", "Utredes");
+                     */
+                    val fatterVedtakAvsluttet =
+                        oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.FATTER_VEDTAK)
+                    val iverksetterVedtakAvsluttet =
+                        oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.IVERKSETTER_VEDTAK)
+                    val opprettetAvsluttet =
+                        oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.OPPRETTET)
+                    val utredesAvsluttet =
+                        oppgaveRepository.hentInaktiveIkkeAvluttetMedBehandlingStatus(BehandlingStatus.UTREDES)
                     val automatiskProsesserteTotalt = oppgaveRepository.hentAutomatiskProsesserteTotalt()
                     val aksjonspunkter = oppgaveRepository.hentAktiveOppgaversAksjonspunktliste()
                     val oppgaverTotaltAktive = oppgaveRepository.hentAktiveOppgaverTotaltIkkeSkjermede()
                     p {
-                        +"Det er nå ${aksjonspunkter.sumBy { it.antall }} åpne aksjonspunkter fordelt på $oppgaverTotaltAktive oppgaver, $inaktiveIkkeAvsluttedeOppgaver inaktive med annen status enn avsluttet og $avsluttede med status avsluttet, $automatiskProsesserteTotalt er prosessert automatisk"
+                        +"Det er nå ${aksjonspunkter.sumBy { it.antall }} åpne aksjonspunkter fordelt på $oppgaverTotaltAktive oppgaver, $inaktiveIkkeAvsluttedeOppgaver inaktive med annen status enn avsluttet (fatter vedtak ${fatterVedtakAvsluttet}, iverksetter vedtak ${iverksetterVedtakAvsluttet}, opprettet ${opprettetAvsluttet}, utredes ${utredesAvsluttet}) og $avsluttede med status avsluttet, $automatiskProsesserteTotalt er prosessert automatisk"
                     }
                     p {
                         +"Totalt ${oppgaverTotaltAktive + inaktiveIkkeAvsluttedeOppgaver + avsluttede}"
@@ -62,32 +82,58 @@ fun Route.innsiktGrensesnitt() {
         }
     }
 
+    var køer = listOf<OppgaveKø>()
+
     @Location("/db")
     class db
     get { _: db ->
-        call.respondHtml {
-
-            head {
-                title { +"Innsikt i k9-los" }
-                styleLink("/static/bootstrap.css")
-                script(src = "/static/script.js") {}
-            }
-            body {
-                val list =
-                    oppgaveKøRepository.hentIkkeTaHensyn().filter { !it.kode6 }.map { it.oppgaverOgDatoer.size }
-                p {
-                    +"Kølengder ${list.joinToString()}"
+        if (køer.isEmpty()) {
+            val alleReservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
+            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver().filterNot { alleReservasjoner.contains(it.eksternId) }
+          
+            val k = oppgaveKøRepository.hentIkkeTaHensyn()
+            for (b in k.filter { !it.kode6 }) {
+                b.oppgaverOgDatoer.clear()
+                for (oppgave in hentAktiveOppgaver) {
+                    b.leggOppgaveTilEllerFjernFraKø(oppgave)
                 }
-                
-                ul {
-                    for (mutableEntry in Databasekall.map.entries.toList()
-                        .sortedByDescending { mutableEntry -> mutableEntry.value.sum() }) {
-                        li {
-                            +"${mutableEntry.key}: ${mutableEntry.value} "
+            }
+            køer = k
+            call.respondHtml { }
+        } else {
+            call.respondHtml {
+                head {
+                    title { +"Innsikt i k9-los" }
+                    styleLink("/static/bootstrap.css")
+                    script(src = "/static/script.js") {}
+                }
+                body {
+                    val list =
+                        oppgaveKøRepository.hentIkkeTaHensyn().filter { !it.kode6 }
+                    ul {
+                        for (l in list) {
+                            val oppgaverOgDatoer = køer.first { it.navn == l.navn }.oppgaverOgDatoer
+                            val size = oppgaverOgDatoer.size
+                            oppgaverOgDatoer.removeAll(l.oppgaverOgDatoer)
+
+                            li {
+                                +"${l.navn}: ${l.oppgaverOgDatoer.size} vs $size"
+                            }
                         }
                     }
+
+                    ul {
+                        for (mutableEntry in Databasekall.map.entries.toList()
+                            .sortedByDescending { mutableEntry -> mutableEntry.value.sum() }) {
+                            li {
+                                +"${mutableEntry.key}: ${mutableEntry.value} "
+                            }
+                        }
+                    }
+                    køer = emptyList()
                 }
             }
+          
         }
     }
 

@@ -10,7 +10,6 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import org.slf4j.LoggerFactory
-import java.util.*
 import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
@@ -18,7 +17,6 @@ import kotlin.system.measureTimeMillis
 @KtorExperimentalAPI
 fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     channel: ReceiveChannel<Oppgave>,
-    oppgaveRefreshChannel: SendChannel<UUID>,
     statistikkRefreshChannel: SendChannel<Boolean>,
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository
@@ -28,21 +26,24 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
 
     oppgaveListe.add(channel.receive())
     while (true) {
-        val oppgave = channel.poll()
-        if (oppgave == null) {
-            val measureTimeMillis =
-                oppdaterKø(
-                    oppgaveKøRepository = oppgaveKøRepository,
-                    oppgaveListe = oppgaveListe,
-                    reservasjonRepository = reservasjonRepository,
-                    oppgaveRefreshChannel = oppgaveRefreshChannel,
-                    statistikkRefreshChannel = statistikkRefreshChannel
-                )
-            log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
-            oppgaveListe.clear()
-            oppgaveListe.add(channel.receive())
-        } else {
-            oppgaveListe.add(oppgave)
+        try {
+            val oppgave = channel.poll()
+            if (oppgave == null) {
+                val measureTimeMillis =
+                    oppdaterKø(
+                        oppgaveKøRepository = oppgaveKøRepository,
+                        oppgaveListe = oppgaveListe,
+                        reservasjonRepository = reservasjonRepository,
+                        statistikkRefreshChannel = statistikkRefreshChannel
+                    )
+                log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
+                oppgaveListe.clear()
+                oppgaveListe.add(channel.receive())
+            } else {
+                oppgaveListe.add(oppgave)
+            }
+        } catch (e: Exception) {
+            log.error("", e)
         }
     }
 }
@@ -52,7 +53,6 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveListe: MutableList<Oppgave>,
     reservasjonRepository: ReservasjonRepository,
-    oppgaveRefreshChannel: SendChannel<UUID>,
     statistikkRefreshChannel: SendChannel<Boolean>,
 ): Long {
     return measureTimeMillis {

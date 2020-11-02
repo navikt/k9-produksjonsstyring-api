@@ -83,7 +83,7 @@ class OppgaveKøRepository(
 
         return uuidListe
     }
-    
+
     fun hentOppgavekø(id: UUID): OppgaveKø {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
@@ -160,9 +160,12 @@ class OppgaveKøRepository(
             .increment()
     }
 
-    suspend fun leggTilOppgaverTilKø(køUUID: UUID, oppgaver: List<Oppgave>,reservasjonRepository: ReservasjonRepository) {
+    suspend fun leggTilOppgaverTilKø(
+        køUUID: UUID,
+        oppgaver: List<Oppgave>,
+        reservasjonRepository: ReservasjonRepository
+    ) {
         var hintRefresh = false
-        var gjennomførteTransaksjon = true
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val gammelJson = tx.run(
@@ -174,26 +177,23 @@ class OppgaveKøRepository(
                             row.string("data")
                         }.asSingle
                 )
-                val oppgaveKø =  objectMapper().readValue(gammelJson, OppgaveKø::class.java)
-                val første20OppgaverSomVar= oppgaveKø.oppgaverOgDatoer.take(20).toList()
-                
-                var endring = false
+                val oppgaveKø = objectMapper().readValue(gammelJson, OppgaveKø::class.java)
+                val første20OppgaverSomVar = oppgaveKø.oppgaverOgDatoer.take(20).toList()
+
                 for (oppgave in oppgaver) {
                     if (oppgaveKø.kode6 == oppgave.kode6) {
-                        endring = endring || oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                        oppgaveKø.leggOppgaveTilEllerFjernFraKø(
                             oppgave = oppgave,
                             reservasjonRepository = reservasjonRepository
                         )
                     }
                 }
-                if (!endring) {
-                    gjennomførteTransaksjon = false
-                    return@transaction
-                }
-                //Sorter oppgaver
+                // Sorter oppgaver
                 oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
+                // Precacher 20 første oppgaver 
                 hintRefresh = første20OppgaverSomVar != oppgaveKø.oppgaverOgDatoer.take(20).toList()
-                oppgaveKø.oppgaverOgDatoer.take(20).forEach { runBlocking { oppgaveRefreshChannel.send(it.id) }}
+                oppgaveKø.oppgaverOgDatoer.take(20).forEach { runBlocking { oppgaveRefreshChannel.send(it.id) } }
+                
                 tx.run(
                     queryOf(
                         """
@@ -209,7 +209,6 @@ class OppgaveKøRepository(
         }
 
         if (hintRefresh) {
-            
             refreshKlienter.send(
                 SseEvent(
                     objectMapper().writeValueAsString(
@@ -221,12 +220,10 @@ class OppgaveKøRepository(
                 )
             )
         }
-        if (gjennomførteTransaksjon) {
-            Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
-                .increment()
-        }
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
     }
-    
+
     @KtorExperimentalAPI
     suspend fun lagreIkkeTaHensyn(
         uuid: UUID,
@@ -263,7 +260,7 @@ class OppgaveKøRepository(
                 if (json == gammelJson) {
                     log.info("Ingen endring i oppgavekø " + oppgaveKø.navn)
                     gjennomførteTransaksjon = false
-                    return@transaction 
+                    return@transaction
                 }
                 tx.run(
                     queryOf(
