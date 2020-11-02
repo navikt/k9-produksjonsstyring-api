@@ -10,7 +10,6 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import org.koin.ktor.ext.inject
 
@@ -88,8 +87,6 @@ fun Route.innsiktGrensesnitt() {
     @Location("/db")
     class db
     get { _: db ->
-
-
         if (køer.isEmpty()) {
             val alleReservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
             val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver().filterNot { alleReservasjoner.contains(it.eksternId) }
@@ -105,7 +102,6 @@ fun Route.innsiktGrensesnitt() {
             call.respondHtml { }
         } else {
             call.respondHtml {
-
                 head {
                     title { +"Innsikt i k9-los" }
                     styleLink("/static/bootstrap.css")
@@ -134,9 +130,10 @@ fun Route.innsiktGrensesnitt() {
                             }
                         }
                     }
+                    køer = emptyList()
                 }
             }
-            køer = emptyList()
+          
         }
     }
 
