@@ -112,8 +112,11 @@ fun Route.innsiktGrensesnitt() {
                 ul {
                     for (l in list) {
                         val oppgaverOgDatoer = køer.first { it.navn == l.navn }.oppgaverOgDatoer
+                        val size = oppgaverOgDatoer.size
+                        oppgaverOgDatoer.removeAll(l.oppgaverOgDatoer)
+
                         li {
-                            +"${l.navn}: ${l.oppgaverOgDatoer.size} vs ${oppgaverOgDatoer.size} forskjellige ${oppgaverOgDatoer.removeAll(l.oppgaverOgDatoer)}"
+                            +"${l.navn}: ${l.oppgaverOgDatoer.size} vs $size forskjellige ${oppgaverOgDatoer}"
                         }
                     }
                 }
