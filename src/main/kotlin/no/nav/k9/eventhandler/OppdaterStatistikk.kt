@@ -23,7 +23,6 @@ fun CoroutineScope.oppdaterStatistikk(
     while (true) {
         try {
             channel.receive()
-            log.info("Oppdaterer kølengder")
             oppgaveKøRepository.hentIkkeTaHensyn().forEach {
                 refreshHentAntallOppgaver(oppgaveTjeneste, it)
             }
