@@ -10,7 +10,6 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import org.slf4j.LoggerFactory
-import java.util.*
 import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
@@ -18,7 +17,6 @@ import kotlin.system.measureTimeMillis
 @KtorExperimentalAPI
 fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
     channel: ReceiveChannel<Oppgave>,
-    oppgaveRefreshChannel: SendChannel<UUID>,
     statistikkRefreshChannel: SendChannel<Boolean>,
     oppgaveKøRepository: OppgaveKøRepository,
     reservasjonRepository: ReservasjonRepository

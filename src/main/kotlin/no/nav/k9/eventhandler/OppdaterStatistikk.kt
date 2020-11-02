@@ -9,6 +9,7 @@ import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.StatistikkRepository
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
+import no.nav.k9.tjenester.sse.log
 import java.util.concurrent.Executors
 
 @KtorExperimentalAPI
@@ -20,17 +21,22 @@ fun CoroutineScope.oppdaterStatistikk(
 
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     while (true) {
-        channel.receive()
-        oppgaveKøRepository.hentIkkeTaHensyn().forEach {
-            refreshHentAntallOppgaver(oppgaveTjeneste, it)
+        try {
+            channel.receive()
+            log.info("Oppdaterer kølengder")
+            oppgaveKøRepository.hentIkkeTaHensyn().forEach {
+                refreshHentAntallOppgaver(oppgaveTjeneste, it)
+            }
+            statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(refresh = true)
+        } catch (e: Exception) {
+            log.error("", e)
         }
-        statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(refresh = true)
     }
 }
 
 
 @KtorExperimentalAPI
-private suspend fun refreshHentAntallOppgaver(
+private fun refreshHentAntallOppgaver(
     oppgaveTjeneste: OppgaveTjeneste,
     oppgavekø: OppgaveKø
 ) {
