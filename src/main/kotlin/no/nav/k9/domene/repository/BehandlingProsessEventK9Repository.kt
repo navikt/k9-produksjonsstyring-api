@@ -1,6 +1,5 @@
 package no.nav.k9.domene.repository
 
-import io.ktor.util.*
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -68,8 +67,8 @@ class BehandlingProsessEventK9Repository(private val dataSource: DataSource) {
 
         }
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
-        return objectMapper().readValue(out!!, K9SakModell::class.java)
-
+        val modell = objectMapper().readValue(out!!, K9SakModell::class.java)
+        return modell.copy(eventer = modell.eventer.sortedBy { it.eventTid })
     }
 
     fun hentAlleEventerIder(

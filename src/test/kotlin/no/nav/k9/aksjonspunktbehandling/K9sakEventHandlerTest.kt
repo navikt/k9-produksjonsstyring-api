@@ -406,7 +406,6 @@ class K9sakEventHandlerTest : KoinTest {
                 oppgaveKøRepository = oppgaveKøRepository,
                 oppgaveListe = mutableListOf(oppgave),
                 reservasjonRepository = get(),
-                oppgaveRefreshChannel = get<Channel<UUID>>(named("oppgaveRefreshChannel")),
                 statistikkRefreshChannel = get<Channel<Boolean>>(named("statistikkRefreshChannel"))
             )
             oppgaveKøRepository.hent()[0].oppgaverOgDatoer.size

@@ -69,8 +69,8 @@ class BehandlingProsessEventTilbakeRepository(private val dataSource: DataSource
 
         }
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
-        return objectMapper().readValue(out!!, K9TilbakeModell::class.java)
-
+        val modell = objectMapper().readValue(out!!, K9TilbakeModell::class.java)
+        return modell.copy(eventer = modell.eventer.sortedBy { it.eventTid })
     }
 
     fun hentAlleEventerIder(
