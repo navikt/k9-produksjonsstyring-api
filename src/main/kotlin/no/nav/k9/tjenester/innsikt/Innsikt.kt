@@ -10,6 +10,8 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
+import no.nav.k9.domene.repository.ReservasjonRepository
+import no.nav.k9.domene.repository.SaksbehandlerRepository
 import org.koin.ktor.ext.inject
 
 @KtorExperimentalAPI
@@ -17,6 +19,7 @@ import org.koin.ktor.ext.inject
 fun Route.innsiktGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
+    val saksbehandlerRepository by inject<SaksbehandlerRepository>()
 
     @Location("/")
     class main
@@ -86,8 +89,11 @@ fun Route.innsiktGrensesnitt() {
     class db
     get { _: db ->
 
-        val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+
         if (køer.isEmpty()) {
+            val alleReservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
+            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver().filterNot { alleReservasjoner.contains(it.eksternId) }
+          
             val k = oppgaveKøRepository.hentIkkeTaHensyn()
             for (b in k.filter { !it.kode6 }) {
                 b.oppgaverOgDatoer.clear()
@@ -97,39 +103,40 @@ fun Route.innsiktGrensesnitt() {
             }
             køer = k
             call.respondHtml { }
-        }
+        } else {
+            call.respondHtml {
 
-        call.respondHtml {
+                head {
+                    title { +"Innsikt i k9-los" }
+                    styleLink("/static/bootstrap.css")
+                    script(src = "/static/script.js") {}
+                }
+                body {
+                    val list =
+                        oppgaveKøRepository.hentIkkeTaHensyn().filter { !it.kode6 }
+                    ul {
+                        for (l in list) {
+                            val oppgaverOgDatoer = køer.first { it.navn == l.navn }.oppgaverOgDatoer
+                            val size = oppgaverOgDatoer.size
+                            oppgaverOgDatoer.removeAll(l.oppgaverOgDatoer)
 
-            head {
-                title { +"Innsikt i k9-los" }
-                styleLink("/static/bootstrap.css")
-                script(src = "/static/script.js") {}
-            }
-            body {
-                val list =
-                    oppgaveKøRepository.hentIkkeTaHensyn().filter { !it.kode6 }
-                ul {
-                    for (l in list) {
-                        val oppgaverOgDatoer = køer.first { it.navn == l.navn }.oppgaverOgDatoer
-                        val size = oppgaverOgDatoer.size
-                        oppgaverOgDatoer.removeAll(l.oppgaverOgDatoer)
+                            li {
+                                +"${l.navn}: ${l.oppgaverOgDatoer.size} vs $size forskjellige ${oppgaverOgDatoer}"
+                            }
+                        }
+                    }
 
-                        li {
-                            +"${l.navn}: ${l.oppgaverOgDatoer.size} vs $size forskjellige ${oppgaverOgDatoer}"
+                    ul {
+                        for (mutableEntry in Databasekall.map.entries.toList()
+                            .sortedByDescending { mutableEntry -> mutableEntry.value.sum() }) {
+                            li {
+                                +"${mutableEntry.key}: ${mutableEntry.value} "
+                            }
                         }
                     }
                 }
-
-                ul {
-                    for (mutableEntry in Databasekall.map.entries.toList()
-                        .sortedByDescending { mutableEntry -> mutableEntry.value.sum() }) {
-                        li {
-                            +"${mutableEntry.key}: ${mutableEntry.value} "
-                        }
-                    }
-                }
             }
+            køer = emptyList()
         }
     }
 
