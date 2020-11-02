@@ -121,7 +121,7 @@ fun Route.innsiktGrensesnitt() {
                             oppgaverOgDatoer.removeAll(l.oppgaverOgDatoer)
 
                             li {
-                                +"${l.navn}: ${l.oppgaverOgDatoer.size} vs $size forskjellige ${oppgaverOgDatoer}"
+                                +"${l.navn}: ${l.oppgaverOgDatoer.size} vs $size"
                             }
                         }
                     }
