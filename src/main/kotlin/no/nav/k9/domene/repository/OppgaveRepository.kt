@@ -9,6 +9,7 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.integrasjon.abac.IPepClient
@@ -349,12 +350,35 @@ class OppgaveRepository(
 
     }
 
-    internal fun hentAvsluttede(): Int {
+    internal fun hentMedBehandlingsstatus(behandlingStatus: BehandlingStatus): Int {
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' = 'AVSLU') ::boolean",
+                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' = :status) ::boolean",
+                    mapOf("status" to behandlingStatus.kode)
+                )
+                    .map { row ->
+                        row.int("count")
+                    }.asSingle
+            )
+        }
+        spørring = System.currentTimeMillis() - spørring
+        log.info("Teller inaktive oppgaver: $spørring ms")
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
+
+        return count!!
+    }
+
+    internal fun hentInaktiveIkkeAvluttet(): Int {
+        var spørring = System.currentTimeMillis()
+        val count: Int? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
+            it.run(
+                queryOf(
+                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' != 'AVSLU') and (data -> 'aktiv')::boolean = false",
                     mapOf()
                 )
                     .map { row ->
@@ -370,13 +394,14 @@ class OppgaveRepository(
         return count!!
     }
 
-    internal fun hentInaktiveIkkeAvluttedeAvsluttede(): Int {
+    internal fun hentInaktiveIkkeAvluttetMedBehandlingStatus(behandlingStatus: BehandlingStatus): Int {
         var spørring = System.currentTimeMillis()
         val count: Int? = using(sessionOf(dataSource)) {
+            //language=PostgreSQL
             it.run(
                 queryOf(
-                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' != 'AVSLU') and (data -> 'aktiv')::boolean = false",
-                    mapOf()
+                    "select count(*) as count from oppgave where not (data -> 'fagsakYtelseType' ->> 'kode' = 'FRISINN')  and (data -> 'behandlingStatus' ->> 'kode' == :status) and (data -> 'aktiv')::boolean = false",
+                    mapOf("status" to behandlingStatus.kode)
                 )
                     .map { row ->
                         row.int("count")
