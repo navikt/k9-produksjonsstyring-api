@@ -7,7 +7,7 @@ import no.nav.k9.integrasjon.kafka.dto.PunsjEventDto
 import no.nav.k9.statistikk.kontrakter.Behandling
 import no.nav.k9.statistikk.kontrakter.Sak
 
-data class K9punsjModell(
+data class K9PunsjModell(
     val eventer: List<PunsjEventDto>
 )  : IModell {
 

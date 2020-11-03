@@ -17,7 +17,7 @@ import javax.sql.DataSource
 
 
 class BehandlingProsessEventTilbakeRepository(private val dataSource: DataSource) {
-    fun hent(uuid: UUID): K9SakModell {
+    fun hent(uuid: UUID): K9TilbakeModell {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
@@ -31,11 +31,11 @@ class BehandlingProsessEventTilbakeRepository(private val dataSource: DataSource
         }
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){ LongAdder() }.increment()
         if (json.isNullOrEmpty()) {
-            return K9SakModell(emptyList())
+            return K9TilbakeModell(mutableListOf())
         }
-        val modell = objectMapper().readValue(json, K9SakModell::class.java)
+        val modell = objectMapper().readValue(json, K9TilbakeModell::class.java)
      
-        return K9SakModell(  modell.eventer.sortedBy { it.eventTid })
+        return K9TilbakeModell(  modell.eventer.sortedBy { it.eventTid }.toMutableList())
     }
 
     fun lagre(

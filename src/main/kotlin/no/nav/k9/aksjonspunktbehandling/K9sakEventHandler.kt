@@ -6,6 +6,7 @@ import kotlinx.coroutines.channels.sendBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.K9SakModell
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
@@ -33,12 +34,19 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     fun prosesser(
         event: BehandlingProsessEventDto
     ) {
-        val modell = behandlingProsessEventK9Repository.lagre(event)
-        val oppgave = modell.oppgave(modell.sisteEvent())
-
-        if (modell.fikkEndretAksjonspunkt()) {
-            fjernReservasjon(oppgave)
+        val modell = behandlingProsessEventK9Repository.lagre(event.eksternId!!){
+            if (it == null) {
+                return@lagre  K9SakModell(mutableListOf(event))
+            }
+            if (it.eventer.contains(event)) {
+                log.info("Skipping eventen har kommet tidligere" )
+                return@lagre it
+            }
+            it.eventer.add(event)       
+            it
         }
+        val oppgave = modell.oppgave(modell.sisteEvent())
+      
         oppgaveRepository.lagre(oppgave.eksternId) {
             if (modell.starterSak()) {
                 sakOgBehandlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
@@ -78,10 +86,12 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     )
                 ) {
                     it.ferdigstilte.add(oppgave.eksternId.toString())
-                   
                     it
                 }
-                if (oppgave.ansvarligSaksbehandlerIdent != null) {
+            }
+
+            if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
+                if (reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.hent(oppgave.eksternId).erAktiv()) {
                     statistikkRepository.lagre(
                         AlleOppgaverNyeOgFerdigstilte(
                             oppgave.fagsakYtelseType,
@@ -93,10 +103,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                         it
                     }
                 }
-            }
-
-            if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
-                fjernReservasjon(oppgave)
+                
                 if (reservasjonRepository.finnes(oppgave.eksternId)) {
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                 }
@@ -107,6 +114,9 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             statistikkProducer.send(modell)
 
             oppgave
+        }
+        if (modell.fikkEndretAksjonspunkt()) {
+            fjernReservasjon(oppgave)
         }
         modell.reportMetrics(reservasjonRepository)
         oppgaverSomSkalInnPåKøer.sendBlocking(oppgave)

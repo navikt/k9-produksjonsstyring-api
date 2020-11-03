@@ -4,6 +4,7 @@ import io.ktor.application.*
 import io.ktor.util.*
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.*
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import java.util.*
@@ -68,8 +69,11 @@ fun Application.rekjørForGrafer(
                             ) {
                                 it.ferdigstilte.add(oppgave.eksternId.toString())
                                 it
-                            }
-                            if (oppgave.ansvarligSaksbehandlerIdent != null) {
+                            }                          
+                        }
+
+                        if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
+                            if (reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.hent(oppgave.eksternId).erAktiv()) {
                                 statistikkRepository.lagre(
                                     AlleOppgaverNyeOgFerdigstilte(
                                         oppgave.fagsakYtelseType,

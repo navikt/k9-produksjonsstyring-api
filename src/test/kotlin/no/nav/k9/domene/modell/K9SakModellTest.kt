@@ -40,7 +40,7 @@ class K9SakModellTest {
             aksjonspunktKoderMedStatusListe = mutableMapOf()
         )
         val modell = K9SakModell(
-            eventer = listOf(
+            eventer = mutableListOf(
                 eventDto
             )
         )
@@ -82,7 +82,7 @@ class K9SakModellTest {
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktDefinisjon.FATTER_VEDTAK.kode to AksjonspunktStatus.OPPRETTET.kode)
         )
         val modell = K9SakModell(
-            eventer = listOf(
+            eventer = mutableListOf(
                 eventDto
             )
         )
@@ -111,7 +111,7 @@ class K9SakModellTest {
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktDefinisjon.FATTER_VEDTAK.kode to AksjonspunktStatus.UTFØRT.kode)
         )
         val modell = K9SakModell(
-            eventer = listOf(
+            eventer = mutableListOf(
                 eventDto
             )
         )
@@ -141,7 +141,7 @@ class K9SakModellTest {
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktDefinisjon.FATTER_VEDTAK.kode to AksjonspunktStatus.AVBRUTT.kode)
         )
         val modell = K9SakModell(
-            eventer = listOf(
+            eventer = mutableListOf(
                 eventDto
             )
         )
@@ -170,7 +170,7 @@ class K9SakModellTest {
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE to AksjonspunktStatus.OPPRETTET.kode)
         )
         val modell = K9SakModell(
-            eventer = listOf(
+            eventer = mutableListOf(
                 eventDto
             )
         )
@@ -199,7 +199,7 @@ class K9SakModellTest {
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE to AksjonspunktStatus.OPPRETTET.kode)
         )
         val modell = K9SakModell(
-            eventer = listOf(
+            eventer = mutableListOf(
                 eventDto
             )
         )
@@ -229,7 +229,7 @@ class K9SakModellTest {
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.VURDER_ÅRSKVANTUM_KVOTE to AksjonspunktStatus.OPPRETTET.kode)
         )
         val modell = K9SakModell(
-            eventer = listOf(
+            eventer = mutableListOf(
                 eventDto
             )
         )
@@ -258,7 +258,7 @@ class K9SakModellTest {
             aksjonspunktKoderMedStatusListe = mutableMapOf(AksjonspunktKodeDefinisjon.AVKLAR_FORTSATT_MEDLEMSKAP_KODE to AksjonspunktStatus.OPPRETTET.kode)
         )
         val modell = K9SakModell(
-            eventer = listOf(
+            eventer = mutableListOf(
                 eventDto
             )
         )
