@@ -32,6 +32,7 @@ import no.nav.k9.eventhandler.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
+import no.nav.k9.jobber.rekjørForGrafer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
@@ -158,7 +159,7 @@ fun Application.k9Los() {
 //         oppgaveKøRepository = koin.get(),
 //         saksbehhandlerRepository = koin.get()
 //     )
-   // rekjørForGrafer(koin.get(), koin.get(), koin.get())
+    rekjørForGrafer(koin.get(), koin.get(), koin.get())
 
     install(CallIdRequired)
 
