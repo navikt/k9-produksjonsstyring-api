@@ -34,16 +34,21 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     fun prosesser(
         event: BehandlingProsessEventDto
     ) {
+        var skalSkippe = false
         val modell = behandlingProsessEventK9Repository.lagre(event.eksternId!!){
             if (it == null) {
                 return@lagre  K9SakModell(mutableListOf(event))
             }
             if (it.eventer.contains(event)) {
                 log.info("Skipping eventen har kommet tidligere" )
+                skalSkippe = true
                 return@lagre it
             }
             it.eventer.add(event)       
             it
+        }
+        if (skalSkippe) {
+            return
         }
         val oppgave = modell.oppgave(modell.sisteEvent())
       
