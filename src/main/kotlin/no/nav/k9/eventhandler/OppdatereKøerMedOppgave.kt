@@ -36,6 +36,9 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
                         reservasjonRepository = reservasjonRepository,
                         statistikkRefreshChannel = statistikkRefreshChannel
                     )
+                for (oppgave in oppgaveListe) {
+                    log.info("""Oppgave: ${oppgave.fagsakSaksnummer} ${oppgave.behandlingStatus} ${oppgave.aksjonspunkter}""")
+                }
                 log.info("Batch oppdaterer køer med ${oppgaveListe.size} oppgaver tok $measureTimeMillis ms")
                 oppgaveListe.clear()
                 oppgaveListe.add(channel.receive())
@@ -49,7 +52,7 @@ fun CoroutineScope.oppdatereKøerMedOppgaveProsessor(
 }
 
 @KtorExperimentalAPI
- suspend fun oppdaterKø(
+suspend fun oppdaterKø(
     oppgaveKøRepository: OppgaveKøRepository,
     oppgaveListe: MutableList<Oppgave>,
     reservasjonRepository: ReservasjonRepository,
