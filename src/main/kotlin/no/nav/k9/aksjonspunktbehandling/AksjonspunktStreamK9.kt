@@ -1,6 +1,6 @@
 package no.nav.k9.aksjonspunktbehandling
 
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import no.nav.helse.kafka.ManagedKafkaStreams
 import no.nav.helse.kafka.ManagedStreamHealthy
 import no.nav.helse.kafka.ManagedStreamReady

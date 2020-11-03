@@ -41,14 +41,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             }
             if (it.eventer.contains(event)) {
                 log.info("Skipping eventen har kommet tidligere" )
-                skalSkippe = true
                 return@lagre it
             }
             it.eventer.add(event)       
             it
-        }
-        if (skalSkippe) {
-            return
         }
         val oppgave = modell.oppgave(modell.sisteEvent())
       
@@ -96,7 +92,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             }
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
-                if (reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.hent(oppgave.eksternId).erAktiv()) {
+                if (reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.hent(oppgave.eksternId).erAktiv(event.eventTid)) {
                     statistikkRepository.lagre(
                         AlleOppgaverNyeOgFerdigstilte(
                             oppgave.fagsakYtelseType,

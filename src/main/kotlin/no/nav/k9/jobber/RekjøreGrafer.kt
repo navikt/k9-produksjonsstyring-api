@@ -73,7 +73,7 @@ fun Application.rekjørForGrafer(
                         }
 
                         if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
-                            if (reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.hent(oppgave.eksternId).erAktiv()) {
+                            if (reservasjonRepository.finnes(oppgave.eksternId)&& reservasjonRepository.hent(oppgave.eksternId).erAktiv(oppgave.eventTid)) {
                                 statistikkRepository.lagre(
                                     AlleOppgaverNyeOgFerdigstilte(
                                         oppgave.fagsakYtelseType,

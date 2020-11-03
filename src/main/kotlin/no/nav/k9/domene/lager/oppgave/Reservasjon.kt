@@ -14,4 +14,8 @@ data class Reservasjon(
     fun erAktiv(): Boolean {
         return reservertTil !=null &&  reservertTil!!.isAfter(LocalDateTime.now())
     }
+    
+    fun erAktiv(eventTid:LocalDateTime): Boolean {
+        return reservertTil !=null &&  reservertTil!!.isAfter(eventTid)
+    }
 }
