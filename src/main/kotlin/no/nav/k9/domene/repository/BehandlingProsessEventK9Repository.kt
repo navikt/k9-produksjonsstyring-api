@@ -29,17 +29,17 @@ class BehandlingProsessEventK9Repository(private val dataSource: DataSource) {
         }
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         if (json.isNullOrEmpty()) {
-            return K9SakModell(emptyList())
+            return K9SakModell(mutableListOf())
         }
         val modell = objectMapper().readValue(json, K9SakModell::class.java)
      
-        return K9SakModell(  modell.eventer.sortedBy { it.eventTid })
+        return K9SakModell(  modell.eventer.sortedBy { it.eventTid }.toMutableList())
     }
 
     fun lagre(uuid: UUID, f: (K9SakModell?) -> K9SakModell): K9SakModell {
         Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
             .increment()
-        var sortertModell = K9SakModell(emptyList()) 
+        var sortertModell = K9SakModell(mutableListOf()) 
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val run = tx.run(
@@ -54,11 +54,11 @@ class BehandlingProsessEventK9Repository(private val dataSource: DataSource) {
 
                 val modell = if (!run.isNullOrEmpty()) {
                     val modell = objectMapper().readValue(run, K9SakModell::class.java)
-                    f(modell.copy(eventer = modell.eventer.sortedBy { it.eventTid }))
+                    f(modell.copy(eventer = modell.eventer.sortedBy { it.eventTid }.toMutableList()))
                 } else {
                     f(null)
                 }
-                sortertModell = modell.copy(eventer = (modell.eventer.toSet().toList().sortedBy { it.eventTid }))
+                sortertModell = modell.copy(eventer = (modell.eventer.toSet().toList().sortedBy { it.eventTid }.toMutableList()))
                 val json = objectMapper().writeValueAsString(sortertModell)
                 tx.run(
                     queryOf(
@@ -75,41 +75,6 @@ class BehandlingProsessEventK9Repository(private val dataSource: DataSource) {
         return sortertModell
     }
     
-    fun lagre(
-        event: BehandlingProsessEventDto
-    ): K9SakModell {
-        val json = objectMapper().writeValueAsString(event)
-
-        val id = event.eksternId.toString()
-        val out = using(sessionOf(dataSource)) {
-            it.transaction { tx ->
-                tx.run(
-                    queryOf(
-                        """
-                    insert into behandling_prosess_events_k9 as k (id, data)
-                    values (:id, :dataInitial :: jsonb)
-                    on conflict (id) do update
-                    set data = jsonb_set(k.data, '{eventer,999999}', :data :: jsonb, true)
-                 """, mapOf("id" to id, "dataInitial" to "{\"eventer\": [$json]}", "data" to json)
-                    ).asUpdate
-                )
-                tx.run(
-                    queryOf(
-                        "select data from behandling_prosess_events_k9 where id = :id",
-                        mapOf("id" to id)
-                    )
-                        .map { row ->
-                            row.string("data")
-                        }.asSingle
-                )
-            }
-
-        }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
-        val modell = objectMapper().readValue(out!!, K9SakModell::class.java)
-        return modell.copy(eventer = modell.eventer.sortedBy { it.eventTid })
-    }
-
     fun hentAlleEventerIder(
     ): List<String> {
 

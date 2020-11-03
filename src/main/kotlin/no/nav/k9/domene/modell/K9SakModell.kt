@@ -20,7 +20,7 @@ import java.time.ZoneId
 import java.util.*
 
 data class K9SakModell(
-    val eventer: List<BehandlingProsessEventDto>
+    val eventer: MutableList<BehandlingProsessEventDto>
 ) : IModell {
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
 

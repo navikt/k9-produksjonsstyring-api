@@ -4,8 +4,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.modell.K9SakModell
-import no.nav.k9.domene.modell.K9punsjModell
+import no.nav.k9.domene.modell.K9PunsjModell
 import no.nav.k9.integrasjon.kafka.dto.PunsjEventDto
 import no.nav.k9.tjenester.innsikt.Databasekall
 import no.nav.k9.tjenester.innsikt.Mapping
@@ -16,11 +15,11 @@ import javax.sql.DataSource
 
 class PunsjEventK9Repository(private val dataSource: DataSource) {
    
-    fun hent(uuid: UUID): K9SakModell {
+    fun hent(uuid: UUID): K9PunsjModell {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    "select data from behandling_prosess_events_k9 where id = :id",
+                    "select data from behandling_prosess_events_k9_punsj where id = :id",
                     mapOf("id" to uuid.toString())
                 )
                     .map { row ->
@@ -30,16 +29,16 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
         }
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         if (json.isNullOrEmpty()) {
-            return K9SakModell(emptyList())
+            return K9PunsjModell(emptyList())
         }
-        val modell = objectMapper().readValue(json, K9SakModell::class.java)
+        val modell = objectMapper().readValue(json, K9PunsjModell::class.java)
      
-        return K9SakModell(  modell.eventer.sortedBy { it.eventTid })
+        return K9PunsjModell(  modell.eventer.sortedBy { it.eventTid })
     }
 
     fun lagre(
         event: PunsjEventDto
-    ): K9punsjModell {
+    ): K9PunsjModell {
         val json = objectMapper().writeValueAsString(event)
 
         val id = event.eksternId.toString()
@@ -68,7 +67,7 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
 
         }
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
-        val modell = objectMapper().readValue(out!!, K9punsjModell::class.java)
+        val modell = objectMapper().readValue(out!!, K9PunsjModell::class.java)
         return modell.copy(eventer = modell.eventer.sortedBy { it.eventTid })
     }
 

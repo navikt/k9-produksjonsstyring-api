@@ -6,6 +6,7 @@ import kotlinx.coroutines.channels.sendBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.K9SakModell
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
@@ -33,7 +34,13 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     fun prosesser(
         event: BehandlingProsessEventDto
     ) {
-        val modell = behandlingProsessEventK9Repository.lagre(event)
+        val modell = behandlingProsessEventK9Repository.lagre(event.eksternId!!){
+            if (it == null) {
+                return@lagre  K9SakModell(mutableListOf(event))
+            }
+            it.eventer.add(event)       
+            it
+        }
         val oppgave = modell.oppgave(modell.sisteEvent())
 
         if (modell.fikkEndretAksjonspunkt()) {
@@ -78,7 +85,6 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                     )
                 ) {
                     it.ferdigstilte.add(oppgave.eksternId.toString())
-                   
                     it
                 }
                 if (oppgave.ansvarligSaksbehandlerIdent != null) {
