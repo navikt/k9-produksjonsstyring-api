@@ -38,6 +38,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             if (it == null) {
                 return@lagre  K9SakModell(mutableListOf(event))
             }
+            if (it.eventer.contains(event)) {
+                log.info("Skipping eventen har kommet tidligere" )
+                return@lagre it
+            }
             it.eventer.add(event)       
             it
         }
