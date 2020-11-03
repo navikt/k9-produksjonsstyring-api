@@ -166,6 +166,7 @@ class OppgaveKøRepository(
         reservasjonRepository: ReservasjonRepository
     ) {
         var hintRefresh = false
+        var gjennomførteTransaksjon = true
         using(sessionOf(dataSource)) {
             it.transaction { tx ->
                 val gammelJson = tx.run(
@@ -180,20 +181,23 @@ class OppgaveKøRepository(
                 val oppgaveKø = objectMapper().readValue(gammelJson, OppgaveKø::class.java)
                 val første20OppgaverSomVar = oppgaveKø.oppgaverOgDatoer.take(20).toList()
 
+                var endring = false
                 for (oppgave in oppgaver) {
                     if (oppgaveKø.kode6 == oppgave.kode6) {
-                        oppgaveKø.leggOppgaveTilEllerFjernFraKø(
+                        endring = endring || oppgaveKø.leggOppgaveTilEllerFjernFraKø(
                             oppgave = oppgave,
                             reservasjonRepository = reservasjonRepository
                         )
                     }
                 }
-                // Sorter oppgaver
+                if (!endring) {
+                    gjennomførteTransaksjon = false
+                    return@transaction
+                }
+                //Sorter oppgaver
                 oppgaveKø.oppgaverOgDatoer.sortBy { it.dato }
-                // Precacher 20 første oppgaver 
                 hintRefresh = første20OppgaverSomVar != oppgaveKø.oppgaverOgDatoer.take(20).toList()
                 oppgaveKø.oppgaverOgDatoer.take(20).forEach { runBlocking { oppgaveRefreshChannel.send(it.id) } }
-                
                 tx.run(
                     queryOf(
                         """
@@ -220,8 +224,10 @@ class OppgaveKøRepository(
                 )
             )
         }
-        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
-            .increment()
+        if (gjennomførteTransaksjon) {
+            Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+                .increment()
+        }
     }
 
     @KtorExperimentalAPI
