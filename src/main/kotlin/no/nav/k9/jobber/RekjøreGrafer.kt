@@ -69,7 +69,7 @@ fun Application.rekjørForGrafer(
                                 it.ferdigstilte.add(oppgave.eksternId.toString())
                                 it
                             }
-                            if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                            if (oppgave.ansvarligSaksbehandlerIdent != null) {
                                 statistikkRepository.lagre(
                                     AlleOppgaverNyeOgFerdigstilte(
                                         oppgave.fagsakYtelseType,

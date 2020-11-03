@@ -81,7 +81,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                    
                     it
                 }
-                if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                if (oppgave.ansvarligSaksbehandlerIdent != null) {
                     statistikkRepository.lagre(
                         AlleOppgaverNyeOgFerdigstilte(
                             oppgave.fagsakYtelseType,
