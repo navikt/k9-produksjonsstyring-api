@@ -577,7 +577,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
             personNavn = navn
             personFnummer = if (person.person == null) {
-                "Ukent fnummer"
+                "Ukjent fnummer"
             } else {
                 person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
             }
