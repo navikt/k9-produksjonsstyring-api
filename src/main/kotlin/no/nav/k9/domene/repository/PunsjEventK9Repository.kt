@@ -14,7 +14,7 @@ import javax.sql.DataSource
 
 
 class PunsjEventK9Repository(private val dataSource: DataSource) {
-   
+
     fun hent(uuid: UUID): K9PunsjModell {
         val json: String? = using(sessionOf(dataSource)) {
             it.run(
@@ -32,7 +32,7 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
             return K9PunsjModell(emptyList())
         }
         val modell = objectMapper().readValue(json, K9PunsjModell::class.java)
-     
+
         return K9PunsjModell(  modell.eventer.sortedBy { it.eventTid })
     }
 
@@ -108,7 +108,7 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return  json!!
     }
-    
+
     fun mapMellomeksternIdOgBehandlingsid(): List<Mapping> {
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
         return using(sessionOf(dataSource)) {
@@ -119,7 +119,7 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
                     mapOf()
                 )
                     .map { row ->
-                        Mapping(id = row.string("behandlingid"), uuid = row.string("id"))                        
+                        Mapping(id = row.string("behandlingid"), uuid = row.string("id"))
                     }.asList
             )
         }

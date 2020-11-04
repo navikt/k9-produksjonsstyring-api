@@ -12,10 +12,10 @@ data class Reservasjon(
     val oppgave: UUID
 ) {
     fun erAktiv(): Boolean {
-        return reservertTil !=null &&  reservertTil!!.isAfter(LocalDateTime.now())
+        return reservertTil !=null && reservertTil!!.isAfter(LocalDateTime.now())
     }
     
     fun erAktiv(eventTid:LocalDateTime): Boolean {
-        return reservertTil !=null &&  reservertTil!!.isAfter(eventTid)
+        return reservertTil !=null && reservertTil!!.isAfter(eventTid)
     }
 }

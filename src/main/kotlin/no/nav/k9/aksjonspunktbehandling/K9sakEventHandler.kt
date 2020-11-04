@@ -35,84 +35,45 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         event: BehandlingProsessEventDto
     ) {
         var skalSkippe = false
-        val modell = behandlingProsessEventK9Repository.lagre(event.eksternId!!){
+        val modell = behandlingProsessEventK9Repository.lagre(event.eksternId!!) {
             if (it == null) {
-                return@lagre  K9SakModell(mutableListOf(event))
+                return@lagre K9SakModell(mutableListOf(event))
             }
             if (it.eventer.contains(event)) {
                 log.info("""Skipping eventen har kommet tidligere ${event.eventTid}""")
                 skalSkippe = true
                 return@lagre it
             }
-            it.eventer.add(event)       
+            it.eventer.add(event)
             it
         }
         if (skalSkippe) {
             return
         }
         val oppgave = modell.oppgave(modell.sisteEvent())
-      
+
         oppgaveRepository.lagre(oppgave.eksternId) {
             if (modell.starterSak()) {
                 sakOgBehandlingProducer.behandlingOpprettet(modell.behandlingOpprettetSakOgBehandling())
-                if (oppgave.aktiv) {
-                    statistikkRepository.lagre(
-                        AlleOppgaverNyeOgFerdigstilte(
-                            oppgave.fagsakYtelseType,
-                            oppgave.behandlingType,
-                            oppgave.eventTid.toLocalDate()
-                        )
-                    ) {
-                        it.nye.add(oppgave.eksternId.toString())
-                        it
-                    }
-                }
+                beholdningOpp(oppgave)
             }
-            
             if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave(modell.sisteEvent()).aktiv) {
-                statistikkRepository.lagre(
-                    AlleOppgaverNyeOgFerdigstilte(
-                        oppgave.fagsakYtelseType,
-                        oppgave.behandlingType,
-                        oppgave.eventTid.toLocalDate()
-                    )
-                ) {
-                    it.nye.add(oppgave.eksternId.toString())
-                    it
-                }
-            }
-
-            if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave(modell.sisteEvent()).aktiv) {
-                statistikkRepository.lagre(
-                    AlleOppgaverNyeOgFerdigstilte(
-                        oppgave.fagsakYtelseType,
-                        oppgave.behandlingType,
-                        oppgave.eventTid.toLocalDate()
-                    )
-                ) {
-                    it.ferdigstilte.add(oppgave.eksternId.toString())
-                    it
-                }
+                beholdningOpp(oppgave)
+            } else if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave(
+                    modell.sisteEvent()
+                ).aktiv
+            ) {
+                beholdingNed(oppgave)
             }
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
-                if (reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.hent(oppgave.eksternId).erAktiv(event.eventTid)) {
-                    statistikkRepository.lagre(
-                        AlleOppgaverNyeOgFerdigstilte(
-                            oppgave.fagsakYtelseType,
-                            oppgave.behandlingType,
-                            oppgave.eventTid.toLocalDate()
-                        )
-                    ) {
-                        it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
-                        it
-                    }
-                }
-                
-                if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                if (reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.hent(oppgave.eksternId)
+                        .erAktiv(oppgave.eventTid)
+                ) {
+                    nyFerdigstilltAvSaksbehandler(oppgave)
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                 }
-             
+
                 sakOgBehandlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 
@@ -125,6 +86,45 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
         modell.reportMetrics(reservasjonRepository)
         oppgaverSomSkalInnPåKøer.sendBlocking(oppgave)
+    }
+
+    private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave) {
+        statistikkRepository.lagre(
+            AlleOppgaverNyeOgFerdigstilte(
+                oppgave.fagsakYtelseType,
+                oppgave.behandlingType,
+                oppgave.eventTid.toLocalDate()
+            )
+        ) {
+            it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+            it
+        }
+    }
+
+    private fun beholdingNed(oppgave: Oppgave) {
+        statistikkRepository.lagre(
+            AlleOppgaverNyeOgFerdigstilte(
+                oppgave.fagsakYtelseType,
+                oppgave.behandlingType,
+                oppgave.eventTid.toLocalDate()
+            )
+        ) {
+            it.ferdigstilte.add(oppgave.eksternId.toString())
+            it
+        }
+    }
+
+    private fun beholdningOpp(oppgave: Oppgave) {
+        statistikkRepository.lagre(
+            AlleOppgaverNyeOgFerdigstilte(
+                oppgave.fagsakYtelseType,
+                oppgave.behandlingType,
+                oppgave.eventTid.toLocalDate()
+            )
+        ) {
+            it.nye.add(oppgave.eksternId.toString())
+            it
+        }
     }
 
 
