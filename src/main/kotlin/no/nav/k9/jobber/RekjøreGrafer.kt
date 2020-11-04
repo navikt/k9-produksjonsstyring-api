@@ -49,7 +49,7 @@ fun Application.rekjørForGrafer(
 
                         if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                             if (reservasjonRepository.finnes(oppgave.eksternId)&& reservasjonRepository.hent(oppgave.eksternId).erAktiv(oppgave.eventTid)) {
-                                beholdingNed(oppgave, statistikkRepository)
+                                nyFerdigstilltAvSaksbehandler(oppgave, statistikkRepository)
                             }
                         }
                     } catch (e: Exception) {
