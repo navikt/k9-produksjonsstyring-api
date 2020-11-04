@@ -216,7 +216,7 @@ class StatistikkRepository(
         }
     }
 
-    fun truncateNyeOgFerdigstilte() {
+    fun truncateStatistikk() {
         Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
             .increment()
         using(sessionOf(dataSource)) {
@@ -225,6 +225,15 @@ class StatistikkRepository(
                 queryOf(
                     """
                             truncate nye_og_ferdigstilte
+                    """.trimIndent(),
+                    mapOf()
+                ).asUpdate
+            )
+
+            it.run(
+                queryOf(
+                    """
+                            truncate fredigstilte_behandlinger
                     """.trimIndent(),
                     mapOf()
                 ).asUpdate

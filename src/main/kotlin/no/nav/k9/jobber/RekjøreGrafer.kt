@@ -21,7 +21,7 @@ fun Application.rekjørForGrafer(
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
         try {
             val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
-            statistikkRepository.truncateNyeOgFerdigstilte()
+            statistikkRepository.truncateStatistikk()
             for ((index, eventId) in alleEventerIder.withIndex()) {
                 if (index % 100 == 0 && index > 1) {
                     log.info("""Ferdig med $index av ${alleEventerIder.size}""")
