@@ -41,6 +41,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             }
             if (it.eventer.contains(event)) {
                 log.info("""Skipping eventen har kommet tidligere ${event.eventTid}""")
+                skalSkippe = true
                 return@lagre it
             }
             it.eventer.add(event)       
