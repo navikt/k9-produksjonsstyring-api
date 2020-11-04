@@ -6,6 +6,7 @@ import kotlinx.coroutines.channels.sendBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.K9SakModell
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
@@ -114,15 +115,17 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun beholdningOpp(oppgave: Oppgave) {
-        statistikkRepository.lagre(
-            AlleOppgaverNyeOgFerdigstilte(
-                oppgave.fagsakYtelseType,
-                oppgave.behandlingType,
-                oppgave.eventTid.toLocalDate()
-            )
-        ) {
-            it.nye.add(oppgave.eksternId.toString())
-            it
+        if (oppgave.fagsakYtelseType !== FagsakYtelseType.FRISINN) {
+            statistikkRepository.lagre(
+                AlleOppgaverNyeOgFerdigstilte(
+                    oppgave.fagsakYtelseType,
+                    oppgave.behandlingType,
+                    oppgave.eventTid.toLocalDate()
+                )
+            ) {
+                it.nye.add(oppgave.eksternId.toString())
+                it
+            }
         }
     }
 
