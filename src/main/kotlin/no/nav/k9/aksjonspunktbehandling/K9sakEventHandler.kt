@@ -67,9 +67,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
             }
 
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
-                if (reservasjonRepository.finnes(oppgave.eksternId) && reservasjonRepository.hent(oppgave.eksternId)
-                        .erAktiv(oppgave.eventTid)
-                ) {
+                if (reservasjonRepository.finnes(oppgave.eksternId))
+                 {
                     nyFerdigstilltAvSaksbehandler(oppgave)
                     statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
                 }

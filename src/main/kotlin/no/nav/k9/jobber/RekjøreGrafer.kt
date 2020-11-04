@@ -48,7 +48,7 @@ fun Application.rekjørForGrafer(
                         }
 
                         if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
-                            if (reservasjonRepository.finnes(oppgave.eksternId)&& reservasjonRepository.hent(oppgave.eksternId).erAktiv(oppgave.eventTid)) {
+                            if (reservasjonRepository.finnes(oppgave.eksternId)) {
                                 nyFerdigstilltAvSaksbehandler(oppgave, statistikkRepository)
                             }
                         }
