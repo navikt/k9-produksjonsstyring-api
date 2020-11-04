@@ -233,7 +233,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                            truncate fredigstilte_behandlinger
+                            truncate ferdigstilte_behandlinger
                     """.trimIndent(),
                     mapOf()
                 ).asUpdate
