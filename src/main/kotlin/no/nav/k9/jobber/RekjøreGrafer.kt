@@ -36,38 +36,20 @@ fun Application.rekjørForGrafer(
 
                         if (modell.starterSak()) {
                             if (oppgave.aktiv) {
-                                beholdningOpp(oppgave)
+                                beholdningOpp(oppgave, statistikkRepository)
                             }
                         }
                         if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
-                            beholdningOpp(oppgave)
+                            beholdningOpp(oppgave, statistikkRepository)
                         }
 
                         if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
-                            statistikkRepository.lagre(
-                                AlleOppgaverNyeOgFerdigstilte(
-                                    oppgave.fagsakYtelseType,
-                                    oppgave.behandlingType,
-                                    oppgave.eventTid.toLocalDate()
-                                )
-                            ) {
-                                it.ferdigstilte.add(oppgave.eksternId.toString())
-                                it
-                            }                          
+                            beholdingNed(oppgave, statistikkRepository)
                         }
 
                         if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                             if (reservasjonRepository.finnes(oppgave.eksternId)&& reservasjonRepository.hent(oppgave.eksternId).erAktiv(oppgave.eventTid)) {
-                                statistikkRepository.lagre(
-                                    AlleOppgaverNyeOgFerdigstilte(
-                                        oppgave.fagsakYtelseType,
-                                        oppgave.behandlingType,
-                                        oppgave.eventTid.toLocalDate()
-                                    )
-                                ) {
-                                    it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
-                                    it
-                                }
+                                beholdingNed(oppgave, statistikkRepository)
                             }
                         }
                     } catch (e: Exception) {
@@ -83,7 +65,7 @@ fun Application.rekjørForGrafer(
 }
 
 
-private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave) {
+private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
     statistikkRepository.lagre(
         AlleOppgaverNyeOgFerdigstilte(
             oppgave.fagsakYtelseType,
@@ -96,7 +78,7 @@ private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave) {
     }
 }
 
-private fun beholdingNed(oppgave: Oppgave) {
+private fun beholdingNed(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
     statistikkRepository.lagre(
         AlleOppgaverNyeOgFerdigstilte(
             oppgave.fagsakYtelseType,
@@ -109,7 +91,7 @@ private fun beholdingNed(oppgave: Oppgave) {
     }
 }
 
-private fun beholdningOpp(oppgave: Oppgave) {
+private fun beholdningOpp(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
     statistikkRepository.lagre(
         AlleOppgaverNyeOgFerdigstilte(
             oppgave.fagsakYtelseType,
