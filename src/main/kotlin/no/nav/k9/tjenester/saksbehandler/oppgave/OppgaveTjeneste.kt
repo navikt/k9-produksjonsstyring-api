@@ -288,6 +288,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 ferdigstilteManuelt.find { f -> f.behandlingType == it.behandlingType && f.dato == it.dato }
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = it.behandlingType,
+                fagsakYtelseType = it.fagsakYtelseType,
                 dato = it.dato,
                 antallNye = it.nye.size,
                 antallFerdigstilte = ferdigstilte?.antall ?: it.ferdigstilteSaksbehandler.size,

@@ -53,7 +53,7 @@ class K9TilbakeEventHandler @KtorExperimentalAPI constructor(
                     }
                 }
             }
-            
+
             if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave(modell.sisteEvent()).aktiv) {
                 statistikkRepository.lagre(
                     AlleOppgaverNyeOgFerdigstilte(
@@ -83,9 +83,9 @@ class K9TilbakeEventHandler @KtorExperimentalAPI constructor(
             if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                 fjernReservasjon(oppgave)
                 if (reservasjonRepository.finnes(oppgave.eksternId)) {
-                    statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
+                    statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId, oppgave.eventTid.toLocalDate())
                 }
-             
+
                 sakOgBehandlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())
             }
 

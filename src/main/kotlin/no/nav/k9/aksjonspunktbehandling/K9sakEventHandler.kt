@@ -70,7 +70,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
                 if (reservasjonRepository.finnes(oppgave.eksternId))
                  {
                     nyFerdigstilltAvSaksbehandler(oppgave)
-                    statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId)
+                    statistikkRepository.lagreFerdigstilt(oppgave.behandlingType.kode, oppgave.eksternId, oppgave.eventTid.toLocalDate())
                 }
 
                 sakOgBehandlingProducer.avsluttetBehandling(modell.behandlingAvsluttetSakOgBehandling())

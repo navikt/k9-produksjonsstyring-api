@@ -80,7 +80,7 @@ class StatistikkRepository(
         return json.map { objectMapper().readValue(it, BehandletOppgave::class.java) }
     }
 
-    fun lagreFerdigstilt(bt: String, eksternId: UUID) {
+    fun lagreFerdigstilt(bt: String, eksternId: UUID, dato: LocalDate) {
         Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
             .increment()
         using(sessionOf(dataSource)) {
@@ -89,13 +89,14 @@ class StatistikkRepository(
                 tx.run(
                     queryOf(
                         """insert into ferdigstilte_behandlinger as k (behandlingType, dato, data)
-                                    values (:behandlingType, current_date, :dataInitial ::jsonb)
+                                    values (:behandlingType, :dato, :dataInitial ::jsonb)
                                     on conflict (behandlingType, dato) do update
                                     set data = k.data || :data ::jsonb
                                  """, mapOf(
                             "behandlingType" to bt,
                             "dataInitial" to "[\"${eksternId}\"]",
-                            "data" to "[\"$eksternId\"]"
+                            "data" to "[\"$eksternId\"]",
+                            "dato" to dato,
                         )
                     ).asUpdate
                 )
