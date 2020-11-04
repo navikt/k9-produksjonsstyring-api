@@ -4,6 +4,7 @@ import io.ktor.application.*
 import io.ktor.util.*
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.repository.*
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
@@ -22,7 +23,7 @@ fun Application.rekjørForGrafer(
             val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
             statistikkRepository.truncateNyeOgFerdigstilte()
             for ((index, eventId) in alleEventerIder.withIndex()) {
-                if (index % 100 == 0) {
+                if (index % 100 == 0 && index > 1) {
                     log.info("""Ferdig med $index av ${alleEventerIder.size}""")
                 }
                 val alleVersjoner = behandlingProsessEventK9Repository.hent(UUID.fromString(eventId)).alleVersjoner()
@@ -35,28 +36,11 @@ fun Application.rekjørForGrafer(
 
                         if (modell.starterSak()) {
                             if (oppgave.aktiv) {
-                                statistikkRepository.lagre(
-                                    AlleOppgaverNyeOgFerdigstilte(
-                                        oppgave
-                                            .fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate()
-                                    )
-                                ) {
-                                    it.nye.add(oppgave.eksternId.toString())
-                                    it
-                                }
+                                beholdningOpp(oppgave)
                             }
                         }
                         if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
-                            statistikkRepository.lagre(
-                                AlleOppgaverNyeOgFerdigstilte(
-                                    oppgave.fagsakYtelseType,
-                                    oppgave.behandlingType,
-                                    oppgave.eventTid.toLocalDate()
-                                )
-                            ) {
-                                it.nye.add(oppgave.eksternId.toString())
-                                it
-                            }
+                            beholdningOpp(oppgave)
                         }
 
                         if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
@@ -98,6 +82,45 @@ fun Application.rekjørForGrafer(
     }
 }
 
+
+private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave) {
+    statistikkRepository.lagre(
+        AlleOppgaverNyeOgFerdigstilte(
+            oppgave.fagsakYtelseType,
+            oppgave.behandlingType,
+            oppgave.eventTid.toLocalDate()
+        )
+    ) {
+        it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+        it
+    }
+}
+
+private fun beholdingNed(oppgave: Oppgave) {
+    statistikkRepository.lagre(
+        AlleOppgaverNyeOgFerdigstilte(
+            oppgave.fagsakYtelseType,
+            oppgave.behandlingType,
+            oppgave.eventTid.toLocalDate()
+        )
+    ) {
+        it.ferdigstilte.add(oppgave.eksternId.toString())
+        it
+    }
+}
+
+private fun beholdningOpp(oppgave: Oppgave) {
+    statistikkRepository.lagre(
+        AlleOppgaverNyeOgFerdigstilte(
+            oppgave.fagsakYtelseType,
+            oppgave.behandlingType,
+            oppgave.eventTid.toLocalDate()
+        )
+    ) {
+        it.nye.add(oppgave.eksternId.toString())
+        it
+    }
+}
 
 @KtorExperimentalAPI
 fun Application.regenererOppgaver(
