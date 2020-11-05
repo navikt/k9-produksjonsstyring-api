@@ -89,28 +89,32 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave) {
-        statistikkRepository.lagre(
-            AlleOppgaverNyeOgFerdigstilte(
-                oppgave.fagsakYtelseType,
-                oppgave.behandlingType,
-                oppgave.eventTid.toLocalDate()
-            )
-        ) {
-            it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
-            it
+        if (oppgave.fagsakYtelseType !== FagsakYtelseType.FRISINN) {
+            statistikkRepository.lagre(
+                AlleOppgaverNyeOgFerdigstilte(
+                    oppgave.fagsakYtelseType,
+                    oppgave.behandlingType,
+                    oppgave.eventTid.toLocalDate()
+                )
+            ) {
+                it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+                it
+            }
         }
     }
 
     private fun beholdingNed(oppgave: Oppgave) {
-        statistikkRepository.lagre(
-            AlleOppgaverNyeOgFerdigstilte(
-                oppgave.fagsakYtelseType,
-                oppgave.behandlingType,
-                oppgave.eventTid.toLocalDate()
-            )
-        ) {
-            it.ferdigstilte.add(oppgave.eksternId.toString())
-            it
+        if (oppgave.fagsakYtelseType !== FagsakYtelseType.FRISINN) {
+            statistikkRepository.lagre(
+                AlleOppgaverNyeOgFerdigstilte(
+                    oppgave.fagsakYtelseType,
+                    oppgave.behandlingType,
+                    oppgave.eventTid.toLocalDate()
+                )
+            ) {
+                it.ferdigstilte.add(oppgave.eksternId.toString())
+                it
+            }
         }
     }
 
