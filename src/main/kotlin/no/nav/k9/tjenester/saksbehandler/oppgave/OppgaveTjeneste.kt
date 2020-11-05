@@ -277,21 +277,18 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
-        val ferdigstilteManuelt = statistikkRepository.hentFerdigstilte()
         return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
             val hentIdentTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
             val antallFerdistilteMine =
                 reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
                     .toSet())
                     .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
-            val ferdigstilte =
-                ferdigstilteManuelt.find { f -> f.behandlingType == it.behandlingType && f.dato == it.dato }
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = it.behandlingType,
                 fagsakYtelseType = it.fagsakYtelseType,
                 dato = it.dato,
                 antallNye = it.nye.size,
-                antallFerdigstilte = ferdigstilte?.antall ?: it.ferdigstilteSaksbehandler.size,
+                antallFerdigstilte = it.ferdigstilteSaksbehandler.size,
                 antallFerdigstilteMine = antallFerdistilteMine
             )
         }
