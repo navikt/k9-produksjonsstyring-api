@@ -13,7 +13,7 @@ import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
 
-fun Application.rekjørForGrafer(
+fun Application.rekjørEventerForGrafer(
     behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
     statistikkRepository: StatistikkRepository,
     reservasjonRepository: ReservasjonRepository
@@ -48,7 +48,7 @@ fun Application.rekjørForGrafer(
                         }
 
                         if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
-                            if (reservasjonRepository.finnes(oppgave.eksternId)) {
+                            if (!oppgave.ansvarligSaksbehandlerForTotrinn.isNullOrBlank()) {
                                 nyFerdigstilltAvSaksbehandler(oppgave, statistikkRepository)
                             }
                         }

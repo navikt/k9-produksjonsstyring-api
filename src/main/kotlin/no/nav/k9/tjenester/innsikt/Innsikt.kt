@@ -93,7 +93,7 @@ fun Route.innsiktGrensesnitt() {
         if (køer.isEmpty()) {
             val alleReservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
             val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver().filterNot { alleReservasjoner.contains(it.eksternId) }
-          
+
             val k = oppgaveKøRepository.hentIkkeTaHensyn()
             for (b in k.filter { !it.kode6 }) {
                 b.oppgaverOgDatoer.clear()
@@ -136,16 +136,7 @@ fun Route.innsiktGrensesnitt() {
                     køer = emptyList()
                 }
             }
-          
+
         }
     }
-
-    @Location("/sak")
-    class sak
-    get { _: sak ->
-        val hentOppgaverMedSaksnummer = oppgaveRepository.hentOppgaverMedSaksnummerIkkeTaHensyn("7EVoE")
-        val modeller = hentOppgaverMedSaksnummer.map { it.eksternId }.map { behandlingProsessEventK9Repository.hent(it) }
-        call.respond(modeller)
-    }
-    
 }
