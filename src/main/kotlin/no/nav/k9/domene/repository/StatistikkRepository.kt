@@ -167,7 +167,7 @@ class StatistikkRepository(
                 tx.run(
                     queryOf(
                         """
-                                    insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, nye,ferdigstilte,ferdigstiltesaksbehandler)
+                                    insert into nye_og_ferdigstilte as k (behandlingType, fagsakYtelseType, dato, nye, ferdigstilte, ferdigstiltesaksbehandler)
                                     values (:behandlingType, :fagsakYtelseType, :dato, :nye ::jsonb, :ferdigstilte ::jsonb, :ferdigstiltesaksbehandler ::jsonb)
                                     on conflict (behandlingType, fagsakYtelseType, dato) do update
                                     set nye = :nye ::jsonb , ferdigstilte = :ferdigstilte ::jsonb , ferdigstiltesaksbehandler = :ferdigstiltesaksbehandler ::jsonb
@@ -199,7 +199,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye, ferdigstiltesaksbehandler
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                     """.trimIndent(),
                     mapOf("antall" to "\'${antall} days\'")
@@ -210,7 +210,8 @@ class StatistikkRepository(
                             fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
                             dato = row.localDate("dato"),
                             ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte") ?: "[]"),
-                            nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
+                            nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]"),
+                            ferdigstilteSaksbehandler = objectMapper().readValue(row.stringOrNull("ferdigstiltesaksbehandler") ?: "[]"),
                         )
                     }.asList
             )
