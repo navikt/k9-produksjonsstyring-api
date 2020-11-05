@@ -3,11 +3,13 @@ package no.nav.k9.tjenester.innsikt
 import io.ktor.application.*
 import io.ktor.html.*
 import io.ktor.locations.*
+import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.*
 import kotlinx.html.*
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.OppgaveKø
+import no.nav.k9.domene.repository.BehandlingProsessEventK9Repository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
@@ -19,6 +21,7 @@ fun Route.innsiktGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
+    val behandlingProsessEventK9Repository by inject<BehandlingProsessEventK9Repository>()
 
     @Location("/")
     class main
@@ -137,4 +140,12 @@ fun Route.innsiktGrensesnitt() {
         }
     }
 
+    @Location("/sak")
+    class sak
+    get { _: sak ->
+        val hentOppgaverMedSaksnummer = oppgaveRepository.hentOppgaverMedSaksnummer("7EVoE")
+        val modeller = hentOppgaverMedSaksnummer.map { it.eksternId }.map { behandlingProsessEventK9Repository.hent(it) }
+        call.respond(modeller)
+    }
+    
 }
