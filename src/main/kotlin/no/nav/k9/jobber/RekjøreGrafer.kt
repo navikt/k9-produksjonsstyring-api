@@ -6,6 +6,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.repository.*
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import java.util.*
@@ -66,41 +67,47 @@ fun Application.rekjørEventerForGrafer(
 
 
 private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
-    statistikkRepository.lagre(
-        AlleOppgaverNyeOgFerdigstilte(
-            oppgave.fagsakYtelseType,
-            oppgave.behandlingType,
-            oppgave.eventTid.toLocalDate()
-        )
-    ) {
-        it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
-        it
+    if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
+        statistikkRepository.lagre(
+            AlleOppgaverNyeOgFerdigstilte(
+                oppgave.fagsakYtelseType,
+                oppgave.behandlingType,
+                oppgave.eventTid.toLocalDate()
+            )
+        ) {
+            it.ferdigstilteSaksbehandler.add(oppgave.eksternId.toString())
+            it
+        }
     }
 }
 
 private fun beholdingNed(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
-    statistikkRepository.lagre(
-        AlleOppgaverNyeOgFerdigstilte(
-            oppgave.fagsakYtelseType,
-            oppgave.behandlingType,
-            oppgave.eventTid.toLocalDate()
-        )
-    ) {
-        it.ferdigstilte.add(oppgave.eksternId.toString())
-        it
+    if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
+        statistikkRepository.lagre(
+            AlleOppgaverNyeOgFerdigstilte(
+                oppgave.fagsakYtelseType,
+                oppgave.behandlingType,
+                oppgave.eventTid.toLocalDate()
+            )
+        ) {
+            it.ferdigstilte.add(oppgave.eksternId.toString())
+            it
+        }
     }
 }
 
 private fun beholdningOpp(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
-    statistikkRepository.lagre(
-        AlleOppgaverNyeOgFerdigstilte(
-            oppgave.fagsakYtelseType,
-            oppgave.behandlingType,
-            oppgave.eventTid.toLocalDate()
-        )
-    ) {
-        it.nye.add(oppgave.eksternId.toString())
-        it
+    if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
+        statistikkRepository.lagre(
+            AlleOppgaverNyeOgFerdigstilte(
+                oppgave.fagsakYtelseType,
+                oppgave.behandlingType,
+                oppgave.eventTid.toLocalDate()
+            )
+        ) {
+            it.nye.add(oppgave.eksternId.toString())
+            it
+        }
     }
 }
 
