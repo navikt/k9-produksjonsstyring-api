@@ -143,7 +143,7 @@ fun Route.innsiktGrensesnitt() {
     @Location("/sak")
     class sak
     get { _: sak ->
-        val hentOppgaverMedSaksnummer = oppgaveRepository.hentOppgaverMedSaksnummer("7EVoE")
+        val hentOppgaverMedSaksnummer = oppgaveRepository.hentOppgaverMedSaksnummerIkkeTaHensyn("7EVoE")
         val modeller = hentOppgaverMedSaksnummer.map { it.eksternId }.map { behandlingProsessEventK9Repository.hent(it) }
         call.respond(modeller)
     }
