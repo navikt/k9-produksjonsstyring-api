@@ -62,15 +62,14 @@ class StatistikkProducer @KtorExperimentalAPI constructor(
             return
         }
         runBlocking {
-            if (pepClient.kanSendeSakTilStatistikk(modell.sisteSaksNummer())) {
-                sendSak(modell.dvhSak())
-                sendBehandling(
-                    modell.dvhBehandling(
-                        saksbehandlerRepository = saksbehandlerRepository,
-                        reservasjonRepository = reservasjonRepository
-                    )
+            sendSak(modell.dvhSak())
+            sendBehandling(
+                modell.dvhBehandling(
+                    saksbehandlerRepository = saksbehandlerRepository,
+                    reservasjonRepository = reservasjonRepository
                 )
-            }
+            )
+
         }
     }
 
