@@ -16,8 +16,7 @@ class K9punsjEventHandler @KtorExperimentalAPI constructor(
     val oppgaveRepository: OppgaveRepository,
     val punsjEventK9Repository: PunsjEventK9Repository,
     val oppgaverSomSkalInnPåKøer: Channel<Oppgave>,
-    val statistikkRepository: StatistikkRepository,
-    val saksbehhandlerRepository: SaksbehandlerRepository
+    val statistikkRepository: StatistikkRepository
 ) {
     private val log = LoggerFactory.getLogger(K9punsjEventHandler::class.java)
 
