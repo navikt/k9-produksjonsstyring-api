@@ -108,7 +108,7 @@ data class K9TilbakeModell(
             hendelsesId = sisteEvent.eksternId.toString() + "_" + eventer.size,
             hendelsesprodusentREF = BehandlingOpprettet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
-            behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
+            behandlingsID = ("k9-los-" + sisteEvent.eksternId),
             behandlingstype = BehandlingOpprettet.Behandlingstype(
                 "",
                 "",
@@ -140,7 +140,7 @@ data class K9TilbakeModell(
             hendelsesId = """${sisteEvent.eksternId.toString()}_${eventer.size}""",
             hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
-            behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
+            behandlingsID = ("k9-los-" + sisteEvent.eksternId),
             behandlingstype = BehandlingAvsluttet.Behandlingstype(
                 "",
                 "",
