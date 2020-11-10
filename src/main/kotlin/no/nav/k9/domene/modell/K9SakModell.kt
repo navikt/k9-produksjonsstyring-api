@@ -177,7 +177,7 @@ data class K9SakModell(
     }
 
     @KtorExperimentalAPI
-    fun behandlingOpprettetSakOgBehandling(
+    override fun behandlingOpprettetSakOgBehandling(
 
     ): BehandlingOpprettet {
         val sisteEvent = sisteEvent()
@@ -210,7 +210,7 @@ data class K9SakModell(
     }
 
     @KtorExperimentalAPI
-    fun behandlingAvsluttetSakOgBehandling(
+    override fun behandlingAvsluttetSakOgBehandling(
     ): BehandlingAvsluttet {
         val sisteEvent = sisteEvent()
         val behandlingAvsluttet = BehandlingAvsluttet(

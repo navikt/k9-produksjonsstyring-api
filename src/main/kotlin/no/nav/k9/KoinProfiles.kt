@@ -163,7 +163,7 @@ fun common(app: Application, config: Configuration) = module {
             oppgaveKøRepository = get(),
             reservasjonRepository = get(),
             statistikkProducer = get(),
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkChannel = get(named("statistikkRefreshChannel")),
             statistikkRepository = get(),
             saksbehhandlerRepository = get()
         )
@@ -178,7 +178,7 @@ fun common(app: Application, config: Configuration) = module {
             oppgaveKøRepository = get(),
             reservasjonRepository = get(),
             statistikkProducer = get(),
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkChannel = get(named("statistikkRefreshChannel")),
             statistikkRepository = get(),
             saksbehhandlerRepository = get()
         )
@@ -188,9 +188,11 @@ fun common(app: Application, config: Configuration) = module {
         K9punsjEventHandler(
             oppgaveRepository = get(),
             punsjEventK9Repository = get(),
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkChannel = get(named("statistikkRefreshChannel")),
             statistikkRepository = get(),
-            saksbehhandlerRepository = get()
+            saksbehhandlerRepository = get(),
+            oppgaveKøRepository = get(),
+            reservasjonRepository = get()
         )
     }
 

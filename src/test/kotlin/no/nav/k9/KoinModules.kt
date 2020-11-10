@@ -125,7 +125,7 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             oppgaveKøRepository = get(),
             reservasjonRepository = get(),
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkChannel = get(named("statistikkRefreshChannel")),
             statistikkRepository = get(), saksbehhandlerRepository = get()
         )
     }
@@ -138,7 +138,7 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             oppgaveKøRepository = get(),
             reservasjonRepository = get(),
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkChannel = get(named("statistikkRefreshChannel")),
             statistikkRepository = get(), saksbehhandlerRepository = get()
         )
     }

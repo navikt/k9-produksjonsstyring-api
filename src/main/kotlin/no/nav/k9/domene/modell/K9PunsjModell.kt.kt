@@ -4,6 +4,8 @@ import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.kafka.dto.PunsjEventDto
+import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
+import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
 import no.nav.k9.statistikk.kontrakter.Behandling
 import no.nav.k9.statistikk.kontrakter.Sak
 
@@ -31,6 +33,14 @@ data class K9PunsjModell(
     }
 
     override fun sisteSaksNummer(): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun behandlingOpprettetSakOgBehandling(): BehandlingOpprettet {
+        TODO("Not yet implemented")
+    }
+
+    override fun behandlingAvsluttetSakOgBehandling(): BehandlingAvsluttet {
         TODO("Not yet implemented")
     }
 

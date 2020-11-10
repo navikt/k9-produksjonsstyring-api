@@ -18,7 +18,7 @@ import java.util.*
 
 data class K9TilbakeModell(
     val eventer: List<BehandlingProsessEventTilbakeDto>
-) : IModell{
+) : IModell {
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
     fun oppgave(sisteEvent: BehandlingProsessEventTilbakeDto): Oppgave {
         val event = sisteEvent
@@ -99,10 +99,9 @@ data class K9TilbakeModell(
             ansvarligSaksbehandlerIdent = event.ansvarligSaksbehandlerIdent
         )
     }
-    @KtorExperimentalAPI
-    fun behandlingOpprettetSakOgBehandling(
 
-    ): BehandlingOpprettet {
+    @KtorExperimentalAPI
+    override fun behandlingOpprettetSakOgBehandling(): BehandlingOpprettet {
         val sisteEvent = sisteEvent()
         val behandlingOpprettet = BehandlingOpprettet(
             hendelseType = "behandlingOpprettet",
@@ -131,8 +130,9 @@ data class K9TilbakeModell(
         )
         return behandlingOpprettet
     }
+
     @KtorExperimentalAPI
-    fun behandlingAvsluttetSakOgBehandling(
+    override fun behandlingAvsluttetSakOgBehandling(
     ): BehandlingAvsluttet {
         val sisteEvent = sisteEvent()
         val behandlingAvsluttet = BehandlingAvsluttet(
@@ -163,11 +163,12 @@ data class K9TilbakeModell(
         )
         return behandlingAvsluttet
     }
-     fun sisteEvent(): BehandlingProsessEventTilbakeDto {
+
+    fun sisteEvent(): BehandlingProsessEventTilbakeDto {
         return this.eventer[this.eventer.lastIndex]
     }
 
-     fun forrigeEvent(): BehandlingProsessEventTilbakeDto? {
+    fun forrigeEvent(): BehandlingProsessEventTilbakeDto? {
         return if (this.eventer.lastIndex > 0) {
             this.eventer[this.eventer.lastIndex - 1]
         } else {
@@ -175,7 +176,7 @@ data class K9TilbakeModell(
         }
     }
 
-     fun førsteEvent(): BehandlingProsessEventTilbakeDto {
+    fun førsteEvent(): BehandlingProsessEventTilbakeDto {
         return this.eventer[0]
     }
 
@@ -200,7 +201,7 @@ data class K9TilbakeModell(
     }
 
     // Array med alle versjoner av modell basert på eventene, brukes når man skal spille av eventer
-     fun alleVersjoner(): MutableList<K9TilbakeModell> {
+    fun alleVersjoner(): MutableList<K9TilbakeModell> {
         val eventListe = mutableListOf<BehandlingProsessEventTilbakeDto>()
         val modeller = mutableListOf<K9TilbakeModell>()
         for (behandlingProsessEventDto in eventer) {
@@ -231,9 +232,11 @@ data class K9TilbakeModell(
             versjon = 1
         )
     }
+
     override fun sisteSaksNummer(): String {
         return sisteEvent().saksnummer
     }
+
     override fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
@@ -306,11 +309,11 @@ data class AksjonspunkterTilbake(val liste: Map<String, String>) {
     fun lengde(): Int {
         return liste.size
     }
-    
+
     fun erTom(): Boolean {
         return this.liste.isEmpty()
     }
-    
+
     fun eventResultatTilbake(): EventResultat {
         if (erTom()) {
             return EventResultat.LUKK_OPPGAVE

@@ -27,12 +27,13 @@ import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
-import no.nav.k9.domene.lager.oppgave.Oppgave
-import no.nav.k9.eventhandler.*
+import no.nav.k9.eventhandler.køOppdatertProsessor
+import no.nav.k9.eventhandler.oppdaterStatistikk
+import no.nav.k9.eventhandler.refreshK9
+import no.nav.k9.eventhandler.sjekkReserverteJobb
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
-import no.nav.k9.jobber.rekjørEventerForGrafer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
@@ -114,15 +115,7 @@ fun Application.k9Los() {
             oppgaveTjeneste = koin.get(),
             oppgaveKøRepository = koin.get()
         )
-
-    val oppdatereKøerMedOppgaveProsessorJob =
-        oppdatereKøerMedOppgaveProsessor(
-            channel = koin.get<Channel<Oppgave>>(named("oppgaveChannel")),
-            statistikkRefreshChannel = koin.get<Channel<Boolean>>(named("statistikkRefreshChannel")),
-            oppgaveKøRepository = koin.get(),
-            reservasjonRepository = koin.get()
-        )
-
+ 
     val sjekkReserverteJobb =
         sjekkReserverteJobb(saksbehandlerRepository = koin.get(), reservasjonRepository = koin.get())
 
@@ -139,7 +132,6 @@ fun Application.k9Los() {
         log.info("AsynkronProsesseringV1Service Stoppet.")
         log.info("Stopper pipeline")
         køOppdatertProsessorJob.cancel()
-        oppdatereKøerMedOppgaveProsessorJob.cancel()
         refreshOppgaveJobb.cancel()
         oppdaterStatistikkJobb.cancel()
     }
