@@ -67,7 +67,7 @@ fun Application.rekjørEventerForGrafer(
 
 
 private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
-    if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+    if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
         statistikkRepository.lagre(
             AlleOppgaverNyeOgFerdigstilte(
                 oppgave.fagsakYtelseType,
@@ -82,7 +82,7 @@ private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave, statistikkRepository
 }
 
 private fun beholdingNed(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
-    if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+    if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
         statistikkRepository.lagre(
             AlleOppgaverNyeOgFerdigstilte(
                 oppgave.fagsakYtelseType,
@@ -97,7 +97,7 @@ private fun beholdingNed(oppgave: Oppgave, statistikkRepository: StatistikkRepos
 }
 
 private fun beholdningOpp(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
-    if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+    if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
         statistikkRepository.lagre(
             AlleOppgaverNyeOgFerdigstilte(
                 oppgave.fagsakYtelseType,

@@ -89,7 +89,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave) {
-        if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+        if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
             statistikkRepository.lagre(
                 AlleOppgaverNyeOgFerdigstilte(
                     oppgave.fagsakYtelseType,
@@ -104,7 +104,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun beholdingNed(oppgave: Oppgave) {
-        if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+        if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
             statistikkRepository.lagre(
                 AlleOppgaverNyeOgFerdigstilte(
                     oppgave.fagsakYtelseType,
@@ -119,7 +119,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun beholdningOpp(oppgave: Oppgave) {
-        if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+        if (oppgave.fagsakYtelseType != FagsakYtelseType.FRISINN) {
             statistikkRepository.lagre(
                 AlleOppgaverNyeOgFerdigstilte(
                     oppgave.fagsakYtelseType,
