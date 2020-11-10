@@ -48,6 +48,11 @@ data class K9PunsjModell(
 
         val sisteEvent = eventer.last()
         val førsteEvent = eventer.first()
+        val aksjonspunkter = mutableMapOf<String, String>()
+        for (pair in sisteEvent.aksjonspunkter.map { it.kode to it.navn }) {
+            aksjonspunkter[pair.first] = pair.second
+        }
+        
         return Oppgave(
            behandlingId = null,
            fagsakSaksnummer = "",
@@ -61,13 +66,13 @@ data class K9PunsjModell(
            behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
            fagsakYtelseType = FagsakYtelseType.PPN,
            eventTid = sisteEvent.eventTid,
-           aktiv = sisteEvent.aksjonspunkter.liste.keys.any{ it == "OPPR"},
+           aktiv = sisteEvent.aksjonspunkter.any{ it.kode == "OPPR"},
            system = "PUNSJ",
            oppgaveAvsluttet = null,
            utfortFraAdmin = false,
            eksternId = sisteEvent.eksternId,
            oppgaveEgenskap = listOf(),
-           aksjonspunkter = sisteEvent.aksjonspunkter,
+           aksjonspunkter = Aksjonspunkter(liste = aksjonspunkter.toMap()),
            tilBeslutter = false,
            utbetalingTilBruker = false,
            selvstendigFrilans = false,

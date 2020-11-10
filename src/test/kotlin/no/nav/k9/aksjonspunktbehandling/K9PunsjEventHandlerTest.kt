@@ -36,11 +36,17 @@ class K9PunsjEventHandlerTest : KoinTest {
         val oppgaveRepository = get<OppgaveRepository>()
 
         @Language("JSON") val json =
-            """{"eksternId":"871da8c5-a1a8-4353-a10b-10f6e4521490",
-                "journalpostId":"585886",
-                "eventTid":"2020-11-09T12:24:57.46806",
-                "aktørId":"980458930",
-                "aksjonspunkter":{"liste":{"OPPR":"Opprettet"}}}
+            """{                                                                                                                                                                                                                                                            
+    "eksternId" : "9a009fb9-38ab-4bad-89e0-a3a16ecba306",                                                                                                                                                                                                                                                                                                                    
+    "journalpostId" : "466988237",                                                                                                                                                                                                                                                                                                                                           
+    "aktørId" : "27078522688",                                                                                                                                                                                                                                                                                                                                               
+    "eventTid" : "2020-11-10T10:43:43.130644",                                                                                                                                                                                                                                                                                                                               
+    "aksjonspunkter" : [ {                                                                                                                                                                                                                                                                                                                                                   
+    "kode" : "OPPR",                                                                                                                                                                                                                                                                                                                                                         
+    "kodeverk" : "PUNSJ_OPPGAVE_STATUS",                                                                                                                                                                                                                                                                                                                                     
+    "navn" : "Opprettet"                                                                                                                                                                                                                                                                                                                                                     
+    } ]                                                                                                                                                                                                                                                                                             
+    }
             """.trimIndent()
 
         val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
@@ -60,12 +66,17 @@ class K9PunsjEventHandlerTest : KoinTest {
         val oppgaveRepository = get<OppgaveRepository>()
 
         @Language("JSON") val json =
-            """{"eksternId":"871da8c5-a1a8-4353-a10b-10f6e4521490",
-                "journalpostId":"585886",
-                "eventTid":"2020-11-09T12:24:57.46806",
-                "aktørId":"980458930",
-                "aksjonspunkter":{"liste":{"AVSLU":"Avsluttet"}}}
-            """.trimIndent()
+           """{                                                                                                                                                                                                                                                            
+    "eksternId" : "9a009fb9-38ab-4bad-89e0-a3a16ecba306",                                                                                                                                                                                                                                                                                                                    
+    "journalpostId" : "466988237",                                                                                                                                                                                                                                                                                                                                           
+    "aktørId" : "27078522688",                                                                                                                                                                                                                                                                                                                                               
+    "eventTid" : "2020-11-10T10:43:43.130644",                                                                                                                                                                                                                                                                                                                               
+    "aksjonspunkter" : [ {                                                                                                                                                                                                                                                                                                                                                   
+    "kode" : "AVSLU",                                                                                                                                                                                                                                                                                                                                                         
+    "kodeverk" : "PUNSJ_OPPGAVE_STATUS",                                                                                                                                                                                                                                                                                                                                     
+    "navn" : "Avsluttet"                                                                                                                                                                                                                                                                                                                                                     
+    } ]                                                                                                                                                                                                                                                                                             
+    }""".trimIndent()
 
         val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
         val event = objectMapper.readValue(json, PunsjEventDto::class.java)
