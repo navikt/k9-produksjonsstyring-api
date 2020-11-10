@@ -19,6 +19,7 @@ import no.nav.k9.integrasjon.pdl.PdlResponse
 import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverHistorikk
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
@@ -277,7 +278,19 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
-        return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
+        val slåttSammenAlleFagsakYtelser = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
+        for (entry in statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).groupBy { it.dato }) {
+            entry.value.groupBy { it.behandlingType }.forEach { behandlingType ->
+                slåttSammenAlleFagsakYtelser.add(behandlingType.value.reduce { acc, alleOppgaverNyeOgFerdigstilte ->
+                    acc.nye.addAll(alleOppgaverNyeOgFerdigstilte.nye)
+                    acc.ferdigstilte.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilte)
+                    acc.ferdigstilteSaksbehandler.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilteSaksbehandler)
+                    acc
+                })
+            }
+        }
+
+        return slåttSammenAlleFagsakYtelser.map {
             val hentIdentTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
             val antallFerdistilteMine =
                 reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
@@ -285,7 +298,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = it.behandlingType,
-                fagsakYtelseType = it.fagsakYtelseType,
                 dato = it.dato,
                 antallNye = it.nye.size,
                 antallFerdigstilte = it.ferdigstilteSaksbehandler.size,
@@ -419,7 +431,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     private val hentAntallOppgaverCache = Cache<Int>()
-     fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false, refresh: Boolean = false): Int {
+    fun hentAntallOppgaver(oppgavekøId: UUID, taMedReserverte: Boolean = false, refresh: Boolean = false): Int {
         val key = oppgavekøId.toString() + taMedReserverte
         if (!refresh) {
             val cacheObject = hentAntallOppgaverCache.get(key)
