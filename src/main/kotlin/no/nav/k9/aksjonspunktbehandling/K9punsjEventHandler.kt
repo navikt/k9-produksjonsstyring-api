@@ -13,7 +13,6 @@ class K9punsjEventHandler @KtorExperimentalAPI constructor(
     val oppgaveRepository: OppgaveRepository,
     val punsjEventK9Repository: PunsjEventK9Repository,
     val statistikkRepository: StatistikkRepository,
-    val saksbehhandlerRepository: SaksbehandlerRepository,
     val statistikkChannel: Channel<Boolean>,
     val reservasjonRepository: ReservasjonRepository,
     val oppgaveKøRepository: OppgaveKøRepository
@@ -24,6 +23,7 @@ class K9punsjEventHandler @KtorExperimentalAPI constructor(
     fun prosesser(
         event: PunsjEventDto
     ) {
+        log.info(event.toString())
         val modell = punsjEventK9Repository.lagre(event = event)
         val oppgave = modell.oppgave()
         oppgaveRepository.lagre(oppgave.eksternId){oppgave}

@@ -118,7 +118,7 @@ fun common(app: Application, config: Configuration) = module {
     single {
         BehandlingProsessEventK9Repository(get())
     }
-    
+
     single {
         PunsjEventK9Repository(get())
     }
@@ -190,7 +190,6 @@ fun common(app: Application, config: Configuration) = module {
             punsjEventK9Repository = get(),
             statistikkChannel = get(named("statistikkRefreshChannel")),
             statistikkRepository = get(),
-            saksbehhandlerRepository = get(),
             oppgaveKøRepository = get(),
             reservasjonRepository = get()
         )
