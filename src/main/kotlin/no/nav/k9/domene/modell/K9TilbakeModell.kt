@@ -8,7 +8,6 @@ import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventTilbakeDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
-import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.statistikk.kontrakter.Aktør
 import no.nav.k9.statistikk.kontrakter.Behandling
 import no.nav.k9.statistikk.kontrakter.Sak
@@ -188,12 +187,6 @@ data class K9TilbakeModell(
         return this.eventer.isEmpty()
     }
 
-    fun bleBeslutter(): Boolean {
-        val forrigeEvent = forrigeEvent()
-        return forrigeEvent != null && !forrigeEvent.aktiveAksjonspunkt()
-            .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
-    }
-
     fun fikkEndretAksjonspunkt(): Boolean {
         val forrigeEvent = forrigeEvent()
         if (forrigeEvent == null) {
@@ -313,36 +306,11 @@ data class AksjonspunkterTilbake(val liste: Map<String, String>) {
     fun lengde(): Int {
         return liste.size
     }
-
-    fun påVent(): Boolean {
-        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any { it.erAutopunkt() }
-    }
-
+    
     fun erTom(): Boolean {
         return this.liste.isEmpty()
     }
-
-    fun tilBeslutter(): Boolean {
-        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }
-            .any { it == AksjonspunktDefinisjon.FATTER_VEDTAK }
-    }
-
-    fun eventResultat(): EventResultat {
-        if (erTom()) {
-            return EventResultat.LUKK_OPPGAVE
-        }
-
-        if (påVent()) {
-            return EventResultat.LUKK_OPPGAVE_VENT
-        }
-
-        if (tilBeslutter()) {
-            return EventResultat.OPPRETT_BESLUTTER_OPPGAVE
-        }
-
-        return EventResultat.OPPRETT_OPPGAVE
-    }
-
+    
     fun eventResultatTilbake(): EventResultat {
         if (erTom()) {
             return EventResultat.LUKK_OPPGAVE
