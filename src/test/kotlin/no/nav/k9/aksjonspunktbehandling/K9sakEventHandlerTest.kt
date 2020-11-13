@@ -274,7 +274,7 @@ class K9sakEventHandlerTest : KoinTest {
                   "aksjonspunktKoderMedStatusListe": {
                     "5009": "OPPR",
                     "5084": "OPPR",
-                    "5085": "OPPR"
+                    "5080": "OPPR"
                   }
                 }"""
         val objectMapper = jacksonObjectMapper()
