@@ -128,7 +128,7 @@ fun Application.regenererOppgaver(
                 for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
                     val modell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
                     if (modell.eventer.isEmpty()) {
-                        log.error("""Finner ikke modell for oppgave${aktivOppgave.eksternId}""")
+                        log.error("""Finner ikke modell for oppgave ${aktivOppgave.eksternId}""")
                         continue
                     }
                     val oppgave = modell.oppgave()

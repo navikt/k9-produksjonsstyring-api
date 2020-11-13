@@ -33,6 +33,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("no.nav:vault-jdbc:$vaultJdbcVersion")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     implementation("io.ktor:ktor-locations:$ktorVersion")
     implementation("io.ktor:ktor-html-builder:$ktorVersion")
@@ -47,7 +48,6 @@ dependencies {
     // Kafka
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
-    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     // Tilgangskontroll
     implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
