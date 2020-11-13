@@ -106,7 +106,8 @@ fun Application.k9Los() {
     val refreshOppgaveJobb =
         refreshK9(
             channel = koin.get<Channel<UUID>>(named("oppgaveRefreshChannel")),
-            k9SakService = koin.get()
+            k9SakService = koin.get(),
+            oppgaveRepository = koin.get()
         )
 
     val oppdaterStatistikkJobb =
@@ -116,7 +117,7 @@ fun Application.k9Los() {
             oppgaveTjeneste = koin.get(),
             oppgaveKøRepository = koin.get()
         )
- 
+
     val sjekkReserverteJobb =
         sjekkReserverteJobb(saksbehandlerRepository = koin.get(), reservasjonRepository = koin.get())
 
@@ -144,14 +145,16 @@ fun Application.k9Los() {
         }
     }.broadcast()
 
-   //  Synkroniser oppgaver
-   regenererOppgaver(
-         oppgaveRepository = koin.get(),
-         behandlingProsessEventK9Repository = koin.get(),
-         reservasjonRepository = koin.get(),
-         oppgaveKøRepository = koin.get(),
-         saksbehhandlerRepository = koin.get()
-   )
+    //  Synkroniser oppgaver
+    regenererOppgaver(
+        oppgaveRepository = koin.get(),
+        behandlingProsessEventK9Repository = koin.get(),
+        reservasjonRepository = koin.get(),
+        oppgaveKøRepository = koin.get(),
+        saksbehhandlerRepository = koin.get(),
+        punsjEventK9Repository = koin.get(),
+        behandlingProsessEventTilbakeRepository = koin.get()
+    )
 //     rekjørEventerForGrafer(koin.get(), koin.get(), koin.get())
 
     install(CallIdRequired)

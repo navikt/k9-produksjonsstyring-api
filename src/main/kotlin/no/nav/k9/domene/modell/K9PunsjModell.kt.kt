@@ -18,7 +18,7 @@ data class K9PunsjModell(
     }
 
     override fun erTom(): Boolean {
-        TODO("Not yet implemented")
+        return this.eventer.isEmpty()
     }
 
     override fun dvhSak(): Sak {
@@ -44,7 +44,7 @@ data class K9PunsjModell(
         TODO("Not yet implemented")
     }
 
-    fun oppgave(): Oppgave {
+    override fun oppgave(): Oppgave {
 
         val sisteEvent = eventer.last()
         val førsteEvent = eventer.first()
@@ -52,7 +52,7 @@ data class K9PunsjModell(
         for (pair in sisteEvent.aksjonspunkter.map { it.kode to it.navn }) {
             aksjonspunkter[pair.first] = pair.second
         }
-        
+
         return Oppgave(
            behandlingId = null,
            fagsakSaksnummer = "",

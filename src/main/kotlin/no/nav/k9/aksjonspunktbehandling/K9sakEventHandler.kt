@@ -36,17 +36,17 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         event: BehandlingProsessEventDto
     ) {
         var skalSkippe = false
-        val modell = behandlingProsessEventK9Repository.lagre(event.eksternId!!) {
-            if (it == null) {
+        val modell = behandlingProsessEventK9Repository.lagre(event.eksternId!!) { k9SakModell ->
+            if (k9SakModell == null) {
                 return@lagre K9SakModell(mutableListOf(event))
             }
-            if (it.eventer.contains(event)) {
+            if (k9SakModell.eventer.contains(event)) {
                 log.info("""Skipping eventen har kommet tidligere ${event.eventTid}""")
                 skalSkippe = true
-                return@lagre it
+                return@lagre k9SakModell
             }
-            it.eventer.add(event)
-            it
+            k9SakModell.eventer.add(event)
+            k9SakModell
         }
         if (skalSkippe) {
             return

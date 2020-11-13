@@ -1,5 +1,6 @@
 package no.nav.k9.domene.modell
 
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
@@ -17,7 +18,9 @@ interface IModell {
     ): Behandling
 
     fun sisteSaksNummer(): String
-    
+
+    fun oppgave(): Oppgave
+
     fun behandlingOpprettetSakOgBehandling(): BehandlingOpprettet
     fun behandlingAvsluttetSakOgBehandling(): BehandlingAvsluttet
 }

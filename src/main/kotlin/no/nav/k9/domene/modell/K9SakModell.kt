@@ -25,6 +25,10 @@ data class K9SakModell(
 ) : IModell {
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
 
+   override fun oppgave():Oppgave {
+       return oppgave(sisteEvent())
+    }
+
     fun oppgave(sisteEvent: BehandlingProsessEventDto = sisteEvent()): Oppgave {
         val event = sisteEvent
         val eventResultat = sisteEvent.aktiveAksjonspunkt().eventResultat()

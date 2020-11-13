@@ -21,6 +21,11 @@ data class K9TilbakeModell(
     val eventer: List<BehandlingProsessEventTilbakeDto>
 ) : IModell {
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
+
+    override fun oppgave():Oppgave {
+        return oppgave(sisteEvent())
+    }
+
     fun oppgave(sisteEvent: BehandlingProsessEventTilbakeDto): Oppgave {
         val event = sisteEvent
         val eventResultat = sisteEvent.aktiveAksjonspunkt().eventResultatTilbake()

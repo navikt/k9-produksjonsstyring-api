@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.domene.modell.IModell
 import no.nav.k9.domene.repository.*
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
 import java.util.*
@@ -115,6 +116,8 @@ private fun beholdningOpp(oppgave: Oppgave, statistikkRepository: StatistikkRepo
 fun Application.regenererOppgaver(
     oppgaveRepository: OppgaveRepository,
     behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
+    punsjEventK9Repository: PunsjEventK9Repository,
+    behandlingProsessEventTilbakeRepository: BehandlingProsessEventTilbakeRepository,
     reservasjonRepository: ReservasjonRepository,
     oppgaveKøRepository: OppgaveKøRepository,
     saksbehhandlerRepository: SaksbehandlerRepository
@@ -126,10 +129,19 @@ fun Application.regenererOppgaver(
             val measureTimeMillis = measureTimeMillis {
                 val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
                 for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
-                    val modell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
-                    if (modell.eventer.isEmpty()) {
+                    var modell:IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
+
+                    //finner ikke i k9, sjekker mot punsj
+                    if (modell.erTom()) {
+                        modell = punsjEventK9Repository.hent(aktivOppgave.eksternId);
+                    }
+                    // finner ikke i punsj, sjekker mot tilbake
+                    if (modell.erTom()) {
+                        modell = behandlingProsessEventTilbakeRepository.hent(aktivOppgave.eksternId);
+                    }
+                    // finner den ikke i det hele tatt
+                    if (modell.erTom()) {
                         log.error("""Finner ikke modell for oppgave ${aktivOppgave.eksternId}""")
-                        continue
                     }
                     val oppgave = modell.oppgave()
                     if (!oppgave.aktiv) {
