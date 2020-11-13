@@ -142,14 +142,20 @@ fun Application.regenererOppgaver(
                     // finner den ikke i det hele tatt
                     if (modell.erTom()) {
                         log.error("""Finner ikke modell for oppgave ${aktivOppgave.eksternId} setter oppgaven til inaktiv""")
-                        oppgaveRepository.lagre(aktivOppgave.eksternId) {
-                            it!!.copy(aktiv = false)
-                            it
+                        oppgaveRepository.lagre(aktivOppgave.eksternId) { oppgave ->
+                            oppgave!!.copy(aktiv = false)
                         }
                         continue
                     }
-                    val oppgave = modell.oppgave()
-                    if (!oppgave.aktiv) {
+                    var oppgave: Oppgave?
+                    try {
+                        oppgave = modell.oppgave()
+
+                    } catch (e: Exception) {
+                        log.error("""Missmatch mellom gamel og ny kontrakt""", e)
+                        continue
+                    }
+                    if (oppgave.aktiv) {
                         if (reservasjonRepository.finnes(oppgave.eksternId)) {
                             reservasjonRepository.lagre(oppgave.eksternId) { reservasjon ->
                                 reservasjon!!.reservertTil = null
