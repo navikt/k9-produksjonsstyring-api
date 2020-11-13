@@ -146,6 +146,7 @@ fun Application.regenererOppgaver(
                             it!!.copy(aktiv = false)
                             it
                         }
+                        continue
                     }
                     val oppgave = modell.oppgave()
                     if (!oppgave.aktiv) {
