@@ -9,7 +9,6 @@ import no.nav.k9.aksjonspunktbehandling.K9TilbakeEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9punsjEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
-import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClient
@@ -70,9 +69,6 @@ fun common(app: Application, config: Configuration) = module {
     }
     single(named("refreshKlienter")) {
         Channel<SseEvent>(Channel.UNLIMITED)
-    }
-    single(named("oppgaveChannel")) {
-        Channel<Oppgave>(Channel.UNLIMITED)
     }
     single(named("oppgaveRefreshChannel")) {
         Channel<UUID>(Channel.UNLIMITED)
@@ -216,8 +212,7 @@ fun common(app: Application, config: Configuration) = module {
             configuration = config,
             pepClient = get(),
             azureGraphService = get(),
-            statistikkRepository = get(),
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel"))
+            statistikkRepository = get()
         )
     }
 
@@ -229,8 +224,7 @@ fun common(app: Application, config: Configuration) = module {
             reservasjonRepository = get(),
             oppgaveRepository = get(),
             pepClient = get(),
-            configuration = config,
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel"))
+            configuration = config
         )
     }
 

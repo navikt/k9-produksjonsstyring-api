@@ -2,6 +2,7 @@ package no.nav.k9.tjenester.avdelingsleder
 
 import io.ktor.util.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -29,10 +30,9 @@ class AvdelingslederTjeneste(
     private val reservasjonRepository: ReservasjonRepository,
     private val oppgaveRepository: OppgaveRepository,
     private val pepClient: IPepClient,
-    private val configuration: Configuration,
-    private val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
+    private val configuration: Configuration
 ) {
-    suspend fun hentOppgaveKø(uuid: UUID): OppgavekøDto {
+    fun hentOppgaveKø(uuid: UUID): OppgavekøDto {
         val oppgaveKø = oppgaveKøRepository.hentOppgavekø(uuid)
         return OppgavekøDto(
             id = oppgaveKø.id,
@@ -314,7 +314,9 @@ class AvdelingslederTjeneste(
         }
         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
-        oppgaverSomSkalInnPåKøer.send(oppgave)
+        for (oppgavekø in oppgaveKøRepository.hent()) {
+            oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø.id, listOf(oppgave), reservasjonRepository)
+        }
         return reservasjon
     }
 

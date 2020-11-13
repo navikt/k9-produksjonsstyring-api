@@ -109,11 +109,15 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
     }
     single {
         OppgaveTjeneste(
-            get(),
-            get(),
-            get(),
-            get(),
-            get(), get(), get(), get(), get(), get(named("oppgaveChannel"))
+            oppgaveRepository = get(),
+            oppgaveKøRepository = get(),
+            saksbehandlerRepository = get(),
+            pdlService = get(),
+            reservasjonRepository = get(),
+            configuration = get(),
+            azureGraphService = get(),
+            pepClient = get(),
+            statistikkRepository = get()
         )
     }
 

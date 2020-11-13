@@ -47,8 +47,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val configuration: Configuration,
     private val azureGraphService: IAzureGraphService,
     private val pepClient: IPepClient,
-    private val statistikkRepository: StatistikkRepository,
-    private val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
+    private val statistikkRepository: StatistikkRepository
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
@@ -87,7 +86,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
             saksbehandlerRepository.leggTilReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
             val oppgave = oppgaveRepository.hent(uuid)
-            oppgaverSomSkalInnPåKøer.send(oppgave)
+
+            for (oppgavekø in oppgaveKøRepository.hentKøIdIkkeTaHensyn()) {
+                oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, listOf(oppgave), reservasjonRepository)
+            }
+
             return OppgaveStatusDto(
                 erReservert = true,
                 reservertTilTidspunkt = reservasjon.reservertTil,
@@ -342,7 +345,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
-        oppgaverSomSkalInnPåKøer.send(oppgave)
+        for (oppgavekø in oppgaveKøRepository.hent()) {
+            oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø.id, listOf(oppgave), reservasjonRepository)
+        }
         return reservasjon
     }
 

@@ -60,6 +60,36 @@ class K9PunsjEventHandlerTest : KoinTest {
 
     @KtorExperimentalAPI
     @Test
+    fun `Skal håndtere at eventer har satt aktørid null`() {
+
+        val k9PunsjEventHandler = get<K9punsjEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
+
+        @Language("JSON") val json =
+            """{                                                                                                                                                                                                                                                            
+                "eksternId" : "9a009fb9-38ab-4bad-89e0-a3a16ecba306",                                                                                                                                                                                                                                                                                                                    
+                "journalpostId" : "466988237",                                                                                                                                                                                                                                                                                                                                           
+                "aktørId" : null,                                                                                                                                                                                                                                                                                                                                               
+                "eventTid" : "2020-11-10T10:43:43.130644",                                                                                                                                                                                                                                                                                                                               
+                "aksjonspunkter" : [ {                                                                                                                                                                                                                                                                                                                                                   
+                "kode" : "OPPR",                                                                                                                                                                                                                                                                                                                                                         
+                "kodeverk" : "PUNSJ_OPPGAVE_STATUS",                                                                                                                                                                                                                                                                                                                                     
+                "navn" : "Opprettet"                                                                                                                                                                                                                                                                                                                                                     
+                } ]                                                                                                                                                                                                                                                                                             
+                }
+     """.trimIndent()
+
+        val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
+        val event = objectMapper.readValue(json, PunsjEventDto::class.java)
+
+        k9PunsjEventHandler.prosesser(event)
+        val oppgaveModell = oppgaveRepository.hent(UUID.fromString(event.eksternId.toString()))
+        val oppgave = oppgaveModell
+        assertTrue { oppgave.aktiv }
+    }
+
+    @KtorExperimentalAPI
+    @Test
     fun `Skal avslutte oppgave dersom oppgaven ikke har noen akrive aksjonspunkter`() {
 
         val k9PunsjEventHandler = get<K9punsjEventHandler>()
