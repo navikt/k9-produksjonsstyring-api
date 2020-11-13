@@ -129,7 +129,7 @@ fun Application.regenererOppgaver(
             val measureTimeMillis = measureTimeMillis {
                 val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
                 for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
-                    var modell:IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
+                    var modell: IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
 
                     //finner ikke i k9, sjekker mot punsj
                     if (modell.erTom()) {
@@ -141,7 +141,11 @@ fun Application.regenererOppgaver(
                     }
                     // finner den ikke i det hele tatt
                     if (modell.erTom()) {
-                        log.error("""Finner ikke modell for oppgave ${aktivOppgave.eksternId}""")
+                        log.error("""Finner ikke modell for oppgave ${aktivOppgave.eksternId} setter oppgaven til inaktiv""")
+                        oppgaveRepository.lagre(aktivOppgave.eksternId) {
+                            it!!.copy(aktiv = false)
+                            it
+                        }
                     }
                     val oppgave = modell.oppgave()
                     if (!oppgave.aktiv) {
