@@ -127,6 +127,10 @@ fun Application.regenererOppgaver(
                 val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
                 for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
                     val modell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
+                    if (modell.eventer.isEmpty()) {
+                        log.error("""Finner ikke modell for oppgave${aktivOppgave.eksternId}""")
+                        continue
+                    }
                     val oppgave = modell.oppgave()
                     if (!oppgave.aktiv) {
                         if (reservasjonRepository.finnes(oppgave.eksternId)) {
