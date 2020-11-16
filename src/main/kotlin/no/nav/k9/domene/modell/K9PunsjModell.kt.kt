@@ -11,10 +11,10 @@ import no.nav.k9.statistikk.kontrakter.Sak
 
 data class K9PunsjModell(
     val eventer: List<PunsjEventDto>
-)  : IModell {
+) : IModell {
 
     override fun starterSak(): Boolean {
-        TODO("Not yet implemented")
+        TODO("Ikke relevant for punsj")
     }
 
     override fun erTom(): Boolean {
@@ -22,26 +22,26 @@ data class K9PunsjModell(
     }
 
     override fun dvhSak(): Sak {
-        TODO("Not yet implemented")
+        TODO("Ikke relevant for punsj")
     }
 
     override fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
     ): Behandling {
-        TODO("Not yet implemented")
+        TODO("Ikke relevant for punsj")
     }
 
     override fun sisteSaksNummer(): String {
-        TODO("Not yet implemented")
+        TODO("Ikke relevant for punsj")
     }
 
     override fun behandlingOpprettetSakOgBehandling(): BehandlingOpprettet {
-        TODO("Not yet implemented")
+        TODO("Ikke relevant for punsj")
     }
 
     override fun behandlingAvsluttetSakOgBehandling(): BehandlingAvsluttet {
-        TODO("Not yet implemented")
+        TODO("Ikke relevant for punsj")
     }
 
     fun forrigeEvent(): PunsjEventDto? {
@@ -56,69 +56,57 @@ data class K9PunsjModell(
         return this.eventer[this.eventer.lastIndex]
     }
 
-
     override fun fikkEndretAksjonspunkt(): Boolean {
         val forrigeEvent = forrigeEvent() ?: return false
-
-        val forrigeAksjonspunkter = forrigeEvent.aktiveAksjonspunkt()
-            .liste
+        val forrigeAksjonspunkter = forrigeEvent.aktiveAksjonspunkt().liste
         val nåværendeAksjonspunkter = sisteEvent().aktiveAksjonspunkt().liste
         return forrigeAksjonspunkter != nåværendeAksjonspunkter
-        
     }
 
     fun PunsjEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
-        val filter = this.aksjonspunkter.filter { it.kode == "OPPR" }
-        val aksjonspunkter = mutableMapOf<String, String>()
-        for (pair in filter.map { it.kode to it.navn }) {
-            aksjonspunkter[pair.first] = pair.second
-        }
-        return Aksjonspunkter( aksjonspunkter.toMap())
+        return Aksjonspunkter(this.aksjonspunktKoderMedStatusListe.filter { entry -> entry.value == "OPPR" })
     }
-    
+
     override fun oppgave(): Oppgave {
 
         val sisteEvent = eventer.last()
         val førsteEvent = eventer.first()
         val aksjonspunkter = mutableMapOf<String, String>()
-        for (pair in sisteEvent.aksjonspunkter.map { it.kode to it.navn }) {
-            aksjonspunkter[pair.first] = pair.second
-        }
 
         return Oppgave(
-           behandlingId = null,
-           fagsakSaksnummer = "",
-           journalpostId = førsteEvent.journalpostId.verdi,
-           aktorId = førsteEvent.aktørId?.id?:"",
-           behandlendeEnhet = "",
-           behandlingsfrist = førsteEvent.eventTid.toLocalDate().plusDays(21).atStartOfDay(),
-           behandlingOpprettet = førsteEvent.eventTid,
-           forsteStonadsdag = førsteEvent.eventTid.toLocalDate(),
-           behandlingStatus = BehandlingStatus.OPPRETTET,
-           behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
-           fagsakYtelseType = FagsakYtelseType.PPN,
-           eventTid = sisteEvent.eventTid,
-           aktiv = sisteEvent.aksjonspunkter.any{ it.kode == "OPPR"},
-           system = "PUNSJ",
-           oppgaveAvsluttet = null,
-           utfortFraAdmin = false,
-           eksternId = sisteEvent.eksternId,
-           oppgaveEgenskap = listOf(),
-           aksjonspunkter = Aksjonspunkter(liste = aksjonspunkter.toMap()),
-           tilBeslutter = false,
-           utbetalingTilBruker = false,
-           selvstendigFrilans = false,
-           kombinert = false,
-           søktGradering = false,
-           registrerPapir = true,
-           årskvantum = false,
-           avklarMedlemskap = false,
-           kode6 = false,
-           skjermet = false,
-           utenlands = false,
-           vurderopptjeningsvilkåret = false,
-           ansvarligSaksbehandlerForTotrinn = null,
-           ansvarligSaksbehandlerIdent = null
-       )
+            behandlingId = null,
+            fagsakSaksnummer = "",
+            journalpostId = førsteEvent.journalpostId.verdi,
+            aktorId = førsteEvent.aktørId?.id ?: "",
+            behandlendeEnhet = "",
+            behandlingsfrist = førsteEvent.eventTid.toLocalDate().plusDays(21).atStartOfDay(),
+            behandlingOpprettet = førsteEvent.eventTid,
+            forsteStonadsdag = førsteEvent.eventTid.toLocalDate(),
+            behandlingStatus = BehandlingStatus.OPPRETTET,
+            behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
+            fagsakYtelseType = FagsakYtelseType.PPN,
+            eventTid = sisteEvent.eventTid,
+            aktiv = sisteEvent.aksjonspunktKoderMedStatusListe.any { aksjonspunkt -> aksjonspunkt.value == "OPPR" },
+            system = "PUNSJ",
+            oppgaveAvsluttet = null,
+            utfortFraAdmin = false,
+            eksternId = sisteEvent.eksternId,
+            oppgaveEgenskap = listOf(),
+            aksjonspunkter = Aksjonspunkter(liste = aksjonspunkter.toMap()),
+            tilBeslutter = false,
+            utbetalingTilBruker = false,
+            selvstendigFrilans = false,
+            kombinert = false,
+            søktGradering = false,
+            registrerPapir = true,
+            årskvantum = false,
+            avklarMedlemskap = false,
+            kode6 = false,
+            skjermet = false,
+            utenlands = false,
+            vurderopptjeningsvilkåret = false,
+            ansvarligSaksbehandlerForTotrinn = null,
+            ansvarligSaksbehandlerIdent = null
+        )
     }
 }

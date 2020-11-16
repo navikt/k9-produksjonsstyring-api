@@ -41,11 +41,9 @@ class K9PunsjEventHandlerTest : KoinTest {
     "journalpostId" : "466988237",                                                                                                                                                                                                                                                                                                                                           
     "aktørId" : "27078522688",                                                                                                                                                                                                                                                                                                                                               
     "eventTid" : "2020-11-10T10:43:43.130644",                                                                                                                                                                                                                                                                                                                               
-    "aksjonspunkter" : [ {                                                                                                                                                                                                                                                                                                                                                   
-    "kode" : "OPPR",                                                                                                                                                                                                                                                                                                                                                         
-    "kodeverk" : "PUNSJ_OPPGAVE_STATUS",                                                                                                                                                                                                                                                                                                                                     
-    "navn" : "Opprettet"                                                                                                                                                                                                                                                                                                                                                     
-    } ]                                                                                                                                                                                                                                                                                             
+    "aksjonspunktKoderMedStatusListe": {
+                "PUNSJ": "OPPR"
+              }                                                                                                                                                                                                                                                                                             
     }
             """.trimIndent()
 
@@ -66,17 +64,15 @@ class K9PunsjEventHandlerTest : KoinTest {
         val oppgaveRepository = get<OppgaveRepository>()
 
         @Language("JSON") val json =
-            """{                                                                                                                                                                                                                                                            
-                "eksternId" : "9a009fb9-38ab-4bad-89e0-a3a16ecba306",                                                                                                                                                                                                                                                                                                                    
-                "journalpostId" : "466988237",                                                                                                                                                                                                                                                                                                                                           
-                "aktørId" : null,                                                                                                                                                                                                                                                                                                                                               
-                "eventTid" : "2020-11-10T10:43:43.130644",                                                                                                                                                                                                                                                                                                                               
-                "aksjonspunkter" : [ {                                                                                                                                                                                                                                                                                                                                                   
-                "kode" : "OPPR",                                                                                                                                                                                                                                                                                                                                                         
-                "kodeverk" : "PUNSJ_OPPGAVE_STATUS",                                                                                                                                                                                                                                                                                                                                     
-                "navn" : "Opprettet"                                                                                                                                                                                                                                                                                                                                                     
-                } ]                                                                                                                                                                                                                                                                                             
-                }
+            """{
+  "eksternId": "9a009fb9-38ab-4bad-89e0-a3a16ecba306",
+  "journalpostId": "466988237",
+  "aktørId": null,
+  "eventTid": "2020-11-10T10:43:43.130644",
+  "aksjonspunktKoderMedStatusListe": {
+    "PUNSJ": "OPPR"
+  }
+}
      """.trimIndent()
 
         val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
@@ -96,17 +92,15 @@ class K9PunsjEventHandlerTest : KoinTest {
         val oppgaveRepository = get<OppgaveRepository>()
 
         @Language("JSON") val json =
-           """{                                                                                                                                                                                                                                                            
-    "eksternId" : "9a009fb9-38ab-4bad-89e0-a3a16ecba306",                                                                                                                                                                                                                                                                                                                    
-    "journalpostId" : "466988237",                                                                                                                                                                                                                                                                                                                                           
-    "aktørId" : "27078522688",                                                                                                                                                                                                                                                                                                                                               
-    "eventTid" : "2020-11-10T10:43:43.130644",                                                                                                                                                                                                                                                                                                                               
-    "aksjonspunkter" : [ {                                                                                                                                                                                                                                                                                                                                                   
-    "kode" : "AVSLU",                                                                                                                                                                                                                                                                                                                                                         
-    "kodeverk" : "PUNSJ_OPPGAVE_STATUS",                                                                                                                                                                                                                                                                                                                                     
-    "navn" : "Avsluttet"                                                                                                                                                                                                                                                                                                                                                     
-    } ]                                                                                                                                                                                                                                                                                             
-    }""".trimIndent()
+            """{
+  "eksternId": "9a009fb9-38ab-4bad-89e0-a3a16ecba306",
+  "journalpostId": "466988237",
+  "aktørId": "27078522688",
+  "eventTid": "2020-11-10T10:43:43.130644",
+  "aksjonspunktKoderMedStatusListe": {
+    "PUNSJ": "UTFO"
+  }
+}""".trimIndent()
 
         val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
         val event = objectMapper.readValue(json, PunsjEventDto::class.java)
