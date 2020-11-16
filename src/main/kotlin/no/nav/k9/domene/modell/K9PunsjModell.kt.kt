@@ -44,6 +44,38 @@ data class K9PunsjModell(
         TODO("Not yet implemented")
     }
 
+    fun forrigeEvent(): PunsjEventDto? {
+        return if (this.eventer.lastIndex > 0) {
+            this.eventer[this.eventer.lastIndex - 1]
+        } else {
+            null
+        }
+    }
+
+    fun sisteEvent(): PunsjEventDto {
+        return this.eventer[this.eventer.lastIndex]
+    }
+
+
+    override fun fikkEndretAksjonspunkt(): Boolean {
+        val forrigeEvent = forrigeEvent() ?: return false
+
+        val forrigeAksjonspunkter = forrigeEvent.aktiveAksjonspunkt()
+            .liste
+        val nåværendeAksjonspunkter = sisteEvent().aktiveAksjonspunkt().liste
+        return forrigeAksjonspunkter != nåværendeAksjonspunkter
+        
+    }
+
+    fun PunsjEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
+        val filter = this.aksjonspunkter.filter { it.kode == "OPPR" }
+        val aksjonspunkter = mutableMapOf<String, String>()
+        for (pair in filter.map { it.kode to it.navn }) {
+            aksjonspunkter[pair.first] = pair.second
+        }
+        return Aksjonspunkter( aksjonspunkter.toMap())
+    }
+    
     override fun oppgave(): Oppgave {
 
         val sisteEvent = eventer.last()

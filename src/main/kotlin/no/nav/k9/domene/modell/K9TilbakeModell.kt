@@ -200,7 +200,7 @@ data class K9TilbakeModell(
         return this.eventer.isEmpty()
     }
 
-    fun fikkEndretAksjonspunkt(): Boolean {
+    override fun fikkEndretAksjonspunkt(): Boolean {
         val forrigeEvent = forrigeEvent()
         if (forrigeEvent == null) {
             return false

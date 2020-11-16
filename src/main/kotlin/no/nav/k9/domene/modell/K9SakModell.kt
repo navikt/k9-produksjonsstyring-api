@@ -319,7 +319,7 @@ data class K9SakModell(
             .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
     }
 
-    fun fikkEndretAksjonspunkt(): Boolean {
+    override fun fikkEndretAksjonspunkt(): Boolean {
         val forrigeEvent = forrigeEvent()
         if (forrigeEvent == null) {
             return false

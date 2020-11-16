@@ -161,7 +161,8 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             statistikkChannel = get(named("statistikkRefreshChannel")),
             statistikkRepository = get(),
             oppgaveKøRepository = get(),
-            reservasjonRepository = get()
+            reservasjonRepository = get(),
+            saksbehandlerRepository = get()
         )
     }
 }

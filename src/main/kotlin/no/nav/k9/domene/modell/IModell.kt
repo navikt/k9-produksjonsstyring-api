@@ -23,4 +23,5 @@ interface IModell {
 
     fun behandlingOpprettetSakOgBehandling(): BehandlingOpprettet
     fun behandlingAvsluttetSakOgBehandling(): BehandlingAvsluttet
+   fun fikkEndretAksjonspunkt(): Boolean 
 }

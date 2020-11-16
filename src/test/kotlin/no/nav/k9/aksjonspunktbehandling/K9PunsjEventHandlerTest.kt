@@ -90,7 +90,7 @@ class K9PunsjEventHandlerTest : KoinTest {
 
     @KtorExperimentalAPI
     @Test
-    fun `Skal avslutte oppgave dersom oppgaven ikke har noen akrive aksjonspunkter`() {
+    fun `Skal avslutte oppgave dersom oppgaven ikke har noen aktive aksjonspunkter`() {
 
         val k9PunsjEventHandler = get<K9punsjEventHandler>()
         val oppgaveRepository = get<OppgaveRepository>()

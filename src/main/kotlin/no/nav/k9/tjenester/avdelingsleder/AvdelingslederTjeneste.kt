@@ -1,11 +1,8 @@
 package no.nav.k9.tjenester.avdelingsleder
 
 import io.ktor.util.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
-import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -47,7 +44,7 @@ class AvdelingslederTjeneste(
             andreKriterier = oppgaveKø.filtreringAndreKriterierType,
             sistEndret = oppgaveKø.sistEndret,
             skjermet = oppgaveKø.skjermet,
-            antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(oppgaveKø.id, true),
+            antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = oppgaveKø.id, taMedReserverte = true),
             saksbehandlere = oppgaveKø.saksbehandlere
         )
     }
@@ -71,7 +68,7 @@ class AvdelingslederTjeneste(
                 andreKriterier = it.filtreringAndreKriterierType,
                 sistEndret = it.sistEndret,
                 skjermet = it.skjermet,
-                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id, true),
+                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it.id, taMedReserverte = true),
                 saksbehandlere = it.saksbehandlere
             )
         }.sortedBy { it.navn }

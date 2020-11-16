@@ -58,7 +58,7 @@ internal fun Route.AvdelingslederApis() {
                 }
             )
         ) {
-            call.respond(oppgaveTjeneste.hentAntallOppgaver(UUID.fromString(uuid), true))
+            call.respond(oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = UUID.fromString(uuid), taMedReserverte = true))
         }
     }
 
