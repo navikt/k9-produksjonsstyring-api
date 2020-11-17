@@ -4,7 +4,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
+import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.k9.IK9SakService
+import no.nav.k9.integrasjon.kafka.dto.Fagsystem
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
 import java.util.*
@@ -13,18 +15,22 @@ import java.util.concurrent.Executors
 
 fun CoroutineScope.refreshK9(
     channel: ReceiveChannel<UUID>,
-    k9SakService: IK9SakService
+    k9SakService: IK9SakService,
+    oppgaveRepository: OppgaveRepository
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     val oppgaveListe = mutableListOf<UUID>()
     oppgaveListe.add(channel.receive())
     while (true) {
-        val oppgave = channel.poll()
-        if (oppgave == null) {
+        val oppgaveId = channel.poll()
+        if (oppgaveId == null) {
             refreshK9(oppgaveListe, k9SakService)
             oppgaveListe.clear()
             oppgaveListe.add(channel.receive())
         } else {
-            oppgaveListe.add(oppgave)
+            val oppgave = oppgaveRepository.hent(oppgaveId)
+            if (oppgave.system == Fagsystem.K9SAK.kode) {
+                oppgaveListe.add(oppgaveId)
+            }
         }
     }
 }

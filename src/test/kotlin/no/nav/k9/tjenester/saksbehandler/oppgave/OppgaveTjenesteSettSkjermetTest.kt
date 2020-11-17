@@ -78,8 +78,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository,
-            get(named("oppgaveChannel"))
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
         )
 
         val uuid = UUID.randomUUID()
@@ -212,8 +211,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository,
-            get(named("oppgaveChannel"))
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
         )
 
         val oppgave1 = Oppgave(
@@ -311,8 +309,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository,
-            get(named("oppgaveChannel"))
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
         )
 
         val uuid = UUID.randomUUID()
