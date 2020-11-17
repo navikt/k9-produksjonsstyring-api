@@ -13,6 +13,7 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.integrasjon.abac.IPepClient
+import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleApneBehandlinger
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
@@ -495,10 +496,10 @@ class OppgaveRepository(
                         }
                             .map {
                                 Aksjonspunkt(
-                                    it.kode,
-                                    it.navn,
-                                    it.aksjonspunktType.navn,
-                                    it.behandlingSteg.navn,
+                                    it.kode?: "Utdatert-dev",
+                                    it.navn?: "Utdatert-dev",
+                                    it.aksjonspunktType?.navn?: "Utdatert-dev",
+                                    it.behandlingSteg.navn?: "Utdatert-dev",
                                     "",
                                     "",
                                     it.defaultTotrinnBehandling,
@@ -516,5 +517,4 @@ class OppgaveRepository(
             aksjonspunkt
         }
     }
-
 }
