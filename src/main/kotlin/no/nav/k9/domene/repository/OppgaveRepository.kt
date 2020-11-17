@@ -499,7 +499,7 @@ class OppgaveRepository(
                                     it.kode?: "Utdatert-dev",
                                     it.navn?: "Utdatert-dev",
                                     it.aksjonspunktType?.navn?: "Utdatert-dev",
-                                    it.behandlingSteg.navn?: "Utdatert-dev",
+                                    it.behandlingSteg?.navn?: "Utdatert-dev",
                                     "",
                                     "",
                                     it.defaultTotrinnBehandling,
