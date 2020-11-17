@@ -33,6 +33,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("no.nav:vault-jdbc:$vaultJdbcVersion")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     implementation("io.ktor:ktor-locations:$ktorVersion")
     implementation("io.ktor:ktor-html-builder:$ktorVersion")
@@ -47,7 +48,6 @@ dependencies {
     // Kafka
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
-    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     // Tilgangskontroll
     implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
@@ -55,7 +55,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.7")
     
     // Kontrakter
-    implementation("no.nav.k9.sak:kontrakt:3.1.0-20201029121043-a570f62")
+    implementation("no.nav.k9.sak:kontrakt:3.1.0-20201113070900-8dbc85e")
     implementation("no.nav.k9.statistikk:kontrakter:2.0_20200514170610_720949d")
 
     // Div

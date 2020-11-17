@@ -10,6 +10,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import kotlinx.coroutines.channels.Channel
 import no.nav.k9.aksjonspunktbehandling.K9TilbakeEventHandler
+import no.nav.k9.aksjonspunktbehandling.K9punsjEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.runMigration
 import no.nav.k9.domene.lager.oppgave.Oppgave
@@ -54,11 +55,17 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
     }
     single {
         K9SakServiceLocal() as IK9SakService
-    } 
+    }
 
     single { dataSource }
     single { pepClient }
-    single { OppgaveRepository(dataSource = get(), pepClient = get(), refreshOppgave = get(named("oppgaveRefreshChannel"))) }
+    single {
+        OppgaveRepository(
+            dataSource = get(),
+            pepClient = get(),
+            refreshOppgave = get(named("oppgaveRefreshChannel"))
+        )
+    }
     single { DriftsmeldingRepository(get()) }
     single { StatistikkRepository(get()) }
 
@@ -102,11 +109,15 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
     }
     single {
         OppgaveTjeneste(
-            get(),
-            get(),
-            get(),
-            get(),
-            get(), get(), get(), get(), get(), get(named("oppgaveChannel"))
+            oppgaveRepository = get(),
+            oppgaveKøRepository = get(),
+            saksbehandlerRepository = get(),
+            pdlService = get(),
+            reservasjonRepository = get(),
+            configuration = get(),
+            azureGraphService = get(),
+            pepClient = get(),
+            statistikkRepository = get()
         )
     }
 
@@ -125,7 +136,7 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             oppgaveKøRepository = get(),
             reservasjonRepository = get(),
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkChannel = get(named("statistikkRefreshChannel")),
             statistikkRepository = get(), saksbehhandlerRepository = get()
         )
     }
@@ -138,8 +149,20 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             oppgaveKøRepository = get(),
             reservasjonRepository = get(),
             statistikkProducer = statistikkProducer,
-            oppgaverSomSkalInnPåKøer = get(named("oppgaveChannel")),
+            statistikkChannel = get(named("statistikkRefreshChannel")),
             statistikkRepository = get(), saksbehhandlerRepository = get()
+        )
+    }
+
+    single {
+        K9punsjEventHandler(
+            oppgaveRepository = get(),
+            punsjEventK9Repository = PunsjEventK9Repository(dataSource = get()),
+            statistikkChannel = get(named("statistikkRefreshChannel")),
+            statistikkRepository = get(),
+            oppgaveKøRepository = get(),
+            reservasjonRepository = get(),
+            saksbehandlerRepository = get()
         )
     }
 }

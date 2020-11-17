@@ -3,7 +3,6 @@ package no.nav.k9.aksjonspunktbehandling
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.util.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.k9.buildAndTestConfig
@@ -12,12 +11,10 @@ import no.nav.k9.domene.modell.KøSortering
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.eventhandler.oppdaterKø
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import org.intellij.lang.annotations.Language
 import org.junit.Rule
 import org.junit.Test
-import org.koin.core.qualifier.named
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
@@ -277,7 +274,7 @@ class K9sakEventHandlerTest : KoinTest {
                   "aksjonspunktKoderMedStatusListe": {
                     "5009": "OPPR",
                     "5084": "OPPR",
-                    "5085": "OPPR"
+                    "5080": "OPPR"
                   }
                 }"""
         val objectMapper = jacksonObjectMapper()
@@ -369,8 +366,7 @@ class K9sakEventHandlerTest : KoinTest {
             .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
 
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
-
-        k9sakEventHandler.prosesser(event)
+        
         val oppgaveKøRepository = get<OppgaveKøRepository>()
 
         runBlocking {
@@ -394,23 +390,15 @@ class K9sakEventHandlerTest : KoinTest {
                 )
             }
         }
-
+        k9sakEventHandler.prosesser(event)
         val oppgave =
             oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
         assertTrue { oppgave.aktiv }
         assertTrue(oppgave.aksjonspunkter.lengde() == 1)
 
-
         val i = runBlocking {
-            oppdaterKø(
-                oppgaveKøRepository = oppgaveKøRepository,
-                oppgaveListe = mutableListOf(oppgave),
-                reservasjonRepository = get(),
-                statistikkRefreshChannel = get<Channel<Boolean>>(named("statistikkRefreshChannel"))
-            )
-            oppgaveKøRepository.hent()[0].oppgaverOgDatoer.size
-
+            oppgaveKøRepository.hent()
         }
-        assertSame(1, i)
+        assertSame(1, i[0].oppgaverOgDatoer.size)
     }
 }

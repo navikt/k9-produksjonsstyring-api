@@ -11,5 +11,6 @@ data class PunsjEventDto(
     val eksternId: PunsjId,
     val journalpostId: JournalpostId,
     val eventTid: LocalDateTime,
-    val aktørId: AktørId?
+    val aktørId: AktørId?,
+    val aksjonspunktKoderMedStatusListe: MutableMap<String, String>
 )
