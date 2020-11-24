@@ -1,10 +1,8 @@
 package no.nav.k9.tjenester.avdelingsleder
 
 import io.ktor.util.*
-import kotlinx.coroutines.channels.Channel
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
-import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
 import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -29,10 +27,9 @@ class AvdelingslederTjeneste(
     private val reservasjonRepository: ReservasjonRepository,
     private val oppgaveRepository: OppgaveRepository,
     private val pepClient: IPepClient,
-    private val configuration: Configuration,
-    private val oppgaverSomSkalInnPåKøer: Channel<Oppgave>
+    private val configuration: Configuration
 ) {
-    suspend fun hentOppgaveKø(uuid: UUID): OppgavekøDto {
+    fun hentOppgaveKø(uuid: UUID): OppgavekøDto {
         val oppgaveKø = oppgaveKøRepository.hentOppgavekø(uuid)
         return OppgavekøDto(
             id = oppgaveKø.id,
@@ -47,7 +44,7 @@ class AvdelingslederTjeneste(
             andreKriterier = oppgaveKø.filtreringAndreKriterierType,
             sistEndret = oppgaveKø.sistEndret,
             skjermet = oppgaveKø.skjermet,
-            antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(oppgaveKø.id, true),
+            antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = oppgaveKø.id, taMedReserverte = true),
             saksbehandlere = oppgaveKø.saksbehandlere
         )
     }
@@ -71,7 +68,7 @@ class AvdelingslederTjeneste(
                 andreKriterier = it.filtreringAndreKriterierType,
                 sistEndret = it.sistEndret,
                 skjermet = it.skjermet,
-                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(it.id, true),
+                antallBehandlinger = oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it.id, taMedReserverte = true),
                 saksbehandlere = it.saksbehandlere
             )
         }.sortedBy { it.navn }
@@ -314,7 +311,9 @@ class AvdelingslederTjeneste(
         }
         saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
         val oppgave = oppgaveRepository.hent(uuid)
-        oppgaverSomSkalInnPåKøer.send(oppgave)
+        for (oppgavekø in oppgaveKøRepository.hent()) {
+            oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø.id, listOf(oppgave), reservasjonRepository)
+        }
         return reservasjon
     }
 

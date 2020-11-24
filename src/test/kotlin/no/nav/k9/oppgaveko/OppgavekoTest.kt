@@ -75,7 +75,7 @@ class OppgavekoTest :KoinTest{
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository,get(named("oppgaveChannel"))
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
         )
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(

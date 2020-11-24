@@ -18,11 +18,16 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
+import kotlin.math.min
 
 data class K9SakModell(
     val eventer: MutableList<BehandlingProsessEventDto>
 ) : IModell {
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
+
+   override fun oppgave():Oppgave {
+       return oppgave(sisteEvent())
+    }
 
     fun oppgave(sisteEvent: BehandlingProsessEventDto = sisteEvent()): Oppgave {
         val event = sisteEvent
@@ -177,7 +182,7 @@ data class K9SakModell(
     }
 
     @KtorExperimentalAPI
-    fun behandlingOpprettetSakOgBehandling(
+    override fun behandlingOpprettetSakOgBehandling(
 
     ): BehandlingOpprettet {
         val sisteEvent = sisteEvent()
@@ -186,7 +191,7 @@ data class K9SakModell(
             hendelsesId = sisteEvent.eksternId.toString() + "_" + eventer.size,
             hendelsesprodusentREF = BehandlingOpprettet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
-            behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
+            behandlingsID = ("k9-los-" + sisteEvent.eksternId).substring(0, min(31,("k9-los-" + sisteEvent.eksternId).length-1 )),
             behandlingstype = BehandlingOpprettet.Behandlingstype(
                 "",
                 "",
@@ -210,7 +215,7 @@ data class K9SakModell(
     }
 
     @KtorExperimentalAPI
-    fun behandlingAvsluttetSakOgBehandling(
+    override fun behandlingAvsluttetSakOgBehandling(
     ): BehandlingAvsluttet {
         val sisteEvent = sisteEvent()
         val behandlingAvsluttet = BehandlingAvsluttet(
@@ -218,7 +223,7 @@ data class K9SakModell(
             hendelsesId = """${sisteEvent.eksternId.toString()}_${eventer.size}""",
             hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
-            behandlingsID = ("k9-los-" + sisteEvent.behandlingId),
+            behandlingsID = ("k9-los-" + sisteEvent.eksternId).substring(0, min(31,("k9-los-" + sisteEvent.eksternId).length-1 )),
             behandlingstype = BehandlingAvsluttet.Behandlingstype(
                 "",
                 "",
@@ -314,7 +319,7 @@ data class K9SakModell(
             .tilBeslutter() && sisteEvent().aktiveAksjonspunkt().tilBeslutter()
     }
 
-    fun fikkEndretAksjonspunkt(): Boolean {
+    override fun fikkEndretAksjonspunkt(): Boolean {
         val forrigeEvent = forrigeEvent()
         if (forrigeEvent == null) {
             return false

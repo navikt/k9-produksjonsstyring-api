@@ -8,12 +8,15 @@ import no.nav.k9.domene.modell.K9PunsjModell
 import no.nav.k9.integrasjon.kafka.dto.PunsjEventDto
 import no.nav.k9.tjenester.innsikt.Databasekall
 import no.nav.k9.tjenester.innsikt.Mapping
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.atomic.LongAdder
 import javax.sql.DataSource
 
 
 class PunsjEventK9Repository(private val dataSource: DataSource) {
+    private val log: Logger = LoggerFactory.getLogger(PunsjEventK9Repository::class.java)
 
     fun hent(uuid: UUID): K9PunsjModell {
         val json: String? = using(sessionOf(dataSource)) {
@@ -27,13 +30,18 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
                     }.asSingle
             )
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         if (json.isNullOrEmpty()) {
             return K9PunsjModell(emptyList())
         }
-        val modell = objectMapper().readValue(json, K9PunsjModell::class.java)
-
-        return K9PunsjModell(  modell.eventer.sortedBy { it.eventTid })
+        return try {
+            val modell = objectMapper().readValue(json, K9PunsjModell::class.java)
+            K9PunsjModell(modell.eventer.sortedBy { it.eventTid })
+        } catch (e: Exception) {
+            log.error("", e)
+            K9PunsjModell(emptyList())
+        }
     }
 
     fun lagre(
@@ -66,7 +74,8 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
             }
 
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         val modell = objectMapper().readValue(out!!, K9PunsjModell::class.java)
         return modell.copy(eventer = modell.eventer.sortedBy { it.eventTid })
     }
@@ -83,7 +92,7 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
                     )
                         .map { row ->
                             row.string("id")
-                   }.asList
+                        }.asList
                 )
             }
 
@@ -105,12 +114,14 @@ class PunsjEventK9Repository(private val dataSource: DataSource) {
                     }.asSingle
             )
         }
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
-        return  json!!
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
+        return json!!
     }
 
     fun mapMellomeksternIdOgBehandlingsid(): List<Mapping> {
-        Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){LongAdder()}.increment()
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
         return using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(

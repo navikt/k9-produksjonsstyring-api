@@ -9,6 +9,7 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.ReservasjonRepository
 import no.nav.k9.integrasjon.k9.IK9SakService
+import no.nav.k9.kodeverk.Fagsystem
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdDto
 import no.nav.k9.sak.kontrakt.behandling.BehandlingIdListe
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
@@ -52,10 +53,10 @@ private suspend fun oppdaterKø(
     oppgaveTjeneste: OppgaveTjeneste,
     k9SakService: IK9SakService
 ): Long {
-  return  measureTimeMillis {
+    return measureTimeMillis {
         val kø = oppgaveKøRepository.hentOppgavekø(it)
         val opprinnelige = kø.oppgaverOgDatoer.toMutableList()
-        
+
         // dersom den er uendret når vi skal lagre, foreta en check og eventuellt lagre på nytt inne i lås
         val aktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
             .filter { !kø.erOppgavenReservert(reservasjonRepository, it) }
@@ -81,8 +82,10 @@ private suspend fun oppdaterKø(
                     }
                 }
             }
-            behandlingsListe.addAll(oppgaveKø.oppgaverOgDatoer.take(20).map { BehandlingIdDto(it.id) }
-                .toList())
+            behandlingsListe.addAll(
+                oppgaveRepository.hentOppgaver(oppgaveKø.oppgaverOgDatoer.take(20).map { it.id })
+                    .filter { it.system == Fagsystem.K9SAK.kode }.map { BehandlingIdDto(it.eksternId) }
+            )
             oppgaveKø
         }
         oppgaveTjeneste.hentAntallOppgaver(oppgavekøId = it, taMedReserverte = true, refresh = true)
@@ -90,7 +93,6 @@ private suspend fun oppdaterKø(
         k9SakService.refreshBehandlinger(BehandlingIdListe(behandlingsListe))
     }
 }
-
 
 
 fun hentAlleElementerIkøSomSet(
