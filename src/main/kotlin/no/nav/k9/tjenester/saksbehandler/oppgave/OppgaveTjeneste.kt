@@ -2,7 +2,6 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import info.debatty.java.stringsimilarity.Levenshtein
 import io.ktor.util.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
@@ -13,9 +12,8 @@ import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
-import no.nav.k9.integrasjon.pdl.AktøridPdl
-import no.nav.k9.integrasjon.pdl.IPdlService
-import no.nav.k9.integrasjon.pdl.PdlResponse
+import no.nav.k9.integrasjon.kafka.dto.Fagsystem
+import no.nav.k9.integrasjon.pdl.*
 import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverHistorikk
@@ -138,33 +136,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     if (!(configuration.koinProfile() == KoinProfile.PROD)) {
                         aktorId = "1172507325105"
                     }
-                    val result = oppgaveRepository.hentOppgaverMedAktorId(aktorId).filter {
-                        if (!pepClient.harTilgangTilLesSak(
-                                fagsakNummer = it.fagsakSaksnummer,
-                                aktørid = it.aktorId
-                            )
-                        ) {
-                            settSkjermet(it)
-                            false
-                        } else {
-                            true
-                        }
-                    }.map {
-                        FagsakDto(
-                            it.fagsakSaksnummer,
-                            PersonDto(
-                                person.person.navn(),
-                                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                                person.person.data.hentPerson.kjoenn[0].kjoenn,
-                                null
-                                //   person.data.hentPerson.doedsfall[0].doedsdato
-                            ),
-                            it.fagsakYtelseType,
-                            it.behandlingStatus,
-                            it.behandlingOpprettet,
-                            it.aktiv
-                        )
-                    }.toMutableList()
+                    val result = hentOppgaver(aktorId, person.person)
                     return SokeResultatDto(aktørId.ikkeTilgang, result)
                 } else {
                     return SokeResultatDto(person.ikkeTilgang, mutableListOf())
@@ -186,6 +158,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
             ret.add(
                 FagsakDto(
+                    Fagsystem.fraKode(oppgave.system),
                     oppgave.fagsakSaksnummer,
                     if (person.person != null) {
                         PersonDto(
@@ -212,6 +185,37 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             )
         }
         return SokeResultatDto(false, ret)
+    }
+
+    private suspend fun hentOppgaver(aktorId: String, person: PersonPdl): MutableList<FagsakDto> {
+        return oppgaveRepository.hentOppgaverMedAktorId(aktorId).filter { oppgave ->
+            if (!pepClient.harTilgangTilLesSak(
+                    fagsakNummer = oppgave.fagsakSaksnummer,
+                    aktørid = oppgave.aktorId
+                )
+            ) {
+                settSkjermet(oppgave)
+                false
+            } else {
+                true
+            }
+        }.map {
+            FagsakDto(
+                Fagsystem.K9SAK,
+                it.fagsakSaksnummer,
+                PersonDto(
+                    person.navn(),
+                    person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+                    person.data.hentPerson.kjoenn[0].kjoenn,
+                    null
+                    //   person.data.hentPerson.doedsfall[0].doedsdato
+                ),
+                it.fagsakYtelseType,
+                it.behandlingStatus,
+                it.behandlingOpprettet,
+                it.aktiv
+            )
+        }.toMutableList()
     }
 
     @KtorExperimentalAPI
@@ -697,7 +701,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     suspend fun settSkjermet(oppgave: Oppgave) {
-        oppgaveRepository.lagre(oppgave.eksternId) { it ->
+        oppgaveRepository.lagre(oppgave.eksternId) {
             it!!
         }
         val oppaveSkjermet = oppgaveRepository.hent(oppgave.eksternId)
