@@ -37,7 +37,7 @@ open class K9SakService @KtorExperimentalAPI constructor(
             BehandlingIdListe(behandlingIdList.behandlingUuid.filter {
                 cache.setIfEmpty(it.toString(), CacheObject(true, expire = LocalDateTime.now().plusHours(12)))
             }.map { BehandlingIdDto(it) }.take(999))
-        
+
         if (behandlingIdListe.behandlinger.isEmpty()) {
             return
         }
