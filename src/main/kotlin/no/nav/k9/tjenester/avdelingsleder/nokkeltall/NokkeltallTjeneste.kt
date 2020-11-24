@@ -19,16 +19,13 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
     }
 
     fun hentNyeFerdigstilteOppgaverOppsummering(): List<AlleOppgaverNyeOgFerdigstilteDto> {
-        val ferdigstilteManuelt = statistikkRepository.hentFerdigstilte()
         return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
-            val ferdigstilte =
-                    ferdigstilteManuelt.find { f -> f.behandlingType == it.behandlingType && f.dato == it.dato }
             AlleOppgaverNyeOgFerdigstilteDto(
                     it.fagsakYtelseType,
                     it.behandlingType,
                     it.dato,
                     it.nye.size,
-                    ferdigstilte?.antall ?: it.ferdigstilteSaksbehandler.size,
+                    it.ferdigstilteSaksbehandler.size,
                     )
         }
     }
