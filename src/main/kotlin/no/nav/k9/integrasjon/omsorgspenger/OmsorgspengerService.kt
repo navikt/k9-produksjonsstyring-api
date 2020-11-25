@@ -30,7 +30,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
 
 
     @KtorExperimentalAPI
-    override suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto {
+    override suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto? {
 
 
         val httpRequest = "${url}/saksnummer"
@@ -75,7 +75,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
             objectMapper().readValue(json!!)
         } catch (e: Exception) {
             log.warn("", e)
-            OmsorgspengerSakDto("")
+            null
         }
     }
 }

@@ -7,14 +7,16 @@ import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
+import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.modell.Saksbehandler
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
+import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
 import no.nav.k9.integrasjon.pdl.*
-import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverHistorikk
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
@@ -45,7 +47,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val configuration: Configuration,
     private val azureGraphService: IAzureGraphService,
     private val pepClient: IPepClient,
-    private val statistikkRepository: StatistikkRepository
+    private val statistikkRepository: StatistikkRepository,
+    private val omsorgspengerService: OmsorgspengerService
+
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
@@ -177,10 +181,30 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         )
                         // person.data.hentPerson.doedsfall!!.doedsdato
                     },
+
                     oppgave.fagsakYtelseType,
                     oppgave.behandlingStatus,
                     oppgave.behandlingOpprettet,
                     oppgave.aktiv
+                )
+            )
+        }
+        val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(query)
+        if (omsorgspengerSakDto != null) {
+            ret.add(
+                FagsakDto(
+                    Fagsystem.OMSORGSPENGER,
+                    omsorgspengerSakDto.saksnummer,
+                    PersonDto(
+                        "Ukjent navn",
+                        "",
+                        "",
+                        null
+                    ),
+                    FagsakYtelseType.OMSORGSPENGER,
+                    BehandlingStatus.OPPRETTET,
+                    LocalDateTime.now(),
+                    true
                 )
             )
         }
