@@ -16,7 +16,6 @@ import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
 import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
-import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
 import no.nav.k9.integrasjon.pdl.*
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverHistorikk
@@ -142,6 +141,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         aktorId = "1172507325105"
                     }
                     val result = hentOppgaver(aktorId, person.person)
+                    hentOmsorgsdaterForFnr(query, result)
                     return SokeResultatDto(aktørId.ikkeTilgang, result)
                 } else {
                     return SokeResultatDto(person.ikkeTilgang, mutableListOf())
@@ -149,30 +149,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
         }
         val ret = mutableListOf<FagsakDto>()
-
-        val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(query)
-        log.info("Fikk dette som svar fra omsorgsdager", omsorgspengerSakDto)
-
-        if (omsorgspengerSakDto != null) {
-            ret.add(
-                FagsakDto(
-                    Fagsystem.OMSORGSPENGER,
-                    omsorgspengerSakDto.saksnummer,
-                    PersonDto(
-                        "Ukjent navn",
-                        "",
-                        "",
-                        null
-                    ),
-                    FagsakYtelseType.OMSORGSPENGER,
-                    BehandlingStatus.OPPRETTET,
-                    LocalDateTime.now(),
-                    true
-                )
-            )
-        }
-
-
         val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer(query)
         for (oppgave in oppgaver) {
             if (!pepClient.harTilgangTilLesSak(
@@ -215,6 +191,33 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             )
         }
         return SokeResultatDto(false, ret)
+    }
+
+    private suspend fun hentOmsorgsdaterForFnr(
+        query: String,
+        ret: MutableList<FagsakDto>
+    ) {
+        val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(query)
+        log.info("Fikk dette som svar fra omsorgsdager", omsorgspengerSakDto)
+
+        if (omsorgspengerSakDto != null) {
+            ret.add(
+                FagsakDto(
+                    Fagsystem.OMSORGSPENGER,
+                    omsorgspengerSakDto.saksnummer,
+                    PersonDto(
+                        "Ukjent navn",
+                        "",
+                        "",
+                        null
+                    ),
+                    FagsakYtelseType.OMSORGSPENGER,
+                    BehandlingStatus.OPPRETTET,
+                    LocalDateTime.now(),
+                    true
+                )
+            )
+        }
     }
 
     private suspend fun hentOppgaver(aktorId: String, person: PersonPdl): MutableList<FagsakDto> {
