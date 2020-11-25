@@ -147,8 +147,32 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
             }
         }
-        val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer(query)
         val ret = mutableListOf<FagsakDto>()
+
+        val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(query)
+        log.info("Fikk dette som svar fra omsorgsdager", omsorgspengerSakDto)
+
+        if (omsorgspengerSakDto != null) {
+            ret.add(
+                FagsakDto(
+                    Fagsystem.OMSORGSPENGER,
+                    omsorgspengerSakDto.saksnummer,
+                    PersonDto(
+                        "Ukjent navn",
+                        "",
+                        "",
+                        null
+                    ),
+                    FagsakYtelseType.OMSORGSPENGER,
+                    BehandlingStatus.OPPRETTET,
+                    LocalDateTime.now(),
+                    true
+                )
+            )
+        }
+
+
+        val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer(query)
         for (oppgave in oppgaver) {
             if (!pepClient.harTilgangTilLesSak(
                     fagsakNummer = oppgave.fagsakSaksnummer,
@@ -186,25 +210,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     oppgave.behandlingStatus,
                     oppgave.behandlingOpprettet,
                     oppgave.aktiv
-                )
-            )
-        }
-        val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(query)
-        if (omsorgspengerSakDto != null) {
-            ret.add(
-                FagsakDto(
-                    Fagsystem.OMSORGSPENGER,
-                    omsorgspengerSakDto.saksnummer,
-                    PersonDto(
-                        "Ukjent navn",
-                        "",
-                        "",
-                        null
-                    ),
-                    FagsakYtelseType.OMSORGSPENGER,
-                    BehandlingStatus.OPPRETTET,
-                    LocalDateTime.now(),
-                    true
                 )
             )
         }
