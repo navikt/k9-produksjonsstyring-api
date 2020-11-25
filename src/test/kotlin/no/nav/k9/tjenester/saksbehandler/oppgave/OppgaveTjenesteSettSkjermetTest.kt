@@ -17,6 +17,7 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
+import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PersonPdl
 import no.nav.k9.integrasjon.pdl.PersonPdlResponse
@@ -52,6 +53,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         val refreshKlienter = Channel<SseEvent>(1000)
 
         val oppgaveRepository = get<OppgaveRepository>()
+        val omsorgspengerService = get<OmsorgspengerService>()
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = get(),
             oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -78,7 +80,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository, omsorgspengerService
         )
 
         val uuid = UUID.randomUUID()
@@ -192,6 +194,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             pepClient = PepClientLocal()
         )
         val pdlService = mockk<PdlService>()
+        val omsorgspengerService = mockk<OmsorgspengerService>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
             pepClient = PepClientLocal())
 
@@ -211,7 +214,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository, omsorgspengerService
         )
 
         val oppgave1 = Oppgave(
@@ -299,18 +302,19 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         )
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
+        val omsorgspengerService = mockk<OmsorgspengerService>()
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val pepClient = mockk<IPepClient>()
         val azureGraphService = mockk<AzureGraphService>()
 
         coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
         val oppgaveTjeneste = OppgaveTjeneste(
-            oppgaveRepository,
-            oppgaveKøRepository,
-            saksbehandlerRepository,
-            pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
-        )
+        oppgaveRepository,
+        oppgaveKøRepository,
+        saksbehandlerRepository,
+        pdlService,
+        reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository, omsorgspengerService)
+
 
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(

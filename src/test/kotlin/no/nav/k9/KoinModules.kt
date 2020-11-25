@@ -117,7 +117,8 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             configuration = get(),
             azureGraphService = get(),
             pepClient = get(),
-            statistikkRepository = get()
+            statistikkRepository = get(),
+            omsorgspengerService = get()
         )
     }
 
