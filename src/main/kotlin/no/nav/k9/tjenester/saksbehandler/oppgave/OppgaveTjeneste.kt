@@ -15,6 +15,7 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
+import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
 import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
 import no.nav.k9.integrasjon.pdl.*
 import no.nav.k9.integrasjon.rest.idToken
@@ -48,7 +49,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val azureGraphService: IAzureGraphService,
     private val pepClient: IPepClient,
     private val statistikkRepository: StatistikkRepository,
-    private val omsorgspengerService: OmsorgspengerService
+    private val omsorgspengerService: IOmsorgspengerService
 
 ) {
 

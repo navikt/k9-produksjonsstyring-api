@@ -17,6 +17,7 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
+import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
 import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PersonPdl
@@ -53,7 +54,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         val refreshKlienter = Channel<SseEvent>(1000)
 
         val oppgaveRepository = get<OppgaveRepository>()
-        val omsorgspengerService = get<OmsorgspengerService>()
+        val omsorgspengerService = get<IOmsorgspengerService>()
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = get(),
             oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -250,6 +251,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
         every { config.koinProfile() } returns KoinProfile.LOCAL
         coEvery { pepClient.harTilgangTilLesSak(any(), any()) } returns true
+        coEvery { omsorgspengerService.hentOmsorgspengerSakDto(any()) } returns null
         coEvery { pdlService.person(any()) } returns PersonPdlResponse(false, PersonPdl(data = PersonPdl.Data(
             hentPerson = PersonPdl.Data.HentPerson(
                 folkeregisteridentifikator = listOf(PersonPdl.Data.HentPerson.Folkeregisteridentifikator("12345678901")),

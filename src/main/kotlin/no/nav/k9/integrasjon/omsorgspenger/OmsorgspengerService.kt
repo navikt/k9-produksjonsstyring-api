@@ -28,7 +28,6 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
     private val url = configuration.omsorgspengerUrl()
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
 
-
     @KtorExperimentalAPI
     override suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto? {
 
