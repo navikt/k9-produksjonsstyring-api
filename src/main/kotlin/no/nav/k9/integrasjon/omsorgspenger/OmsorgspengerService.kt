@@ -28,7 +28,9 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     private val url = configuration.omsorgspengerUrl()
-    private val scope = configuration.omsorgspenger_sak_scope()
+    @KtorExperimentalAPI
+    private val scope = configuration.omsorgspengerSakScope()
+
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
 
     @KtorExperimentalAPI
