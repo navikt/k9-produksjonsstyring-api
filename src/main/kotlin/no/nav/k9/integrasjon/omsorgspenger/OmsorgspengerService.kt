@@ -34,6 +34,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     override suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto? {
 
+        log.info("Fant dette scopet=", scope)
 
         val httpRequest = "${url}/saksnummer"
             .httpPost()
