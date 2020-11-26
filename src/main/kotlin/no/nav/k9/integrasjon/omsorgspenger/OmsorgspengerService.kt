@@ -12,6 +12,7 @@ import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.NavHeaders
+import no.nav.k9.integrasjon.rest.idToken
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
@@ -38,7 +39,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
                 identitetsnummer
             )
             .header(
-                HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(emptySet()).asAuthoriationHeader(),
+                HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(emptySet(), kotlin.coroutines.coroutineContext.idToken().value).asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 HttpHeaders.ContentType to "application/json",
                 NavHeaders.CallId to UUID.randomUUID().toString()
