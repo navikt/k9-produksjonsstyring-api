@@ -25,7 +25,6 @@ import no.nav.k9.integrasjon.pdl.PersonPdlResponse
 import no.nav.k9.tjenester.sse.SseEvent
 import org.junit.Rule
 import org.junit.Test
-import org.koin.core.qualifier.named
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
@@ -269,7 +268,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
 
         runBlocking {
             val fagsaker = oppgaveTjeneste.søkFagsaker("Yz647")
-            assert(fagsaker.fagsaker.isNotEmpty())
+            assert(fagsaker.oppgaver.isNotEmpty())
         }
     }
 

@@ -10,9 +10,10 @@ import java.time.LocalDateTime
 data class FagsakDto (
     val fagsystem: Fagsystem,
     val saksnummer: String,
-    val person: PersonDto,
     val sakstype: FagsakYtelseType,
-    val behandlingStatus: BehandlingStatus?,
     val opprettet: LocalDateTime,
-    val aktiv: Boolean
+    val aktiv: Boolean,
+    val behandlingStatus: BehandlingStatus?,
+    val behandlingId: Long?,
+    val journalpostId: String?,
 )

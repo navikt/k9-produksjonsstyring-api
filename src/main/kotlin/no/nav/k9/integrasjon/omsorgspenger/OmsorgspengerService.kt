@@ -27,6 +27,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     private val url = configuration.omsorgspengerUrl()
+    private val scope = configuration.omsorgspenger_sak_scope()
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
 
     @KtorExperimentalAPI
@@ -39,7 +40,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
                 identitetsnummer
             )
             .header(
-                HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(emptySet(), kotlin.coroutines.coroutineContext.idToken().value).asAuthoriationHeader(),
+                HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(setOf(scope), kotlin.coroutines.coroutineContext.idToken().value).asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 HttpHeaders.ContentType to "application/json",
                 NavHeaders.CallId to UUID.randomUUID().toString()

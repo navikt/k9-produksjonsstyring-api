@@ -63,7 +63,7 @@ class OppgaveTjenesteTest : KoinTest {
 
         runBlocking {
             val fagsaker = oppgaveTjeneste.søkFagsaker("Yz647")
-            assert(fagsaker.fagsaker.isNotEmpty())
+            assert(fagsaker.oppgaver.isNotEmpty())
         }
     }
 

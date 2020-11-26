@@ -117,3 +117,7 @@ spec:
       value: "k9"
     - name: AUDITLOGGER_PRODUCT
       value: "k9-los-api"
+
+      # token scope
+    - name: OMSORGSPENGER_SAK_SCOPE
+      value: "3ebacf0c-2409-4ae7-8507-07c8da9ddd25/.default"
