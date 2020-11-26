@@ -16,6 +16,7 @@ import no.nav.k9.integrasjon.rest.idToken
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 
 open class OmsorgspengerService @KtorExperimentalAPI constructor(
@@ -40,7 +41,9 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
                 identitetsnummer
             )
             .header(
-                HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(setOf(scope), kotlin.coroutines.coroutineContext.idToken().value).asAuthoriationHeader(),
+                HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
+                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(setOf(scope))
+                    .asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 HttpHeaders.ContentType to "application/json",
                 NavHeaders.CallId to UUID.randomUUID().toString()
