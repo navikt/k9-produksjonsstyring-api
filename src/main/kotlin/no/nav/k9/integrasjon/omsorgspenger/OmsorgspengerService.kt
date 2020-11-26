@@ -45,7 +45,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
             )
             .header(
                 HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
-                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(setOf(scope))
+                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(setOf("3ebacf0c-2409-4ae7-8507-07c8da9ddd25/.default"))
                     .asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 HttpHeaders.ContentType to "application/json",
