@@ -118,12 +118,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
         //TODO koble på omsorg når man kan søke på saksnummer
         val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer(query)
-        val oppgaveDtoer = lagOppgaveDtoer(oppgaver)
+        val oppgaveResultat = lagOppgaveDtoer(oppgaver)
 
-        if (oppgaveDtoer.isEmpty()) {
+        if (oppgaveResultat.ikkeTilgang) {
             SokeResultatDto(true, null, Collections.emptyList())
         }
-        return SokeResultatDto(true, null, oppgaveDtoer)
+        return SokeResultatDto(oppgaveResultat.ikkeTilgang, null, oppgaveResultat.oppgaver)
 
     }
 
@@ -159,19 +159,19 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 val oppgaver = hentOppgaver(aktorId)
 
                 //sjekker om det finnes en visningsak i omsorgsdager
-                val oppgaveDto = hentOmsorgsdagerForFnr(query)
+                val oppgaveDto = hentOmsorgsdagerForFnr(query, person.person.navn())
                 if (oppgaveDto != null) {
                     oppgaver.add(oppgaveDto)
                 }
                 res.ikkeTilgang = aktørId.ikkeTilgang
                 res.person = personDto
                 res.oppgaver.addAll(oppgaver)
-            } else {
+            } else
                 res.ikkeTilgang = person.ikkeTilgang
                 res.person = null
                 res.oppgaver = mutableListOf()
             }
-        }
+
         return res
     }
 
@@ -186,7 +186,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     private suspend fun hentOmsorgsdagerForFnr(
-        fnr: String
+        fnr: String,
+        navn: String
     ): OppgaveDto? {
         val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(OmsorgspengerSakFnrDto(fnr))
         log.info("Fikk dette som svar fra omsorgsdager", omsorgspengerSakDto)
@@ -205,11 +206,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 null,
                 null,
                 omsorgspengerSakDto.saksnummer,
-                "ukjent",
+                navn,
                 Fagsystem.OMSORGSPENGER.kode,
                 fnr,
                 BehandlingType.FORSTEGANGSSOKNAD,
-                FagsakYtelseType.OMSORGSPENGER,
+                FagsakYtelseType.OMSORGSDAGER,
                 BehandlingStatus.OPPRETTET,
                 false,
                 LocalDateTime.now(),
@@ -228,17 +229,19 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     private suspend fun hentOppgaver(aktorId: String): MutableList<OppgaveDto> {
         val oppgaver: List<Oppgave> = oppgaveRepository.hentOppgaverMedAktorId(aktorId)
-        return lagOppgaveDtoer(oppgaver)
+        return lagOppgaveDtoer(oppgaver).oppgaver
     }
 
-    private suspend fun lagOppgaveDtoer(oppgaver: List<Oppgave>): MutableList<OppgaveDto> {
-        return oppgaver.filter { oppgave ->
+    private suspend fun lagOppgaveDtoer(oppgaver: List<Oppgave>): OppgaverResultat {
+        var ikkeTilgang = false
+        val oppgaver = oppgaver.filter { oppgave ->
             if (!pepClient.harTilgangTilLesSak(
                     fagsakNummer = oppgave.fagsakSaksnummer,
                     aktørid = oppgave.aktorId
                 )
             ) {
                 settSkjermet(oppgave)
+                ikkeTilgang = true
                 false
             } else {
                 true
@@ -254,6 +257,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
             )
         }.toMutableList()
+
+        return OppgaverResultat(ikkeTilgang, oppgaver)
     }
 
     @KtorExperimentalAPI
