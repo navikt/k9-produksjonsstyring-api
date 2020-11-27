@@ -10,9 +10,11 @@ import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.Configuration
+import no.nav.k9.NaisStsAccessTokenClient
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
@@ -24,7 +26,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
     val accessTokenClient: AccessTokenClient
 
 ) : IOmsorgspengerService {
-    val log = LoggerFactory.getLogger("OmsorgspengerService")
+    private val log: Logger = LoggerFactory.getLogger(OmsorgspengerService::class.java)
 
     @KtorExperimentalAPI
     private val url = configuration.omsorgspengerUrl()
@@ -36,8 +38,8 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     override suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto? {
         scope = "3ebacf0c-2409-4ae7-8507-07c8da9ddd25/.default";
-        log.info("Fant dette scopet=", scope)
-        log.info("IdTokenet som er brukt: ", coroutineContext.idToken().value)
+        log.info("Fant dette scopet=  ${scope}")
+        log.info("IdTokenet som er brukt: ${coroutineContext.idToken().value}")
 
         val httpRequest = "${url}/saksnummer"
             .httpPost()
