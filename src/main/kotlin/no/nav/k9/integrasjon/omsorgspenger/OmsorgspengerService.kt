@@ -37,6 +37,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
     override suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto? {
         scope = "3ebacf0c-2409-4ae7-8507-07c8da9ddd25/.default";
         log.info("Fant dette scopet=", scope)
+        log.info("IdTokenet som er brukt: ", coroutineContext.idToken().value)
 
         val httpRequest = "${url}/saksnummer"
             .httpPost()
@@ -45,7 +46,6 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
             )
             .header(
                 HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
-                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(setOf(scope)).asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 HttpHeaders.ContentType to "application/json",
                 NavHeaders.CallId to UUID.randomUUID().toString()
