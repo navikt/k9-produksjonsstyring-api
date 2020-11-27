@@ -328,7 +328,7 @@ fun prodConfig(app: Application, config: Configuration) = module {
     single {
         OmsorgspengerService(
             configuration = get(),
-            accessTokenClient = get<AccessTokenClientResolver>().naisSts()
+            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
         ) as IOmsorgspengerService
     }
 
