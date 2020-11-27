@@ -5,7 +5,7 @@ import io.ktor.util.*
 class OmsorgspengerServiceLocal : IOmsorgspengerService {
 
     @KtorExperimentalAPI
-    override suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto? {
+    override suspend fun hentOmsorgspengerSakDto(identitetsnummer: OmsorgspengerSakFnrDto): OmsorgspengerSakDto? {
         return null
     }
 }

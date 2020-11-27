@@ -3,6 +3,7 @@ package no.nav.k9.integrasjon.omsorgspenger
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
+import com.google.gson.GsonBuilder
 import io.ktor.http.*
 import io.ktor.util.*
 import no.nav.helse.dusseldorf.ktor.core.Retry
@@ -11,7 +12,6 @@ import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
-import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
 import org.slf4j.Logger
@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
 
+private val gson = GsonBuilder().setPrettyPrinting().create()
 
 open class OmsorgspengerService @KtorExperimentalAPI constructor(
     val configuration: Configuration,
@@ -34,13 +35,13 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
 
     @KtorExperimentalAPI
-    override suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto? {
-
+    override suspend fun hentOmsorgspengerSakDto(sakFnrDto: OmsorgspengerSakFnrDto): OmsorgspengerSakDto? {
+        val bodyRequest = gson.toJson(sakFnrDto)
 
         val httpRequest = "${url}/saksnummer"
             .httpPost()
             .body(
-                identitetsnummer
+                bodyRequest
             )
             .header(
                 HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(setOf(scope), kotlin.coroutines.coroutineContext.idToken().value).asAuthoriationHeader(),

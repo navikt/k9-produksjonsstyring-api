@@ -5,6 +5,6 @@ import io.ktor.util.*
 interface IOmsorgspengerService {
 
     @KtorExperimentalAPI
-    suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto?
+    suspend fun hentOmsorgspengerSakDto(identitetsnummer: OmsorgspengerSakFnrDto): OmsorgspengerSakDto?
 
 }

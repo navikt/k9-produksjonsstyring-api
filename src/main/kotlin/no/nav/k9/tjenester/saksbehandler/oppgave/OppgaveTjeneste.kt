@@ -13,6 +13,7 @@ import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
 import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
+import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerSakFnrDto
 import no.nav.k9.integrasjon.pdl.*
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverHistorikk
@@ -187,7 +188,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private suspend fun hentOmsorgsdagerForFnr(
         fnr: String
     ): OppgaveDto? {
-        val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(fnr)
+        val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(OmsorgspengerSakFnrDto(fnr))
         log.info("Fikk dette som svar fra omsorgsdager", omsorgspengerSakDto)
 
         if (omsorgspengerSakDto != null) {
