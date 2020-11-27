@@ -234,7 +234,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     private suspend fun lagOppgaveDtoer(oppgaver: List<Oppgave>): OppgaverResultat {
         var ikkeTilgang = false
-        val oppgaver = oppgaver.filter { oppgave ->
+        val res = oppgaver.filter { oppgave ->
             if (!pepClient.harTilgangTilLesSak(
                     fagsakNummer = oppgave.fagsakSaksnummer,
                     aktørid = oppgave.aktorId
@@ -258,7 +258,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             )
         }.toMutableList()
 
-        return OppgaverResultat(ikkeTilgang, oppgaver)
+        return OppgaverResultat(ikkeTilgang, res)
     }
 
     @KtorExperimentalAPI

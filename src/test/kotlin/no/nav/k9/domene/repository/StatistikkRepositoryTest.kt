@@ -35,7 +35,7 @@ class StatistikkRepositoryTest : KoinTest {
         val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker()
 
         val omsorgspenger = hentFerdigstilte.take(30).filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
-        assertSame(6, omsorgspenger.size)
+        assertSame(5, omsorgspenger.size)
         stopKoin()
     }
 
