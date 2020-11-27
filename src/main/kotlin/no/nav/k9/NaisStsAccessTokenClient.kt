@@ -27,7 +27,6 @@ internal class NaisStsAccessTokenClient(
     )).toString()
 
     override fun getAccessToken(scopes: Set<String>): AccessTokenResponse {
-        logger.info("Treffer vi denne:NaisStsAccessTokenClient")
         val (request, _, result) = url.httpGet()
             .header(
                 Headers.AUTHORIZATION to authorizationHeader

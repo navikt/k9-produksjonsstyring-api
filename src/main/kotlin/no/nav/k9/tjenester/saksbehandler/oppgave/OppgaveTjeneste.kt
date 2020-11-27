@@ -161,20 +161,18 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 //sjekker om det finnes en visningsak i omsorgsdager
                 val oppgaveDto = hentOmsorgsdagerForFnr(query, person.person.navn())
                 if (oppgaveDto != null) {
-                    log.info("har dette0$oppgaveDto")
                     oppgaver.add(oppgaveDto)
                 }
-                log.info("har dette1" + aktørId.ikkeTilgang + personDto + oppgaver)
                 res.ikkeTilgang = aktørId.ikkeTilgang
                 res.person = personDto
                 res.oppgaver.addAll(oppgaver)
-            } else
+            } else {
                 res.ikkeTilgang = person.ikkeTilgang
                 res.person = null
                 res.oppgaver = mutableListOf()
-                log.info("har dette2" + aktørId.ikkeTilgang)
-            }
 
+            }
+        }
         return res
     }
 
@@ -193,7 +191,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         navn: String
     ): OppgaveDto? {
         val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(OmsorgspengerSakFnrDto(fnr))
-        log.info("Fikk dette som svar fra omsorgsdager", omsorgspengerSakDto)
 
         if (omsorgspengerSakDto != null) {
             val statusDto = OppgaveStatusDto(
@@ -232,11 +229,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     private suspend fun hentOppgaver(aktorId: String): MutableList<OppgaveDto> {
         val oppgaver: List<Oppgave> = oppgaveRepository.hentOppgaverMedAktorId(aktorId)
-        val oppgaver1 = lagOppgaveDtoer(oppgaver).oppgaver
-
-
-        log.info("fant disse oppgavene $oppgaver1")
-        return oppgaver1
+        return lagOppgaveDtoer(oppgaver).oppgaver
     }
 
     private suspend fun lagOppgaveDtoer(oppgaver: List<Oppgave>): OppgaverResultat {
