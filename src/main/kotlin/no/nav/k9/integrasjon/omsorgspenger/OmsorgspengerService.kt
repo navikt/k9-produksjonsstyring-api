@@ -29,13 +29,13 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
     @KtorExperimentalAPI
     private val url = configuration.omsorgspengerUrl()
     @KtorExperimentalAPI
-    private val scope = configuration.omsorgspengerSakScope()
+    private var scope = configuration.omsorgspengerSakScope()
 
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
 
     @KtorExperimentalAPI
     override suspend fun hentOmsorgspengerSakDto(identitetsnummer: String): OmsorgspengerSakDto? {
-
+        scope = "3ebacf0c-2409-4ae7-8507-07c8da9ddd25/.default";
         log.info("Fant dette scopet=", scope)
 
         val httpRequest = "${url}/saksnummer"
@@ -45,8 +45,7 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
             )
             .header(
                 HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
-                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(setOf("3ebacf0c-2409-4ae7-8507-07c8da9ddd25/.default"))
-                    .asAuthoriationHeader(),
+                NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(setOf(scope)).asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 HttpHeaders.ContentType to "application/json",
                 NavHeaders.CallId to UUID.randomUUID().toString()
