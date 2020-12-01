@@ -199,7 +199,7 @@ fun Application.logging(
         val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
         val kø = oppgaveKøRepository.hentIkkeTaHensyn().find { it.navn == "Alle behandlinger" }
         val alleOppgaver = mutableListOf<String>()
-        val duplikater = mutableListOf<Oppgave>()
+        val ekskludert = mutableListOf<String>()
         for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
             var modell: IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
 
@@ -221,7 +221,7 @@ fun Application.logging(
                 oppgave = modell.oppgave()
 
             if (!kø!!.oppgaverOgDatoer.map { it.id }.contains(oppgave.eksternId)) {
-                duplikater.add(oppgave)
+                ekskludert.add(oppgave.fagsakSaksnummer)
             } else {
                 alleOppgaver.add(oppgave.eksternId.toString())
             }
@@ -235,11 +235,9 @@ fun Application.logging(
             }
         }
         log.info("Antall alle oppgaver: ${alleOppgaver.size}")
-        log.info("Ikke inkudert 1: ${duplikater[0]}")
-        log.info("Ikke inkudert 2: ${duplikater[1]}")
-        log.info("Ikke inkudert 3: ${duplikater[11]}")
-        log.info("Ikke inkudert 4: ${duplikater[24]}")
-        log.info("Antall duplikater i køen: ${duplikater.size}")
+        log.info("Antall ekskluderte oppgaver: ${ekskludert.size}")
+        log.info("Ekskluderte oppgaver: ${ekskludert}")
+
 
     } catch (e: Exception) {
         log.error("", e)
