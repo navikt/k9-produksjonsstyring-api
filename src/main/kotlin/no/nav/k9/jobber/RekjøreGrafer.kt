@@ -218,7 +218,7 @@ fun Application.logging(
                 var oppgave: Oppgave?
                 try {
                     oppgave = modell.oppgave()
-                    if(!kø.tilhørerOppgaveTilKø(oppgave, null)) {
+                    if(!kø!!.tilhørerOppgaveTilKø(oppgave, null)) {
                         tilhørerIkkeKøen.add(oppgave.fagsakSaksnummer)
                     }
 
