@@ -220,14 +220,11 @@ fun Application.logging(
             try {
                 oppgave = modell.oppgave()
 
-
-                if (kø!!.tilhørerOppgaveTilKø(oppgave, null)) {
-                    if (alleOppgaver.contains(oppgave.eksternId.toString())) {
-                        duplikater.add(oppgave.fagsakSaksnummer)
-                    } else {
-                        alleOppgaver.add(oppgave.eksternId.toString())
-                    }
-                }
+            if (alleOppgaver.contains(oppgave.eksternId.toString())) {
+                duplikater.add(oppgave.fagsakSaksnummer)
+            } else {
+                alleOppgaver.add(oppgave.eksternId.toString())
+            }
 
             } catch (e: Exception) {
                 log.error("""Missmatch mellom gamel og ny kontrakt""", e)
