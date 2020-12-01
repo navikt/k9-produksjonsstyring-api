@@ -34,6 +34,7 @@ import no.nav.k9.eventhandler.sjekkReserverteJobb
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
+import no.nav.k9.jobber.logging
 import no.nav.k9.jobber.regenererOppgaver
 import no.nav.k9.jobber.rekjørEventerForGrafer
 import no.nav.k9.tjenester.admin.AdminApis
@@ -157,6 +158,11 @@ fun Application.k9Los() {
 //        behandlingProsessEventTilbakeRepository = koin.get()
 //    )
 //     rekjørEventerForGrafer(koin.get(), koin.get(), koin.get())
+    logging(oppgaveRepository = koin.get(),
+        behandlingProsessEventK9Repository = koin.get(),
+        oppgaveKøRepository = koin.get(),
+        punsjEventK9Repository = koin.get(),
+        behandlingProsessEventTilbakeRepository = koin.get())
 
     install(CallIdRequired)
 

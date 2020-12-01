@@ -124,7 +124,6 @@ fun Application.regenererOppgaver(
 ) {
     launch(context = Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
         try {
-
             log.info("Starter oppgavesynkronisering")
             val measureTimeMillis = measureTimeMillis {
                 val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
@@ -183,5 +182,57 @@ fun Application.regenererOppgaver(
         } catch (e: Exception) {
             log.error("", e)
         }
+    }
+
+}
+
+@KtorExperimentalAPI
+fun Application.logging(
+    oppgaveRepository: OppgaveRepository,
+    behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
+    punsjEventK9Repository: PunsjEventK9Repository,
+    behandlingProsessEventTilbakeRepository: BehandlingProsessEventTilbakeRepository,
+    oppgaveKøRepository: OppgaveKøRepository,
+) {
+    try {
+        log.info("Starter oppgavesynkronisering")
+            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+        val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString("dd627cb8-29b5-41c1-8be1-729465cddf0"))
+        val tilhørerIkkeKøen=  mutableListOf<String>()
+            for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
+                var modell: IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
+
+                //finner ikke i k9, sjekker mot punsj
+                if (modell.erTom()) {
+                    modell = punsjEventK9Repository.hent(aktivOppgave.eksternId);
+                }
+                // finner ikke i punsj, sjekker mot tilbake
+                if (modell.erTom()) {
+                    modell = behandlingProsessEventTilbakeRepository.hent(aktivOppgave.eksternId);
+                }
+                // finner den ikke i det hele tatt
+                if (modell.erTom()) {
+                    log.error("""Finner ikke modell for oppgave ${aktivOppgave.eksternId} setter oppgaven til inaktiv""")
+                    continue
+                }
+                var oppgave: Oppgave?
+                try {
+                    oppgave = modell.oppgave()
+                    if(!kø.tilhørerOppgaveTilKø(oppgave, null)) {
+                        tilhørerIkkeKøen.add(oppgave.fagsakSaksnummer)
+                    }
+
+                } catch (e: Exception) {
+                    log.error("""Missmatch mellom gamel og ny kontrakt""", e)
+                    continue
+                }
+                if (index % 10 == 0) {
+                    log.info("Synkronisering " + index + " av " + hentAktiveOppgaver.size)
+                }
+            }
+
+            log.info("Oppgavene som ikke tilhører køen: $tilhørerIkkeKøen")
+    } catch (e: Exception) {
+        log.error("", e)
     }
 }
