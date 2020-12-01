@@ -196,50 +196,50 @@ fun Application.logging(
 ) {
     try {
         log.info("Starter oppgavesynkronisering")
-            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
+        val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
         val kø = oppgaveKøRepository.hentIkkeTaHensyn().find { it.navn == "Alle behandlinger" }
-        val alleOppgaver =  mutableListOf<String>()
+        val alleOppgaver = mutableListOf<String>()
         val duplikater = mutableListOf<String>()
-            for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
-                var modell: IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
+        for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
+            var modell: IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
 
-                //finner ikke i k9, sjekker mot punsj
-                if (modell.erTom()) {
-                    modell = punsjEventK9Repository.hent(aktivOppgave.eksternId);
-                }
-                // finner ikke i punsj, sjekker mot tilbake
-                if (modell.erTom()) {
-                    modell = behandlingProsessEventTilbakeRepository.hent(aktivOppgave.eksternId);
-                }
-                // finner den ikke i det hele tatt
-                if (modell.erTom()) {
-                    log.error("""Finner ikke modell for oppgave ${aktivOppgave.eksternId} setter oppgaven til inaktiv""")
-                    continue
-                }
-                var oppgave: Oppgave?
-                try {
-                    oppgave = modell.oppgave()
-
-
-                    if(kø!!.tilhørerOppgaveTilKø(oppgave, null)) {
-                        if (alleOppgaver.contains(oppgave.eksternId.toString()))
-                        duplikater.add(oppgave.fagsakSaksnummer)
-                    }
-                        else {
-                            alleOppgaver.add(oppgave.eksternId.toString())
-                    }
-
-                } catch (e: Exception) {
-                    log.error("""Missmatch mellom gamel og ny kontrakt""", e)
-                    continue
-                }
-                if (index % 10 == 0) {
-                    log.info("Synkronisering " + index + " av " + hentAktiveOppgaver.size)
-                }
+            //finner ikke i k9, sjekker mot punsj
+            if (modell.erTom()) {
+                modell = punsjEventK9Repository.hent(aktivOppgave.eksternId);
             }
-            log.info("Antall alle oppgaver: ${alleOppgaver.size}")
-            log.info("Duplikater i køen: $duplikater")
-            log.info("Antall duplikater i køen: ${duplikater.size}")
+            // finner ikke i punsj, sjekker mot tilbake
+            if (modell.erTom()) {
+                modell = behandlingProsessEventTilbakeRepository.hent(aktivOppgave.eksternId);
+            }
+            // finner den ikke i det hele tatt
+            if (modell.erTom()) {
+                log.error("""Finner ikke modell for oppgave ${aktivOppgave.eksternId} setter oppgaven til inaktiv""")
+                continue
+            }
+            var oppgave: Oppgave?
+            try {
+                oppgave = modell.oppgave()
+
+
+                if (kø!!.tilhørerOppgaveTilKø(oppgave, null)) {
+                    if (alleOppgaver.contains(oppgave.eksternId.toString())) {
+                        duplikater.add(oppgave.fagsakSaksnummer)
+                    } else {
+                        alleOppgaver.add(oppgave.eksternId.toString())
+                    }
+                }
+
+            } catch (e: Exception) {
+                log.error("""Missmatch mellom gamel og ny kontrakt""", e)
+                continue
+            }
+            if (index % 10 == 0) {
+                log.info("Synkronisering " + index + " av " + hentAktiveOppgaver.size)
+            }
+        }
+        log.info("Antall alle oppgaver: ${alleOppgaver.size}")
+        log.info("Duplikater i køen: $duplikater")
+        log.info("Antall duplikater i køen: ${duplikater.size}")
 
     } catch (e: Exception) {
         log.error("", e)
