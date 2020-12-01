@@ -187,7 +187,7 @@ fun Application.regenererOppgaver(
 }
 
 @KtorExperimentalAPI
-fun Application.logging(
+suspend fun Application.logging(
     oppgaveRepository: OppgaveRepository,
     behandlingProsessEventK9Repository: BehandlingProsessEventK9Repository,
     punsjEventK9Repository: PunsjEventK9Repository,
@@ -197,7 +197,7 @@ fun Application.logging(
     try {
         log.info("Starter oppgavesynkronisering")
             val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
-        val kø = oppgaveKøRepository.hentOppgavekø(UUID.fromString("dd627cb8-29b5-41c1-8be1-729465cddf0"))
+        val kø = oppgaveKøRepository.hent().find { it.navn == "Alle behandlinger" }
         val tilhørerIkkeKøen=  mutableListOf<String>()
             for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
                 var modell: IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
