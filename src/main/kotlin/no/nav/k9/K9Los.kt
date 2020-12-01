@@ -34,7 +34,6 @@ import no.nav.k9.eventhandler.sjekkReserverteJobb
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
-import no.nav.k9.jobber.logging
 import no.nav.k9.jobber.regenererOppgaver
 import no.nav.k9.jobber.rekjørEventerForGrafer
 import no.nav.k9.tjenester.admin.AdminApis
