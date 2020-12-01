@@ -199,7 +199,7 @@ fun Application.logging(
         val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
         val kø = oppgaveKøRepository.hentIkkeTaHensyn().find { it.navn == "Alle behandlinger" }
         val alleOppgaver = mutableListOf<String>()
-        val duplikater = mutableListOf<String>()
+        val duplikater = mutableListOf<Oppgave>()
         for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
             var modell: IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
 
@@ -220,8 +220,8 @@ fun Application.logging(
             try {
                 oppgave = modell.oppgave()
 
-            if (alleOppgaver.contains(oppgave.eksternId.toString())) {
-                duplikater.add(oppgave.fagsakSaksnummer)
+            if (!kø!!.oppgaverOgDatoer.map { it.id }.contains(oppgave.eksternId)) {
+                duplikater.add(oppgave)
             } else {
                 alleOppgaver.add(oppgave.eksternId.toString())
             }
