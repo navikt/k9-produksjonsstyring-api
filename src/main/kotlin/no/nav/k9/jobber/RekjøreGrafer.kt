@@ -235,7 +235,10 @@ fun Application.logging(
             }
         }
         log.info("Antall alle oppgaver: ${alleOppgaver.size}")
-        log.info("Duplikater i køen: $duplikater")
+        log.info("Ikke inkudert 1: ${duplikater[0]}")
+        log.info("Ikke inkudert 2: ${duplikater[1]}")
+        log.info("Ikke inkudert 3: ${duplikater[11]}")
+        log.info("Ikke inkudert 4: ${duplikater[24]}")
         log.info("Antall duplikater i køen: ${duplikater.size}")
 
     } catch (e: Exception) {
