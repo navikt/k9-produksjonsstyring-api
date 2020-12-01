@@ -198,7 +198,8 @@ fun Application.logging(
         log.info("Starter oppgavesynkronisering")
             val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
         val kø = oppgaveKøRepository.hentIkkeTaHensyn().find { it.navn == "Alle behandlinger" }
-        val tilhørerIkkeKøen=  mutableListOf<String>()
+        val alleOppgaver =  mutableListOf<String>()
+        val duplikater = mutableListOf<String>()
             for ((index, aktivOppgave) in hentAktiveOppgaver.withIndex()) {
                 var modell: IModell = behandlingProsessEventK9Repository.hent(aktivOppgave.eksternId)
 
@@ -218,8 +219,14 @@ fun Application.logging(
                 var oppgave: Oppgave?
                 try {
                     oppgave = modell.oppgave()
-                    if(!kø!!.tilhørerOppgaveTilKø(oppgave, null)) {
-                        tilhørerIkkeKøen.add(oppgave.fagsakSaksnummer)
+
+
+                    if(kø!!.tilhørerOppgaveTilKø(oppgave, null)) {
+                        if (alleOppgaver.contains(oppgave.eksternId.toString()))
+                        duplikater.add(oppgave.fagsakSaksnummer)
+                    }
+                        else {
+                            alleOppgaver.add(oppgave.eksternId.toString())
                     }
 
                 } catch (e: Exception) {
@@ -230,8 +237,10 @@ fun Application.logging(
                     log.info("Synkronisering " + index + " av " + hentAktiveOppgaver.size)
                 }
             }
+            log.info("Antall alle oppgaver: ${alleOppgaver.size}")
+            log.info("Duplikater i køen: $duplikater")
+            log.info("Antall duplikater i køen: ${duplikater.size}")
 
-            log.info("Oppgavene som ikke tilhører køen: $tilhørerIkkeKøen")
     } catch (e: Exception) {
         log.error("", e)
     }
