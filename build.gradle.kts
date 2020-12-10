@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.4.0.8634f4b"
+val dusseldorfKtorVersion = "1.4.3.2ff5308"
 val ktorVersion = "1.4.0"
 val mainClass = "no.nav.k9.K9LosKt"
 val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
@@ -55,8 +55,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.7")
 
     // Kontrakter
-    implementation("no.nav.k9.sak:kontrakt:3.1.0-20201113070900-8dbc85e")
-    implementation("no.nav.k9.statistikk:kontrakter:2.0_20200514170610_720949d")
+    implementation("no.nav.k9.sak:kontrakt:3.1.0-20201209164723-3e6ef79")
+    implementation("no.nav.k9.statistikk:kontrakter:2.0_20201201123022_bfccad8")
 
     // Div
     implementation("info.debatty:java-string-similarity:1.2.1")
