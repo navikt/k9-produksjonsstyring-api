@@ -13,7 +13,7 @@ on:
 env:
   BASE_IMAGE: docker.pkg.github.com/${{ github.repository }}/k9-los-api
   GITHUB_USERNAME: x-access-token
-  GITHUB_TOKEN: ${{ secrets.KEY }}
+  GITHUB_TOKEN: ${{ secrets.LOS_TOKEN }}
 
 jobs:
   Build:
