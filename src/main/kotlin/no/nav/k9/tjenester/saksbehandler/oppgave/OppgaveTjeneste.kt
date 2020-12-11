@@ -2,25 +2,22 @@ package no.nav.k9.tjenester.saksbehandler.oppgave
 
 import info.debatty.java.stringsimilarity.Levenshtein
 import io.ktor.util.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.KoinProfile
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.lager.oppgave.Reservasjon
-import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.modell.Saksbehandler
+import no.nav.k9.domene.modell.*
 import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
-import no.nav.k9.integrasjon.pdl.AktøridPdl
-import no.nav.k9.integrasjon.pdl.IPdlService
-import no.nav.k9.integrasjon.pdl.PdlResponse
-import no.nav.k9.integrasjon.pdl.navn
+import no.nav.k9.integrasjon.kafka.dto.Fagsystem
+import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
+import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerSakFnrDto
+import no.nav.k9.integrasjon.pdl.*
 import no.nav.k9.integrasjon.rest.idToken
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverHistorikk
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
-import no.nav.k9.tjenester.fagsak.FagsakDto
 import no.nav.k9.tjenester.fagsak.PersonDto
 import no.nav.k9.tjenester.mock.Aksjonspunkter
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.NyeOgFerdigstilteOppgaverDto
@@ -47,7 +44,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private val configuration: Configuration,
     private val azureGraphService: IAzureGraphService,
     private val pepClient: IPepClient,
-    private val statistikkRepository: StatistikkRepository
+    private val statistikkRepository: StatistikkRepository,
+    private val omsorgspengerService: IOmsorgspengerService
+
 ) {
 
     fun hentOppgaver(oppgavekøId: UUID): List<Oppgave> {
@@ -112,106 +111,154 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun søkFagsaker(query: String): SokeResultatDto {
+        //TODO lage en bedre sjekk på om det er FNR
         if (query.length == 11) {
-            var aktørId = pdlService.identifikator(query)
-            if (configuration.koinProfile() != KoinProfile.PROD) {
-                aktørId = PdlResponse(
-                    false, AktøridPdl(
-                        data = AktøridPdl.Data(
-                            hentIdenter = AktøridPdl.Data.HentIdenter(
-                                identer = listOf(
-                                    AktøridPdl.Data.HentIdenter.Identer(
-                                        gruppe = "AKTORID",
-                                        historisk = false,
-                                        ident = "2392173967319"
-                                    )
+            return finnOppgaverBasertPåFnr(query)
+        }
+
+        //TODO koble på omsorg når man kan søke på saksnummer
+        val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer(query)
+        val oppgaveResultat = lagOppgaveDtoer(oppgaver)
+
+        if (oppgaveResultat.ikkeTilgang) {
+            SokeResultatDto(true, null, Collections.emptyList())
+        }
+        return SokeResultatDto(oppgaveResultat.ikkeTilgang, null, oppgaveResultat.oppgaver)
+
+    }
+
+    private suspend fun finnOppgaverBasertPåFnr(query: String): SokeResultatDto {
+        var aktørId = pdlService.identifikator(query)
+        if (configuration.koinProfile() != KoinProfile.PROD) {
+            aktørId = PdlResponse(
+                false, AktøridPdl(
+                    data = AktøridPdl.Data(
+                        hentIdenter = AktøridPdl.Data.HentIdenter(
+                            identer = listOf(
+                                AktøridPdl.Data.HentIdenter.Identer(
+                                    gruppe = "AKTORID",
+                                    historisk = false,
+                                    ident = "2392173967319"
                                 )
                             )
                         )
                     )
                 )
-            }
-            if (aktørId.aktorId != null && aktørId.aktorId!!.data.hentIdenter != null && aktørId.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
-                var aktorId = aktørId.aktorId!!.data.hentIdenter!!.identer[0].ident
-                val person = pdlService.person(aktorId)
-                if (person.person != null) {
-                    if (!(configuration.koinProfile() == KoinProfile.PROD)) {
-                        aktorId = "1172507325105"
-                    }
-                    val result = oppgaveRepository.hentOppgaverMedAktorId(aktorId).filter {
-                        if (!pepClient.harTilgangTilLesSak(
-                                fagsakNummer = it.fagsakSaksnummer,
-                                aktørid = it.aktorId
-                            )
-                        ) {
-                            settSkjermet(it)
-                            false
-                        } else {
-                            true
-                        }
-                    }.map {
-                        FagsakDto(
-                            it.fagsakSaksnummer,
-                            PersonDto(
-                                person.person.navn(),
-                                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                                person.person.data.hentPerson.kjoenn[0].kjoenn,
-                                null
-                                //   person.data.hentPerson.doedsfall[0].doedsdato
-                            ),
-                            it.fagsakYtelseType,
-                            it.behandlingStatus,
-                            it.behandlingOpprettet,
-                            it.aktiv
-                        )
-                    }.toMutableList()
-                    return SokeResultatDto(aktørId.ikkeTilgang, result)
-                } else {
-                    return SokeResultatDto(person.ikkeTilgang, mutableListOf())
+            )
+        }
+
+        val res = SokeResultatDto(false, null, mutableListOf())
+        if (aktørId.aktorId != null && aktørId.aktorId!!.data.hentIdenter != null && aktørId.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
+            var aktorId = aktørId.aktorId!!.data.hentIdenter!!.identer[0].ident
+            val person = pdlService.person(aktorId)
+            if (person.person != null) {
+                if (!(configuration.koinProfile() == KoinProfile.PROD)) {
+                    aktorId = "1172507325105"
                 }
+                val personDto = mapTilPersonDto(person.person)
+                val oppgaver = hentOppgaver(aktorId)
+
+                //sjekker om det finnes en visningsak i omsorgsdager
+                val oppgaveDto = hentOmsorgsdagerForFnr(query, person.person.navn())
+                if (oppgaveDto != null) {
+                    oppgaver.add(oppgaveDto)
+                }
+                res.ikkeTilgang = aktørId.ikkeTilgang
+                res.person = personDto
+                res.oppgaver.addAll(oppgaver)
+            } else {
+                res.ikkeTilgang = person.ikkeTilgang
+                res.person = null
+                res.oppgaver = mutableListOf()
+
             }
         }
-        val oppgaver = oppgaveRepository.hentOppgaverMedSaksnummer(query)
-        val ret = mutableListOf<FagsakDto>()
-        for (oppgave in oppgaver) {
+        return res
+    }
+
+    private fun mapTilPersonDto(person: PersonPdl): PersonDto {
+        return PersonDto(
+            person.navn(),
+            person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+            person.data.hentPerson.kjoenn[0].kjoenn,
+            null
+            //   person.data.hentPerson.doedsfall[0].doedsdato
+        )
+    }
+
+    private suspend fun hentOmsorgsdagerForFnr(
+        fnr: String,
+        navn: String
+    ): OppgaveDto? {
+        val omsorgspengerSakDto = omsorgspengerService.hentOmsorgspengerSakDto(OmsorgspengerSakFnrDto(fnr))
+
+        if (omsorgspengerSakDto != null) {
+            val statusDto = OppgaveStatusDto(
+                erReservert = false,
+                reservertTilTidspunkt = null,
+                erReservertAvInnloggetBruker = false,
+                reservertAv = null,
+                flyttetReservasjon = null
+            )
+            //TODO fyll ut denne bedre?
+            return OppgaveDto(
+                statusDto,
+                null,
+                null,
+                omsorgspengerSakDto.saksnummer,
+                navn,
+                Fagsystem.OMSORGSPENGER.kode,
+                fnr,
+                BehandlingType.FORSTEGANGSSOKNAD,
+                FagsakYtelseType.OMSORGSDAGER,
+                BehandlingStatus.OPPRETTET,
+                false,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                UUID.randomUUID(),
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+            )
+        }
+        return null
+    }
+
+    private suspend fun hentOppgaver(aktorId: String): MutableList<OppgaveDto> {
+        val oppgaver: List<Oppgave> = oppgaveRepository.hentOppgaverMedAktorId(aktorId)
+        return lagOppgaveDtoer(oppgaver).oppgaver
+    }
+
+    private suspend fun lagOppgaveDtoer(oppgaver: List<Oppgave>): OppgaverResultat {
+        var ikkeTilgang = false
+        val res = oppgaver.filter { oppgave ->
             if (!pepClient.harTilgangTilLesSak(
                     fagsakNummer = oppgave.fagsakSaksnummer,
                     aktørid = oppgave.aktorId
                 )
             ) {
                 settSkjermet(oppgave)
-                return SokeResultatDto(true, mutableListOf())
+                ikkeTilgang = true
+                false
+            } else {
+                true
             }
-            val person = pdlService.person(oppgave.aktorId)
-
-            ret.add(
-                FagsakDto(
-                    oppgave.fagsakSaksnummer,
-                    if (person.person != null) {
-                        PersonDto(
-                            person.person.navn(),
-                            person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
-                            person.person.data.hentPerson.kjoenn[0].kjoenn,
-                            null
-                            // person.data.hentPerson.doedsfall!!.doedsdato
-                        )
-                    } else {
-                        PersonDto(
-                            "Ukjent navn",
-                            "",
-                            "",
-                            null
-                        )
-                        // person.data.hentPerson.doedsfall!!.doedsdato
-                    },
-                    oppgave.fagsakYtelseType,
-                    oppgave.behandlingStatus,
-                    oppgave.behandlingOpprettet,
-                    oppgave.aktiv
-                )
+        }.map {
+            tilOppgaveDto(
+                oppgave = it, reservasjon = if (reservasjonRepository.finnes(it.eksternId)
+                    && reservasjonRepository.hent(it.eksternId).erAktiv()
+                ) {
+                    reservasjonRepository.hent(it.eksternId)
+                } else {
+                    null
+                }
             )
-        }
-        return SokeResultatDto(false, ret)
+        }.toMutableList()
+
+        return OppgaverResultat(ikkeTilgang, res)
     }
 
     @KtorExperimentalAPI
@@ -697,7 +744,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     suspend fun settSkjermet(oppgave: Oppgave) {
-        oppgaveRepository.lagre(oppgave.eksternId) { it ->
+        oppgaveRepository.lagre(oppgave.eksternId) {
             it!!
         }
         val oppaveSkjermet = oppgaveRepository.hent(oppgave.eksternId)

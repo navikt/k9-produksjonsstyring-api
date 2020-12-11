@@ -59,7 +59,7 @@ class RekkefølgeJsonBArrayTest : KoinTest {
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
             aktiv = true,
-            system = "system",
+            system = "K9SAK",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
             eksternId = eksternId,

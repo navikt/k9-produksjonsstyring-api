@@ -29,7 +29,7 @@ internal fun Route.FagsakApis() {
     post { _: søkFagsaker ->
         val søk = call.receive<QueryString>()
         if (KoinProfile.LOCAL == configuration.koinProfile()) {
-            call.respond(SokeResultatDto(true, mutableListOf()))
+            call.respond(SokeResultatDto(true, null, mutableListOf()))
         } else {
             val idToken = call.idToken()
             withContext(
