@@ -1,5 +1,6 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
+import assertk.all
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.buildAndTestConfig
@@ -17,6 +18,8 @@ import org.koin.test.get
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import assertk.assertThat
+import assertk.assertions.*
 
 class OppgaveTjenesteTest : KoinTest {
     @KtorExperimentalAPI
@@ -156,4 +159,74 @@ class OppgaveTjenesteTest : KoinTest {
         assert(reservasjonsHistorikk.reservasjoner[0].flyttetAv == "saksbehandler@nav.no")
     }
 
+    @KtorExperimentalAPI
+    @Test
+    fun skal_bare_returnere_aktivte_eller_sist_ikke_aktive_oppgave() = runBlocking {
+        val oppgaveRepository = get<OppgaveRepository>()
+        val oppgaveTjeneste = get<OppgaveTjeneste>()
+
+        val fagsakSaksnummer = "Yz647"
+        val oppgave1 = Oppgave(
+            behandlingId = 9437,
+            fagsakSaksnummer = fagsakSaksnummer,
+            aktorId = "273857",
+            journalpostId = null,
+            behandlendeEnhet = "Enhet",
+            behandlingsfrist = LocalDateTime.now(),
+            behandlingOpprettet = LocalDateTime.now(),
+            forsteStonadsdag = LocalDate.now().plusDays(6),
+            behandlingStatus = BehandlingStatus.OPPRETTET,
+            behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
+            fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
+            aktiv = true,
+            system = "K9SAK",
+            oppgaveAvsluttet = null,
+            utfortFraAdmin = false,
+            eksternId = UUID.randomUUID(),
+            oppgaveEgenskap = emptyList(),
+            aksjonspunkter = Aksjonspunkter(emptyMap()),
+            tilBeslutter = true,
+            utbetalingTilBruker = false,
+            selvstendigFrilans = false,
+            kombinert = false,
+            søktGradering = false,
+            registrerPapir = true,
+            årskvantum = false,
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
+        )
+
+        val oppgave2 = Oppgave(
+            behandlingId = 9438,
+            fagsakSaksnummer = fagsakSaksnummer,
+            aktorId = "273857",
+            journalpostId = null,
+            behandlendeEnhet = "Enhet",
+            behandlingsfrist = LocalDateTime.now(),
+            behandlingOpprettet = LocalDateTime.now(),
+            forsteStonadsdag = LocalDate.now().plusDays(6),
+            behandlingStatus = BehandlingStatus.OPPRETTET,
+            behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
+            fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
+            aktiv = false,
+            system = "K9SAK",
+            oppgaveAvsluttet = null,
+            utfortFraAdmin = false,
+            eksternId = UUID.randomUUID(),
+            oppgaveEgenskap = emptyList(),
+            aksjonspunkter = Aksjonspunkter(emptyMap()),
+            tilBeslutter = true,
+            utbetalingTilBruker = false,
+            selvstendigFrilans = false,
+            kombinert = false,
+            søktGradering = false,
+            registrerPapir = true,
+            årskvantum = false,
+            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
+        )
+        oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }
+        oppgaveRepository.lagre(oppgave2.eksternId) { oppgave2 }
+
+        val saker = oppgaveTjeneste.søkFagsaker(fagsakSaksnummer)
+        assertThat(saker.oppgaver.size).isEqualTo(1)
+    }
 }

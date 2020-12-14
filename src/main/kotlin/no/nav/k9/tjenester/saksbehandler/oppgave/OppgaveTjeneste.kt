@@ -113,7 +113,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun søkFagsaker(query: String): SokeResultatDto {
         //TODO lage en bedre sjekk på om det er FNR
         if (query.length == 11) {
-            return finnOppgaverBasertPåFnr(query)
+            return filtrerOppgaverForSaksnummer(finnOppgaverBasertPåFnr(query))
         }
 
         //TODO koble på omsorg når man kan søke på saksnummer
@@ -123,8 +123,25 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         if (oppgaveResultat.ikkeTilgang) {
             SokeResultatDto(true, null, Collections.emptyList())
         }
-        return SokeResultatDto(oppgaveResultat.ikkeTilgang, null, oppgaveResultat.oppgaver)
+        return filtrerOppgaverForSaksnummer(SokeResultatDto(oppgaveResultat.ikkeTilgang, null, oppgaveResultat.oppgaver))
+    }
 
+    private fun filtrerOppgaverForSaksnummer(dto: SokeResultatDto): SokeResultatDto {
+        val oppgaver = dto.oppgaver
+
+        val result = mutableListOf<OppgaveDto>()
+        if (oppgaver.isNotEmpty()) {
+            val oppgaverBySaksnummer = oppgaver.groupBy { it.saksnummer }
+            for (entry in oppgaverBySaksnummer.entries) {
+                val oppgaveDto = entry.value.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling }
+                if (oppgaveDto != null) {
+                    result.add(oppgaveDto)
+                } else {
+                    result.add(entry.value.first())
+                }
+            }
+        }
+        return SokeResultatDto(dto.ikkeTilgang, dto.person, result);
     }
 
     private suspend fun finnOppgaverBasertPåFnr(query: String): SokeResultatDto {
@@ -211,7 +228,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 BehandlingType.FORSTEGANGSSOKNAD,
                 FagsakYtelseType.OMSORGSDAGER,
                 BehandlingStatus.OPPRETTET,
-                false,
+                true,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 UUID.randomUUID(),
