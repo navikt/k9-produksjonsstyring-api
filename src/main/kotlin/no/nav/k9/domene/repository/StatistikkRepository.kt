@@ -261,7 +261,7 @@ class StatistikkRepository(
             it.run(
                 queryOf(
                     """
-                            select behandlingtype, fagsakYtelseType, dato, ferdigstilte, nye 
+                            select behandlingtype, fagsakYtelseType, dato, ferdigstiltesaksbehandler, nye 
                             from nye_og_ferdigstilte  where dato >= current_date - :antall::interval
                             group by behandlingtype, fagsakYtelseType, dato
                     """.trimIndent(),
@@ -272,7 +272,7 @@ class StatistikkRepository(
                             behandlingType = BehandlingType.fraKode(row.string("behandlingType")),
                             fagsakYtelseType = FagsakYtelseType.fraKode(row.string("fagsakYtelseType")),
                             dato = row.localDate("dato"),
-                            ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstilte") ?: "[]"),
+                            ferdigstilte = objectMapper().readValue(row.stringOrNull("ferdigstiltesaksbehandler") ?: "[]"),
                             nye = objectMapper().readValue(row.stringOrNull("nye") ?: "[]")
                         )
                     }.asList
