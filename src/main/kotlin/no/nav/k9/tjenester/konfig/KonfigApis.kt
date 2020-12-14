@@ -18,6 +18,16 @@ fun Route.KonfigApis() {
     val sseUrlLocal = "api/sse"
     val k9punsjUrlDev = "https://k9-punsj-frontend.dev.adeo.no"
     val k9punsjUrlProd = "https://k9-punsj-frontend.nais.adeo.no"
+    val omsorgspengerUrlDev = "https://omsorgspenger-visning.dev.intern.nav.no"
+    val omsorgspengerUrlProd = "https://omsorgspenger-visning.intern.nav.no"
+
+
+    @Location("/omsorgspenger-url")
+    class hentOmsorgspengerUrl
+
+    get { _: hentOmsorgspengerUrl ->
+        if (KoinProfile.PREPROD == configuration.koinProfile()) call.respond(Konfig(omsorgspengerUrlDev)) else call.respond(Konfig(omsorgspengerUrlProd))
+    }
 
     @Location("/k9-sak-url")
     class hentK9SakUrl
