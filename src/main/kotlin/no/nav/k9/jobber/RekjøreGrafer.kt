@@ -124,7 +124,6 @@ fun Application.regenererOppgaver(
 ) {
     launch(context = Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
         try {
-
             log.info("Starter oppgavesynkronisering")
             val measureTimeMillis = measureTimeMillis {
                 val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver()
