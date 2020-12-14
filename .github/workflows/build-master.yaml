@@ -39,7 +39,7 @@ jobs:
       - name: Bygg & last opp Docker image
         run: |
           docker build --tag ${IMAGE} --tag ${BASE_IMAGE}:latest .
-          echo "$GITHUB_TOKEN" | docker login --username "x-access-token" --password-stdin https://docker.pkg.github.com
+          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push $BASE_IMAGE:latest
           docker push $IMAGE
       - name: Deploy til preprod

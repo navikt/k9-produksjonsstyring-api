@@ -184,4 +184,3 @@ fun Application.regenererOppgaver(
         }
     }
 }
-

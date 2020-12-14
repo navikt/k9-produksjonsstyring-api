@@ -22,6 +22,9 @@ import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.integrasjon.k9.K9SakService
 import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
+import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
+import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
+import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerServiceLocal
 import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PdlServiceLocal
@@ -213,7 +216,8 @@ fun common(app: Application, config: Configuration) = module {
             configuration = config,
             pepClient = get(),
             azureGraphService = get(),
-            statistikkRepository = get()
+            statistikkRepository = get(),
+            omsorgspengerService = get()
         )
     }
 
@@ -263,6 +267,10 @@ fun localDevConfig(app: Application, config: Configuration) = module {
     single {
         K9SakServiceLocal() as IK9SakService
     }
+
+    single {
+        OmsorgspengerServiceLocal() as IOmsorgspengerService
+    }
 }
 
 @KtorExperimentalAPI
@@ -280,6 +288,13 @@ fun preprodConfig(app: Application, config: Configuration) = module {
             configuration = get(),
             accessTokenClient = get<AccessTokenClientResolver>().naisSts()
         ) as IK9SakService
+    }
+
+    single {
+        OmsorgspengerService(
+            configuration = get(),
+            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
+        ) as IOmsorgspengerService
     }
 
     single { RequestContextService() as IRequestContextService }
@@ -309,6 +324,14 @@ fun prodConfig(app: Application, config: Configuration) = module {
             accessTokenClient = get<AccessTokenClientResolver>().naisSts()
         ) as IK9SakService
     }
+
+    single {
+        OmsorgspengerService(
+            configuration = get(),
+            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
+        ) as IOmsorgspengerService
+    }
+
     single { RequestContextService() as IRequestContextService }
 
     single {

@@ -44,7 +44,7 @@ class OppgaveTjenesteTest : KoinTest {
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
             aktiv = true,
-            system = "system",
+            system = "K9SAK",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
             eksternId = UUID.randomUUID(),
@@ -63,7 +63,7 @@ class OppgaveTjenesteTest : KoinTest {
 
         runBlocking {
             val fagsaker = oppgaveTjeneste.søkFagsaker("Yz647")
-            assert(fagsaker.fagsaker.isNotEmpty())
+            assert(fagsaker.oppgaver.isNotEmpty())
         }
     }
 
@@ -105,7 +105,7 @@ class OppgaveTjenesteTest : KoinTest {
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
             aktiv = true,
-            system = "system",
+            system = "K9SAK",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
             eksternId = UUID.randomUUID(),

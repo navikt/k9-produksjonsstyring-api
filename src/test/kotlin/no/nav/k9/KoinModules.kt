@@ -22,6 +22,8 @@ import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.integrasjon.k9.K9SakServiceLocal
+import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
+import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerServiceLocal
 import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlServiceLocal
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
@@ -55,6 +57,10 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
     }
     single {
         K9SakServiceLocal() as IK9SakService
+    }
+
+    single {
+        OmsorgspengerServiceLocal() as IOmsorgspengerService
     }
 
     single { dataSource }
@@ -117,7 +123,8 @@ fun buildAndTestConfig(pepClient: IPepClient = PepClientLocal()): Module = modul
             configuration = get(),
             azureGraphService = get(),
             pepClient = get(),
-            statistikkRepository = get()
+            statistikkRepository = get(),
+            omsorgspengerService = get()
         )
     }
 

@@ -35,7 +35,7 @@ class StatistikkRepositoryTest : KoinTest {
         val hentFerdigstilte = statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker()
 
         val omsorgspenger = hentFerdigstilte.take(30).filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
-        assertSame(6, omsorgspenger.size)
+        assertSame(5, omsorgspenger.size)
         stopKoin()
     }
 
@@ -58,7 +58,7 @@ class StatistikkRepositoryTest : KoinTest {
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.OMSORGSPENGER,
             aktiv = true,
-            system = "system",
+            system = "K9SAK",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
             eksternId = UUID.randomUUID(),
