@@ -170,7 +170,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 res.ikkeTilgang = person.ikkeTilgang
                 res.person = null
                 res.oppgaver = mutableListOf()
-
             }
         }
         return res
