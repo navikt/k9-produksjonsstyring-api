@@ -1,9 +1,8 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
-import no.nav.k9.tjenester.fagsak.PersonDto
+import no.nav.k9.tjenester.fagsak.FagsakDto
 
 data class SokeResultatDto(
         var ikkeTilgang: Boolean,
-        var person: PersonDto?,
-        var oppgaver: MutableList<OppgaveDto>
+        val fagsaker: MutableList<FagsakDto>
 )

@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.4.3.2ff5308"
+val dusseldorfKtorVersion = "1.4.0.8634f4b"
 val ktorVersion = "1.4.0"
 val mainClass = "no.nav.k9.K9LosKt"
 val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
@@ -44,7 +44,7 @@ dependencies {
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
     implementation("io.ktor:ktor-client-auth:$ktorVersion")
-
+    
     // Kafka
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
@@ -53,10 +53,10 @@ dependencies {
     implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
     implementation("no.nav.common:rest:1.2020.02.18-16.01-aba1e77ea3f9")
     implementation("com.google.code.gson:gson:2.7")
-
+    
     // Kontrakter
-    implementation("no.nav.k9.sak:kontrakt:3.1.0-20201209164723-3e6ef79")
-    implementation("no.nav.k9.statistikk:kontrakter:2.0_20201201123022_bfccad8")
+    implementation("no.nav.k9.sak:kontrakt:3.1.0-20201113070900-8dbc85e")
+    implementation("no.nav.k9.statistikk:kontrakter:2.0_20200514170610_720949d")
 
     // Div
     implementation("info.debatty:java-string-similarity:1.2.1")
@@ -65,7 +65,7 @@ dependencies {
     // DI
     implementation("org.koin:koin-core:$koinVersion")
     implementation("org.koin:koin-ktor:$koinVersion")
-
+    
     // Test
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
@@ -98,7 +98,7 @@ repositories {
             password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
         }
     }
-
+    
     jcenter()
     mavenLocal()
     mavenCentral()

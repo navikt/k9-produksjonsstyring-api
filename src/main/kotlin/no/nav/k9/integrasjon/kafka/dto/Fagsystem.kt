@@ -8,13 +8,11 @@ import com.fasterxml.jackson.annotation.JsonFormat
 enum class Fagsystem(val kode: String, val kodeverk: String) {
     K9SAK("K9SAK", "FAGSYSTEM"),
     K9TILBAKE("K9TILBAKE", "FAGSYSTEM"),
-    FPTILBAKE("FPTILBAKE", "FAGSYSTEM"),
-    PUNSJ("PUNSJ", "FAGSYSTEM"),
-    OMSORGSPENGER("OMSORGSPENGER", "FAGSYSTEM");
+    FPTILBAKE("FPTILBAKE", "FAGSYSTEM");
 
     companion object {
         @JsonCreator
         @JvmStatic
-        fun fraKode(kode: String): Fagsystem = values().find { it.kode == kode }!!
+        fun fraKode(kode: String, kodeverk: String): Fagsystem = values().find { it.kode == kode }!!
     }
 }

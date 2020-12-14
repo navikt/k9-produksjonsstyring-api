@@ -274,7 +274,6 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 enum class FagsakYtelseType constructor(override val kode: String, override val navn: String) : Kodeverdi {
     PLEIEPENGER_SYKT_BARN("PSB", "Pleiepenger sykt barn"),
     OMSORGSPENGER("OMP", "Omsorgspenger"),
-    OMSORGSDAGER("OMD", "Omsorgsdager"),
     FRISINN("FRISINN", "Frisinn"),
     PPN("PPN", "PPN"),
     OLP("OLP", "OLP");

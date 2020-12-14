@@ -73,15 +73,11 @@ spec:
 
     - name: PDL_URL
       value: https://pdl-api.nais.preprod.local/graphql
-
-      # Nav applikasjoner
+      
     - name: APP_K9SAK_URL
-      value: https://k9-sak.nais.preprod.local/k9/sak/api
+      value: https://k9-sak.nais.preprod.local/k9/sak/api      
 
-    - name: APP_OMSORGSPENGER_URL
-      value: https://omsorgspenger-sak.dev.intern.nav.no
-
-      # Kafka
+      # Kafka 
     - name: BOOTSTRAP_SERVERS
       value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
     - name: KAFKA_AKSJONSPUNKTHENDELSE_TOPIC
@@ -96,11 +92,11 @@ spec:
       value: privat-k9statistikk-sak-v1
     - name: KAFKA_STATISTIKK_BEHANDLING_TOPIC
       value: privat-k9statistikk-behandling-v1
-
+      
       # ABAC
     - name: ABAC_PDP_ENDPOINT_URL
       value: https://abac-k9.nais.preprod.local/application/authorize
-
+      
     - name: APPDYNAMICS_CONTROLLER_HOST_NAME
       value: appdynamics.adeo.no
     - name: APPDYNAMICS_CONTROLLER_PORT
@@ -117,7 +113,3 @@ spec:
       value: "k9"
     - name: AUDITLOGGER_PRODUCT
       value: "k9-los-api"
-
-      # token scope
-    - name: OMSORGSPENGER_SAK_SCOPE
-      value: "3ebacf0c-2409-4ae7-8507-07c8da9ddd25/.default"

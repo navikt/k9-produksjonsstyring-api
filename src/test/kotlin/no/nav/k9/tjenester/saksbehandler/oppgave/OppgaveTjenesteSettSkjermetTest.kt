@@ -17,14 +17,13 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
-import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
-import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PersonPdl
 import no.nav.k9.integrasjon.pdl.PersonPdlResponse
 import no.nav.k9.tjenester.sse.SseEvent
 import org.junit.Rule
 import org.junit.Test
+import org.koin.core.qualifier.named
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
@@ -53,7 +52,6 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         val refreshKlienter = Channel<SseEvent>(1000)
 
         val oppgaveRepository = get<OppgaveRepository>()
-        val omsorgspengerService = get<IOmsorgspengerService>()
         val oppgaveKøRepository = OppgaveKøRepository(
             dataSource = get(),
             oppgaveKøOppdatert = oppgaveKøOppdatert,
@@ -80,7 +78,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository, omsorgspengerService
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
         )
 
         val uuid = UUID.randomUUID()
@@ -113,7 +111,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
             aktiv = true,
-            system = "K9SAK",
+            system = "system",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
             eksternId = UUID.randomUUID(),
@@ -194,7 +192,6 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             pepClient = PepClientLocal()
         )
         val pdlService = mockk<PdlService>()
-        val omsorgspengerService = mockk<OmsorgspengerService>()
         val saksbehandlerRepository = SaksbehandlerRepository(dataSource = dataSource,
             pepClient = PepClientLocal())
 
@@ -214,7 +211,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository, omsorgspengerService
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
         )
 
         val oppgave1 = Oppgave(
@@ -230,7 +227,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
             aktiv = true,
-            system = "K9SAK",
+            system = "system",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
             eksternId = UUID.randomUUID(),
@@ -250,7 +247,6 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
         every { config.koinProfile() } returns KoinProfile.LOCAL
         coEvery { pepClient.harTilgangTilLesSak(any(), any()) } returns true
-        coEvery { omsorgspengerService.hentOmsorgspengerSakDto(any()) } returns null
         coEvery { pdlService.person(any()) } returns PersonPdlResponse(false, PersonPdl(data = PersonPdl.Data(
             hentPerson = PersonPdl.Data.HentPerson(
                 folkeregisteridentifikator = listOf(PersonPdl.Data.HentPerson.Folkeregisteridentifikator("12345678901")),
@@ -268,7 +264,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
 
         runBlocking {
             val fagsaker = oppgaveTjeneste.søkFagsaker("Yz647")
-            assert(fagsaker.oppgaver.isNotEmpty())
+            assert(fagsaker.fagsaker.isNotEmpty())
         }
     }
 
@@ -303,19 +299,18 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
         )
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
-        val omsorgspengerService = mockk<OmsorgspengerService>()
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val pepClient = mockk<IPepClient>()
         val azureGraphService = mockk<AzureGraphService>()
 
         coEvery {  azureGraphService.hentIdentTilInnloggetBruker() } returns "123"
         val oppgaveTjeneste = OppgaveTjeneste(
-        oppgaveRepository,
-        oppgaveKøRepository,
-        saksbehandlerRepository,
-        pdlService,
-        reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository, omsorgspengerService)
-
+            oppgaveRepository,
+            oppgaveKøRepository,
+            saksbehandlerRepository,
+            pdlService,
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
+        )
 
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(
@@ -347,7 +342,7 @@ class OppgaveTjenesteSettSkjermetTest : KoinTest {
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
             aktiv = true,
-            system = "K9SAK",
+            system = "system",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
             eksternId = UUID.randomUUID(),

@@ -16,7 +16,6 @@ import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
-import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.tjenester.avdelingsleder.oppgaveko.AndreKriterierDto
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
@@ -68,7 +67,6 @@ class OppgavekoTest :KoinTest{
         )
         val config = mockk<Configuration>()
         val pdlService = mockk<PdlService>()
-        val omsorgspengerService = mockk<OmsorgspengerService>()
         val statistikkRepository = StatistikkRepository(dataSource = dataSource)
         val pepClient = mockk<IPepClient>()
         val azureGraphService = mockk<AzureGraphService>()
@@ -77,7 +75,7 @@ class OppgavekoTest :KoinTest{
             oppgaveKøRepository,
             saksbehandlerRepository,
             pdlService,
-            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository, omsorgspengerService
+            reservasjonRepository, config, azureGraphService, pepClient, statistikkRepository
         )
         val uuid = UUID.randomUUID()
         val oppgaveko = OppgaveKø(
@@ -121,7 +119,7 @@ class OppgavekoTest :KoinTest{
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
             aktiv = true,
-            system = "K9SAK",
+            system = "system",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
             eksternId = UUID.randomUUID(),
@@ -149,7 +147,7 @@ class OppgavekoTest :KoinTest{
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
             aktiv = true,
-            system = "K9SAK",
+            system = "system",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
             eksternId = UUID.randomUUID(),
