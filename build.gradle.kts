@@ -59,7 +59,7 @@ dependencies {
     implementation("no.nav.k9.statistikk:kontrakter:2.0_20201201123022_bfccad8")
 
     // Div
-    implementation("info.debatty:java-string-similarity:1.2.1")
+    implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("com.papertrailapp:logback-syslog4j:1.0.0")
 
     // DI
