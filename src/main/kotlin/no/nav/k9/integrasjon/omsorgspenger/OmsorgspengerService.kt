@@ -30,9 +30,12 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     private val url = configuration.omsorgspengerUrl()
+
     @KtorExperimentalAPI
     private val scope = configuration.omsorgspengerSakScope()
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
+
+    private val NOT_FOUND = 404
 
     @KtorExperimentalAPI
     override suspend fun hentOmsorgspengerSakDto(sakFnrDto: OmsorgspengerSakFnrDto): OmsorgspengerSakDto? {
@@ -44,7 +47,10 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
                 bodyRequest
             )
             .header(
-                HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(setOf(scope), kotlin.coroutines.coroutineContext.idToken().value).asAuthoriationHeader(),
+                HttpHeaders.Authorization to cachedAccessTokenClient.getAccessToken(
+                    setOf(scope),
+                    kotlin.coroutines.coroutineContext.idToken().value
+                ).asAuthoriationHeader(),
                 HttpHeaders.Accept to "application/json",
                 HttpHeaders.ContentType to "application/json",
                 NavHeaders.CallId to UUID.randomUUID().toString()
@@ -67,11 +73,15 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
                     success
                 },
                 { error ->
-                    log.error(request.toString())
-                    log.error(
-                        "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
-                    )
-                    log.error(error.toString())
+                    val response = error.response
+                    val statusCode = response.statusCode
+                    // omsorgspenger gir 404 når de ikke finner sak på fnr...
+                    if (statusCode != NOT_FOUND) {
+                        log.error(
+                            "Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'"
+                        )
+                        log.error(error.toString())
+                    }
                     null
                 }
             )
