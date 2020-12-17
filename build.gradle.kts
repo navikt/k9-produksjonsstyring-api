@@ -9,7 +9,7 @@ val hikariVersion = "3.3.1"
 val flywayVersion = "6.0.8"
 val vaultJdbcVersion = "1.3.7"
 val kafkaEmbeddedEnvVersion = "2.2.3"
-val koinVersion = "2.1.6"
+val koinVersion = "2.2.1"
 val kotliqueryVersion = "1.3.1"
 
 plugins {
