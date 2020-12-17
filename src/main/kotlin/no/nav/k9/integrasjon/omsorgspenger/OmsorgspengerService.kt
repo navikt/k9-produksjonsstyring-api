@@ -87,7 +87,10 @@ open class OmsorgspengerService @KtorExperimentalAPI constructor(
             )
         }
         return try {
-            objectMapper().readValue(json!!)
+            if (!json.isNullOrEmpty()) {
+                return objectMapper().readValue(json)
+            }
+            return null
         } catch (e: Exception) {
             log.warn("", e)
             null
