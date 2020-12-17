@@ -9,5 +9,6 @@ data class BehandletOppgave(
         val eksternId: UUID,
         val personnummer: String?,
         val navn: String?,
+        val system: String,
         var timestamp: LocalDateTime = LocalDateTime.now())
 
