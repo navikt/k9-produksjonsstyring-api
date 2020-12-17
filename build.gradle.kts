@@ -6,9 +6,9 @@ val ktorVersion = "1.4.0"
 val mainClass = "no.nav.k9.K9LosKt"
 val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
 val hikariVersion = "3.3.1"
-val flywayVersion = "7.3.2"
+val flywayVersion = "6.0.8"
 val vaultJdbcVersion = "1.3.7"
-val kafkaEmbeddedEnvVersion = "2.5.0"
+val kafkaEmbeddedEnvVersion = "2.2.3"
 val koinVersion = "2.2.1"
 val kotliqueryVersion = "1.3.1"
 
@@ -50,7 +50,7 @@ dependencies {
 
 
     // Tilgangskontroll
-    implementation("no.nav.common:auth:2.2020.11.04_12.14-2f2d89c3992e")
+    implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
     implementation("no.nav.common:rest:2.2020.11.04_12.14-2f2d89c3992e")
     implementation("com.google.code.gson:gson:2.7")
 
@@ -71,7 +71,7 @@ dependencies {
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2-native-mt")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
     testImplementation("io.mockk:mockk:1.10.3-jdk8")
     testImplementation("io.ktor:ktor-server-test-host:1.3.0") {
         exclude(group = "org.eclipse.jetty")
