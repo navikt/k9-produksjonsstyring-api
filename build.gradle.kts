@@ -14,7 +14,7 @@ val kotliqueryVersion = "1.3.1"
 
 plugins {
     kotlin("jvm") version "1.4.10"
-    id("com.github.johnrengelman.shadow") version "5.1.0"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
 buildscript {
