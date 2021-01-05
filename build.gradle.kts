@@ -9,12 +9,12 @@ val hikariVersion = "3.4.5"
 val flywayVersion = "6.0.8"
 val vaultJdbcVersion = "1.3.7"
 val kafkaEmbeddedEnvVersion = "2.2.3"
-val koinVersion = "2.2.1"
+val koinVersion = "2.2.2"
 val kotliqueryVersion = "1.3.1"
 
 plugins {
     kotlin("jvm") version "1.4.10"
-    id("com.github.johnrengelman.shadow") version "5.1.0"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
 buildscript {
@@ -52,7 +52,7 @@ dependencies {
     // Tilgangskontroll
     implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
     implementation("no.nav.common:rest:2.2020.11.04_12.14-2f2d89c3992e")
-    implementation("com.google.code.gson:gson:2.7")
+    implementation("com.google.code.gson:gson:2.8.6")
 
     // Kontrakter
     implementation("no.nav.k9.sak:kontrakt:3.1.0-20201209164723-3e6ef79")
@@ -72,7 +72,7 @@ dependencies {
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
-    testImplementation("io.mockk:mockk:1.10.3-jdk8")
+    testImplementation("io.mockk:mockk:1.10.4")
     testImplementation("io.ktor:ktor-server-test-host:1.3.0") {
         exclude(group = "org.eclipse.jetty")
     }
