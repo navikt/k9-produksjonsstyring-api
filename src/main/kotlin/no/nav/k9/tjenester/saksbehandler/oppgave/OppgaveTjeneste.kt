@@ -192,6 +192,63 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return res
     }
 
+    suspend fun finnOppgaverBasertPåAktørId(aktørId: String): SokeResultatDto {
+        var person = pdlService.person(aktørId)
+        if (configuration.koinProfile() != KoinProfile.PROD) {
+            person = PersonPdlResponse(
+                false, PersonPdl(
+                    data = PersonPdl.Data(
+                        hentPerson = PersonPdl.Data.HentPerson(
+                            folkeregisteridentifikator = listOf(
+                                PersonPdl.Data.HentPerson.Folkeregisteridentifikator(
+                                    "2392173967319"
+                                )
+                            ),
+                            navn = listOf(
+                                PersonPdl.Data.HentPerson.Navn(
+                                    "Talentfull",
+                                    null,
+                                    "Dorull",
+                                    null
+                                )
+                            ),
+                            kjoenn = listOf(
+                                PersonPdl.Data.HentPerson.Kjoenn(
+                                    "MANN"
+                                )
+                            ),
+                            doedsfall = listOf()
+                        )
+                    )
+                )
+            )
+        }
+        val personInfo = person.person
+        val res = SokeResultatDto(false, null, mutableListOf())
+        if (personInfo != null) {
+            val personDto = mapTilPersonDto(personInfo)
+            val oppgaver: MutableList<OppgaveDto> = if (!(configuration.koinProfile() == KoinProfile.PROD)) {
+                hentOppgaver("1172507325105")
+            } else {
+                hentOppgaver(aktørId)
+            }
+
+            //sjekker om det finnes en visningsak i omsorgsdager
+            val oppgaveDto = hentOmsorgsdagerForFnr(personInfo.fnr(), personInfo.navn())
+            if (oppgaveDto != null) {
+                oppgaver.add(oppgaveDto)
+            }
+            res.ikkeTilgang = person.ikkeTilgang
+            res.person = personDto
+            res.oppgaver.addAll(oppgaver)
+        } else {
+            res.ikkeTilgang = person.ikkeTilgang
+            res.person = null
+            res.oppgaver = mutableListOf()
+        }
+        return res
+    }
+
     private fun mapTilPersonDto(person: PersonPdl): PersonDto {
         return PersonDto(
             person.navn(),

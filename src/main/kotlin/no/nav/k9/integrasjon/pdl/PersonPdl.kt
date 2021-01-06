@@ -46,3 +46,6 @@ internal fun PersonPdl.navn(): String{
    return data.hentPerson.navn[0].forkortetNavn?:data.hentPerson.navn[0].fornavn + " " +data.hentPerson.navn[0].etternavn
 }
 
+internal fun PersonPdl.fnr(): String {
+    return data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+}
