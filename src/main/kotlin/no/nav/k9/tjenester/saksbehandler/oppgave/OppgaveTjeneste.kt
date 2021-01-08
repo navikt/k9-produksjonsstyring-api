@@ -145,9 +145,9 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     private suspend fun finnOppgaverBasertPåFnr(query: String): SokeResultatDto {
-        var aktørId = pdlService.identifikator(query)
+        var aktørIdFraFnr = pdlService.identifikator(query)
         if (configuration.koinProfile() != KoinProfile.PROD) {
-            aktørId = PdlResponse(
+            aktørIdFraFnr = PdlResponse(
                 false, AktøridPdl(
                     data = AktøridPdl.Data(
                         hentIdenter = AktøridPdl.Data.HentIdenter(
@@ -165,8 +165,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         }
 
         val res = SokeResultatDto(false, null, mutableListOf())
-        if (aktørId.aktorId != null && aktørId.aktorId!!.data.hentIdenter != null && aktørId.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
-            var aktorId = aktørId.aktorId!!.data.hentIdenter!!.identer[0].ident
+        if (aktørIdFraFnr.aktorId != null && aktørIdFraFnr.aktorId!!.data.hentIdenter != null && aktørIdFraFnr.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
+            var aktorId = aktørIdFraFnr.aktorId!!.data.hentIdenter!!.identer[0].ident
             val person = pdlService.person(aktorId)
             if (person.person != null) {
                 if (!(configuration.koinProfile() == KoinProfile.PROD)) {
@@ -180,7 +180,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 if (oppgaveDto != null) {
                     oppgaver.add(oppgaveDto)
                 }
-                res.ikkeTilgang = aktørId.ikkeTilgang
+                res.ikkeTilgang = person.ikkeTilgang
                 res.person = personDto
                 res.oppgaver.addAll(oppgaver)
             } else {
