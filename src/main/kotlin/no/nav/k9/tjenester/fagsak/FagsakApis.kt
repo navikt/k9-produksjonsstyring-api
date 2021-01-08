@@ -30,6 +30,7 @@ internal fun Route.FagsakApis() {
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
     val configuration by inject<Configuration>()
     val requestContextService by inject<IRequestContextService>()
+
     @Location("/sok")
     class søkFagsaker
 
@@ -54,15 +55,14 @@ internal fun Route.FagsakApis() {
 
     post { _: søkFagsakerMedAktørId ->
         val param = call.receive<AktoerIdDto>()
-            val idToken = call.idToken()
-            withContext(
-                requestContextService.getCoroutineContext(
-                    context = coroutineContext,
-                    idToken = idToken
-                )
-            ) {
-                call.respond(oppgaveTjeneste.finnOppgaverBasertPåAktørId(param.aktoerId))
-            }
+        val idToken = call.idToken()
+        withContext(
+            requestContextService.getCoroutineContext(
+                context = coroutineContext,
+                idToken = idToken
+            )
+        ) {
+            call.respond(oppgaveTjeneste.finnOppgaverBasertPåAktørId(param.aktoerId))
         }
     }
 }
