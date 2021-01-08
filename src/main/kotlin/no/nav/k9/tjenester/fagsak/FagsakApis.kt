@@ -54,40 +54,6 @@ internal fun Route.FagsakApis() {
 
     post { _: søkFagsakerMedAktørId ->
         val param = call.receive<AktoerIdDto>()
-        if (KoinProfile.LOCAL == configuration.koinProfile()) {
-            call.respond(
-                SokeResultatDto(
-                    false, PersonDto("WalterWhite", "23908978759", "MANN", null), mutableListOf(
-                        OppgaveDto(
-                            OppgaveStatusDto(
-                                false,
-                                null,
-                                false,
-                                null,
-                                null),
-                            47589675,
-                            null,
-                            "5zYs4",
-                            "Walter White",
-                            "K9SAK",
-                            "18056387079",
-                            BehandlingType.FORSTEGANGSSOKNAD,
-                            FagsakYtelseType.OMSORGSPENGER,
-                            BehandlingStatus.OPPRETTET,
-                            true,
-                            LocalDateTime.now(),
-                            LocalDateTime.now().plusDays(24),
-                            UUID.randomUUID(),
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false)
-                    )
-                )
-            )
-        } else {
             val idToken = call.idToken()
             withContext(
                 requestContextService.getCoroutineContext(
