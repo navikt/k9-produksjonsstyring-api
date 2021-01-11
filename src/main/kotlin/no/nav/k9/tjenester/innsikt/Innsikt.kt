@@ -13,6 +13,7 @@ import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.koin.ktor.ext.inject
 
 @KtorExperimentalAPI
@@ -23,6 +24,7 @@ fun Route.innsiktGrensesnitt() {
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
     val behandlingProsessEventK9Repository by inject<BehandlingProsessEventK9Repository>()
     val nøkkeltjeneste by inject<NokkeltallTjeneste>()
+    val oppgaveTjeneste by inject<OppgaveTjeneste>()
 
     @Location("/")
     class main
@@ -114,6 +116,20 @@ fun Route.innsiktGrensesnitt() {
                     val hentNyeSiste8Uker = nøkkeltjeneste.hentNyeSiste8Uker()
 
                     for (data in hentNyeSiste8Uker) {
+                        div {
+                            classes = setOf("input-group-text display-4")
+                            +"dato: ${data.dato} antall: ${data.antall} fagsakType: ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}"
+                        }
+                    }
+
+                    val hentBeholdningAvOppgaverPerAntallDager =
+                        oppgaveTjeneste.hentBeholdningAvOppgaverPerAntallDager()
+
+                    p {
+                        +"Beholdning Av Oppgaver Per Antall Dager:"
+                    }
+
+                    for (data in hentBeholdningAvOppgaverPerAntallDager) {
                         div {
                             classes = setOf("input-group-text display-4")
                             +"dato: ${data.dato} antall: ${data.antall} fagsakType: ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}"
