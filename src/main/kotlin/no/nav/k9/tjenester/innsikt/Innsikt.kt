@@ -3,7 +3,6 @@ package no.nav.k9.tjenester.innsikt
 import io.ktor.application.*
 import io.ktor.html.*
 import io.ktor.locations.*
-import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.*
 import kotlinx.html.*
@@ -13,6 +12,7 @@ import no.nav.k9.domene.repository.BehandlingProsessEventK9Repository
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.OppgaveRepository
 import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import org.koin.ktor.ext.inject
 
 @KtorExperimentalAPI
@@ -22,6 +22,7 @@ fun Route.innsiktGrensesnitt() {
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
     val behandlingProsessEventK9Repository by inject<BehandlingProsessEventK9Repository>()
+    val nøkkeltjeneste by inject<NokkeltallTjeneste>()
 
     @Location("/")
     class main
@@ -78,8 +79,46 @@ fun Route.innsiktGrensesnitt() {
                             +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
                     }
+                    val dagensTall = nøkkeltjeneste.hentDagensTall()
 
+                    p {
+                        +"Statistikk kommer under her:"
+                    }
 
+                    p {
+                        +"Dagenstall"
+                    }
+
+                    for (data in dagensTall) {
+                        p {
+                            +"Type:${data.behandlingType}, antall:${data.antall}"
+                        }
+                    }
+
+                    p {
+                        +"Ferdigstilt siste 8 uker:"
+                    }
+                    val hentFerdigstilteSiste8Uker = nøkkeltjeneste.hentFerdigstilteSiste8Uker()
+
+                    for (data in hentFerdigstilteSiste8Uker) {
+                        div {
+                            classes = setOf("input-group-text display-4")
+                            +"dato: ${data.dato} antall: ${data.antall} fagsakType: ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}"
+                        }
+                    }
+
+                    p {
+                        +"Nye oppgaver siste 8 uker:"
+                    }
+
+                    val hentNyeSiste8Uker = nøkkeltjeneste.hentNyeSiste8Uker()
+
+                    for (data in hentNyeSiste8Uker) {
+                        div {
+                            classes = setOf("input-group-text display-4")
+                            +"dato: ${data.dato} antall: ${data.antall} fagsakType: ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}"
+                        }
+                    }
                 }
             }
         }
@@ -91,8 +130,10 @@ fun Route.innsiktGrensesnitt() {
     class db
     get { _: db ->
         if (køer.isEmpty()) {
-            val alleReservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
-            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver().filterNot { alleReservasjoner.contains(it.eksternId) }
+            val alleReservasjoner =
+                saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
+            val hentAktiveOppgaver =
+                oppgaveRepository.hentAktiveOppgaver().filterNot { alleReservasjoner.contains(it.eksternId) }
 
             val k = oppgaveKøRepository.hentIkkeTaHensyn()
             for (b in k.filter { !it.kode6 }) {
