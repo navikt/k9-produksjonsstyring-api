@@ -7,11 +7,9 @@ import io.ktor.routing.*
 import io.ktor.util.*
 import kotlinx.html.*
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.repository.BehandlingProsessEventK9Repository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.koin.ktor.ext.inject
@@ -25,6 +23,7 @@ fun Route.innsiktGrensesnitt() {
     val behandlingProsessEventK9Repository by inject<BehandlingProsessEventK9Repository>()
     val nøkkeltjeneste by inject<NokkeltallTjeneste>()
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
+    val statistikkRepository by inject<StatistikkRepository>()
 
     @Location("/")
     class main
@@ -81,45 +80,8 @@ fun Route.innsiktGrensesnitt() {
                             +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
                     }
-                    val dagensTall = nøkkeltjeneste.hentDagensTall()
-
                     p {
                         +"Statistikk kommer under her:"
-                    }
-
-                    p {
-                        +"Dagenstall"
-                    }
-
-                    for (data in dagensTall) {
-                        p {
-                            +"Type:${data.behandlingType}, antall:${data.antall}"
-                        }
-                    }
-
-                    p {
-                        +"Ferdigstilt siste 8 uker:"
-                    }
-                    val hentFerdigstilteSiste8Uker = nøkkeltjeneste.hentFerdigstilteSiste8Uker()
-
-                    for (data in hentFerdigstilteSiste8Uker) {
-                        div {
-                            classes = setOf("input-group-text display-4")
-                            +"dato: ${data.dato} antall: ${data.antall} fagsakType: ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}"
-                        }
-                    }
-
-                    p {
-                        +"Nye oppgaver siste 8 uker:"
-                    }
-
-                    val hentNyeSiste8Uker = nøkkeltjeneste.hentNyeSiste8Uker()
-
-                    for (data in hentNyeSiste8Uker) {
-                        div {
-                            classes = setOf("input-group-text display-4")
-                            +"dato: ${data.dato} antall: ${data.antall} fagsakType: ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}"
-                        }
                     }
 
                     val hentBeholdningAvOppgaverPerAntallDager =
@@ -130,9 +92,33 @@ fun Route.innsiktGrensesnitt() {
                     }
 
                     for (data in hentBeholdningAvOppgaverPerAntallDager) {
-                        div {
-                            classes = setOf("input-group-text display-4")
-                            +"dato: ${data.dato} antall: ${data.antall} fagsakType: ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}"
+                        if (data.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+                            div {
+                                classes = setOf("input-group-text display-4")
+                                +"dato: ${data.dato} antall: ${data.antall} fagsakType: ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}"
+                            }
+                        }
+                    }
+
+                    val hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker =
+                        statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(true)
+
+                    for (data in hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker) {
+                        if (data.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+                            val antallOppgaver =
+                                oppgaveRepository.hentAktiveOppgaverTotaltPerBehandlingstypeOgYtelseType(
+                                    data.fagsakYtelseType,
+                                    data.behandlingType
+                                )
+
+                            p {
+                                +"Antall(${antallOppgaver}) oppgaver av typen ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}:"
+                            }
+
+                            div {
+                                classes = setOf("input-group-text display-4")
+                                +"dato: ${data.dato} nye: ${data.nye.size} ferdigstilte: ${data.ferdigstilte.size} ferdigstilteSaksbehandler: ${data.ferdigstilteSaksbehandler}"
+                            }
                         }
                     }
                 }
