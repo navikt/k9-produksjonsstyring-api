@@ -7,12 +7,14 @@ import io.ktor.routing.*
 import io.ktor.util.*
 import kotlinx.html.*
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.*
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.koin.ktor.ext.inject
+import kotlin.streams.toList
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -103,23 +105,38 @@ fun Route.innsiktGrensesnitt() {
                     val hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker =
                         statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(true)
 
-                    for (data in hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker) {
-                        if (data.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
-                            val antallOppgaver =
-                                oppgaveRepository.hentAktiveOppgaverTotaltPerBehandlingstypeOgYtelseType(
-                                    data.fagsakYtelseType,
-                                    data.behandlingType
-                                )
 
-                            p {
-                                +"Antall(${antallOppgaver}) oppgaver av typen ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}:"
-                            }
+                    val antallNyeFørstegangs = hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker
+                        .stream()
+                        .filter { entry -> entry.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER && entry.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }
+                        .map { data -> data.nye.size }
+                        .toList()
+                        .reduce { acc: Int, i: Int -> acc + i }
 
-                            div {
-                                classes = setOf("input-group-text display-4")
-                                +"dato: ${data.dato} nye: ${data.nye.size} ferdigstilte: ${data.ferdigstilte.size} ferdigstilteSaksbehandler: ${data.ferdigstilteSaksbehandler}"
-                            }
-                        }
+                    val antallNyeRev = hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker
+                        .stream()
+                        .filter { entry -> entry.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER && entry.behandlingType == BehandlingType.REVURDERING }
+                        .map { data -> data.nye.size }
+                        .toList()
+                        .reduce { acc: Int, i: Int -> acc + i }
+
+                    val antallFerSok = hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker
+                        .stream()
+                        .filter { entry -> entry.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER && entry.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }
+                        .map { data -> data.ferdigstilte.size }
+                        .toList()
+                        .reduce { acc: Int, i: Int -> acc + i }
+
+                    val antallFerRev = hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker
+                        .stream()
+                        .filter { entry -> entry.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER && entry.behandlingType == BehandlingType.REVURDERING }
+                        .map { data -> data.ferdigstilte.size }
+                        .toList()
+                        .reduce { acc: Int, i: Int -> acc + i }
+
+                   div {
+                        classes = setOf("input-group-text display-4")
+                        +"antallNyeFørstegangs: ${antallNyeFørstegangs} antallNyeRev: ${antallNyeRev} antallFerSok: ${antallFerSok} antallFerRev: ${antallFerRev}"
                     }
                 }
             }
