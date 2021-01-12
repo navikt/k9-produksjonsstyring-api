@@ -80,10 +80,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
         if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave(modell.sisteEvent()).aktiv) {
             beholdningOpp(oppgave)
-        } else if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave(
-                modell.sisteEvent()
-            ).aktiv
-        ) {
+        } else if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave(modell.sisteEvent()).aktiv) {
             beholdingNed(oppgave)
         }
 
