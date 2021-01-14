@@ -22,10 +22,6 @@ fun Route.innsiktGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
-    val behandlingProsessEventK9Repository by inject<BehandlingProsessEventK9Repository>()
-    val nøkkeltjeneste by inject<NokkeltallTjeneste>()
-    val oppgaveTjeneste by inject<OppgaveTjeneste>()
-    val statistikkRepository by inject<StatistikkRepository>()
 
     @Location("/")
     class main
@@ -81,62 +77,6 @@ fun Route.innsiktGrensesnitt() {
                             classes = setOf("input-group-text display-4")
                             +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
-                    }
-                    p {
-                        +"Statistikk kommer under her:"
-                    }
-
-                    val hentBeholdningAvOppgaverPerAntallDager =
-                        oppgaveTjeneste.hentBeholdningAvOppgaverPerAntallDager()
-
-                    p {
-                        +"Beholdning Av Oppgaver Per Antall Dager:"
-                    }
-
-                    for (data in hentBeholdningAvOppgaverPerAntallDager) {
-                        if (data.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
-                            div {
-                                classes = setOf("input-group-text display-4")
-                                +"dato: ${data.dato} antall: ${data.antall} fagsakType: ${data.fagsakYtelseType} BehandlingsType: ${data.behandlingType}"
-                            }
-                        }
-                    }
-
-                    val hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker =
-                        statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(true)
-
-
-                    val antallNyeFørstegangs = hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker
-                        .stream()
-                        .filter { entry -> entry.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER && entry.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }
-                        .map { data -> data.nye.size }
-                        .toList()
-                        .reduce { acc: Int, i: Int -> acc + i }
-
-                    val antallNyeRev = hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker
-                        .stream()
-                        .filter { entry -> entry.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER && entry.behandlingType == BehandlingType.REVURDERING }
-                        .map { data -> data.nye.size }
-                        .toList()
-                        .reduce { acc: Int, i: Int -> acc + i }
-
-                    val antallFerSok = hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker
-                        .stream()
-                        .filter { entry -> entry.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER && entry.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }
-                        .map { data -> data.ferdigstilte.size }
-                        .toList()
-                        .reduce { acc: Int, i: Int -> acc + i }
-
-                    val antallFerRev = hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker
-                        .stream()
-                        .filter { entry -> entry.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER && entry.behandlingType == BehandlingType.REVURDERING }
-                        .map { data -> data.ferdigstilte.size }
-                        .toList()
-                        .reduce { acc: Int, i: Int -> acc + i }
-
-                   div {
-                        classes = setOf("input-group-text display-4")
-                        +"antallNyeFørstegangs: ${antallNyeFørstegangs} antallNyeRev: ${antallNyeRev} antallFerSok: ${antallFerSok} antallFerRev: ${antallFerRev}"
                     }
                 }
             }
