@@ -246,7 +246,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             res.person = null
             res.oppgaver = mutableListOf()
         }
-        return res
+        return filtrerOppgaverForSaksnummer(res)
     }
 
     private fun mapTilPersonDto(person: PersonPdl): PersonDto {
