@@ -3,17 +3,18 @@ package no.nav.k9.tjenester.innsikt
 import io.ktor.application.*
 import io.ktor.html.*
 import io.ktor.locations.*
-import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.*
 import kotlinx.html.*
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.BehandlingType
+import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.OppgaveKø
-import no.nav.k9.domene.repository.BehandlingProsessEventK9Repository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.domene.repository.*
+import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
+import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.koin.ktor.ext.inject
+import kotlin.streams.toList
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -21,7 +22,6 @@ fun Route.innsiktGrensesnitt() {
     val oppgaveRepository by inject<OppgaveRepository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
-    val behandlingProsessEventK9Repository by inject<BehandlingProsessEventK9Repository>()
 
     @Location("/")
     class main
@@ -78,8 +78,6 @@ fun Route.innsiktGrensesnitt() {
                             +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
                     }
-
-
                 }
             }
         }
@@ -91,8 +89,10 @@ fun Route.innsiktGrensesnitt() {
     class db
     get { _: db ->
         if (køer.isEmpty()) {
-            val alleReservasjoner = saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
-            val hentAktiveOppgaver = oppgaveRepository.hentAktiveOppgaver().filterNot { alleReservasjoner.contains(it.eksternId) }
+            val alleReservasjoner =
+                saksbehandlerRepository.hentAlleSaksbehandlereIkkeTaHensyn().flatMap { it.reservasjoner }
+            val hentAktiveOppgaver =
+                oppgaveRepository.hentAktiveOppgaver().filterNot { alleReservasjoner.contains(it.eksternId) }
 
             val k = oppgaveKøRepository.hentIkkeTaHensyn()
             for (b in k.filter { !it.kode6 }) {
