@@ -619,7 +619,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             personnummer = if (person.person == null) {
                                 "Ukjent fnummer"
                             } else {
-                                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                                person.person?.fnr()
                             },
                             behandlingstype = oppgave.behandlingType,
                             fagsakYtelseType = oppgave.fagsakYtelseType,
