@@ -48,9 +48,9 @@ data class PersonPdl(
 internal fun PersonPdl.navn(): String{
     log.info("Hentet person:" + data.hentPerson)
 
-   return data.hentPerson.navn[0]?.forkortetNavn?:data.hentPerson.navn[0].fornavn + " " + data.hentPerson.navn[0].etternavn
+   return if(data.hentPerson.navn.isNotEmpty()) data.hentPerson.navn[0].forkortetNavn?:data.hentPerson.navn[0].fornavn + " " + data.hentPerson.navn[0].etternavn else ""
 }
 
 internal fun PersonPdl.fnr(): String {
-    return data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+    return if(data.hentPerson.folkeregisteridentifikator.isNotEmpty()) data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer else ""
 }
