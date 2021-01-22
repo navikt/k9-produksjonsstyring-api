@@ -616,7 +616,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             navn = if (person.person == null) {
                                 "Uten navn"
                             } else {
-                                person.person?.navn()
+                                if (person.person?.navn().isBlank()) preprodNavn(oppgave) else person.person?.navn()
                             },
                             system = oppgave.system,
                             personnummer = if (person.person == null) {
