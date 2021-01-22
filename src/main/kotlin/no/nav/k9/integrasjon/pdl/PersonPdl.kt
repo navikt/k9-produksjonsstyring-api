@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
 
 data class PersonPdl(
     val `data`: Data
 ) {
+    val log = LoggerFactory.getLogger("PersonPdl")
+
     data class Data(
         val hentPerson: HentPerson
     ) {
@@ -43,7 +46,9 @@ data class PersonPdl(
     }
 }
 internal fun PersonPdl.navn(): String{
-   return data.hentPerson.navn[0].forkortetNavn?:data.hentPerson.navn[0].fornavn + " " +data.hentPerson.navn[0].etternavn
+    log.info("Hentet person:" + data.hentPerson)
+
+   return data.hentPerson.navn[0]?.forkortetNavn?:data.hentPerson.navn[0].fornavn + " " + data.hentPerson.navn[0].etternavn
 }
 
 internal fun PersonPdl.fnr(): String {

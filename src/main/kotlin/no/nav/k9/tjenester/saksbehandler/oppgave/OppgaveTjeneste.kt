@@ -601,7 +601,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     }
 
                     val person = pdlService.person(oppgave.aktorId)
-
                     val navn = person.person?.navn() ?: "Uten navn"
                     list.add(
                         OppgaveDto(
