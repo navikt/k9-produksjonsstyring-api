@@ -602,12 +602,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
                     val person = pdlService.person(oppgave.aktorId)
 
-                    val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                        preprodNavn(oppgave)
-                    } else {
-                        person.person?.navn() ?: "Uten navn"
-                    }
-
+                    val navn = person.person?.navn() ?: "Uten navn"
                     list.add(
                         OppgaveDto(
                             status = OppgaveStatusDto(
