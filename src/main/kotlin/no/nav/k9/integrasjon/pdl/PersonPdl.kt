@@ -45,12 +45,10 @@ data class PersonPdl(
         }
     }
 }
-internal fun PersonPdl.navn(): String{
-    log.info("Hentet person:" + data.hentPerson)
-
-   return if(data.hentPerson.navn.isNotEmpty()) data.hentPerson.navn[0].forkortetNavn?:data.hentPerson.navn[0].fornavn + " " + data.hentPerson.navn[0].etternavn else ""
+internal fun PersonPdl.navn(): String {
+   return if(data.hentPerson.navn.isNotEmpty()) data.hentPerson.navn[0].forkortetNavn?:data.hentPerson.navn[0].fornavn + " " + data.hentPerson.navn[0].etternavn else "Uten navn"
 }
 
 internal fun PersonPdl.fnr(): String {
-    return if(data.hentPerson.folkeregisteridentifikator.isNotEmpty()) data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer else ""
+    return if(data.hentPerson.folkeregisteridentifikator.isNotEmpty()) data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer else "Ukjent fnummer"
 }

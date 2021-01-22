@@ -601,7 +601,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     }
 
                     val person = pdlService.person(oppgave.aktorId)
-                    val navn = person.person?.navn() ?: "Uten navn"
                     list.add(
                         OppgaveDto(
                             status = OppgaveStatusDto(
@@ -614,7 +613,11 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             behandlingId = oppgave.behandlingId,
                             saksnummer = oppgave.fagsakSaksnummer,
                             journalpostId = oppgave.journalpostId,
-                            navn = navn,
+                            navn = if (person.person == null) {
+                                "Uten navn"
+                            } else {
+                                person.person?.navn()
+                            },
                             system = oppgave.system,
                             personnummer = if (person.person == null) {
                                 "Ukjent fnummer"
