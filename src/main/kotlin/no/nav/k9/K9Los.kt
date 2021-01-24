@@ -145,7 +145,7 @@ fun Application.k9Los() {
         }
     }.broadcast()
 
-    //  Synkroniser oppgaver
+//  Synkroniser oppgaver
 //    regenererOppgaver(
 //        oppgaveRepository = koin.get(),
 //        behandlingProsessEventK9Repository = koin.get(),
