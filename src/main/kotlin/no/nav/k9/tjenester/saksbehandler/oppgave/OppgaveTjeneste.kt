@@ -605,7 +605,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
                         preprodNavn(oppgave)
                     } else {
-                        person.person?.navn()
+                        if (person.person != null) person.person.navn() else "Uten navn"
                     }
                     list.add(
                         OppgaveDto(
