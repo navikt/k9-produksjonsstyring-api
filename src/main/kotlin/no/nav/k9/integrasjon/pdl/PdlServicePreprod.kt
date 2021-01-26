@@ -63,7 +63,7 @@ class PdlServicePreprod @KtorExperimentalAPI constructor(
 
         private val log: Logger = LoggerFactory.getLogger(PdlServicePreprod::class.java)
     }
-    
+
     private val personUrl = Url.buildURL(
         baseUrl = baseUrl,
         pathParts = listOf()
@@ -73,7 +73,7 @@ class PdlServicePreprod @KtorExperimentalAPI constructor(
     override suspend fun person(aktorId: String): PersonPdlResponse {
         val queryRequest = QueryRequest(
             getStringFromResource("/pdl/hentPerson.graphql"),
-            mapOf("ident" to getQ2Ident(aktorId, configuration = configuration))
+            mapOf("ident" to aktorId)
         )
         val query = objectMapper().writeValueAsString(
             queryRequest

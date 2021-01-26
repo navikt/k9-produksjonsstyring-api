@@ -146,32 +146,32 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     private suspend fun finnOppgaverBasertPåFnr(query: String): SokeResultatDto {
         var aktørIdFraFnr = pdlService.identifikator(query)
-        if (configuration.koinProfile() != KoinProfile.PROD) {
-            aktørIdFraFnr = PdlResponse(
-                false, AktøridPdl(
-                    data = AktøridPdl.Data(
-                        hentIdenter = AktøridPdl.Data.HentIdenter(
-                            identer = listOf(
-                                AktøridPdl.Data.HentIdenter.Identer(
-                                    gruppe = "AKTORID",
-                                    historisk = false,
-                                    ident = "2392173967319"
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        }
+//        if (configuration.koinProfile() != KoinProfile.PROD) {
+//            aktørIdFraFnr = PdlResponse(
+//                false, AktøridPdl(
+//                    data = AktøridPdl.Data(
+//                        hentIdenter = AktøridPdl.Data.HentIdenter(
+//                            identer = listOf(
+//                                AktøridPdl.Data.HentIdenter.Identer(
+//                                    gruppe = "AKTORID",
+//                                    historisk = false,
+//                                    ident = "2392173967319"
+//                                )
+//                            )
+//                        )
+//                    )
+//                )
+//            )
+//        }
 
         val res = SokeResultatDto(false, null, mutableListOf())
         if (aktørIdFraFnr.aktorId != null && aktørIdFraFnr.aktorId!!.data.hentIdenter != null && aktørIdFraFnr.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
             var aktorId = aktørIdFraFnr.aktorId!!.data.hentIdenter!!.identer[0].ident
             val person = pdlService.person(aktorId)
             if (person.person != null) {
-                if (!(configuration.koinProfile() == KoinProfile.PROD)) {
-                    aktorId = "1172507325105"
-                }
+//                if (!(configuration.koinProfile() == KoinProfile.PROD)) {
+//                    aktorId = "1172507325105"
+//                }
                 val personDto = mapTilPersonDto(person.person)
                 val oppgaver = hentOppgaver(aktorId)
 
@@ -194,7 +194,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     suspend fun finnOppgaverBasertPåAktørId(aktørId: String): SokeResultatDto {
         var person = pdlService.person(aktørId)
-        if (configuration.koinProfile() != KoinProfile.PROD) {
+        if (configuration.koinProfile() == KoinProfile.LOCAL) {
             person = PersonPdlResponse(
                 false, PersonPdl(
                     data = PersonPdl.Data(
@@ -227,12 +227,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         val res = SokeResultatDto(false, null, mutableListOf())
         if (personInfo != null) {
             val personDto = mapTilPersonDto(personInfo)
-            val oppgaver: MutableList<OppgaveDto> = if (!(configuration.koinProfile() == KoinProfile.PROD)) {
-                hentOppgaver("1172507325105")
-            } else {
-                hentOppgaver(aktørId)
-            }
-
+            val oppgaver: MutableList<OppgaveDto> = hentOppgaver(aktørId)
             //sjekker om det finnes en visningsak i omsorgsdager
             val oppgaveDto = hentOmsorgsdagerForFnr(personInfo.fnr(), personInfo.navn())
             if (oppgaveDto != null) {
@@ -252,7 +247,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private fun mapTilPersonDto(person: PersonPdl): PersonDto {
         return PersonDto(
             person.navn(),
-            person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+            person.fnr(),
             person.data.hentPerson.kjoenn[0].kjoenn,
             null
             //   person.data.hentPerson.doedsfall[0].doedsdato
@@ -610,9 +605,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
                         preprodNavn(oppgave)
                     } else {
-                        person.person?.navn() ?: "Uten navn"
+                        if (person.person != null) person.person.navn() else "Uten navn"
                     }
-
                     list.add(
                         OppgaveDto(
                             status = OppgaveStatusDto(
@@ -630,7 +624,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             personnummer = if (person.person == null) {
                                 "Ukjent fnummer"
                             } else {
-                                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                                person.person?.fnr()
                             },
                             behandlingstype = oppgave.behandlingType,
                             fagsakYtelseType = oppgave.fagsakYtelseType,

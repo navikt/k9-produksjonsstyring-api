@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
 
 data class PersonPdl(
     val `data`: Data
 ) {
+    val log = LoggerFactory.getLogger("PersonPdl")
+
     data class Data(
         val hentPerson: HentPerson
     ) {
@@ -42,10 +45,16 @@ data class PersonPdl(
         }
     }
 }
-internal fun PersonPdl.navn(): String{
-   return data.hentPerson.navn[0].forkortetNavn?:data.hentPerson.navn[0].fornavn + " " +data.hentPerson.navn[0].etternavn
+internal fun PersonPdl.navn(): String {
+    log.info("Hentet person: " + data.hentPerson)
+
+   return if(data.hentPerson.navn.isNotEmpty()) data.hentPerson.navn[0].forkortetNavn?:data.hentPerson.navn[0].fornavn + " " + data.hentPerson.navn[0].etternavn else "Uten navn"
 }
 
 internal fun PersonPdl.fnr(): String {
-    return data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+    return if(data.hentPerson.folkeregisteridentifikator.isNotEmpty()) data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer else "Ukjent fnummer"
+}
+
+internal fun PersonPdl.kjoenn(): String {
+    return if(data.hentPerson.kjoenn.isNotEmpty()) data.hentPerson.kjoenn[0].kjoenn else "Uten kjønn"
 }
