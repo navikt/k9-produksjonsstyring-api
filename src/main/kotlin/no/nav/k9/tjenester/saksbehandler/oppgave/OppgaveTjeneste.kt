@@ -247,7 +247,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     private fun mapTilPersonDto(person: PersonPdl): PersonDto {
         return PersonDto(
             person.navn(),
-            person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer,
+            person.fnr(),
             person.data.hentPerson.kjoenn[0].kjoenn,
             null
             //   person.data.hentPerson.doedsfall[0].doedsdato
@@ -601,6 +601,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     }
 
                     val person = pdlService.person(oppgave.aktorId)
+
+                    val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
+                        preprodNavn(oppgave)
+                    } else {
+                        person.person?.navn()
+                    }
                     list.add(
                         OppgaveDto(
                             status = OppgaveStatusDto(
@@ -613,11 +619,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             behandlingId = oppgave.behandlingId,
                             saksnummer = oppgave.fagsakSaksnummer,
                             journalpostId = oppgave.journalpostId,
-                            navn = if (person.person == null) {
-                                "Uten navn"
-                            } else {
-                                if (person.person?.navn().isBlank()) preprodNavn(oppgave) else person.person?.navn()
-                            },
+                            navn = navn,
                             system = oppgave.system,
                             personnummer = if (person.person == null) {
                                 "Ukjent fnummer"
