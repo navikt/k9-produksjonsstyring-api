@@ -248,7 +248,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         return PersonDto(
             person.navn(),
             person.fnr(),
-            person.data.hentPerson.kjoenn[0].kjoenn,
+            person.kjoenn(),
             null
             //   person.data.hentPerson.doedsfall[0].doedsdato
         )
@@ -357,7 +357,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             navn = person.person?.navn() ?: "Ukjent navn",
             system = oppgave.system,
             personnummer = if (person.person != null) {
-                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                person.person.fnr()
             } else {
                 "Ukjent fnummer"
             },
@@ -708,7 +708,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             personFnummer = if (person.person == null) {
                 "Ukjent fnummer"
             } else {
-                person.person.data.hentPerson.folkeregisteridentifikator[0].identifikasjonsnummer
+                person.person.fnr()
             }
             list.add(
                 OppgaveDto(
