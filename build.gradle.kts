@@ -72,7 +72,7 @@ dependencies {
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
-    testImplementation("io.mockk:mockk:1.10.3-jdk8")
+    testImplementation("io.mockk:mockk:1.10.5")
     testImplementation("io.ktor:ktor-server-test-host:1.3.0") {
         exclude(group = "org.eclipse.jetty")
     }
