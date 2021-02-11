@@ -50,7 +50,7 @@ dependencies {
 
 
     // Tilgangskontroll
-    implementation("no.nav.common:auth:1.2020.02.18-16.01-aba1e77ea3f9")
+    implementation("no.nav.common:auth:2.2021.02.08_08.29-beea07de78ad")
     implementation("no.nav.common:rest:2.2021.02.08_08.29-beea07de78ad")
     implementation("com.google.code.gson:gson:2.8.6")
 
