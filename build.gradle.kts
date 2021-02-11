@@ -13,7 +13,7 @@ val koinVersion = "2.2.2"
 val kotliqueryVersion = "1.3.1"
 
 plugins {
-    kotlin("jvm") version "1.4.10"
+    kotlin("jvm") version "1.4.30"
     id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
@@ -67,7 +67,7 @@ dependencies {
     implementation("org.koin:koin-ktor:$koinVersion")
 
     // Test
-    testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.23")
+    testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.23.1")
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
