@@ -158,7 +158,7 @@ class PepClient @KtorExperimentalAPI constructor(
     override suspend fun harTilgangTilKode7EllerEgenAnsatt(): Boolean {
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
-            .addResourceAttribute(RESOURCE_TYPE, TILGANG_TIL_KODE_7_OG_EGENANSATT)
+            .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK_KODE7OGEGENANSATT)
             .addAccessSubjectAttribute(SUBJECT_TYPE, INTERNBRUKER)
             .addAccessSubjectAttribute(SUBJECTID, azureGraphService.hentIdentTilInnloggetBruker())
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
