@@ -267,7 +267,7 @@ class OppgaveRepository(
     }
 
     @KtorExperimentalAPI
-    suspend fun hentOppgaverMedSaksnummerIkkeTaHensyn(saksnummer: String): List<Oppgave> {
+    fun hentOppgaverMedSaksnummerIkkeTaHensyn(saksnummer: String): List<Oppgave> {
         val json: List<String> = using(sessionOf(dataSource)) {
             //language=PostgreSQL
             it.run(

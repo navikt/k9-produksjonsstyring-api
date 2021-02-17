@@ -17,6 +17,7 @@ const val BEHANDLINGSSTATUS = "no.nav.abac.attributter.resource.k9.sak.behandlin
 const val SAKSSTATUS = "no.nav.abac.attributter.resource.k9.sak.saksstatus"
 const val OPPGAVESTYRER = "no.nav.abac.attributter.k9.oppgavestyring"
 const val TILGANG_TIL_KODE_6 = "no.nav.abac.attributter.subject.k9.viken"
+const val TILGANG_TIL_KODE_7_OG_EGENANSATT = "no.nav.abac.attributter.subject.k9.kode7egenansatt"
 const val BASIS_TILGANG = "no.nav.abac.attributter.k9"
 const val TILGANG_SAK = "no.nav.abac.attributter.k9.fagsak"
 const val TILGANG_SAK_KODE6 = "no.nav.abac.attributter.resource.k9.viken"

@@ -26,7 +26,7 @@ internal fun Route.NavAnsattApis() {
     val configuration by inject<Configuration>()
     @Location("/saksbehandler")
     class getInnloggetBruker
-    
+
     get { _: getInnloggetBruker ->
         if (configuration.koinProfile() != KoinProfile.LOCAL) {
             val idtoken = call.idToken()
@@ -43,8 +43,8 @@ internal fun Route.NavAnsattApis() {
                     kanSaksbehandle = pepClient.harBasisTilgang(),
                     kanVeilede = pepClient.harBasisTilgang(),
                     kanBeslutte = pepClient.harBasisTilgang(),
-                    kanBehandleKodeEgenAnsatt = pepClient.harBasisTilgang(),
-                    kanBehandleKode6 = pepClient.harBasisTilgang(),
+                    kanBehandleKodeEgenAnsatt = pepClient.harTilgangTilKode7EllerEgenAnsatt(),
+                    kanBehandleKode6 = pepClient.harTilgangTilKode6(),
                     kanBehandleKode7 = pepClient.harBasisTilgang(),
                     kanOppgavestyre = pepClient.erOppgaveStyrer(),
                     kanReservere = pepClient.harTilgangTilReservingAvOppgaver(),

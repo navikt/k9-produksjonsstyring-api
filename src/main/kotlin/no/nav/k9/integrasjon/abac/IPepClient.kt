@@ -5,10 +5,13 @@ import io.ktor.util.*
 interface IPepClient {
     @KtorExperimentalAPI
     suspend fun erOppgaveStyrer(): Boolean
-    
+
     @KtorExperimentalAPI
     suspend fun harTilgangTilKode6(): Boolean
-   
+
+    @KtorExperimentalAPI
+    suspend fun harTilgangTilKode7EllerEgenAnsatt(): Boolean
+
     @KtorExperimentalAPI
     suspend fun harBasisTilgang(): Boolean
 
@@ -23,7 +26,7 @@ interface IPepClient {
 
     @KtorExperimentalAPI
     suspend fun harTilgangTilReservingAvOppgaver(): Boolean
-        
+
     @KtorExperimentalAPI
     suspend fun kanSendeSakTilStatistikk(
         fagsakNummer: String
