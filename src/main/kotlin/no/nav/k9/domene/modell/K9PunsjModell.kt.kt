@@ -44,7 +44,7 @@ data class K9PunsjModell(
         TODO("Ikke relevant for punsj")
     }
 
-    fun forrigeEvent(): PunsjEventDto? {
+    private fun forrigeEvent(): PunsjEventDto? {
         return if (this.eventer.lastIndex > 0) {
             this.eventer[this.eventer.lastIndex - 1]
         } else {
@@ -63,8 +63,12 @@ data class K9PunsjModell(
         return forrigeAksjonspunkter != nåværendeAksjonspunkter
     }
 
-    fun PunsjEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
-        return Aksjonspunkter(this.aksjonspunktKoderMedStatusListe.filter { entry -> entry.value == "OPPR" })
+    private fun PunsjEventDto.aktiveAksjonspunkt(): Aksjonspunkter {
+        return Aksjonspunkter(finnRiktigMap().filter { entry -> entry.value == "OPPR" })
+    }
+
+    private fun PunsjEventDto.finnRiktigMap(): MutableMap<String, String> {
+        return this.aksjonspunktKoderMedStatusListe ?: this.aksjonspunkter!!
     }
 
     override fun oppgave(): Oppgave {
@@ -86,7 +90,7 @@ data class K9PunsjModell(
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PPN,
             eventTid = sisteEvent.eventTid,
-            aktiv = sisteEvent.aksjonspunktKoderMedStatusListe.any { aksjonspunkt -> aksjonspunkt.value == "OPPR" },
+            aktiv = sisteEvent.finnRiktigMap().any { aksjonspunkt -> aksjonspunkt.value == "OPPR" },
             system = "PUNSJ",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
