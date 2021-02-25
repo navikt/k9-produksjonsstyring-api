@@ -20,8 +20,11 @@ fun Application.rekjørEventerForGrafer(
     statistikkRepository: StatistikkRepository,
     reservasjonRepository: ReservasjonRepository
 ) {
+
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
         try {
+            val tillatteYtelseTyper = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.PLEIEPENGER_SYKT_BARN)
+
             val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
             statistikkRepository.truncateStatistikk()
             for ((index, eventId) in alleEventerIder.withIndex()) {
@@ -38,20 +41,20 @@ fun Application.rekjørEventerForGrafer(
 
                         if (modell.starterSak()) {
                             if (oppgave.aktiv) {
-                                beholdningOpp(oppgave, statistikkRepository)
+                                beholdningOpp(oppgave, statistikkRepository, tillatteYtelseTyper)
                             }
                         }
                         if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave().aktiv) {
-                            beholdningOpp(oppgave, statistikkRepository)
+                            beholdningOpp(oppgave, statistikkRepository,tillatteYtelseTyper)
                         }
 
                         if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave().aktiv) {
-                            beholdingNed(oppgave, statistikkRepository)
+                            beholdingNed(oppgave, statistikkRepository, tillatteYtelseTyper)
                         }
 
                         if (oppgave.behandlingStatus == BehandlingStatus.AVSLUTTET) {
                             if (!oppgave.ansvarligSaksbehandlerForTotrinn.isNullOrBlank()) {
-                                nyFerdigstilltAvSaksbehandler(oppgave, statistikkRepository)
+                                nyFerdigstilltAvSaksbehandler(oppgave, statistikkRepository, tillatteYtelseTyper)
                             }
                         }
                     } catch (e: Exception) {
@@ -67,8 +70,8 @@ fun Application.rekjørEventerForGrafer(
 }
 
 
-private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
-    if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave, statistikkRepository: StatistikkRepository, tillatteYtelseTyper: List<FagsakYtelseType>) {
+    if (tillatteYtelseTyper.contains(oppgave.fagsakYtelseType)) {
         statistikkRepository.lagre(
             AlleOppgaverNyeOgFerdigstilte(
                 oppgave.fagsakYtelseType,
@@ -82,8 +85,8 @@ private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave, statistikkRepository
     }
 }
 
-private fun beholdingNed(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
-    if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+private fun beholdingNed(oppgave: Oppgave, statistikkRepository: StatistikkRepository, tillatteYtelseTyper: List<FagsakYtelseType>) {
+    if (tillatteYtelseTyper.contains(oppgave.fagsakYtelseType)) {
         statistikkRepository.lagre(
             AlleOppgaverNyeOgFerdigstilte(
                 oppgave.fagsakYtelseType,
@@ -97,8 +100,8 @@ private fun beholdingNed(oppgave: Oppgave, statistikkRepository: StatistikkRepos
     }
 }
 
-private fun beholdningOpp(oppgave: Oppgave, statistikkRepository: StatistikkRepository) {
-    if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+private fun beholdningOpp(oppgave: Oppgave, statistikkRepository: StatistikkRepository, tillatteYtelseTyper: List<FagsakYtelseType>) {
+    if (tillatteYtelseTyper.contains(oppgave.fagsakYtelseType)) {
         statistikkRepository.lagre(
             AlleOppgaverNyeOgFerdigstilte(
                 oppgave.fagsakYtelseType,

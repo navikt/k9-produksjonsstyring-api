@@ -31,6 +31,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
+    val tillatteYtelseTyper = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.PLEIEPENGER_SYKT_BARN)
+
     @KtorExperimentalAPI
     fun prosesser(
         event: BehandlingProsessEventDto
@@ -99,7 +101,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave) {
-        if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+        if (tillatteYtelseTyper.contains(oppgave.fagsakYtelseType) ) {
             statistikkRepository.lagre(
                 AlleOppgaverNyeOgFerdigstilte(
                     oppgave.fagsakYtelseType,
@@ -114,7 +116,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun beholdingNed(oppgave: Oppgave) {
-        if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+        if (tillatteYtelseTyper.contains(oppgave.fagsakYtelseType)) {
             statistikkRepository.lagre(
                 AlleOppgaverNyeOgFerdigstilte(
                     oppgave.fagsakYtelseType,
@@ -129,7 +131,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun beholdningOpp(oppgave: Oppgave) {
-        if (oppgave.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER) {
+        if (tillatteYtelseTyper.contains(oppgave.fagsakYtelseType)) {
             statistikkRepository.lagre(
                 AlleOppgaverNyeOgFerdigstilte(
                     oppgave.fagsakYtelseType,
