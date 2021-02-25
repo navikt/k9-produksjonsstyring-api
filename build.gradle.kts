@@ -73,7 +73,7 @@ dependencies {
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
     testImplementation("io.mockk:mockk:1.10.6")
-    testImplementation("io.ktor:ktor-server-test-host:1.3.0") {
+    testImplementation("io.ktor:ktor-server-test-host:1.5.1") {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
