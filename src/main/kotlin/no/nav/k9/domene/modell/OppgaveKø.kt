@@ -284,7 +284,9 @@ enum class FagsakYtelseType constructor(override val kode: String, override val 
     companion object {
         @JsonCreator
         @JvmStatic
-        fun fraKode(kode: String): FagsakYtelseType = values().find { it.kode == kode }!!
+        fun fraKode(kode: String): FagsakYtelseType {
+            return values().find { it.kode == kode } ?: throw IllegalStateException("Kjenner ikke igjen koden=$kode")
+        }
     }
 }
 
