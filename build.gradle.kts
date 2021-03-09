@@ -51,7 +51,7 @@ dependencies {
 
     // Tilgangskontroll
     implementation("no.nav.common:auth:2.2021.02.08_08.29-beea07de78ad")
-    implementation("no.nav.common:rest:2.2021.02.08_08.29-beea07de78ad")
+    implementation("no.nav.common:rest:2.2021.03.03_08.24-3686938439d9")
     implementation("com.google.code.gson:gson:2.8.6")
 
     // Kontrakter
@@ -71,7 +71,7 @@ dependencies {
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3-native-mt")
     testImplementation("io.mockk:mockk:1.10.6")
     testImplementation("io.ktor:ktor-server-test-host:1.3.0") {
         exclude(group = "org.eclipse.jetty")
