@@ -87,8 +87,7 @@ dependencies {
 }
 
 repositories {
-    maven("https://dl.bintray.com/kotlin/ktor")
-    maven("https://kotlin.bintray.com/kotlinx")
+    mavenCentral()
     maven("http://packages.confluent.io/maven/")
 
     maven {
@@ -99,10 +98,15 @@ repositories {
             password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
         }
     }
+    
+    mavenLocal()
 
     jcenter()
-    mavenLocal()
-    mavenCentral()
+    
+    maven("https://jcenter.bintray.com/")
+    maven("https://dl.bintray.com/kotlin/ktor")
+    maven("https://kotlin.bintray.com/kotlinx")
+
 }
 
 
