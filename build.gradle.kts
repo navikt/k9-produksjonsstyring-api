@@ -48,6 +48,7 @@ dependencies {
     implementation("io.ktor:ktor-client-auth:$ktorVersion")
 
     // Kafka
+    implementation("com.github.everit-org.json-schema:org.everit.json.schema:1.5.1")
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
 
