@@ -1,11 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.5.2.23e9ee7"
-val ktorVersion = "1.5.2"
+val dusseldorfKtorVersion = "1.4.0.8634f4b"
+val ktorVersion = "1.4.0"
 val mainClass = "no.nav.k9.K9LosKt"
-val kafkaVersion = "6.1.0-ce" // Alligned med version fra kafka-embedded-env
-val hikariVersion = "4.0.3"
+val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
+val hikariVersion = "4.0.2"
 val flywayVersion = "6.0.8"
 val vaultJdbcVersion = "1.3.7"
 val kafkaEmbeddedEnvVersion = "2.2.3"
@@ -13,7 +13,7 @@ val koinVersion = "2.2.2"
 val kotliqueryVersion = "1.3.1"
 
 plugins {
-    kotlin("jvm") version "1.4.31"
+    kotlin("jvm") version "1.4.30"
     id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
@@ -22,8 +22,6 @@ buildscript {
 }
 
 dependencies {
-    implementation(enforcedPlatform( "com.fasterxml.jackson:jackson-bom:2.12.1" ))
-    
     // Server
     implementation ( "no.nav.helse:dusseldorf-ktor-core:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-ktor-jackson:$dusseldorfKtorVersion")
@@ -52,8 +50,8 @@ dependencies {
 
 
     // Tilgangskontroll
-    implementation("no.nav.common:auth:2.2021.03.03_08.24-3686938439d9")
-    implementation("no.nav.common:rest:2.2021.03.03_08.24-3686938439d9")
+    implementation("no.nav.common:auth:2.2021.02.08_08.29-beea07de78ad")
+    implementation("no.nav.common:rest:2.2021.02.08_08.29-beea07de78ad")
     implementation("com.google.code.gson:gson:2.8.6")
 
     // Kontrakter
@@ -73,9 +71,9 @@ dependencies {
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3-native-mt")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
     testImplementation("io.mockk:mockk:1.10.6")
-    testImplementation("io.ktor:ktor-server-test-host:1.5.2") {
+    testImplementation("io.ktor:ktor-server-test-host:1.3.0") {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
@@ -89,10 +87,9 @@ dependencies {
 }
 
 repositories {
-    jcenter()
-    mavenCentral()
+    maven("https://dl.bintray.com/kotlin/ktor")
+    maven("https://kotlin.bintray.com/kotlinx")
     maven("http://packages.confluent.io/maven/")
-    mavenLocal()
 
     maven {
         name = "GitHubPackages"
@@ -102,11 +99,10 @@ repositories {
             password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
         }
     }
-    
-    maven("https://jcenter.bintray.com/")
-    maven("https://dl.bintray.com/kotlin/ktor")
-    maven("https://kotlin.bintray.com/kotlinx")
 
+    jcenter()
+    mavenLocal()
+    mavenCentral()
 }
 
 
