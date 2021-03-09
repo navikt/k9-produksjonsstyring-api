@@ -22,7 +22,7 @@ buildscript {
 }
 
 dependencies {
-    implementation platform( "com.fasterxml.jackson:jackson-bom:2.12.1" ) 
+    implementation(enforcedPlatform(( "com.fasterxml.jackson:jackson-bom:2.12.1" ))
     
     // Server
     implementation ( "no.nav.helse:dusseldorf-ktor-core:$dusseldorfKtorVersion")
