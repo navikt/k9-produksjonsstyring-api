@@ -71,7 +71,7 @@ dependencies {
     // Test
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.23.1")
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
-    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
+    //testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3-native-mt")
     testImplementation("io.mockk:mockk:1.10.6")
