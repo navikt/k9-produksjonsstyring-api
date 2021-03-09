@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.4.0.8634f4b"
+val dusseldorfKtorVersion = "1.5.2.23e9ee7"
 val ktorVersion = "1.5.2"
 val mainClass = "no.nav.k9.K9LosKt"
 val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
