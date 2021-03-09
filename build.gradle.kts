@@ -22,6 +22,8 @@ buildscript {
 }
 
 dependencies {
+    implementation platform( "com.fasterxml.jackson:jackson-bom:2.12.1" ) 
+    
     // Server
     implementation ( "no.nav.helse:dusseldorf-ktor-core:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-ktor-jackson:$dusseldorfKtorVersion")
@@ -87,8 +89,10 @@ dependencies {
 }
 
 repositories {
+    jcenter()
     mavenCentral()
     maven("http://packages.confluent.io/maven/")
+    mavenLocal()
 
     maven {
         name = "GitHubPackages"
@@ -98,10 +102,6 @@ repositories {
             password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
         }
     }
-    
-    mavenLocal()
-
-    jcenter()
     
     maven("https://jcenter.bintray.com/")
     maven("https://dl.bintray.com/kotlin/ktor")
