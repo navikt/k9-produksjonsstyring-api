@@ -87,9 +87,8 @@ dependencies {
 }
 
 repositories {
-    maven("https://dl.bintray.com/kotlin/ktor")
-    maven("https://kotlin.bintray.com/kotlinx")
-    maven("http://packages.confluent.io/maven/")
+    mavenLocal()
+    mavenCentral()
 
     maven {
         name = "GitHubPackages"
@@ -100,9 +99,12 @@ repositories {
         }
     }
 
+    maven("http://packages.confluent.io/maven/")
+    
+    // bintray og jcenter stenges i slutten av April 2021
+    maven("https://dl.bintray.com/kotlin/ktor")
+    maven("https://kotlin.bintray.com/kotlinx")
     jcenter()
-    mavenLocal()
-    mavenCentral()
 }
 
 
