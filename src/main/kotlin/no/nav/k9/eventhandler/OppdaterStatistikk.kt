@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.StatistikkRepository
@@ -22,13 +23,14 @@ fun CoroutineScope.oppdaterStatistikk(
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     while (true) {
         try {
+            delay(5000)
             channel.receive()
             oppgaveKøRepository.hentIkkeTaHensyn().forEach {
                 refreshHentAntallOppgaver(oppgaveTjeneste, it)
             }
             statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(refresh = true)
         } catch (e: Exception) {
-            log.error("", e)
+            log.error("Feil ved oppdatering av statistikk", e)
         }
     }
 }
