@@ -2,12 +2,12 @@
 
 package no.nav.k9
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.*
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import kotlinx.coroutines.channels.Channel
 import no.nav.k9.aksjonspunktbehandling.K9TilbakeEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9punsjEventHandler

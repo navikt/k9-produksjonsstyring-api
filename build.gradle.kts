@@ -1,24 +1,20 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.4.3.c883096"
-val ktorVersion = "1.4.3"
+val dusseldorfKtorVersion = "1.5.2.7462190"
+val ktorVersion = "1.5.2"
 val mainClass = "no.nav.k9.K9LosKt"
-val kafkaVersion = "2.5.0" // Alligned med version fra kafka-embedded-env
+val kafkaVersion = "2.7.0" // Alligned med version fra kafka-embedded-env
 val hikariVersion = "4.0.2"
 val flywayVersion = "6.0.8"
 val vaultJdbcVersion = "1.3.7"
-val kafkaEmbeddedEnvVersion = "2.5.0"
+val kafkaEmbeddedEnvVersion = "2.7.0"
 val koinVersion = "2.2.2"
 val kotliqueryVersion = "1.3.1"
 
 plugins {
-    kotlin("jvm") version "1.4.30"
+    kotlin("jvm") version "1.4.31"
     id("com.github.johnrengelman.shadow") version "6.1.0"
-}
-
-buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/ec226d3ba5b4d5fbc8782d3d934dc5ed0690f85d/gradle/dusseldorf-ktor.gradle.kts")
 }
 
 dependencies {
@@ -59,6 +55,7 @@ dependencies {
     implementation("no.nav.k9.statistikk:kontrakter:2.0_20201201123022_bfccad8")
 
     // Div
+    implementation(enforcedPlatform( "com.fasterxml.jackson:jackson-bom:2.12.1" ))
     implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("com.papertrailapp:logback-syslog4j:1.0.0")
 
@@ -71,14 +68,14 @@ dependencies {
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
     testImplementation("io.mockk:mockk:1.10.6")
-    testImplementation("io.ktor:ktor-server-test-host:1.3.0") {
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
 
-    testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
+    testImplementation("io.zonky.test:embedded-postgres:1.2.10")
     testImplementation("org.koin:koin-test:$koinVersion")
 
     implementation(kotlin("stdlib-jdk8"))
@@ -88,7 +85,6 @@ dependencies {
 
 repositories {
     mavenLocal()
-    mavenCentral()
 
     maven {
         name = "GitHubPackages"
@@ -99,13 +95,11 @@ repositories {
         }
     }
 
+    mavenCentral()
     maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")
-          
-    // bintray og jcenter stenges i slutten av April 2021
-    maven("https://dl.bintray.com/kotlin/ktor")
-    maven("https://kotlin.bintray.com/kotlinx")
-    jcenter()
+
+    jcenter() // https://github.com/InsertKoinIO/koin#jcenter
 }
 
 
