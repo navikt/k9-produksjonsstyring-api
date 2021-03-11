@@ -29,7 +29,7 @@ fun CoroutineScope.oppdaterStatistikk(
                 refreshHentAntallOppgaver(oppgaveTjeneste, it)
             }
             statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(refresh = true)
-        } catch (ClosedReceiveChannelException  crce) {
+        } catch (ClosedReceiveChannelException  e) {
             log.error("Fatal feil ved oppdatering av statistikk, channel closed", e);
             break;
         } catch (e: Exception) {
