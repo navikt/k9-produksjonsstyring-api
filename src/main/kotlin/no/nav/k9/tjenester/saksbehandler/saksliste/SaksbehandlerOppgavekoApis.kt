@@ -5,14 +5,10 @@ import io.ktor.locations.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.*
-import kotlinx.coroutines.withContext
-import no.nav.k9.KoinProfile
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.integrasjon.abac.IPepClient
-import no.nav.k9.integrasjon.rest.IRequestContextService
-import no.nav.k9.tjenester.saksbehandler.IdTokenLocal
-import no.nav.k9.tjenester.saksbehandler.idToken
+import no.nav.k9.integrasjon.rest.RequestContextService
 import org.koin.ktor.ext.inject
 import java.util.*
 
@@ -21,24 +17,13 @@ import java.util.*
 internal fun Route.SaksbehandlerOppgavekoApis() {
     val pepClient by inject<IPepClient>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
-    val requestContextService by inject<IRequestContextService>()
+    val requestContextService by inject<RequestContextService>()
     val sakslisteTjeneste by inject<SakslisteTjeneste>()
-    val profile by inject<KoinProfile>()
 
     @Location("/oppgaveko")
     class getSakslister
-
     get { _: getSakslister ->
-        withContext(
-            requestContextService.getCoroutineContext(
-                context = coroutineContext,
-                idToken = if (profile != KoinProfile.LOCAL) {
-                    call.idToken()
-                } else {
-                    IdTokenLocal()
-                }
-            )
-        ) {
+        requestContextService.withRequestContext(call) {
             if (pepClient.harBasisTilgang()) {
                 call.respond(sakslisteTjeneste.hentSaksbehandlersKøer())
             } else {
@@ -51,16 +36,7 @@ internal fun Route.SaksbehandlerOppgavekoApis() {
     class hentSakslistensSaksbehandlere
 
     get { _: hentSakslistensSaksbehandlere ->
-        withContext(
-            requestContextService.getCoroutineContext(
-                context = coroutineContext,
-                idToken = if (profile != KoinProfile.LOCAL) {
-                    call.idToken()
-                } else {
-                    IdTokenLocal()
-                }
-            )
-        ) {
+        requestContextService.withRequestContext(call) {
             call.respond(
                 oppgaveKøRepository.hentOppgavekø(UUID.fromString(call.parameters["id"])).saksbehandlere
             )
