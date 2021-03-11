@@ -99,7 +99,7 @@ repositories {
         }
     }
 
-    maven("http://packages.confluent.io/maven/")
+    maven("https://packages.confluent.io/maven/")
     
     // bintray og jcenter stenges i slutten av April 2021
     maven("https://dl.bintray.com/kotlin/ktor")
