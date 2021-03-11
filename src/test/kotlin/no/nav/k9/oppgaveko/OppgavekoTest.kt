@@ -1,9 +1,9 @@
 package no.nav.k9.oppgaveko
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import io.ktor.util.*
 import io.mockk.every
 import io.mockk.mockk
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration

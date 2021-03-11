@@ -159,6 +159,11 @@ fun Application.k9Los() {
 
     install(CallIdRequired)
 
+    install(CallLogging) {
+        correlationIdAndRequestIdInMdc()
+        logRequests()
+    }
+
     install(Locations)
 
     install(Routing) {
