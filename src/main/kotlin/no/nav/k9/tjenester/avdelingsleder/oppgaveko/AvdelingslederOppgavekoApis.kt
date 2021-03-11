@@ -22,7 +22,6 @@ fun Route.AvdelingslederOppgavekøApis() {
     val requestContextService by inject<IRequestContextService>()
     val profile by inject<KoinProfile>()
 
-    @Location("/")
     class hentAlleOppgaveKøer
 
     get { _: hentAlleOppgaveKøer ->

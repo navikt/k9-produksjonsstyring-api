@@ -28,7 +28,6 @@ internal fun Route.OppgaveApis() {
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
     val profile by inject<KoinProfile>()
 
-    @Location("/")
     class hentOppgaver
 
     get { _: hentOppgaver ->

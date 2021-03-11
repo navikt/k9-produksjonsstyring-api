@@ -16,7 +16,6 @@ import java.util.*
 fun Route.DriftsmeldingerApis() {
     val driftsmeldingTjeneste by inject<DriftsmeldingTjeneste>()
     
-    @Location("/")
     class driftsmelding
 
     get { _: driftsmelding ->

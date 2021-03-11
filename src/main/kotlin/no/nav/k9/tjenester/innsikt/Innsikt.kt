@@ -23,7 +23,6 @@ fun Route.innsiktGrensesnitt() {
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
 
-    @Location("/")
     class main
 
     get { _: main ->

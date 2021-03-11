@@ -37,7 +37,6 @@ fun Route.MockGrensesnitt() {
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
     val profile by inject<KoinProfile>()
 
-    @Location("/")
     class main
 
     get { _: main ->
