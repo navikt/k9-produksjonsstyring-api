@@ -29,9 +29,7 @@ import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PdlServiceLocal
 import no.nav.k9.integrasjon.pdl.PdlServicePreprod
-import no.nav.k9.integrasjon.rest.IRequestContextService
 import no.nav.k9.integrasjon.rest.RequestContextService
-import no.nav.k9.integrasjon.rest.RequestContextServiceLocal
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallTjeneste
@@ -259,7 +257,7 @@ fun localDevConfig(app: Application, config: Configuration) = module {
     single {
         PepClientLocal() as IPepClient
     }
-    single { RequestContextServiceLocal() as IRequestContextService }
+    single { RequestContextService(profile = LOCAL) }
 
     single {
         PdlServiceLocal() as IPdlService
@@ -297,7 +295,7 @@ fun preprodConfig(app: Application, config: Configuration) = module {
         ) as IOmsorgspengerService
     }
 
-    single { RequestContextService() as IRequestContextService }
+    single { RequestContextService(profile = PREPROD) }
 
     single {
         PdlServicePreprod(
@@ -332,7 +330,7 @@ fun prodConfig(app: Application, config: Configuration) = module {
         ) as IOmsorgspengerService
     }
 
-    single { RequestContextService() as IRequestContextService }
+    single { RequestContextService(profile = PROD) }
 
     single {
         PdlService(
