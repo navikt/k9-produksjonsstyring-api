@@ -4,11 +4,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val dusseldorfKtorVersion = "1.5.2.7462190"
 val ktorVersion = "1.5.2"
 val mainClass = "no.nav.k9.K9LosKt"
-val kafkaVersion = "2.5.0" // Alligned med version fra kafka-embedded-env
+val kafkaVersion = "2.7.0" // Alligned med version fra kafka-embedded-env
 val hikariVersion = "4.0.2"
 val flywayVersion = "6.0.8"
 val vaultJdbcVersion = "1.3.7"
-val kafkaEmbeddedEnvVersion = "2.5.0"
+val kafkaEmbeddedEnvVersion = "2.7.0"
 val koinVersion = "2.2.2"
 val kotliqueryVersion = "1.3.1"
 
