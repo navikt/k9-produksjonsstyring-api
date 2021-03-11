@@ -22,13 +22,17 @@ fun CoroutineScope.oppdaterStatistikk(
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     while (true) {
         try {
+            delay(30000)
             channel.receive()
             oppgaveKøRepository.hentIkkeTaHensyn().forEach {
                 refreshHentAntallOppgaver(oppgaveTjeneste, it)
             }
             statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(refresh = true)
+        } catch (ClosedReceiveChannelException  crce) {
+            log.error("Fatal feil ved oppdatering av statistikk, channel closed", e);
+            break;
         } catch (e: Exception) {
-            log.error("", e)
+            log.error("Feil ved oppdatering av statistikk", e)
         }
     }
 }
