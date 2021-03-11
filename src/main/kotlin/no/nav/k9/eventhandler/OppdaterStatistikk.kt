@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
@@ -29,7 +30,7 @@ fun CoroutineScope.oppdaterStatistikk(
                 refreshHentAntallOppgaver(oppgaveTjeneste, it)
             }
             statistikkRepository.hentFerdigstilteOgNyeHistorikkMedYtelsetypeSiste8Uker(refresh = true)
-        } catch (ClosedReceiveChannelException  e) {
+        } catch (e: ClosedReceiveChannelException) {
             log.error("Fatal feil ved oppdatering av statistikk, channel closed", e);
             break;
         } catch (e: Exception) {
