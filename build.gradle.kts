@@ -98,10 +98,7 @@ repositories {
     maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")
 
-    // bintray og jcenter stenges i slutten av April 2021
-    maven("https://dl.bintray.com/kotlin/ktor")
-    maven("https://kotlin.bintray.com/kotlinx")
-    jcenter()
+    jcenter() // https://github.com/InsertKoinIO/koin#jcenter
 }
 
 
