@@ -1,14 +1,14 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.4.0.8634f4b"
-val ktorVersion = "1.4.0"
+val dusseldorfKtorVersion = "1.4.3.c883096"
+val ktorVersion = "1.4.3"
 val mainClass = "no.nav.k9.K9LosKt"
-val kafkaVersion = "2.3.0" // Alligned med version fra kafka-embedded-env
+val kafkaVersion = "2.5.0" // Alligned med version fra kafka-embedded-env
 val hikariVersion = "4.0.2"
 val flywayVersion = "6.0.8"
 val vaultJdbcVersion = "1.3.7"
-val kafkaEmbeddedEnvVersion = "2.2.3"
+val kafkaEmbeddedEnvVersion = "2.5.0"
 val koinVersion = "2.2.2"
 val kotliqueryVersion = "1.3.1"
 
@@ -71,7 +71,7 @@ dependencies {
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     testImplementation("io.mockk:mockk:1.10.6")
     testImplementation("io.ktor:ktor-server-test-host:1.3.0") {
         exclude(group = "org.eclipse.jetty")
@@ -99,8 +99,9 @@ repositories {
         }
     }
 
-    maven("http://packages.confluent.io/maven/")
-    
+    maven("https://packages.confluent.io/maven/")
+    maven("https://jitpack.io")
+          
     // bintray og jcenter stenges i slutten av April 2021
     maven("https://dl.bintray.com/kotlin/ktor")
     maven("https://kotlin.bintray.com/kotlinx")
