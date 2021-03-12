@@ -34,7 +34,6 @@ import no.nav.k9.eventhandler.sjekkReserverteJobb
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
-import no.nav.k9.jobber.rekjørEventerForGrafer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
@@ -177,16 +176,15 @@ fun Application.k9Los() {
             frequency = Duration.ofMinutes(1)
         )
 
-        route("mock") {
-            MockGrensesnitt()
-        }
-
         route("innsikt") {
             innsiktGrensesnitt()
         }
 
         if ((KoinProfile.LOCAL == koin.get<KoinProfile>())) {
             api(sseChannel)
+            route("mock") {
+                MockGrensesnitt()
+            }
         } else {
             authenticate(*issuers.allIssuers()) {
                 api(sseChannel)
@@ -216,11 +214,6 @@ fun Application.k9Los() {
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
-    install(CORS) {
-        method(HttpMethod.Options)
-        anyHost()
-        allowCredentials = true
-    }
     route("api") {
 
         AdminApis()

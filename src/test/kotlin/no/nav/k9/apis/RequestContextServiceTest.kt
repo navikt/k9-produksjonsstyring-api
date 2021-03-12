@@ -1,15 +1,14 @@
-package no.nav.k9
+package no.nav.k9.apis
 
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
-import no.nav.helse.dusseldorf.testsupport.jws.Azure
+import no.nav.k9.KoinProfile
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.rest.idToken
 import org.junit.Test
-import java.util.*
 import kotlin.test.assertEquals
 
 internal class RequestContextServiceTest {
@@ -49,18 +48,4 @@ internal class RequestContextServiceTest {
             }
         }
     }
-
-    private fun authorizationHeader(username: String) = "${UUID.randomUUID()}".let { uuid -> Azure.V2_0.generateJwt(
-        clientId = "test",
-        audience = "test",
-        overridingClaims = mapOf(
-            "aio" to uuid,
-            "preferred_username" to username,
-            "name" to "Nordmann",
-            "groups" to listOf(uuid),
-            "tid" to uuid,
-            "uti" to uuid,
-            "oid" to uuid
-        )
-    )}.let { "Bearer $it" }
 }
