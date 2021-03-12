@@ -69,8 +69,6 @@ spec:
       value: jdbc:postgresql://A01DBVL012.adeo.no:5432/k9-los
     - name: DB_VAULT_MOUNTPATH
       value: postgresql/prod-fss/
-    - name: COOKIE_NAME
-      value: selvbetjening-idtoken
 
     - name: PDL_URL
       value: https://pdl-api.nais.adeo.no/graphql
