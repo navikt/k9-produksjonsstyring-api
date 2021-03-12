@@ -31,14 +31,19 @@ class AuthenticationTest {
 
         withTestApplication({ testApp(wireMock = wireMock, cors = false) }) {
             sendJsonRequest(forventetHttpResponseCode = HttpStatusCode.NoContent)
+            sendJsonRequest(forventetHttpResponseCode = HttpStatusCode.Forbidden, authorizationHeader = authorizationHeader(
+                audience = "feil-audience"
+            ))
         }
 
         wireMock.stop()
     }
 
-    private fun TestApplicationEngine.sendJsonRequest(forventetHttpResponseCode: HttpStatusCode) {
+    private fun TestApplicationEngine.sendJsonRequest(
+        authorizationHeader: String = authorizationHeader(),
+        forventetHttpResponseCode: HttpStatusCode) {
         handleRequest(HttpMethod.Post, "/test"){
-            addHeader(HttpHeaders.Authorization, authorizationHeader())
+            addHeader(HttpHeaders.Authorization, authorizationHeader)
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Origin, "https://k9-los.nav.no")
             setBody("""{ "test": true }""".trimIndent())
