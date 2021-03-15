@@ -34,7 +34,7 @@ import no.nav.k9.eventhandler.sjekkReserverteJobb
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
-import no.nav.k9.jobber.regenererOppgaver
+import no.nav.k9.jobber.rekjørEventerForGrafer
 import no.nav.k9.tjenester.admin.AdminApis
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederApis
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.NokkeltallApis
@@ -146,16 +146,16 @@ fun Application.k9Los() {
     }.broadcast()
 
 //  Synkroniser oppgaver
-    regenererOppgaver(
-        oppgaveRepository = koin.get(),
-        behandlingProsessEventK9Repository = koin.get(),
-        reservasjonRepository = koin.get(),
-        oppgaveKøRepository = koin.get(),
-        saksbehhandlerRepository = koin.get(),
-        punsjEventK9Repository = koin.get(),
-        behandlingProsessEventTilbakeRepository = koin.get()
-    )
-//    rekjørEventerForGrafer(koin.get(), koin.get(), koin.get())
+//    regenererOppgaver(
+//        oppgaveRepository = koin.get(),
+//        behandlingProsessEventK9Repository = koin.get(),
+//        reservasjonRepository = koin.get(),
+//        oppgaveKøRepository = koin.get(),
+//        saksbehhandlerRepository = koin.get(),
+//        punsjEventK9Repository = koin.get(),
+//        behandlingProsessEventTilbakeRepository = koin.get()
+//    )
+   rekjørEventerForGrafer(koin.get(), koin.get(), koin.get())
 
     install(CallIdRequired)
 

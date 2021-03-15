@@ -23,7 +23,7 @@ fun Application.rekjørEventerForGrafer(
 
     launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
         try {
-            val tillatteYtelseTyper = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.PLEIEPENGER_SYKT_BARN)
+            val tillatteYtelseTyper = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.PLEIEPENGER_SYKT_BARN, FagsakYtelseType.OMSORGSPENGER_KS)
 
             val alleEventerIder = behandlingProsessEventK9Repository.hentAlleEventerIder()
             statistikkRepository.truncateStatistikk()
@@ -154,7 +154,7 @@ fun Application.regenererOppgaver(
                         oppgave = modell.oppgave()
 
                     } catch (e: Exception) {
-                        log.error("""Missmatch mellom gamel og ny kontrakt""", e)
+                        log.error("""Mismatch mellom gamel og ny kontrakt""", e)
                         continue
                     }
                     if (oppgave.aktiv) {
