@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
+import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.K9SakModell
 import no.nav.k9.domene.repository.*
@@ -31,7 +32,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
-    val tillatteYtelseTyper = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.PLEIEPENGER_SYKT_BARN)
+    val tillatteYtelseTyper = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.PLEIEPENGER_SYKT_BARN, FagsakYtelseType.OMSORGSPENGER_KS)
 
     @KtorExperimentalAPI
     fun prosesser(
@@ -53,22 +54,27 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         if (skalSkippe) {
             return
         }
-        val oppgave = modell.oppgave(modell.sisteEvent())
 
-        oppgaveRepository.lagre(oppgave.eksternId) {
-            beholdningOppNed(modell, oppgave)
+        val oppgave = modell.oppgave(modell.sisteEvent())
+        if (oppgave.behandlingType == BehandlingType.KLAGE) {
+            //kun sender statistikk på klagesaker, oppretter ikke oppgaver for saksbehandlere
             statistikkProducer.send(modell)
-            oppgave
-        }
-        if (modell.fikkEndretAksjonspunkt()) {
-            fjernReservasjon(oppgave)
-        }
-        modell.reportMetrics(reservasjonRepository)
-        runBlocking {
-            for (oppgavekø in oppgaveKøRepository.hentKøIdIkkeTaHensyn()) {
-                oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, listOf(oppgave), reservasjonRepository)
+        } else {
+            oppgaveRepository.lagre(oppgave.eksternId) {
+                beholdningOppNed(modell, oppgave)
+                statistikkProducer.send(modell)
+                oppgave
             }
-            statistikkChannel.send(true)
+            if (modell.fikkEndretAksjonspunkt()) {
+                fjernReservasjon(oppgave)
+            }
+            modell.reportMetrics(reservasjonRepository)
+            runBlocking {
+                for (oppgavekø in oppgaveKøRepository.hentKøIdIkkeTaHensyn()) {
+                    oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, listOf(oppgave), reservasjonRepository)
+                }
+                statistikkChannel.send(true)
+            }
         }
     }
 
