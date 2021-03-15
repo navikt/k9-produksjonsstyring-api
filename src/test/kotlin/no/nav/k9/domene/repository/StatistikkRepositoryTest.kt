@@ -71,6 +71,7 @@ class StatistikkRepositoryTest : KoinTest {
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
+            avklarArbeidsforhold = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         statistikkRepository.lagre(AlleOppgaverNyeOgFerdigstilte(oppgave.fagsakYtelseType, oppgave.behandlingType, oppgave.eventTid.toLocalDate().minusDays(1))){

@@ -101,6 +101,7 @@ data class K9PunsjModell(
             registrerPapir = true,
             årskvantum = false,
             avklarMedlemskap = false,
+            avklarArbeidsforhold = false,
             kode6 = false,
             skjermet = false,
             utenlands = false,

@@ -32,6 +32,8 @@ data class OppgaveKø(
 
     private val log = LoggerFactory.getLogger(OppgaveKø::class.java)
 
+    private val omsorgspengerYtelser  = listOf(FagsakYtelseType.OMSORGSPENGER_KS, FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.OMSORGSDAGER)
+
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository? = null
@@ -78,8 +80,13 @@ data class OppgaveKø(
             return false
         }
 
-        if (filtreringYtelseTyper.isNotEmpty() && !filtreringYtelseTyper.contains(oppgave.fagsakYtelseType)) {
-            return false
+        if (filtreringYtelseTyper.isNotEmpty()) {
+            if (filtreringYtelseTyper.contains(FagsakYtelseType.OMSORGSPENGER) && !omsorgspengerYtelser.contains(oppgave.fagsakYtelseType)) {
+                return false
+            }
+            if(!filtreringYtelseTyper.contains(oppgave.fagsakYtelseType)) {
+                return false
+            }
         }
 
         if (filtreringBehandlingTyper.isNotEmpty() && !filtreringBehandlingTyper.contains(oppgave.behandlingType)) {
@@ -166,6 +173,12 @@ data class OppgaveKø(
                 .contains(AndreKriterierType.AVKLAR_MEDLEMSKAP)) {
             return true
         }
+
+        if (oppgave.avklarArbeidsforhold && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.AVKLAR_ARBEIDSFORHOLD)) {
+            return true
+        }
+
         if (oppgave.vurderopptjeningsvilkåret && kriterier.map { it.andreKriterierType }
                 .contains(AndreKriterierType.VURDER_OPPTJENINGSVILKÅRET)) {
             return true
@@ -259,7 +272,8 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
     AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
     AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap"),
-    VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Avklar opptjeningsvilkåret");
+    VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Avklar opptjeningsvilkåret"),
+    AVKLAR_ARBEIDSFORHOLD("AVKLAR_ARBEIDSFORHOLD", "Avklar arbeidsforhold");
 
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 

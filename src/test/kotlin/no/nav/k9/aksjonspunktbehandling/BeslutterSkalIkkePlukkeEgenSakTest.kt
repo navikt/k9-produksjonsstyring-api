@@ -62,6 +62,7 @@ class BeslutterSkalIkkePlukkeEgenSakTest : KoinTest {
             registrerPapir = false,
             årskvantum = false,
             avklarMedlemskap = false,
+            avklarArbeidsforhold = false,
             kode6 = false,
             skjermet = false,
             utenlands = false,
