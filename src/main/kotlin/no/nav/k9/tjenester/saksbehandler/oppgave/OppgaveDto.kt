@@ -24,6 +24,7 @@ class OppgaveDto(
     val eksternId: UUID,
     val tilBeslutter: Boolean,
     val utbetalingTilBruker: Boolean,
+    val avklarArbeidsforhold: Boolean,
     val selvstendigFrilans: Boolean,
     val kombinert: Boolean,
     val søktGradering: Boolean,
