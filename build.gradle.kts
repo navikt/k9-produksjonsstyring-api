@@ -99,7 +99,6 @@ repositories {
     maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")
 
-    jcenter() // https://github.com/InsertKoinIO/koin#jcenter
 }
 
 
