@@ -32,8 +32,6 @@ data class OppgaveKø(
 
     private val log = LoggerFactory.getLogger(OppgaveKø::class.java)
 
-    private val omsorgspengerYtelser  = listOf(FagsakYtelseType.OMSORGSPENGER_KS, FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.OMSORGSDAGER)
-
     fun leggOppgaveTilEllerFjernFraKø(
         oppgave: Oppgave,
         reservasjonRepository: ReservasjonRepository? = null
@@ -80,14 +78,8 @@ data class OppgaveKø(
             return false
         }
 
-        if (filtreringYtelseTyper.isNotEmpty()) {
-            if (filtreringYtelseTyper.map { it.kode }.contains(FagsakYtelseType.OMSORGSPENGER.kode) && !omsorgspengerYtelser.map { it.kode }.contains(oppgave.fagsakYtelseType.kode)) {
-                return false
-            }
-
-            if (!filtreringYtelseTyper.contains(oppgave.fagsakYtelseType)) {
-                return false
-            }
+        if (filtreringYtelseTyper.isNotEmpty() && !filtreringYtelseTyper.contains(oppgave.fagsakYtelseType)) {
+            return false
         }
 
         if (filtreringBehandlingTyper.isNotEmpty() && !filtreringBehandlingTyper.contains(oppgave.behandlingType)) {
