@@ -197,11 +197,16 @@ class AvdelingslederTjeneste(
     }
 
     suspend fun endreYtelsesType(ytelse: YtelsesTypeDto) {
+        val omsorgspengerYtelser = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.OMSORGSDAGER, FagsakYtelseType.OMSORGSPENGER_KS)
         oppgaveKøRepository.lagre(UUID.fromString(ytelse.id))
         { oppgaveKø ->
             oppgaveKø!!.filtreringYtelseTyper = mutableListOf()
             if (ytelse.fagsakYtelseType != null) {
-                oppgaveKø.filtreringYtelseTyper.add(FagsakYtelseType.fraKode(ytelse.fagsakYtelseType))
+                if (ytelse.fagsakYtelseType == "OMS") {
+                    omsorgspengerYtelser.map { oppgaveKø.filtreringYtelseTyper.add(it)  }
+                } else {
+                    oppgaveKø.filtreringYtelseTyper.add(FagsakYtelseType.fraKode(ytelse.fagsakYtelseType))
+                }
             }
             oppgaveKø
         }
