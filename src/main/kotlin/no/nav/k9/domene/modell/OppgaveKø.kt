@@ -81,10 +81,11 @@ data class OppgaveKø(
         }
 
         if (filtreringYtelseTyper.isNotEmpty()) {
-            if (filtreringYtelseTyper.contains(FagsakYtelseType.OMSORGSPENGER) && !omsorgspengerYtelser.contains(oppgave.fagsakYtelseType)) {
+            if (filtreringYtelseTyper.contains(FagsakYtelseType.OMSORGSPENGER) && !omsorgspengerYtelser.map { it.kode }.contains(oppgave.fagsakYtelseType.kode)) {
                 return false
             }
-            if(!filtreringYtelseTyper.contains(oppgave.fagsakYtelseType)) {
+
+            else if (!filtreringYtelseTyper.contains(oppgave.fagsakYtelseType)) {
                 return false
             }
         }
