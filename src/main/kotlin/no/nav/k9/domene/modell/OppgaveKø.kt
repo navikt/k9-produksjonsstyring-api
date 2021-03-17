@@ -166,6 +166,12 @@ data class OppgaveKø(
                 .contains(AndreKriterierType.AVKLAR_MEDLEMSKAP)) {
             return true
         }
+
+        if (oppgave.avklarArbeidsforhold && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.AVKLAR_ARBEIDSFORHOLD)) {
+            return true
+        }
+
         if (oppgave.vurderopptjeningsvilkåret && kriterier.map { it.andreKriterierType }
                 .contains(AndreKriterierType.VURDER_OPPTJENINGSVILKÅRET)) {
             return true
@@ -259,7 +265,8 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
     AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
     AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap"),
-    VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Avklar opptjeningsvilkåret");
+    VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Avklar opptjeningsvilkåret"),
+    AVKLAR_ARBEIDSFORHOLD("AVKLAR_ARBEIDSFORHOLD", "Avklar arbeidsforhold");
 
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 

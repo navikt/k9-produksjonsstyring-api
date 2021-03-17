@@ -134,6 +134,7 @@ class OppgavekoTest :KoinTest{
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
+            avklarArbeidsforhold = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         val oppgave2 = Oppgave(
@@ -162,6 +163,7 @@ class OppgavekoTest :KoinTest{
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,
+            avklarArbeidsforhold = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 

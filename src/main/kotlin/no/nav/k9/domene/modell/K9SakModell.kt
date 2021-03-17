@@ -103,6 +103,7 @@ data class K9SakModell(
             kode6 = false,
             årskvantum = erÅrskvantum(event),
             avklarMedlemskap = avklarMedlemskap(event),
+            avklarArbeidsforhold = avklarArbeidsforhold(event),
             vurderopptjeningsvilkåret = vurderopptjeningsvilkåret(event),
             eventTid = event.eventTid,
             ansvarligSaksbehandlerForTotrinn = event.ansvarligSaksbehandlerForTotrinn,
@@ -113,6 +114,12 @@ data class K9SakModell(
     private fun avklarMedlemskap(event: BehandlingProsessEventDto): Boolean {
         return event.aktiveAksjonspunkt().liste.any { entry ->
             (entry.key == AVKLAR_FORTSATT_MEDLEMSKAP_KODE)
+        }
+    }
+
+    private fun avklarArbeidsforhold(event: BehandlingProsessEventDto): Boolean {
+        return event.aktiveAksjonspunkt().liste.any { entry ->
+            (entry.key == VURDER_ARBEIDSFORHOLD_KODE)
         }
     }
 

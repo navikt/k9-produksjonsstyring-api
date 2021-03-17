@@ -99,6 +99,7 @@ data class K9TilbakeModell(
             kode6 = false,
             årskvantum = false,
             avklarMedlemskap = false,
+            avklarArbeidsforhold = false,
             vurderopptjeningsvilkåret = false,
             eventTid = event.eventTid,
             ansvarligSaksbehandlerForTotrinn = null,
