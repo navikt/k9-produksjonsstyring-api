@@ -206,7 +206,7 @@ fun Application.k9Los() {
     }
 
     install(CallId) {
-        generated()
+        fromXCorrelationIdHeader()
     }
 }
 
