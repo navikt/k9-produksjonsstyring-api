@@ -32,7 +32,11 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
 ) {
     private val log = LoggerFactory.getLogger(K9sakEventHandler::class.java)
 
-    val tillatteYtelseTyper = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.PLEIEPENGER_SYKT_BARN, FagsakYtelseType.OMSORGSPENGER_KS)
+    val tillatteYtelseTyper = listOf(
+        FagsakYtelseType.OMSORGSPENGER,
+        FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
+        FagsakYtelseType.OMSORGSPENGER_KS
+    )
 
     @KtorExperimentalAPI
     fun prosesser(
@@ -56,25 +60,21 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
 
         val oppgave = modell.oppgave(modell.sisteEvent())
-        if (oppgave.behandlingType == BehandlingType.KLAGE) {
-            //kun sender statistikk på klagesaker, oppretter ikke oppgaver for saksbehandlere
+        oppgaveRepository.lagre(oppgave.eksternId) {
+            beholdningOppNed(modell, oppgave)
             statistikkProducer.send(modell)
-        } else {
-            oppgaveRepository.lagre(oppgave.eksternId) {
-                beholdningOppNed(modell, oppgave)
-                statistikkProducer.send(modell)
-                oppgave
+            oppgave
+        }
+        if (modell.fikkEndretAksjonspunkt()) {
+            fjernReservasjon(oppgave)
+        }
+        modell.reportMetrics(reservasjonRepository)
+        runBlocking {
+            for (oppgavekø in oppgaveKøRepository.hentKøIdIkkeTaHensyn()) {
+                oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, listOf(oppgave), reservasjonRepository)
             }
-            if (modell.fikkEndretAksjonspunkt()) {
-                fjernReservasjon(oppgave)
-            }
-            modell.reportMetrics(reservasjonRepository)
-            runBlocking {
-                for (oppgavekø in oppgaveKøRepository.hentKøIdIkkeTaHensyn()) {
-                    oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, listOf(oppgave), reservasjonRepository)
-                }
-                statistikkChannel.send(true)
-            }
+            statistikkChannel.send(true)
+
         }
     }
 
@@ -88,7 +88,10 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         }
         if (modell.forrigeEvent() != null && !modell.oppgave(modell.forrigeEvent()!!).aktiv && modell.oppgave(modell.sisteEvent()).aktiv) {
             beholdningOpp(oppgave)
-        } else if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave(modell.sisteEvent()).aktiv) {
+        } else if (modell.forrigeEvent() != null && modell.oppgave(modell.forrigeEvent()!!).aktiv && !modell.oppgave(
+                modell.sisteEvent()
+            ).aktiv
+        ) {
             beholdingNed(oppgave)
         }
 
@@ -107,7 +110,7 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     }
 
     private fun nyFerdigstilltAvSaksbehandler(oppgave: Oppgave) {
-        if (tillatteYtelseTyper.contains(oppgave.fagsakYtelseType) ) {
+        if (tillatteYtelseTyper.contains(oppgave.fagsakYtelseType)) {
             statistikkRepository.lagre(
                 AlleOppgaverNyeOgFerdigstilte(
                     oppgave.fagsakYtelseType,
