@@ -89,15 +89,22 @@ internal fun Route.Sse(
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
     respondTextWriter(contentType = ContentType.Text.EventStream) {
+        log.info("inne i textwriter")
         write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
         write("\n")
         flush()
         events.receiveAsFlow().conflate().collect { event ->
-            for (dataLine in event.data.lines()) {
-                write("data: $dataLine\n")
+            try {
+                for (dataLine in event.data.lines()) {
+                    write("data: $dataLine\n")
+                }
+                write("\n")
+                flush()
+            } catch (e: Exception) {
+                log.error("Feil ved skriving til stream" + e.message)
             }
-            write("\n")
-            flush()
+
+
         }
 //        for (event in events) {
 //            while (events.poll() != null) {
