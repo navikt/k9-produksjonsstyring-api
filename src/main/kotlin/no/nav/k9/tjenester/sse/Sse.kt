@@ -34,7 +34,10 @@ internal fun Route.Sse(
         val events = sseChannel.openSubscription()
         try {
             call.respondSse(events)
-        } finally {
+        } catch (e: Exception) {
+            log.error("Kunne ikke sende events" + e.message)
+        }
+        finally {
             events.cancel()
         }
     }
