@@ -37,6 +37,8 @@ internal fun Route.Sse(
             call.respondSse(events)
         } catch (e: Exception) {
             log.error("Kunne ikke sende events" + e.message)
+        } finally {
+            events.cancel()
         }
     }
 
@@ -88,6 +90,7 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     log.info("Channel is closed for receive " + events.isClosedForReceive)
     try {
         respondTextWriter(contentType = ContentType.Text.EventStream) {
+
             write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
             write("\n")
             flush()
@@ -96,7 +99,7 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
                     write("data: $dataLine\n")
                 }
                 write("\n")
-                flush()
+                close()
             }
 
         }
