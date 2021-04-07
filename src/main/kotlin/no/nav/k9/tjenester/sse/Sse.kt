@@ -88,8 +88,8 @@ internal fun Route.Sse(
 @ExperimentalCoroutinesApi
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
+    log.error("Channel is closed for receive" + events.isClosedForReceive)
     respondTextWriter(contentType = ContentType.Text.EventStream) {
-        log.info("inne i textwriter")
         write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
         write("\n")
         flush()
@@ -102,6 +102,7 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
                 flush()
             } catch (e: Exception) {
                 log.error("Feil ved skriving til stream" + e.message)
+                log.error("Stacktrace" + e.stackTraceToString())
             }
 
 
