@@ -33,12 +33,11 @@ internal fun Route.Sse(
     get { _: sse ->
         val events = sseChannel.openSubscription()
         try {
-            log.error("inne i try")
+            log.info("inne i try")
             call.respondSse(events)
         } catch (e: Exception) {
             log.error("Kunne ikke sende events" + e.message)
-        }
-        finally {
+        } finally {
             events.cancel()
         }
     }
@@ -88,25 +87,26 @@ internal fun Route.Sse(
 @ExperimentalCoroutinesApi
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
-    log.error("Channel is closed for receive" + events.isClosedForReceive)
-    respondTextWriter(contentType = ContentType.Text.EventStream) {
-        write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
-        write("\n")
-        close()
-        events.receiveAsFlow().conflate().collect { event ->
-            try {
+    log.info("Channel is closed for receive " + events.isClosedForReceive)
+    try {
+        respondTextWriter(contentType = ContentType.Text.EventStream) {
+            write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
+            write("\n")
+            flush()
+            events.receiveAsFlow().conflate().collect { event ->
                 for (dataLine in event.data.lines()) {
                     write("data: $dataLine\n")
                 }
                 write("\n")
                 close()
-            } catch (e: Exception) {
-                log.error("Feil ved skriving til stream" + e.message)
-                log.error("Stacktrace" + e.stackTraceToString())
             }
 
-
         }
+    } catch (e: Exception) {
+        log.error("Feil ved skriving til stream" + e.message)
+        log.error("Stacktrace" + e.stackTraceToString())
+    }
+
 //        for (event in events) {
 //            while (events.poll() != null) {
 //            }
@@ -116,5 +116,5 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
 //            write("\n")
 //            flush()
 //        }
-    }
 }
+
