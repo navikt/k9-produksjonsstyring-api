@@ -36,7 +36,7 @@ internal fun Route.Sse(
             log.info("inne i try")
             call.respondSse(events)
         } catch (e: Exception) {
-            log.error("Kunne ikke sende events" + e.message)
+            log.error("Kunne ikke sende events: " + e.message)
         } finally {
             events.cancel()
         }
@@ -92,21 +92,19 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     respondTextWriter(contentType = ContentType.Text.EventStream) {
         try {
             write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
-            write("\n")
+            append("\n")
             flush()
             events.receiveAsFlow().conflate().collect { event ->
                 for (dataLine in event.data.lines()) {
-                    write("data: $dataLine\n")
+                    append("data: $dataLine\n")
                 }
-                write("\n")
+                append("\n")
                 flush()
             }
 
         } catch (e: Exception) {
             log.error("Feil ved skriving til stream: " + e.message)
             log.error("Stacktrace: " + e.stackTraceToString())
-        } finally {
-            close()
         }
 
 //        for (event in events) {
