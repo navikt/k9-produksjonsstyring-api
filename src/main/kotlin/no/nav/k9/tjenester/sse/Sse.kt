@@ -37,8 +37,6 @@ internal fun Route.Sse(
             call.respondSse(events)
         } catch (e: Exception) {
             log.error("Kunne ikke sende events: " + e.message)
-        } finally {
-            events.cancel()
         }
     }
 
@@ -109,7 +107,6 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
 
   */
         try {
-
             for (event in events) {
                 while (events.poll() != null) {
                 }
