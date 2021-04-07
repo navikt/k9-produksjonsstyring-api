@@ -90,7 +90,7 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     log.info("Channel is closed for receive " + events.isClosedForReceive)
 
     respondTextWriter(contentType = ContentType.Text.EventStream) {
-        try {
+        /*       try {
             events.receiveAsFlow().conflate().collect { event ->
                 for (dataLine in event.data.lines()) {
                     write("data: $dataLine\n")
@@ -106,15 +106,23 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
             close()
         }
 
-//        for (event in events) {
-//            while (events.poll() != null) {
-//            }
-//            for (dataLine in event.data.lines()) {
-//                write("data: $dataLine\n")
-//            }
-//            write("\n")
-//            flush()
-//        }
+
+  */
+        try {
+
+            for (event in events) {
+                while (events.poll() != null) {
+                }
+                for (dataLine in event.data.lines()) {
+                    write("data: $dataLine\n")
+                }
+                write("\n")
+                flush()
+            }
+        } catch (e: Exception) {
+            log.error("Feil ved skriving til stream: " + e.message)
+            log.error("Stacktrace: " + e.stackTraceToString())
+        }
     }
 }
 
