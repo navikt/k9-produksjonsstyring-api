@@ -37,8 +37,6 @@ internal fun Route.Sse(
             call.respondSse(events)
         } catch (e: Exception) {
             log.error("Kunne ikke sende events" + e.message)
-        } finally {
-            events.cancel()
         }
     }
 
