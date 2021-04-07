@@ -99,11 +99,11 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
                 flush()
             }
 
-            close()
-
         } catch (e: Exception) {
             log.error("Feil ved skriving til stream: " + e.message)
             log.error("Stacktrace: " + e.stackTraceToString())
+        } finally {
+            close()
         }
 
 //        for (event in events) {
