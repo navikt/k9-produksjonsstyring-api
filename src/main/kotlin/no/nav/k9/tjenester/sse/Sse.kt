@@ -88,9 +88,9 @@ internal fun Route.Sse(
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
     log.info("Channel is closed for receive " + events.isClosedForReceive)
-    try {
-        respondTextWriter(contentType = ContentType.Text.EventStream) {
 
+        respondTextWriter(contentType = ContentType.Text.EventStream) {
+            try {
             write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
             write("\n")
             flush()
@@ -99,13 +99,15 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
                     write("data: $dataLine\n")
                 }
                 write("\n")
-                close()
+                flush()
             }
 
         }
-    } catch (e: Exception) {
+     catch (e: Exception) {
         log.error("Feil ved skriving til stream: " + e.message)
         log.error("Stacktrace: " + e.stackTraceToString())
+    } finally {
+        close()
     }
 
 //        for (event in events) {
