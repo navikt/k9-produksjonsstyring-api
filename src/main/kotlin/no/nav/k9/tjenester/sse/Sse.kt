@@ -37,6 +37,8 @@ internal fun Route.Sse(
             call.respondSse(events)
         } catch (e: Exception) {
             log.error("Kunne ikke sende events: " + e.message)
+        } finally{
+            events.cancel()
         }
     }
 
@@ -85,10 +87,8 @@ internal fun Route.Sse(
 @ExperimentalCoroutinesApi
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
-    log.info("Channel is closed for receive " + events.isClosedForReceive)
-
     respondTextWriter(contentType = ContentType.Text.EventStream) {
-        /*       try {
+        try {
             events.receiveAsFlow().conflate().collect { event ->
                 for (dataLine in event.data.lines()) {
                     write("data: $dataLine\n")
@@ -100,14 +100,11 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
         } catch (e: Exception) {
             log.error("Feil ved skriving til stream: " + e.message)
             log.error("Stacktrace: " + e.stackTraceToString())
-        } finally {
-            close()
         }
+    }
 
-
-  */
-        try {
-            for (event in events) {
+ /*       try {
+            for (event in events.receiveAsFlow().collect()) {
                 while (events.poll() != null) {
                 }
                 for (dataLine in event.data.lines()) {
@@ -121,5 +118,6 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
             log.error("Stacktrace: " + e.stackTraceToString())
         }
     }
+    */
 }
 
