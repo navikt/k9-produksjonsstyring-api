@@ -92,13 +92,13 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     respondTextWriter(contentType = ContentType.Text.EventStream) {
         try {
             write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
-            append("\n")
-            flush()
+            write("\n")
+
             events.receiveAsFlow().conflate().collect { event ->
                 for (dataLine in event.data.lines()) {
-                    append("data: $dataLine\n")
+                    write("data: $dataLine\n")
                 }
-                append("\n")
+                write("\n")
                 flush()
             }
 
