@@ -98,13 +98,13 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
                     write("data: $dataLine\n")
                 }
                 write("\n")
-                close()
+                flush()
             }
 
         }
     } catch (e: Exception) {
-        log.error("Feil ved skriving til stream" + e.message)
-        log.error("Stacktrace" + e.stackTraceToString())
+        log.error("Feil ved skriving til stream: " + e.message)
+        log.error("Stacktrace: " + e.stackTraceToString())
     }
 
 //        for (event in events) {
