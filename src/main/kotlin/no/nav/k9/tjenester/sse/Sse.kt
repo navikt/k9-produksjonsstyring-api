@@ -89,8 +89,8 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
     log.info("Channel is closed for receive " + events.isClosedForReceive)
 
-        respondTextWriter(contentType = ContentType.Text.EventStream) {
-            try {
+    respondTextWriter(contentType = ContentType.Text.EventStream) {
+        try {
             write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
             write("\n")
             flush()
@@ -102,13 +102,12 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
                 flush()
             }
 
+        } catch (e: Exception) {
+            log.error("Feil ved skriving til stream: " + e.message)
+            log.error("Stacktrace: " + e.stackTraceToString())
+        } finally {
+            close()
         }
-     catch (e: Exception) {
-        log.error("Feil ved skriving til stream: " + e.message)
-        log.error("Stacktrace: " + e.stackTraceToString())
-    } finally {
-        close()
-    }
 
 //        for (event in events) {
 //            while (events.poll() != null) {
@@ -119,5 +118,6 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
 //            write("\n")
 //            flush()
 //        }
+    }
 }
 
