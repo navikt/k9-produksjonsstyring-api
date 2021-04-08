@@ -12,7 +12,7 @@ import no.nav.k9.domene.modell.OppgaveIdMedDato
 import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.tjenester.innsikt.Databasekall
-import no.nav.k9.tjenester.sse.Melding
+import no.nav.k9.tjenester.sse.RefreshKlienter.sendOppdaterTilBehandling
 import no.nav.k9.tjenester.sse.SseEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -145,16 +145,7 @@ class OppgaveKøRepository(
             }
         }
         if (refresh) {
-            refreshKlienter.send(
-                SseEvent(
-                    objectMapper().writeValueAsString(
-                        Melding(
-                            "oppdaterTilBehandling",
-                            uuid.toString()
-                        )
-                    )
-                )
-            )
+            refreshKlienter.sendOppdaterTilBehandling(uuid)
         }
         Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
             .increment()
@@ -213,16 +204,7 @@ class OppgaveKøRepository(
         }
 
         if (hintRefresh) {
-            refreshKlienter.send(
-                SseEvent(
-                    objectMapper().writeValueAsString(
-                        Melding(
-                            "oppdaterTilBehandling",
-                            køUUID.toString()
-                        )
-                    )
-                )
-            )
+            refreshKlienter.sendOppdaterTilBehandling(køUUID)
         }
         if (gjennomførteTransaksjon) {
             Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
@@ -283,16 +265,7 @@ class OppgaveKøRepository(
         }
 
         if (hintRefresh) {
-            refreshKlienter.send(
-                SseEvent(
-                    objectMapper().writeValueAsString(
-                        Melding(
-                            "oppdaterTilBehandling",
-                            uuid.toString()
-                        )
-                    )
-                )
-            )
+            refreshKlienter.sendOppdaterTilBehandling(uuid)
         }
         if (gjennomførteTransaksjon) {
             Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
