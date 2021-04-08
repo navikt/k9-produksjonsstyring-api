@@ -113,5 +113,4 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
 //            write("\n")
 //            flush()
 //        }
-    }
-}
+
