@@ -8,27 +8,34 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
 import no.nav.k9.aksjonspunktbehandling.objectMapper
+import org.slf4j.LoggerFactory
 import java.util.*
 
 @ExperimentalCoroutinesApi
 internal object RefreshKlienter {
+    private val logger = LoggerFactory.getLogger(RefreshKlienter::class.java)
     private val objectMapper = objectMapper().also {
         it.disable(SerializationFeature.INDENT_OUTPUT)
     }
     private inline fun <reified T> ObjectMapper.asString(value: T): String = writeValueAsString(value)
 
+    internal fun Application.sseChannel(channel: Channel<SseEvent>) = sseOperation("sseChannel") {
+        produce {
+            for (oppgaverOppdatertEvent in channel) {
+                send(oppgaverOppdatertEvent)
+            }
+        }.broadcast()
+    }
 
-    internal fun Application.sseChannel(channel: Channel<SseEvent>) = produce {
-        for (oppgaverOppdatertEvent in channel) {
-            send(oppgaverOppdatertEvent)
-        }
-    }.broadcast()
-
-    internal fun initializeRefreshKlienter() = Channel<SseEvent>(Channel.UNLIMITED)
+    internal fun initializeRefreshKlienter() = sseOperation("initializeRefreshKlienter") {
+        Channel<SseEvent>(Channel.UNLIMITED)
+    }
 
     internal suspend fun Channel<SseEvent>.sendMelding(melding: Melding) {
-        val event = SseEvent(data = objectMapper.asString(melding))
-        send(event)
+        sseOperationCo("sendMelding") {
+            val event = SseEvent(data = objectMapper.asString(melding))
+            send(event)
+        }
     }
 
     internal suspend fun Channel<SseEvent>.sendOppdaterTilBehandling(uuid: UUID) = sendMelding(oppdaterTilBehandlingMelding(uuid))
@@ -43,4 +50,18 @@ internal object RefreshKlienter {
     internal fun oppdaterReserverteMelding() = Melding(
         melding = "oppdaterReserverte"
     )
+
+    internal fun <T>sseOperation(operation: String, block: () -> T) = try {
+        block()
+    } catch (cause: Throwable) {
+        logger.error("Feil ved $operation: ${cause.stackTraceToString()}") // Får en ThrowableProxy-Error med logback
+        throw cause
+    }
+
+    internal suspend fun <T>sseOperationCo(operation: String, block: suspend () -> T) = try {
+        block()
+    } catch (cause: Throwable) {
+        logger.error("Feil ved $operation: ${cause.stackTraceToString()}") // Får en ThrowableProxy-Error med logback
+        throw cause
+    }
 }

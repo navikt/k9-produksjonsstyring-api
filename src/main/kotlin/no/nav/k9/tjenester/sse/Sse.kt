@@ -13,6 +13,8 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
+import no.nav.k9.tjenester.sse.RefreshKlienter.sseOperation
+import no.nav.k9.tjenester.sse.RefreshKlienter.sseOperationCo
 import org.slf4j.LoggerFactory
 
 val log = LoggerFactory.getLogger("Route.Sse")
@@ -27,9 +29,13 @@ internal fun Route.Sse(
     @Location("/sse")
     class sse
     get { _: sse ->
-        val events = sseChannel.openSubscription()
+        val events = sseOperation("openSubscription") {
+            sseChannel.openSubscription()
+        }
         try {
-            call.respondSse(events)
+            sseOperationCo("respondSse") {
+                call.respondSse(events)
+            }
         } finally {
             events.cancel()
         }
