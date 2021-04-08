@@ -32,28 +32,8 @@ internal fun Route.Sse(
     class sse
     get { _: sse ->
         val events = sseChannel.openSubscription()
-/*        try {
-            log.info("inne i try")
-            call.respondSse(events)
-        } catch (e: Exception) {
-            log.error("Kunne ikke sende events: " + e.message)
-        } finally {
-            events.cancel()
-        } */
-        try {
-            call.response.cacheControl(CacheControl.NoCache(null))
-            call.respondTextWriter(contentType = ContentType.Text.EventStream) {
-                events.receiveAsFlow().conflate().collect { event ->
-                    for (dataLine in event.data.lines()) {
-                        write("data: $dataLine\n")
-                    }
-                    write("\n")
-                    flush()
-                }
-            }
-        } catch (e: Exception) {
-            log.error("Kunne ikke sende events: " + e.message)
-        }
+        call.respondSse(events)
+
     }
 
     @Location("/sse2")
@@ -101,37 +81,37 @@ internal fun Route.Sse(
 @ExperimentalCoroutinesApi
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
+    try {
     respondTextWriter(contentType = ContentType.Text.EventStream) {
-        try {
-            events.receiveAsFlow().conflate().collect { event ->
-                for (dataLine in event.data.lines()) {
-                    write("data: $dataLine\n")
-                }
-                write("\n")
-                flush()
+        write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
+        write("\n")
+        flush()
+        events.receiveAsFlow().conflate().collect { event ->
+            for (dataLine in event.data.lines()) {
+                write("data: $dataLine\n")
             }
-
-        } catch (e: Exception) {
-            log.error("Feil ved skriving til stream: " + e.message)
-            log.error("Stacktrace: " + e.stackTraceToString())
+            write("\n")
+            flush()
         }
     }
 
-    /*       try {
-               for (event in events.receiveAsFlow().collect()) {
-                   while (events.poll() != null) {
-                   }
-                   for (dataLine in event.data.lines()) {
-                       write("data: $dataLine\n")
-                   }
-                   write("\n")
-                   flush()
-               }
-           } catch (e: Exception) {
-               log.error("Feil ved skriving til stream: " + e.message)
-               log.error("Stacktrace: " + e.stackTraceToString())
-           }
-       }
-       */
+    } catch (e: Exception) {
+        log.error("Feil ved skriving til stream: " + e.message)
+        log.error("Stacktrace: " + e.stackTraceToString())
+    } finally {
+        events.cancel()
+    }
 }
 
+
+//        for (event in events) {
+//            while (events.poll() != null) {
+//            }
+//            for (dataLine in event.data.lines()) {
+//                write("data: $dataLine\n")
+//            }
+//            write("\n")
+//            flush()
+//        }
+    }
+}
