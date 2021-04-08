@@ -22,8 +22,8 @@ val log = LoggerFactory.getLogger("Route.Sse")
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 internal fun Route.Sse(
-    sseChannel: BroadcastChannel<SseEvent>
-) {
+    sseChannel: BroadcastChannel<SseEvent>) {
+
     @Location("/sse")
     class sse
     get { _: sse ->
