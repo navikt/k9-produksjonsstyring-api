@@ -32,13 +32,23 @@ internal fun Route.Sse(
     class sse
     get { _: sse ->
         val events = sseChannel.openSubscription()
-        try {
+/*        try {
             log.info("inne i try")
             call.respondSse(events)
         } catch (e: Exception) {
             log.error("Kunne ikke sende events: " + e.message)
-        } finally{
+        } finally {
             events.cancel()
+        } */
+        call.response.cacheControl(CacheControl.NoCache(null))
+        call.respondTextWriter(contentType = ContentType.Text.EventStream) {
+                events.receiveAsFlow().conflate().collect { event ->
+                    for (dataLine in event.data.lines()) {
+                        write("data: $dataLine\n")
+                    }
+                    write("\n")
+                    flush()
+                }
         }
     }
 
