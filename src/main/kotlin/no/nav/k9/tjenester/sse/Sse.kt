@@ -40,8 +40,9 @@ internal fun Route.Sse(
         } finally {
             events.cancel()
         } */
-        call.response.cacheControl(CacheControl.NoCache(null))
-        call.respondTextWriter(contentType = ContentType.Text.EventStream) {
+        try {
+            call.response.cacheControl(CacheControl.NoCache(null))
+            call.respondTextWriter(contentType = ContentType.Text.EventStream) {
                 events.receiveAsFlow().conflate().collect { event ->
                     for (dataLine in event.data.lines()) {
                         write("data: $dataLine\n")
@@ -49,6 +50,9 @@ internal fun Route.Sse(
                     write("\n")
                     flush()
                 }
+            }
+        } catch (e: Exception) {
+            log.error("Kunne ikke sende events: " + e.message)
         }
     }
 
@@ -113,21 +117,21 @@ suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
         }
     }
 
- /*       try {
-            for (event in events.receiveAsFlow().collect()) {
-                while (events.poll() != null) {
-                }
-                for (dataLine in event.data.lines()) {
-                    write("data: $dataLine\n")
-                }
-                write("\n")
-                flush()
-            }
-        } catch (e: Exception) {
-            log.error("Feil ved skriving til stream: " + e.message)
-            log.error("Stacktrace: " + e.stackTraceToString())
-        }
-    }
-    */
+    /*       try {
+               for (event in events.receiveAsFlow().collect()) {
+                   while (events.poll() != null) {
+                   }
+                   for (dataLine in event.data.lines()) {
+                       write("data: $dataLine\n")
+                   }
+                   write("\n")
+                   flush()
+               }
+           } catch (e: Exception) {
+               log.error("Feil ved skriving til stream: " + e.message)
+               log.error("Stacktrace: " + e.stackTraceToString())
+           }
+       }
+       */
 }
 
