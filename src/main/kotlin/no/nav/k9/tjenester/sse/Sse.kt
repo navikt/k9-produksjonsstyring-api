@@ -32,8 +32,11 @@ internal fun Route.Sse(
     class sse
     get { _: sse ->
         val events = sseChannel.openSubscription()
-        call.respondSse(events)
-
+        try {
+            call.respondSse(events)
+        } finally {
+            events.cancel()
+        }
     }
 
     @Location("/sse2")
@@ -82,24 +85,24 @@ internal fun Route.Sse(
 suspend fun ApplicationCall.respondSse(events: ReceiveChannel<SseEvent>) {
     response.cacheControl(CacheControl.NoCache(null))
     try {
-    respondTextWriter(contentType = ContentType.Text.EventStream) {
-        write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
-        write("\n")
-        flush()
-        events.receiveAsFlow().conflate().collect { event ->
-            for (dataLine in event.data.lines()) {
-                write("data: $dataLine\n")
-            }
+        respondTextWriter(contentType = ContentType.Text.EventStream) {
+            write("data: { \"melding\" : \"oppdaterReservasjon\", \"id\" : null }\n")
             write("\n")
             flush()
+            events.receiveAsFlow().conflate().collect { event ->
+                for (dataLine in event.data.lines()) {
+                    write("data: $dataLine\n")
+                }
+                write("\n")
+                flush()
+            }
+            close()
         }
-    }
 
     } catch (e: Exception) {
         log.error("Feil ved skriving til stream: " + e.message)
         log.error("Stacktrace: " + e.stackTraceToString())
-    } finally {
-        events.cancel()
+        log.error("Cause: " + e.cause)
     }
 }
 
