@@ -98,6 +98,7 @@ repositories {
     maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")
 
+    maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven") // https://github.com/detekt/detekt/issues/3461
     jcenter() // https://github.com/InsertKoinIO/koin#jcenter
 }
 
