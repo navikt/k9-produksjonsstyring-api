@@ -6,18 +6,23 @@ import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.http.cio.websocket.*
 import io.ktor.http.content.*
 import io.ktor.jackson.*
 import io.ktor.locations.*
 import io.ktor.metrics.micrometer.*
 import io.ktor.routing.*
 import io.ktor.util.*
+import io.ktor.websocket.*
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.receiveAsFlow
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -48,8 +53,8 @@ import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
-import no.nav.k9.tjenester.sse.Sse
 import no.nav.k9.tjenester.sse.SseEvent
+import no.nav.k9.tjenester.sse.model.Frame
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.getKoin
@@ -89,6 +94,13 @@ fun Application.k9Los() {
         DefaultStatusPages()
         JacksonStatusPages()
         AuthStatusPages()
+    }
+
+    install(WebSockets){
+        pingPeriod = Duration.ofSeconds(60)
+        timeout = Duration.ofSeconds(15)
+        maxFrameSize = Long.MAX_VALUE
+        masking = false
     }
 
     val køOppdatertProsessorJob =
@@ -245,9 +257,22 @@ private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
 
         route("konfig") { KonfigApis() }
         KodeverkApis()
-        Sse(
-            sseChannel = sseChannel
-        )
+ //       Sse(
+ //           sseChannel = sseChannel
+ //       )
+
+
+        webSocket("refresh") { // websocketSession
+            val events = sseChannel.openSubscription()
+            while (true) {
+                events.poll()?.also {
+                    for (dataLine in it.data.lines()) {
+                        outgoing.send(Frame.Text("data: $dataLine\n") as Frame)
+                    }
+                }
+            }
+        }
+
     }
 }
 

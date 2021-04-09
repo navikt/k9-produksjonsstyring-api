@@ -33,6 +33,7 @@ dependencies {
 
     implementation("io.ktor:ktor-locations:$ktorVersion")
     implementation("io.ktor:ktor-html-builder:$ktorVersion")
+    implementation("io.ktor:ktor-websockets:$ktorVersion")
 
     // Client
     implementation("no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
