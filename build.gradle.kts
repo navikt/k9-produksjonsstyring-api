@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val dusseldorfKtorVersion = "1.5.3.d73b2af"
-val ktorVersion = "1.5.2"
+val ktorVersion = "1.5.3"
 val mainClass = "no.nav.k9.K9LosKt"
 val kafkaVersion = "2.7.0" // Alligned med version fra kafka-embedded-env
 val hikariVersion = "4.0.2"
@@ -81,7 +81,6 @@ dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("javax.ws.rs:javax.ws.rs-api:2.0")
-
 }
 
 repositories {
@@ -100,6 +99,7 @@ repositories {
     maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")
 
+    maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven") // https://github.com/detekt/detekt/issues/3461
     jcenter() // https://github.com/InsertKoinIO/koin#jcenter
 }
 

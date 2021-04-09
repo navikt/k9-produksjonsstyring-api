@@ -37,6 +37,7 @@ import no.nav.k9.tjenester.driftsmeldinger.DriftsmeldingTjeneste
 import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SakslisteTjeneste
+import no.nav.k9.tjenester.sse.RefreshKlienter.initializeRefreshKlienter
 import no.nav.k9.tjenester.sse.SseEvent
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
@@ -69,7 +70,7 @@ fun common(app: Application, config: Configuration) = module {
         Channel<UUID>(Channel.UNLIMITED)
     }
     single(named("refreshKlienter")) {
-        Channel<SseEvent>(Channel.UNLIMITED)
+        initializeRefreshKlienter()
     }
     single(named("oppgaveRefreshChannel")) {
         Channel<UUID>(Channel.UNLIMITED)
