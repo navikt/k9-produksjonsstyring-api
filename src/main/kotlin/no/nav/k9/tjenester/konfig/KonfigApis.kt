@@ -15,7 +15,7 @@ fun Route.KonfigApis() {
     val k9sakUrlProd = "https://app.adeo.no/k9/web"
     val refreshUrlDev = "wss://k9-los-oidc-auth-proxy.dev.adeo.no/api/k9-los-api/refresh"
     val refreshUrlProd = "wss://k9-los-oidc-auth-proxy.nais.adeo.no/api/k9-los-api/refresh"
-    val refreshUrlLocal = "api/refresh"
+    val refreshUrlLocal = "ws://localhost:8020/api/refresh"
     val k9punsjUrlDev = "https://k9-punsj-frontend.dev.adeo.no"
     val k9punsjUrlProd = "https://k9-punsj-frontend.nais.adeo.no"
     val omsorgspengerUrlDev = "https://omsorgspenger-visning.dev.intern.nav.no"
