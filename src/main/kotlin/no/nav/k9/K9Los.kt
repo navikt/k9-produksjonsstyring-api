@@ -56,7 +56,6 @@ import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
 import no.nav.k9.tjenester.sse.RefreshKlienter.sseChannel
 import no.nav.k9.tjenester.sse.Sse
 import no.nav.k9.tjenester.sse.SseEvent
-import no.nav.k9.tjenester.sse.model.Frame
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.getKoin
