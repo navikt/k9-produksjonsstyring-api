@@ -77,6 +77,13 @@ fun Route.innsiktGrensesnitt() {
                             +"${aksjonspunkt.antall} kode: ${aksjonspunkt.kode} ${aksjonspunkt.navn} Totrinn: ${aksjonspunkt.totrinn}"
                         }
                     }
+
+                    oppgaveRepository.hentAktiveOppgaver().filter { o -> o.aksjonspunkter.liste.keys.contains("9013") }.map { o -> o.fagsakSaksnummer }.forEach { saksnummer ->
+                        div {
+                            classes = setOf("input-group-text display-4")
+                            +saksnummer
+                        }
+                    }
                 }
             }
         }
