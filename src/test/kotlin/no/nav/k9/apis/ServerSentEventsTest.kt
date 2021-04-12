@@ -67,6 +67,7 @@ class ServerSentEventsTest {
                 it.doInput = true
             }
 
+
             conn.connect()
 
             val inputReader = conn.inputStream.bufferedReader()

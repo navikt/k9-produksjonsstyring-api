@@ -59,6 +59,7 @@ import no.nav.k9.tjenester.sse.SseEvent
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.getKoin
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
 
@@ -97,7 +98,7 @@ fun Application.k9Los() {
         AuthStatusPages()
     }
 
-    install(WebSockets){
+    install(WebSockets) {
         pingPeriod = Duration.ofSeconds(60)
         timeout = Duration.ofSeconds(15)
         maxFrameSize = Long.MAX_VALUE
@@ -258,19 +259,25 @@ private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
 
         route("konfig") { KonfigApis() }
         KodeverkApis()
- //       Sse(
- //           sseChannel = sseChannel
- //       )
+        //       Sse(
+        //           sseChannel = sseChannel
+        //       )
 
 
         webSocket("refresh") { // websocketSession
+            val log = LoggerFactory.getLogger("WebSocket")
             val events = sseChannel.openSubscription()
-            while (true) {
-                events.poll()?.also {
-                    for (dataLine in it.data.lines()) {
-                        outgoing.send(Frame.Text("data: $dataLine\n") as Frame)
+            try {
+                while (true) {
+                    events.poll()?.also {
+                        for (dataLine in it.data.lines()) {
+                            outgoing.send(Frame.Text("data: $dataLine\n") as Frame)
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                log.info("Sending av eventer feilet: " + e.stackTraceToString())
+
             }
         }
 
