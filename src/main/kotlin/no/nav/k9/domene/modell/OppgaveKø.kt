@@ -285,7 +285,8 @@ enum class FagsakYtelseType constructor(override val kode: String, override val 
     FRISINN("FRISINN", "Frisinn"),
     PPN("PPN", "PPN"),
     OLP("OLP", "OLP"),
-    OMSORGSPENGER_KS("OMP_KS", "Omsorgsdager - Utvidet rett kronisk syk");
+    OMSORGSPENGER_KS("OMP_KS", "Omsorgsdager - Utvidet rett kronisk syk"),
+    OMSORGSPENGER_MA("OMP_MA", "Ekstra omsorgsdager midlertidig alene");
 
     override val kodeverk = "FAGSAK_YTELSE_TYPE"
 
