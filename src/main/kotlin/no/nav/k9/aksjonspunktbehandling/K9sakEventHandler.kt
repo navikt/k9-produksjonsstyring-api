@@ -6,7 +6,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.k9.Configuration
 import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.domene.modell.K9SakModell
 import no.nav.k9.domene.repository.*
@@ -35,7 +34,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
     val tillatteYtelseTyper = listOf(
         FagsakYtelseType.OMSORGSPENGER,
         FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
-        FagsakYtelseType.OMSORGSPENGER_KS
+        FagsakYtelseType.OMSORGSPENGER_KS,
+        FagsakYtelseType.OMSORGSPENGER_MA
     )
 
     @KtorExperimentalAPI

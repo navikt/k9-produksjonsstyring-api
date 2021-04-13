@@ -281,12 +281,12 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 enum class FagsakYtelseType constructor(override val kode: String, override val navn: String) : Kodeverdi {
     PLEIEPENGER_SYKT_BARN("PSB", "Pleiepenger sykt barn"),
     OMSORGSPENGER("OMP", "Omsorgspenger"),
-    OMSORGSDAGER("OMD", "Omsorgsdager"),
+    OMSORGSDAGER("OMD", "Omsorgsdager - overføring"),
     FRISINN("FRISINN", "Frisinn"),
     PPN("PPN", "PPN"),
     OLP("OLP", "OLP"),
-    OMSORGSPENGER_KS("OMP_KS", "Omsorgsdager - Utvidet rett Kronisk sykdom"),
-    OMSORGSPENGER_MA("OMP_MA", "Omsorgspenger - Midlertidig alene");
+    OMSORGSPENGER_KS("OMP_KS", "Omsorgsdager - Utvidet rett kronisk syk"),
+    OMSORGSPENGER_MA("OMP_MA", "Ekstra omsorgsdager midlertidig alene");
 
     override val kodeverk = "FAGSAK_YTELSE_TYPE"
 
