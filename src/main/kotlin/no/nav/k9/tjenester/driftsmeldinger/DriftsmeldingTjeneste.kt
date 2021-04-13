@@ -11,7 +11,7 @@ class DriftsmeldingTjeneste(
 ) {
 
     fun hentDriftsmeldinger(): List<DriftsmeldingDto> {
-        return driftsmeldingRepository.hentAlle()
+        return driftsmeldingRepository.hentAlle().sortedByDescending { it.aktivert }
     }
 
     fun slettDriftsmelding(id: UUID) {
