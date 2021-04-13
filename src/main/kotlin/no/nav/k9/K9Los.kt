@@ -229,8 +229,8 @@ fun Application.k9Los() {
 @KtorExperimentalLocationsAPI
 private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
 
-    route("/ws") {
-        webSocket { // websocketSession
+    route("") {
+        webSocket("/ws") { // websocketSession
             val log = LoggerFactory.getLogger("WebSocket")
             val events = sseChannel.openSubscription()
             try {
