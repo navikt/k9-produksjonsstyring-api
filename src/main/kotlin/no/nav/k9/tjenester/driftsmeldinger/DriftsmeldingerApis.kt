@@ -15,11 +15,11 @@ import java.util.*
 @KtorExperimentalLocationsAPI
 fun Route.DriftsmeldingerApis() {
     val driftsmeldingTjeneste by inject<DriftsmeldingTjeneste>()
-    
+
     class driftsmelding
 
     get { _: driftsmelding ->
-        call.respond( driftsmeldingTjeneste.hentDriftsmeldinger())
+        call.respond(driftsmeldingTjeneste.hentDriftsmeldinger())
     }
 
     post { _: driftsmelding ->
