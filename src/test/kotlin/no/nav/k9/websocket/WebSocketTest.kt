@@ -78,7 +78,7 @@ class WebSocketTest {
 
         val received = arrayListOf<String>()
         routing {
-            webSocket("/refresh") {
+            webSocket("/ws") {
                 try {
                     while (true) {
                         val text = (incoming.receive() as Frame.Text).readText()

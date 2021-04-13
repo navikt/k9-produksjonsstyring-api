@@ -228,6 +228,26 @@ fun Application.k9Los() {
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
+
+    route("/ws") {
+        webSocket { // websocketSession
+            val log = LoggerFactory.getLogger("WebSocket")
+            val events = sseChannel.openSubscription()
+            try {
+                while (true) {
+                    events.poll()?.also {
+                        for (dataLine in it.data.lines()) {
+                            outgoing.send(Frame.Text("data: $dataLine\n") as Frame)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                log.info("Sending av eventer feilet: " + e.stackTraceToString())
+
+            }
+        }
+    }
+
     route("api") {
 
         AdminApis()
@@ -262,25 +282,6 @@ private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
         //       Sse(
         //           sseChannel = sseChannel
         //       )
-
-
-        webSocket("refresh") { // websocketSession
-            val log = LoggerFactory.getLogger("WebSocket")
-            val events = sseChannel.openSubscription()
-            try {
-                while (true) {
-                    events.poll()?.also {
-                        for (dataLine in it.data.lines()) {
-                            outgoing.send(Frame.Text("data: $dataLine\n") as Frame)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                log.info("Sending av eventer feilet: " + e.stackTraceToString())
-
-            }
-        }
-
     }
 }
 
