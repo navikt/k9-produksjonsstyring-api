@@ -20,9 +20,6 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.receiveAsFlow
 import no.nav.helse.dusseldorf.ktor.auth.AuthStatusPages
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -53,13 +50,11 @@ import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
-import no.nav.k9.tjenester.sse.RefreshKlienter.sseChannel
-import no.nav.k9.tjenester.sse.Sse
+import no.nav.k9.tjenester.sse.RefreshKlienterWebSocket
 import no.nav.k9.tjenester.sse.SseEvent
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.getKoin
-import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
 
@@ -229,24 +224,9 @@ fun Application.k9Los() {
 @KtorExperimentalLocationsAPI
 private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
 
-    route("ws") {
-        webSocket { // websocketSession
-            val log = LoggerFactory.getLogger("WebSocket")
-            val events = sseChannel.openSubscription()
-            try {
-                while (true) {
-                    events.poll()?.also {
-                        for (dataLine in it.data.lines()) {
-                            outgoing.send(Frame.Text("data: $dataLine\n") as Frame)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                log.info("Sending av eventer feilet: " + e.stackTraceToString())
-
-            }
-        }
-    }
+    RefreshKlienterWebSocket(
+        sseChannel = sseChannel
+    )
 
     route("api") {
 
@@ -279,9 +259,6 @@ private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
 
         route("konfig") { KonfigApis() }
         KodeverkApis()
-        //       Sse(
-        //           sseChannel = sseChannel
-        //       )
     }
 }
 

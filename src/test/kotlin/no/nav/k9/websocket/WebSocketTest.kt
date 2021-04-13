@@ -1,128 +1,84 @@
 package no.nav.k9.websocket
 
 import io.ktor.application.*
-import io.ktor.client.*
-import io.ktor.http.*
 import io.ktor.http.cio.websocket.*
-import io.ktor.locations.*
-import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.coroutines.channels.consumeEach
-import no.nav.helse.dusseldorf.ktor.client.SimpleHttpClient.httpGet
-import no.nav.k9.apis.ServerSentEventsTest
-
-import no.nav.k9.tjenester.sse.Melding
-import no.nav.k9.tjenester.sse.RefreshKlienter
+import no.nav.k9.tjenester.sse.*
+import no.nav.k9.tjenester.sse.RefreshKlienter.initializeRefreshKlienter
+import no.nav.k9.tjenester.sse.RefreshKlienter.oppdaterReserverteMelding
+import no.nav.k9.tjenester.sse.RefreshKlienter.oppdaterTilBehandlingMelding
 import no.nav.k9.tjenester.sse.RefreshKlienter.sendMelding
 import no.nav.k9.tjenester.sse.RefreshKlienter.sseChannel
-import no.nav.k9.tjenester.sse.Sse
-import no.nav.k9.tjenester.sse.SseEvent
 import org.json.JSONObject
 import org.junit.Test
-import java.net.HttpURLConnection
-import java.net.URL
-import java.time.Duration
-
 import java.util.*
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @KtorExperimentalAPI
 @ExperimentalCoroutinesApi
 class WebSocketTest {
-    @Test
-    fun testConversation() {
-        withTestApplication {
-            application.install(WebSockets)
 
-            val received = arrayListOf<String>()
-            application.routing {
-                webSocket("/refresh") {
-                    try {
-                        while (true) {
-                            val text = (incoming.receive() as Frame.Text).readText()
-                            received += text
-                            outgoing.send(Frame.Text(text))
-                        }
-                    } catch (e: ClosedReceiveChannelException) {
-                        // Do nothing!
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
+    @Test
+    fun `Sendte refresh meldinger over websocket`() {
+
+        val refreshKlienter = initializeRefreshKlienter()
+        val meldinger = genererRandomMeldinger()
+        val mottatteMeldinger = mutableListOf<Melding>()
+
+        withTestApplication {
+            application.websocketTestApp(refreshKlienter)
+
+            handleWebSocketConversation("/ws") { incoming, outgoing ->
+                GlobalScope.launch {
+                    for (melding in meldinger) {
+                        refreshKlienter.sendMelding(melding)
+                        println("Sendt ${melding}")
+                        delay(50L)
                     }
                 }
-            }
 
-            handleWebSocketConversation("/refresh") { incoming, outgoing ->
-                val textMessages = listOf("data: {\"melding\":\"oppdaterTilBehandling\",\"id\":\"1688b174-184c-4aee-a56b-3c7c30fa5fa0\"}", "data: {\"melding\":\"oppdaterReserverte\",\"id\":\"1688b174-184c-4aee-a56b-3c7c30fa5fa0\"}")
-                for (msg in textMessages) {
-                    outgoing.send(Frame.Text(msg))
-                    assertEquals(msg, (incoming.receive() as Frame.Text).readText())
+                for (frame in incoming) {
+                    mottatteMeldinger.add(frame.somMelding().also {
+                        println("Mottatt ${it}")
+                    })
+                    if (mottatteMeldinger.size == AntallMeldinger) {
+                        break
+                    }
                 }
-                assertEquals(textMessages, received)
+                assertTrue(mottatteMeldinger.containsAll(meldinger))
             }
         }
     }
 
-    private fun Application.websocketTestApp(refreshKlienter: Channel<SseEvent>) {
+    private companion object {
+        private const val AntallMeldinger = 100
 
-        install(WebSockets)
-        install(Locations)
-
-        val received = arrayListOf<String>()
-        routing {
-            webSocket("/ws") {
-                try {
-                    while (true) {
-                        val text = (incoming.receive() as Frame.Text).readText()
-                        received += text
-                        outgoing.send(Frame.Text(text))
-                    }
-                } catch (e: ClosedReceiveChannelException) {
-                    // Do nothing!
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                }
+        private fun Frame.somMelding() : Melding {
+            val frameText = (this as Frame.Text).readText()
+            val json = JSONObject(frameText.removePrefix("data: "))
+            return when (json.has("id") && !json.isNull("id")) {
+                true -> oppdaterTilBehandlingMelding(UUID.fromString(json.getString("id")))
+                false -> oppdaterReserverteMelding()
             }
+        }
+
+        private fun genererRandomMeldinger() = (1..AntallMeldinger).map { when ((0..1).random()) {
+            0 -> oppdaterTilBehandlingMelding(UUID.randomUUID())
+            else -> oppdaterReserverteMelding()
+        }}
+
+        private fun Application.websocketTestApp(refreshKlienter: Channel<SseEvent>) {
+            install(WebSockets)
             routing {
-                get("/isready") {
-                    call.respond(HttpStatusCode.OK)
-                }
+                RefreshKlienterWebSocket(
+                    sseChannel = sseChannel(refreshKlienter)
+                )
             }
-        }
-}
-
-
-    private fun withNettyEngine(refreshKlienter: Channel<SseEvent>, block: suspend () -> Unit) {
-        val server = embeddedServer(Netty, applicationEngineEnvironment {
-            module { websocketTestApp(refreshKlienter) }
-            connector { port = 1234 }
-        })
-        val job = GlobalScope.launch {
-            server.start(wait = true)
-        }
-
-        runBlocking {
-            for (i in 1..20) {
-                delay(i * 1000L)
-                if ("http://localhost:1234/isready".httpGet().second.isSuccess) {
-                    break
-                }
-            }
-        }
-
-        try {
-            runBlocking { block() }
-        } finally {
-            server.stop(1000,1000)
-            runBlocking { job.cancelAndJoin() }
         }
     }
 }
