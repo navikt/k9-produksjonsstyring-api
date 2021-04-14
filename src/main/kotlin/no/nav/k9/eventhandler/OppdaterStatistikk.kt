@@ -10,8 +10,13 @@ import no.nav.k9.domene.modell.OppgaveKø
 import no.nav.k9.domene.repository.OppgaveKøRepository
 import no.nav.k9.domene.repository.StatistikkRepository
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
-import no.nav.k9.tjenester.sse.log
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
+
+
+private val log: Logger =
+    LoggerFactory.getLogger("oppdaterStatistikk")
 
 @KtorExperimentalAPI
 fun CoroutineScope.oppdaterStatistikk(
