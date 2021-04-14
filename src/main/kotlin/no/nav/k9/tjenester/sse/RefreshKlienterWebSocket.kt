@@ -4,7 +4,6 @@ import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import no.nav.k9.tjenester.sse.RefreshKlienter.sseOperation
 import org.slf4j.LoggerFactory
 
@@ -20,15 +19,12 @@ internal fun Route.RefreshKlienterWebSocket(sseChannel: BroadcastChannel<SseEven
         try {
             for (event in events) {
                 for (dataLine in event.data.lines()) {
-                    outgoing.send(Frame.Text(dataLine) as Frame)
+                    outgoing.send(Frame.Text(dataLine))
                 }
             }
-        } catch (closed: ClosedReceiveChannelException) {
+        } finally {
             events.cancel()
-            logger.info("WebSocket closed.")
-        } catch (throwable: Throwable) {
-            events.cancel()
-            logger.error("WebSocket error.", throwable)
+            logger.info("WebSocket closed. CloseReason=[${closeReason.await()}], ClosedForSend=[${outgoing.isClosedForSend}], ClosedForReceive=[${incoming.isClosedForReceive}]")
         }
     }
 }

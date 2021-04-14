@@ -37,14 +37,14 @@ class WebSocketTest {
                 GlobalScope.launch {
                     for (melding in meldinger) {
                         refreshKlienter.sendMelding(melding)
-                        println("Sendt ${melding}")
+                        println("Sendt $melding")
                         delay(50L)
                     }
                 }
 
                 for (frame in incoming) {
                     mottatteMeldinger.add(frame.somMelding().also {
-                        println("Mottatt ${it}")
+                        println("Mottatt $it")
                     })
                     if (mottatteMeldinger.size == AntallMeldinger) {
                         break
@@ -60,7 +60,7 @@ class WebSocketTest {
 
         private fun Frame.somMelding() : Melding {
             val frameText = (this as Frame.Text).readText()
-            val json = JSONObject(frameText.removePrefix("data: "))
+            val json = JSONObject(frameText)
             return when (json.has("id") && !json.isNull("id")) {
                 true -> oppdaterTilBehandlingMelding(UUID.fromString(json.getString("id")))
                 false -> oppdaterReserverteMelding()
