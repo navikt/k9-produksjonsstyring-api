@@ -13,9 +13,9 @@ fun Route.KonfigApis() {
     val configuration by inject<Configuration>()
     val k9sakUrlDev = "https://app-q1.adeo.no/k9/web"
     val k9sakUrlProd = "https://app.adeo.no/k9/web"
-    val sseUrlDev = "https://k9-los-oidc-auth-proxy.dev.adeo.no/api/k9-los-api/sse"
-    val sseUrlProd = "https://k9-los-oidc-auth-proxy.nais.adeo.no/api/k9-los-api/sse"
-    val sseUrlLocal = "api/sse"
+    val refreshUrlDev = "wss://k9-los-oidc-auth-proxy.dev.adeo.no/ws/k9-los-api"
+    val refreshUrlProd = "wss://k9-los-oidc-auth-proxy.nais.adeo.no/ws/k9-los-api"
+    val refreshUrlLocal = "ws://localhost:8020/ws"
     val k9punsjUrlDev = "https://k9-punsj-frontend.dev.adeo.no"
     val k9punsjUrlProd = "https://k9-punsj-frontend.nais.adeo.no"
     val omsorgspengerUrlDev = "https://omsorgspenger-visning.dev.intern.nav.no"
@@ -42,19 +42,19 @@ fun Route.KonfigApis() {
         if (KoinProfile.PREPROD == configuration.koinProfile()) call.respond(Konfig(omsorgspengerUrlDev)) else call.respond(Konfig(omsorgspengerUrlProd))
     }
 
-    @Location("/sse-url")
+    @Location("/refresh-url")
     class hentSseUrl
 
     get { _: hentSseUrl ->
         when {
             configuration.koinProfile() == KoinProfile.PROD -> {
-                call.respond(Konfig(sseUrlProd))
+                call.respond(Konfig(refreshUrlProd))
             }
             KoinProfile.PREPROD == configuration.koinProfile() -> {
-                call.respond(Konfig(sseUrlDev))
+                call.respond(Konfig(refreshUrlDev))
             }
             else -> {
-                call.respond(Konfig(sseUrlLocal))
+                call.respond(Konfig(refreshUrlLocal))
             }
         }
     }

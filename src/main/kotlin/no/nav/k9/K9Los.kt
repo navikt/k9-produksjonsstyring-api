@@ -6,12 +6,14 @@ import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.http.cio.websocket.*
 import io.ktor.http.content.*
 import io.ktor.jackson.*
 import io.ktor.locations.*
 import io.ktor.metrics.micrometer.*
 import io.ktor.routing.*
 import io.ktor.util.*
+import io.ktor.websocket.*
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -48,7 +50,7 @@ import no.nav.k9.tjenester.saksbehandler.NavAnsattApis
 import no.nav.k9.tjenester.saksbehandler.nokkeltall.SaksbehandlerNøkkeltallApis
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveApis
 import no.nav.k9.tjenester.saksbehandler.saksliste.SaksbehandlerOppgavekoApis
-import no.nav.k9.tjenester.sse.Sse
+import no.nav.k9.tjenester.sse.RefreshKlienterWebSocket
 import no.nav.k9.tjenester.sse.SseEvent
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.Koin
@@ -89,6 +91,13 @@ fun Application.k9Los() {
         DefaultStatusPages()
         JacksonStatusPages()
         AuthStatusPages()
+    }
+
+    install(WebSockets) {
+        pingPeriod = Duration.ofSeconds(60)
+        timeout = Duration.ofSeconds(15)
+        maxFrameSize = Long.MAX_VALUE
+        masking = false
     }
 
     val køOppdatertProsessorJob =
@@ -214,6 +223,11 @@ fun Application.k9Los() {
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
+
+    RefreshKlienterWebSocket(
+        sseChannel = sseChannel
+    )
+
     route("api") {
 
         AdminApis()
@@ -245,9 +259,6 @@ private fun Route.api(sseChannel: BroadcastChannel<SseEvent>) {
 
         route("konfig") { KonfigApis() }
         KodeverkApis()
-        Sse(
-            sseChannel = sseChannel
-        )
     }
 }
 
