@@ -85,6 +85,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
             saksbehandlerRepository.leggTilReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
             val oppgave = oppgaveRepository.hent(uuid)
+            log.info("Oppgaven med saksnummer ${oppgave.fagsakSaksnummer } ble reservert på $ident")
 
             for (oppgavekø in oppgaveKøRepository.hentKøIdIkkeTaHensyn()) {
                 oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, listOf(oppgave), reservasjonRepository)
@@ -98,12 +99,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 flyttetReservasjon = null
             )
         } catch (e: java.lang.IllegalArgumentException) {
-            log.warn(e.message)
+            log.error(e.message)
+            val gjeldendeReservasjon = reservasjonRepository.hent(uuid)
             return OppgaveStatusDto(
                 erReservert = true,
-                reservertTilTidspunkt = reservasjon.reservertTil,
+                reservertTilTidspunkt = gjeldendeReservasjon.reservertTil,
                 erReservertAvInnloggetBruker = false,
-                reservertAv = reservasjon.reservertAv,
+                reservertAv = gjeldendeReservasjon.reservertAv,
                 flyttetReservasjon = null
             )
         }
