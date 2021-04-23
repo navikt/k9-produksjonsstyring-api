@@ -52,7 +52,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.6")
 
     // Kontrakter
-    implementation("no.nav.k9.sak:kontrakt:3.1.27")
+    //3.1.+ betyr bruk siste versjon, så trenger bare redeploye hvis man må oppdatere
+    implementation("no.nav.k9.sak:kontrakt:3.1.+")
     implementation("no.nav.k9.sak:kodeverk:3.1.+")
     implementation("no.nav.k9.statistikk:kontrakter:2.0_20201201123022_bfccad8")
 
