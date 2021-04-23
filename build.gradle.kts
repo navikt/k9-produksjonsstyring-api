@@ -52,9 +52,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.6")
 
     // Kontrakter
-    //3.1.+ betyr bruk siste versjon, så trenger bare redeploye hvis man må oppdatere
-    implementation("no.nav.k9.sak:kontrakt:3.1.+")
-    implementation("no.nav.k9.sak:kodeverk:3.1.+")
+    implementation("no.nav.k9.sak:kontrakt:3.1.27")
+    implementation("no.nav.k9.sak:kodeverk:3.1.27")
     implementation("no.nav.k9.statistikk:kontrakter:2.0_20201201123022_bfccad8")
 
     // Div
@@ -111,6 +110,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
@@ -129,5 +129,5 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "7.0"
+    gradleVersion = "6.8.3"
 }
