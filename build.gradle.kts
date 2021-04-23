@@ -107,10 +107,9 @@ repositories {
 
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
-
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
