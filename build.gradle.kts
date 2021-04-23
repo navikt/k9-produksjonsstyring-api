@@ -113,7 +113,7 @@ java {
 
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.16"
+    kotlinOptions.jvmTarget = "1.15"
 }
 
 tasks.withType<ShadowJar> {
