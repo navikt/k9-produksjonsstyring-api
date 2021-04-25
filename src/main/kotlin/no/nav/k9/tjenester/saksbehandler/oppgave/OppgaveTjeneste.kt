@@ -658,7 +658,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     private fun preprodNavn(oppgave: Oppgave): String {
         return "${oppgave.fagsakSaksnummer} " +
-                oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                oppgave.aksjonspunkter.liste.entries.map { t ->
                     val a = Aksjonspunkter().aksjonspunkter()
                         .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
                     "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
