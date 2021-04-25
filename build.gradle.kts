@@ -13,7 +13,7 @@ val koinVersion = "2.2.2"
 val kotliqueryVersion = "1.3.1"
 
 plugins {
-    kotlin("jvm") version "1.5.0-RC"
+    kotlin("jvm") version "1.4.31"
     id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
@@ -52,8 +52,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.6")
 
     // Kontrakter
-    implementation("no.nav.k9.sak:kontrakt:3.1.28")
-    implementation("no.nav.k9.sak:kodeverk:3.1.28")
+    implementation("no.nav.k9.sak:kontrakt:3.1.27")
+    implementation("no.nav.k9.sak:kodeverk:3.1.27")
     implementation("no.nav.k9.statistikk:kontrakter:2.0_20201201123022_bfccad8")
 
     // Div
@@ -129,5 +129,5 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "7.0"
+    gradleVersion = "6.8.3"
 }
