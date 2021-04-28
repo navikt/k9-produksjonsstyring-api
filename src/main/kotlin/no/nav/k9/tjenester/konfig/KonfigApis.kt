@@ -16,8 +16,8 @@ fun Route.KonfigApis() {
     val refreshUrlDev = "wss://k9-los-oidc-auth-proxy.dev.adeo.no/ws/k9-los-api"
     val refreshUrlProd = "wss://k9-los-oidc-auth-proxy.nais.adeo.no/ws/k9-los-api"
     val refreshUrlLocal = "ws://localhost:8020/ws"
-    val k9punsjUrlDev = "https://k9-punsj-frontend.dev.adeo.no"
-    val k9punsjUrlProd = "https://k9-punsj-frontend.nais.adeo.no"
+    val k9punsjUrlDev = "https://k9-punsj-frontend.dev.adeo.no/journalpost"
+    val k9punsjUrlProd = "https://k9-punsj-frontend.nais.adeo.no/journalpost"
     val omsorgspengerUrlDev = "https://omsorgspenger-visning.dev.intern.nav.no"
     val omsorgspengerUrlProd = "https://omsorgspenger-visning.intern.nav.no"
 
