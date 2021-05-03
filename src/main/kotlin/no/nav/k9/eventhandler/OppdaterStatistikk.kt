@@ -28,7 +28,7 @@ fun CoroutineScope.oppdaterStatistikk(
 ) = launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
     while (true) {
         try {
-            delay(5000)
+            delay(500)
             channel.receive()
             oppgaveKøRepository.hentIkkeTaHensyn().forEach {
                 refreshHentAntallOppgaver(oppgaveTjeneste, it)
