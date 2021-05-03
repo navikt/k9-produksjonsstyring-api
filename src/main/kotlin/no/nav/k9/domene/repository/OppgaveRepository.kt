@@ -9,11 +9,11 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.domene.lager.oppgave.Oppgave
+import no.nav.k9.domene.modell.AksjonspunktDefWrapper
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.integrasjon.abac.IPepClient
-import no.nav.k9.integrasjon.pdl.navn
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleApneBehandlinger
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto

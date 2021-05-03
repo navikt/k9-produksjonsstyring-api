@@ -71,7 +71,6 @@ data class K9PunsjModell(
 
         val sisteEvent = eventer.last()
         val førsteEvent = eventer.first()
-        val aksjonspunkter = mutableMapOf<String, String>()
 
         return Oppgave(
             behandlingId = null,
@@ -92,7 +91,7 @@ data class K9PunsjModell(
             utfortFraAdmin = false,
             eksternId = sisteEvent.eksternId,
             oppgaveEgenskap = listOf(),
-            aksjonspunkter = Aksjonspunkter(liste = aksjonspunkter.toMap()),
+            aksjonspunkter = sisteEvent.aktiveAksjonspunkt(),
             tilBeslutter = false,
             utbetalingTilBruker = false,
             selvstendigFrilans = false,
