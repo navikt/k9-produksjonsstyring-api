@@ -132,7 +132,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
         val result = mutableListOf<OppgaveDto>()
         if (oppgaver.isNotEmpty()) {
-            val bareJournalposter = oppgaver.filter { it.journalpostId != null && it.saksnummer == null }
+            val bareJournalposter = oppgaver.filter { !it.journalpostId.isNullOrBlank() && it.saksnummer.isNullOrBlank() }
 
             result.addAll(bareJournalposter)
             oppgaver.removeAll(bareJournalposter)
