@@ -476,7 +476,7 @@ class OppgaveRepository(
         val json: List<List<Aksjonspunkt>> = using(sessionOf(dataSource)) { it ->
             it.run(
                 queryOf(
-                    "select (data -> 'aksjonspunkter' -> 'liste') punkt,  count(*) from oppgave where (data -> 'aktiv') ::boolean and ((data ->> 'system') or (data ->> 'system')) = 'K9SAK' group by data -> 'aksjonspunkter' -> 'liste'",
+                    "select (data -> 'aksjonspunkter' -> 'liste') punkt,  count(*) from oppgave where ((data -> 'aktiv') ::boolean and (data ->> 'system') = 'K9SAK') or ((data -> 'aktiv') ::boolean and (data ->> 'system') = 'PUNSJ')  group by data -> 'aksjonspunkter' -> 'liste'",
                     mapOf()
                 )
                     .map { row ->
