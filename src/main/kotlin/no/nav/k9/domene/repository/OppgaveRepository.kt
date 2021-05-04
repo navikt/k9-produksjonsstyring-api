@@ -233,6 +233,9 @@ class OppgaveRepository(
                     }.asList
             )
         }
+        json.forEach {
+            log.info("raw json$it")
+        }
         val oppgaver =
             json.map { s -> objectMapper().readValue(s, Oppgave::class.java) }.filter { it.kode6 == kode6 }.toList()
         oppgaver.forEach { refreshOppgave.offer(it) }
