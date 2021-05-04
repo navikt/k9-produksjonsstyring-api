@@ -238,7 +238,7 @@ class OppgaveRepository(
         oppgaver.forEach { refreshOppgave.offer(it) }
         Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
             .increment()
-
+        log.info("fant antall oppgaver=" + oppgaver.size)
         return oppgaver
     }
 

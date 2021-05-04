@@ -329,6 +329,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             )
         }.toMutableList()
 
+        log.info("lagde antall oppgaverDto" + res.size)
         return OppgaverResultat(ikkeTilgang, res)
     }
 
