@@ -14,7 +14,6 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.integrasjon.abac.IPepClient
-import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleApneBehandlinger
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverDto
 import no.nav.k9.tjenester.innsikt.Databasekall
@@ -477,7 +476,7 @@ class OppgaveRepository(
         val json: List<List<Aksjonspunkt>> = using(sessionOf(dataSource)) { it ->
             it.run(
                 queryOf(
-                    "select (data -> 'aksjonspunkter' -> 'liste') punkt,  count(*) from oppgave where (data -> 'aktiv') ::boolean  and (data ->> 'system') = 'K9SAK' group by data -> 'aksjonspunkter' -> 'liste'",
+                    "select (data -> 'aksjonspunkter' -> 'liste') punkt,  count(*) from oppgave where (data -> 'aktiv') ::boolean and ((data ->> 'system') or (data ->> 'system')) = 'K9SAK' group by data -> 'aksjonspunkter' -> 'liste'",
                     mapOf()
                 )
                     .map { row ->
@@ -486,23 +485,18 @@ class OppgaveRepository(
                             object : TypeReference<HashMap<String, String>>() {})
                         val antall = row.int("count")
                         val aksjonspunkter = map.keys.map { kode ->
-                            var fraKode: AksjonspunktDefinisjon = AksjonspunktDefinisjon.UNDEFINED;
-                            try {
-                                fraKode = AksjonspunktDefinisjon.fraKode(kode)
-                            } catch (e: IllegalArgumentException) {
-                                //setter "utdaterte" til undefined
-                            }
-                            fraKode
+                            val aksjonspunkt = AksjonspunktDefWrapper.finnAlleAksjonspunkter().firstOrNull { a -> a.kode == kode }
+                            aksjonspunkt
                         }
                             .map {
                                 Aksjonspunkt(
-                                    it.kode?: "Utdatert-dev",
-                                    it.navn?: "Utdatert-dev",
-                                    it.aksjonspunktType?.navn?: "Utdatert-dev",
-                                    it.behandlingSteg?.navn?: "Utdatert-dev",
+                                    it?.kode?: "Utdatert-dev",
+                                    it?.navn?: "Utdatert-dev",
+                                    it?.aksjonspunktype?: "Utdatert-dev",
+                                    it?.behandlingsstegtype?: "Utdatert-dev",
                                     "",
                                     "",
-                                    it.defaultTotrinnBehandling,
+                                    it?.totrinn?: false,
                                     antall = antall
                                 )
                             }.toList()
