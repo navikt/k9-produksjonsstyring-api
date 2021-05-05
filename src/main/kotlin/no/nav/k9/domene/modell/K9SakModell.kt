@@ -8,7 +8,6 @@ import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingAvsluttet
 import no.nav.k9.integrasjon.sakogbehandling.kontrakt.BehandlingOpprettet
-import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktKodeDefinisjon.*
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktStatus
 import no.nav.k9.statistikk.kontrakter.Aktør
@@ -361,7 +360,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     }
 
     fun påVent(): Boolean {
-        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }.any { it.erAutopunkt() }
+     return AksjonspunktDefWrapper.påVent(this.liste)
     }
 
     fun erTom(): Boolean {
@@ -369,8 +368,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     }
 
     fun tilBeslutter(): Boolean {
-        return this.liste.map { entry -> AksjonspunktDefinisjon.fraKode(entry.key) }
-            .all { it == AksjonspunktDefinisjon.FATTER_VEDTAK }
+        return AksjonspunktDefWrapper.tilBeslutter(this.liste)
     }
 
     fun eventResultat(): EventResultat {

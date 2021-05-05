@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
-import kotlin.streams.toList
 import kotlin.system.measureTimeMillis
 
 private val log: Logger =
@@ -115,7 +114,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     suspend fun søkFagsaker(query: String): SokeResultatDto {
         //TODO lage en bedre sjekk på om det er FNR
         if (query.length == 11) {
-            return filtrerOppgaverForSaksnummer(finnOppgaverBasertPåFnr(query))
+            return filtrerOppgaverForSaksnummerOgJournalpostIder(finnOppgaverBasertPåFnr(query))
         }
 
         //TODO koble på omsorg når man kan søke på saksnummer
@@ -125,14 +124,18 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         if (oppgaveResultat.ikkeTilgang) {
             SokeResultatDto(true, null, Collections.emptyList())
         }
-        return filtrerOppgaverForSaksnummer(SokeResultatDto(oppgaveResultat.ikkeTilgang, null, oppgaveResultat.oppgaver))
+        return filtrerOppgaverForSaksnummerOgJournalpostIder(SokeResultatDto(oppgaveResultat.ikkeTilgang, null, oppgaveResultat.oppgaver))
     }
 
-    private fun filtrerOppgaverForSaksnummer(dto: SokeResultatDto): SokeResultatDto {
+    private fun filtrerOppgaverForSaksnummerOgJournalpostIder(dto: SokeResultatDto): SokeResultatDto {
         val oppgaver = dto.oppgaver
 
         val result = mutableListOf<OppgaveDto>()
         if (oppgaver.isNotEmpty()) {
+            val bareJournalposter = oppgaver.filter { !it.journalpostId.isNullOrBlank() && it.saksnummer.isNullOrBlank() }
+
+            result.addAll(bareJournalposter)
+            oppgaver.removeAll(bareJournalposter)
             val oppgaverBySaksnummer = oppgaver.groupBy { it.saksnummer }
             for (entry in oppgaverBySaksnummer.entries) {
                 val oppgaveDto = entry.value.firstOrNull { oppgaveDto -> oppgaveDto.erTilSaksbehandling }
@@ -143,37 +146,17 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 }
             }
         }
-        return SokeResultatDto(dto.ikkeTilgang, dto.person, result);
+        return SokeResultatDto(dto.ikkeTilgang, dto.person, result)
     }
 
     private suspend fun finnOppgaverBasertPåFnr(query: String): SokeResultatDto {
         var aktørIdFraFnr = pdlService.identifikator(query)
-//        if (configuration.koinProfile() != KoinProfile.PROD) {
-//            aktørIdFraFnr = PdlResponse(
-//                false, AktøridPdl(
-//                    data = AktøridPdl.Data(
-//                        hentIdenter = AktøridPdl.Data.HentIdenter(
-//                            identer = listOf(
-//                                AktøridPdl.Data.HentIdenter.Identer(
-//                                    gruppe = "AKTORID",
-//                                    historisk = false,
-//                                    ident = "2392173967319"
-//                                )
-//                            )
-//                        )
-//                    )
-//                )
-//            )
-//        }
 
         val res = SokeResultatDto(false, null, mutableListOf())
         if (aktørIdFraFnr.aktorId != null && aktørIdFraFnr.aktorId!!.data.hentIdenter != null && aktørIdFraFnr.aktorId!!.data.hentIdenter!!.identer.isNotEmpty()) {
             var aktorId = aktørIdFraFnr.aktorId!!.data.hentIdenter!!.identer[0].ident
             val person = pdlService.person(aktorId)
             if (person.person != null) {
-//                if (!(configuration.koinProfile() == KoinProfile.PROD)) {
-//                    aktorId = "1172507325105"
-//                }
                 val personDto = mapTilPersonDto(person.person)
                 val oppgaver = hentOppgaver(aktorId)
 
@@ -243,7 +226,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             res.person = null
             res.oppgaver = mutableListOf()
         }
-        return filtrerOppgaverForSaksnummer(res)
+        return filtrerOppgaverForSaksnummerOgJournalpostIder(res)
     }
 
     private fun mapTilPersonDto(person: PersonPdl): PersonDto {

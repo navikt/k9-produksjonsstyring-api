@@ -11,7 +11,7 @@ class OppgaveDto(
     val status: OppgaveStatusDto,
     val behandlingId: Long?,
     val journalpostId: String?,
-    val saksnummer: String,
+    val saksnummer: String?,
     val navn: String,
     val system: String,
     val personnummer: String,

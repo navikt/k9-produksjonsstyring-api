@@ -1,19 +1,10 @@
 package no.nav.k9.tjenester.mock
 
-import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
+import no.nav.k9.domene.modell.AksjonspunktDefWrapper
 
 class Aksjonspunkter {
     fun aksjonspunkter(): List<Aksjonspunkt> {
-
-        return AksjonspunktDefinisjon.values().filter { it.kode!=null }.map { Aksjonspunkt(
-            kode = it.kode,
-            navn = it.navn,
-            aksjonspunktype = it.aksjonspunktType.name,
-            behandlingsstegtype = it.behandlingSteg.name,
-            plassering = "",
-            totrinn = it.defaultTotrinnBehandling,
-            vilkårtype = it.vilkårType?.name
-        ) }
+        return AksjonspunktDefWrapper.finnAlleAksjonspunkter();
     }
 }
 
@@ -25,5 +16,5 @@ data class Aksjonspunkt(
     val plassering: String,
     val vilkårtype: String?,
     val totrinn: Boolean,
-    var antall: Int = 0 
+    var antall: Int = 0
 )
