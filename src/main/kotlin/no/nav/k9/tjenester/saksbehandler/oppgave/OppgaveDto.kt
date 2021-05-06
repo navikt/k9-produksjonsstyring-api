@@ -1,5 +1,6 @@
 package no.nav.k9.tjenester.saksbehandler.oppgave
 
+import no.nav.k9.domene.lager.oppgave.Oppgave
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
@@ -28,5 +29,6 @@ class OppgaveDto(
     val selvstendigFrilans: Boolean,
     val kombinert: Boolean,
     val søktGradering: Boolean,
-    val registrerPapir: Boolean
+    val registrerPapir: Boolean,
+    val fagsakPeriode: Oppgave.FagsakPeriode? = null
 )

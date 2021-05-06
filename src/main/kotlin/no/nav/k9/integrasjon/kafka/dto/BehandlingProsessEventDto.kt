@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
+import no.nav.k9.sak.typer.Periode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -64,5 +65,10 @@ data class BehandlingProsessEventDto(
     val førsteFeilutbetaling: String? = null,
     val feilutbetaltBeløp: Long? = null,
     val ansvarligSaksbehandlerIdent: String? = null,
-    val ansvarligSaksbehandlerForTotrinn: String? = null
+    val ansvarligSaksbehandlerForTotrinn: String? = null,
+
+    val fagsakPeriode: Periode? = null,
+
+    val pleietrengendeAktørId: String? = null,
+    val relatertPartAktørId: String? = null,
 )
