@@ -334,6 +334,10 @@ data class K9SakModell(
         val forrigeAksjonspunkter = forrigeEvent.aktiveAksjonspunkt()
             .liste
         val nåværendeAksjonspunkter = sisteEvent().aktiveAksjonspunkt().liste
+
+        if (sisteEvent().aktiveAksjonspunkt().lengde() > 0) {
+            return false
+        }
         return forrigeAksjonspunkter != nåværendeAksjonspunkter
     }
 
