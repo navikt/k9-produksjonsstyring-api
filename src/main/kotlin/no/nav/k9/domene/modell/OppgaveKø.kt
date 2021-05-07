@@ -177,19 +177,19 @@ data class OppgaveKø(
             return true
         }
 
-        if (oppgave.utbetalingTilBruker && kriterier.map { it.andreKriterierType }
-                .contains(AndreKriterierType.UTBETALING_TIL_BRUKER)) {
-            return true
-        }
+//        if (oppgave.utbetalingTilBruker && kriterier.map { it.andreKriterierType }
+//                .contains(AndreKriterierType.UTBETALING_TIL_BRUKER)) {
+//            return true
+//        }
 
-        if (oppgave.utenlands && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.UTLANDSSAK)) {
-            return true
-        }
+//        if (oppgave.utenlands && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.UTLANDSSAK)) {
+//            return true
+//        }
 
-        if (oppgave.søktGradering && kriterier.map { it.andreKriterierType }
-                .contains(AndreKriterierType.SOKT_GRADERING)) {
-            return true
-        }
+//        if (oppgave.søktGradering && kriterier.map { it.andreKriterierType }
+//                .contains(AndreKriterierType.SOKT_GRADERING)) {
+//            return true
+//        }
 
         if (oppgave.selvstendigFrilans && kriterier.map { it.andreKriterierType }
                 .contains(AndreKriterierType.SELVSTENDIG_FRILANS)) {
@@ -257,10 +257,10 @@ enum class KøSortering(
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class AndreKriterierType(override val kode: String, override val navn: String) : Kodeverdi {
     TIL_BESLUTTER("TIL_BESLUTTER", "Til beslutter"),
-    PAPIRSØKNAD("PAPIRSOKNAD", "Registrer papirsøknad"),
-    UTBETALING_TIL_BRUKER("UTBETALING_TIL_BRUKER", "Utbetaling til bruker"),
-    UTLANDSSAK("UTLANDSSAK", "Utland"),
-    SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
+    PAPIRSØKNAD("PAPIRSOKNAD", "Punsj"),
+//    UTBETALING_TIL_BRUKER("UTBETALING_TIL_BRUKER", "Utbetaling til bruker"),
+//    UTLANDSSAK("UTLANDSSAK", "Utland"),
+//    SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
     KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
     AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
