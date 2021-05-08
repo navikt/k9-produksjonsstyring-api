@@ -360,7 +360,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             kombinert = oppgave.kombinert,
             søktGradering = oppgave.søktGradering,
             registrerPapir = oppgave.registrerPapir,
-            avklarArbeidsforhold = oppgave.avklarArbeidsforhold
+            avklarArbeidsforhold = oppgave.avklarArbeidsforhold,
+            fagsakPeriode = oppgave.fagsakPeriode
         )
     }
 

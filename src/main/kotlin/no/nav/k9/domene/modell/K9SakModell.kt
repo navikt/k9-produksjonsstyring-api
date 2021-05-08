@@ -24,8 +24,8 @@ data class K9SakModell(
 ) : IModell {
     private val `Omsorgspenger, Pleiepenger og opplæringspenger` = "ab0271"
 
-   override fun oppgave():Oppgave {
-       return oppgave(sisteEvent())
+    override fun oppgave(): Oppgave {
+        return oppgave(sisteEvent())
     }
 
     fun oppgave(sisteEvent: BehandlingProsessEventDto = sisteEvent()): Oppgave {
@@ -106,7 +106,13 @@ data class K9SakModell(
             vurderopptjeningsvilkåret = vurderopptjeningsvilkåret(event),
             eventTid = event.eventTid,
             ansvarligSaksbehandlerForTotrinn = event.ansvarligSaksbehandlerForTotrinn,
-            ansvarligSaksbehandlerIdent = event.ansvarligSaksbehandlerIdent
+            ansvarligSaksbehandlerIdent = event.ansvarligSaksbehandlerIdent,
+            fagsakPeriode = if (event.fagsakPeriode != null) Oppgave.FagsakPeriode(
+                event.fagsakPeriode.fom,
+                event.fagsakPeriode.tom
+            ) else null,
+            pleietrengendeAktørId = event.pleietrengendeAktørId,
+            relatertPartAktørId = event.relatertPartAktørId
         )
     }
 
@@ -197,7 +203,10 @@ data class K9SakModell(
             hendelsesId = sisteEvent.eksternId.toString() + "_" + eventer.size,
             hendelsesprodusentREF = BehandlingOpprettet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
-            behandlingsID = ("k9-los-" + sisteEvent.eksternId).substring(0, min(31,("k9-los-" + sisteEvent.eksternId).length-1 )),
+            behandlingsID = ("k9-los-" + sisteEvent.eksternId).substring(
+                0,
+                min(31, ("k9-los-" + sisteEvent.eksternId).length - 1)
+            ),
             behandlingstype = BehandlingOpprettet.Behandlingstype(
                 "",
                 "",
@@ -229,7 +238,10 @@ data class K9SakModell(
             hendelsesId = """${sisteEvent.eksternId.toString()}_${eventer.size}""",
             hendelsesprodusentREF = BehandlingAvsluttet.HendelsesprodusentREF("", "", "FS39"),
             hendelsesTidspunkt = sisteEvent.eventTid,
-            behandlingsID = ("k9-los-" + sisteEvent.eksternId).substring(0, min(31,("k9-los-" + sisteEvent.eksternId).length-1 )),
+            behandlingsID = ("k9-los-" + sisteEvent.eksternId).substring(
+                0,
+                min(31, ("k9-los-" + sisteEvent.eksternId).length - 1)
+            ),
             behandlingstype = BehandlingAvsluttet.Behandlingstype(
                 "",
                 "",
@@ -254,8 +266,9 @@ data class K9SakModell(
     }
 
     override fun sisteSaksNummer(): String {
-       return sisteEvent().saksnummer
+        return sisteEvent().saksnummer
     }
+
     override fun dvhBehandling(
         saksbehandlerRepository: SaksbehandlerRepository,
         reservasjonRepository: ReservasjonRepository
@@ -364,7 +377,7 @@ data class Aksjonspunkter(val liste: Map<String, String>) {
     }
 
     fun påVent(): Boolean {
-     return AksjonspunktDefWrapper.påVent(this.liste)
+        return AksjonspunktDefWrapper.påVent(this.liste)
     }
 
     fun erTom(): Boolean {

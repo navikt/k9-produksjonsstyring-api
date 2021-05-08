@@ -4,7 +4,6 @@ import no.nav.k9.domene.modell.Aksjonspunkter
 import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
-import no.nav.k9.sak.typer.JournalpostId
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -43,9 +42,18 @@ data class Oppgave(
     val utenlands: Boolean,
     val vurderopptjeningsvilkåret : Boolean = false,
     val ansvarligSaksbehandlerForTotrinn : String? = null,
-    val ansvarligSaksbehandlerIdent : String? = null
-){
+    val ansvarligSaksbehandlerIdent : String? = null,
+    val fagsakPeriode: FagsakPeriode? = null,
+    val pleietrengendeAktørId: String? = null,
+    val relatertPartAktørId: String? = null,
+
+    ){
     fun avluttet(): Boolean {
         return behandlingStatus == BehandlingStatus.AVSLUTTET
     }
+
+    data class FagsakPeriode(
+        val fom: LocalDate,
+        val tom: LocalDate
+    )
 }

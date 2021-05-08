@@ -1,5 +1,8 @@
 package no.nav.k9.aksjonspunktbehandling
 
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isSuccess
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.util.*
@@ -175,6 +178,10 @@ class K9sakEventHandlerTest : KoinTest {
                 "kode": "K9SAK",
                 "kodeverk": "FAGSYSTEM"
               },
+              "fagsakPeriode" : {
+                    "fom" : "2020-02-20",
+                    "tom" : "2020-03-30"
+                  },
               "saksnummer": "5YC4K",
               "aktørId": "9906098522415",
               "behandlingId": 1000001,
@@ -202,7 +209,54 @@ class K9sakEventHandlerTest : KoinTest {
             oppgaveRepository.hent(UUID.fromString("6b521f78-ef71-43c3-a615-6c2b8bb4dcdb"))
         assertTrue { oppgave.tilBeslutter }
     }
-    
+
+    @KtorExperimentalAPI
+    @Test
+    fun `Skal støtte nytt format`() {
+        val k9sakEventHandler = get<K9sakEventHandler>()
+        val oppgaveRepository = get<OppgaveRepository>()
+
+
+        @Language("JSON") val json =
+            """{
+                  "eksternId": "6b521f78-ef71-43c3-a615-6c2b8bb4dcdb",
+                  "fagsystem": {
+                    "kode": "K9SAK",
+                    "kodeverk": "FAGSYSTEM"
+                  },
+                  "saksnummer": "5YC4K",
+                  "aktørId": "9906098522415",
+                  "behandlingId": 1000001,
+                  "eventTid": "2020-02-20T07:38:49",
+                  "eventHendelse": "BEHANDLINGSKONTROLL_EVENT",
+                  "behandlinStatus": "UTRED",
+                   "behandlingstidFrist": "2020-03-31",
+                  "behandlingStatus": "UTRED",
+                  "behandlingSteg": "INREG_AVSL",
+                  "behandlendeEnhet": "0300",
+                  "ytelseTypeKode": "OMP",
+                  "behandlingTypeKode": "BT-002",
+                  "opprettetBehandling": "2020-02-20T07:38:49",
+                  "aksjonspunktKoderMedStatusListe": {
+                    "5009": "OPPR"
+                  },
+                  "fagsakPeriode" : {
+                    "fom" : "2020-02-20",
+                    "tom" : "2020-03-30"
+                  },
+                  "pleietrengendeAktørId" : "9906098522415",
+                  "relatertPartAktørId" : "9906098522415"
+                  
+                }"""
+        val objectMapper = jacksonObjectMapper()
+            .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+
+        val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
+
+        assertThat { event.fagsakPeriode?.fom }.isSuccess().isEqualTo(LocalDate.of(2020, 2, 20))
+        assertThat { event.fagsakPeriode?.tom }.isSuccess().isEqualTo(LocalDate.of(2020, 3, 30))
+    }
+
     @KtorExperimentalAPI
     @Test
     fun `Skal opprette oppgave dersom 5009`() {
@@ -366,7 +420,7 @@ class K9sakEventHandlerTest : KoinTest {
             .dusseldorfConfigured().setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
 
         val event = objectMapper.readValue(json, BehandlingProsessEventDto::class.java)
-        
+
         val oppgaveKøRepository = get<OppgaveKøRepository>()
 
         runBlocking {
