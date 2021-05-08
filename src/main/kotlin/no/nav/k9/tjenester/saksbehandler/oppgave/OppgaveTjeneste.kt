@@ -641,7 +641,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
     }
 
     private fun preprodNavn(oppgave: Oppgave): String {
-        return "Test ${oppgave.fagsakSaksnummer} " +
+        return oppgave.aksjonspunkter.toString() + "Test ${oppgave.fagsakSaksnummer} " +
                 oppgave.aksjonspunkter.liste.entries.map { t ->
                     val a = Aksjonspunkter().aksjonspunkter()
                         .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
@@ -684,12 +684,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             var personNavn: String
             var personFnummer: String
             val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                "${oppgave.fagsakSaksnummer} " +
-                        oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                            val a = Aksjonspunkter().aksjonspunkter()
-                                .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                            "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                        }.toList().joinToString(", ")
+                preprodNavn(oppgave)
             } else {
                 person.person?.navn() ?: "Uten navn"
             }
