@@ -61,7 +61,7 @@ class ReservasjonRepository(
                         row.string("data")
                     }.asList
             )
-        }         
+        }
         Databasekall.map.computeIfAbsent(object{}.javaClass.name + object{}.javaClass.enclosingMethod.name){ LongAdder() }.increment()
 
         val reservasjoner = json.map { s -> objectMapper().readValue(s, Reservasjon::class.java) }.toList()
@@ -94,17 +94,21 @@ class ReservasjonRepository(
                     }
                 }
             } else {
-                val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
-                if (!oppgave.aktiv) {
-                    lagre(reservasjon.oppgave) {
-                        it!!.reservertTil = null
-                        it
+                val oppgave = oppgaveRepository.hentHvis(reservasjon.oppgave)
+                if (oppgave != null) {
+                    if (!oppgave.aktiv) {
+                        lagre(reservasjon.oppgave) {
+                            it!!.reservertTil = null
+                            it
+                        }
+                        saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                     }
+                } else {
                     saksbehandlerRepository.fjernReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
                 }
             }
         }
-      
+
         return reservasjoner.filter { it.erAktiv() }
     }
 
