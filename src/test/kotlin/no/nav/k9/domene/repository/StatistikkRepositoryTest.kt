@@ -67,7 +67,6 @@ class StatistikkRepositoryTest : KoinTest {
             tilBeslutter = true,
             utbetalingTilBruker = false,
             selvstendigFrilans = true,
-            kombinert = false,
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,

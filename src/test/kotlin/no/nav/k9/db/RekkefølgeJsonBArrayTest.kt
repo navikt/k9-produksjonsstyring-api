@@ -68,7 +68,6 @@ class RekkefølgeJsonBArrayTest : KoinTest {
             tilBeslutter = true,
             utbetalingTilBruker = false,
             selvstendigFrilans = false,
-            kombinert = false,
             søktGradering = false,
             registrerPapir = true,
             årskvantum = false,

@@ -275,7 +275,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 false,
                 false,
                 false,
-                false,
             )
         }
         return null
@@ -357,7 +356,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             tilBeslutter = oppgave.tilBeslutter,
             utbetalingTilBruker = oppgave.utbetalingTilBruker,
             selvstendigFrilans = oppgave.selvstendigFrilans,
-            kombinert = oppgave.kombinert,
             søktGradering = oppgave.søktGradering,
             registrerPapir = oppgave.registrerPapir,
             avklarArbeidsforhold = oppgave.avklarArbeidsforhold,
@@ -626,7 +624,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             søktGradering = oppgave.søktGradering,
                             selvstendigFrilans = oppgave.selvstendigFrilans,
                             registrerPapir = oppgave.registrerPapir,
-                            kombinert = oppgave.kombinert,
                             avklarArbeidsforhold = oppgave.avklarArbeidsforhold
                         )
                     )
@@ -718,7 +715,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     tilBeslutter = oppgave.tilBeslutter,
                     utbetalingTilBruker = oppgave.utbetalingTilBruker,
                     selvstendigFrilans = oppgave.selvstendigFrilans,
-                    kombinert = oppgave.kombinert,
                     søktGradering = oppgave.søktGradering,
                     registrerPapir = oppgave.registrerPapir,
                     avklarArbeidsforhold = oppgave.avklarArbeidsforhold
