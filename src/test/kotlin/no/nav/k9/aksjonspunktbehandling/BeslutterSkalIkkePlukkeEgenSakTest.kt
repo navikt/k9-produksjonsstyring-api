@@ -57,7 +57,6 @@ class BeslutterSkalIkkePlukkeEgenSakTest : KoinTest {
             tilBeslutter = true,
             utbetalingTilBruker = false,
             selvstendigFrilans = false,
-            kombinert = false,
             søktGradering = false,
             registrerPapir = false,
             årskvantum = false,
