@@ -71,8 +71,12 @@ class OppgaveRepository(
                     }.asSingle
             )
         }
-        return objectMapper().readValue(json!!, Oppgave::class.java)
-
+        return try {
+            objectMapper().readValue(json!!, Oppgave::class.java)
+        } catch (e: NullPointerException) {
+            log.error("feiler for denne json $json")
+            throw e
+        }
     }
 
     @KtorExperimentalAPI
