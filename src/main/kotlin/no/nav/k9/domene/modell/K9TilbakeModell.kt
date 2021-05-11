@@ -102,7 +102,8 @@ data class K9TilbakeModell(
             vurderopptjeningsvilkåret = false,
             eventTid = event.eventTid,
             ansvarligSaksbehandlerForTotrinn = null,
-            ansvarligSaksbehandlerIdent = event.ansvarligSaksbehandlerIdent
+            ansvarligSaksbehandlerIdent = event.ansvarligSaksbehandlerIdent,
+            kombinert = false
         )
     }
 

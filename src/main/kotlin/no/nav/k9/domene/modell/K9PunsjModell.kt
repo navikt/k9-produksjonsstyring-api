@@ -105,7 +105,8 @@ data class K9PunsjModell(
             utenlands = false,
             vurderopptjeningsvilkåret = false,
             ansvarligSaksbehandlerForTotrinn = null,
-            ansvarligSaksbehandlerIdent = null
+            ansvarligSaksbehandlerIdent = null,
+            kombinert = false
         )
     }
 }

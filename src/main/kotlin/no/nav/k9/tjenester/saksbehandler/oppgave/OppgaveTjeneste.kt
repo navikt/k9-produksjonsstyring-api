@@ -269,12 +269,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 UUID.randomUUID(),
-                false,
-                false,
-                false,
-                false,
-                false,
-                false,
+                tilBeslutter = false,
+                utbetalingTilBruker = false,
+                avklarArbeidsforhold = false,
+                selvstendigFrilans = false,
+                søktGradering = false,
+                registrerPapir = false,
             )
         }
         return null

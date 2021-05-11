@@ -111,7 +111,8 @@ data class K9SakModell(
                 event.fagsakPeriode.tom
             ) else null,
             pleietrengendeAktørId = event.pleietrengendeAktørId,
-            relatertPartAktørId = event.relatertPartAktørId
+            relatertPartAktørId = event.relatertPartAktørId,
+            kombinert = false
         )
     }
 

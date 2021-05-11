@@ -31,6 +31,8 @@ data class Oppgave(
     val tilBeslutter: Boolean,
     val utbetalingTilBruker: Boolean,
     val selvstendigFrilans: Boolean,
+    //todo skal ikke brukes
+    val kombinert: Boolean,
     val søktGradering: Boolean,
     val registrerPapir: Boolean,
     val årskvantum: Boolean,
