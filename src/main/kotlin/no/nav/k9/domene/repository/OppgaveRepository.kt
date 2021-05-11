@@ -79,6 +79,26 @@ class OppgaveRepository(
         }
     }
 
+    fun hentHvis(uuid: UUID): Oppgave? {
+        Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
+            .increment()
+
+        val json: String? = using(sessionOf(dataSource)) {
+            it.run(
+                queryOf(
+                    "select data from oppgave where id = :id",
+                    mapOf("id" to uuid.toString())
+                )
+                    .map { row ->
+                        row.string("data")
+                    }.asSingle
+            )
+        }
+        return if (json != null) {
+            objectMapper().readValue(json, Oppgave::class.java)
+        } else null
+    }
+
     @KtorExperimentalAPI
     fun lagre(uuid: UUID, f: (Oppgave?) -> Oppgave) {
         Databasekall.map.computeIfAbsent(object {}.javaClass.name + object {}.javaClass.enclosingMethod.name) { LongAdder() }
