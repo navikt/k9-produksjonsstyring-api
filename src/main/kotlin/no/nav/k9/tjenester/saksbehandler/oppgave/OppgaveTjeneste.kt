@@ -84,7 +84,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
             }
             saksbehandlerRepository.leggTilReservasjon(reservasjon.reservertAv, reservasjon.oppgave)
             val oppgave = oppgaveRepository.hent(uuid)
-            log.info("Oppgaven med saksnummer ${oppgave.fagsakSaksnummer } ble reservert på $ident")
+            log.info("Oppgaven med saksnummer ${oppgave.fagsakSaksnummer} ble reservert på $ident")
 
             for (oppgavekø in oppgaveKøRepository.hentKøIdIkkeTaHensyn()) {
                 oppgaveKøRepository.leggTilOppgaverTilKø(oppgavekø, listOf(oppgave), reservasjonRepository)
@@ -124,7 +124,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         if (oppgaveResultat.ikkeTilgang) {
             SokeResultatDto(true, null, Collections.emptyList())
         }
-        return filtrerOppgaverForSaksnummerOgJournalpostIder(SokeResultatDto(oppgaveResultat.ikkeTilgang, null, oppgaveResultat.oppgaver))
+        return filtrerOppgaverForSaksnummerOgJournalpostIder(
+            SokeResultatDto(
+                oppgaveResultat.ikkeTilgang,
+                null,
+                oppgaveResultat.oppgaver
+            )
+        )
     }
 
     private fun filtrerOppgaverForSaksnummerOgJournalpostIder(dto: SokeResultatDto): SokeResultatDto {
@@ -132,7 +138,8 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
         val result = mutableListOf<OppgaveDto>()
         if (oppgaver.isNotEmpty()) {
-            val bareJournalposter = oppgaver.filter { !it.journalpostId.isNullOrBlank() && it.saksnummer.isNullOrBlank() }
+            val bareJournalposter =
+                oppgaver.filter { !it.journalpostId.isNullOrBlank() && it.saksnummer.isNullOrBlank() }
 
             result.addAll(bareJournalposter)
             oppgaver.removeAll(bareJournalposter)
@@ -656,70 +663,74 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
         val reservasjoner = reservasjonRepository.hent(brukerIdent)
         for (reservasjon in reservasjoner
             .sortedBy { reservasjon -> reservasjon.reservertTil }) {
-            val oppgave = oppgaveRepository.hent(reservasjon.oppgave)
-            if (!tilgangTilSak(oppgave)) continue
-
-            val person = pdlService.person(oppgave.aktorId)
-
-            val status =
-                OppgaveStatusDto(
-                    true,
-                    reservasjon.reservertTil,
-                    true,
-                    reservasjon.reservertAv,
-                    flyttetReservasjon = if (reservasjon.flyttetAv.isNullOrEmpty()) {
-                        null
-                    } else {
-                        FlyttetReservasjonDto(
-                            reservasjon.flyttetTidspunkt!!,
-                            reservasjon.flyttetAv!!,
-                            saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjon.flyttetAv!!)?.navn!!,
-                            reservasjon.begrunnelse!!
-                        )
-                    }
-                )
-            var personNavn: String
-            var personFnummer: String
-            val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                "${oppgave.fagsakSaksnummer} " +
-                        oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                            val a = Aksjonspunkter().aksjonspunkter()
-                                .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                            "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                        }.toList().joinToString(", ")
+            val oppgave = oppgaveRepository.hentHvis(reservasjon.oppgave)
+            if (oppgave == null) {
+                saksbehandlerRepository.fjernReservasjon(brukerIdent, reservasjon.oppgave)
             } else {
-                person.person?.navn() ?: "Uten navn"
-            }
-            personNavn = navn
-            personFnummer = if (person.person == null) {
-                "Ukjent fnummer"
-            } else {
-                person.person.fnr()
-            }
-            list.add(
-                OppgaveDto(
-                    status = status,
-                    behandlingId = oppgave.behandlingId,
-                    saksnummer = oppgave.fagsakSaksnummer,
-                    journalpostId = oppgave.journalpostId,
-                    navn = personNavn,
-                    system = oppgave.system,
-                    personnummer = personFnummer,
-                    behandlingstype = oppgave.behandlingType,
-                    fagsakYtelseType = oppgave.fagsakYtelseType,
-                    behandlingStatus = oppgave.behandlingStatus,
-                    erTilSaksbehandling = true,
-                    opprettetTidspunkt = oppgave.behandlingOpprettet,
-                    behandlingsfrist = oppgave.behandlingsfrist,
-                    eksternId = oppgave.eksternId,
-                    tilBeslutter = oppgave.tilBeslutter,
-                    utbetalingTilBruker = oppgave.utbetalingTilBruker,
-                    selvstendigFrilans = oppgave.selvstendigFrilans,
-                    søktGradering = oppgave.søktGradering,
-                    registrerPapir = oppgave.registrerPapir,
-                    avklarArbeidsforhold = oppgave.avklarArbeidsforhold
+                if (!tilgangTilSak(oppgave)) continue
+
+                val person = pdlService.person(oppgave.aktorId)
+
+                val status =
+                    OppgaveStatusDto(
+                        true,
+                        reservasjon.reservertTil,
+                        true,
+                        reservasjon.reservertAv,
+                        flyttetReservasjon = if (reservasjon.flyttetAv.isNullOrEmpty()) {
+                            null
+                        } else {
+                            FlyttetReservasjonDto(
+                                reservasjon.flyttetTidspunkt!!,
+                                reservasjon.flyttetAv!!,
+                                saksbehandlerRepository.finnSaksbehandlerMedIdent(reservasjon.flyttetAv!!)?.navn!!,
+                                reservasjon.begrunnelse!!
+                            )
+                        }
+                    )
+                var personNavn: String
+                var personFnummer: String
+                val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
+                    "${oppgave.fagsakSaksnummer} " +
+                            oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                                val a = Aksjonspunkter().aksjonspunkter()
+                                    .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                                "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                            }.toList().joinToString(", ")
+                } else {
+                    person.person?.navn() ?: "Uten navn"
+                }
+                personNavn = navn
+                personFnummer = if (person.person == null) {
+                    "Ukjent fnummer"
+                } else {
+                    person.person.fnr()
+                }
+                list.add(
+                    OppgaveDto(
+                        status = status,
+                        behandlingId = oppgave.behandlingId,
+                        saksnummer = oppgave.fagsakSaksnummer,
+                        journalpostId = oppgave.journalpostId,
+                        navn = personNavn,
+                        system = oppgave.system,
+                        personnummer = personFnummer,
+                        behandlingstype = oppgave.behandlingType,
+                        fagsakYtelseType = oppgave.fagsakYtelseType,
+                        behandlingStatus = oppgave.behandlingStatus,
+                        erTilSaksbehandling = true,
+                        opprettetTidspunkt = oppgave.behandlingOpprettet,
+                        behandlingsfrist = oppgave.behandlingsfrist,
+                        eksternId = oppgave.eksternId,
+                        tilBeslutter = oppgave.tilBeslutter,
+                        utbetalingTilBruker = oppgave.utbetalingTilBruker,
+                        selvstendigFrilans = oppgave.selvstendigFrilans,
+                        søktGradering = oppgave.søktGradering,
+                        registrerPapir = oppgave.registrerPapir,
+                        avklarArbeidsforhold = oppgave.avklarArbeidsforhold
+                    )
                 )
-            )
+            }
         }
         return list
     }
