@@ -152,9 +152,15 @@ data class K9SakModell(
             VURDER_VARIG_ENDRET_ELLER_NYOPPSTARTET_NÆRING_SELVSTENDIG_NÆRINGSDRIVENDE_KODE,
             FASTSETT_BEREGNINGSGRUNNLAG_SELVSTENDIG_NÆRINGSDRIVENDE_KODE,
             FASTSETT_BEREGNINGSGRUNNLAG_FOR_SN_NY_I_ARBEIDSLIVET_KODE,
-            VURDER_FAKTA_FOR_ATFL_SN_KODE)
+            VURDER_FAKTA_FOR_ATFL_SN_KODE
+        )
         return event.aktiveAksjonspunkt().liste.any { entry ->
-            (aktuelleAksjonspunkter.any { it == entry.key })
+            (
+                    entry.key == FASTSETT_BEREGNINGSGRUNNLAG_ARBEIDSTAKER_FRILANS_KODE ||
+                    entry.key == VURDER_VARIG_ENDRET_ELLER_NYOPPSTARTET_NÆRING_SELVSTENDIG_NÆRINGSDRIVENDE_KODE ||
+                    entry.key == FASTSETT_BEREGNINGSGRUNNLAG_SELVSTENDIG_NÆRINGSDRIVENDE_KODE ||
+                    entry.key == FASTSETT_BEREGNINGSGRUNNLAG_FOR_SN_NY_I_ARBEIDSLIVET_KODE ||
+                    entry.key == VURDER_FAKTA_FOR_ATFL_SN_KODE)
         }
     }
 
