@@ -31,6 +31,7 @@ data class Oppgave(
     val tilBeslutter: Boolean,
     val utbetalingTilBruker: Boolean,
     val selvstendigFrilans: Boolean,
+    val kombinert: Boolean,
     val søktGradering: Boolean,
     val registrerPapir: Boolean,
     val årskvantum: Boolean,
@@ -44,7 +45,7 @@ data class Oppgave(
     val ansvarligSaksbehandlerIdent : String? = null,
     val fagsakPeriode: FagsakPeriode? = null,
     val pleietrengendeAktørId: String? = null,
-    val relatertPartAktørId: String? = null
+    val relatertPartAktørId: String? = null,
 
     ){
     fun avluttet(): Boolean {

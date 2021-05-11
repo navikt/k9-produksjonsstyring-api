@@ -196,6 +196,9 @@ data class OppgaveKø(
             return true
         }
 
+        if (oppgave.kombinert && kriterier.map { it.andreKriterierType }.contains(AndreKriterierType.KOMBINERT)) {
+            return true
+        }
         return false
     }
 
@@ -259,7 +262,7 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 //    UTLANDSSAK("UTLANDSSAK", "Utland"),
 //    SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
     SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
-//    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
+    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
     AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
     AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap"),
     VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Avklar opptjeningsvilkåret"),

@@ -91,6 +91,7 @@ data class K9TilbakeModell(
             aksjonspunkter = Aksjonspunkter(event.aktiveAksjonspunkt().liste),
             utenlands = false,
             tilBeslutter = beslutterOppgave,
+            kombinert = false,
             registrerPapir = registrerPapir,
             selvstendigFrilans = false,
             søktGradering = false,

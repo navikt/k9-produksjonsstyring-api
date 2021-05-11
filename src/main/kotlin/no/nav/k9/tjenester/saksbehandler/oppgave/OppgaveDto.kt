@@ -27,6 +27,7 @@ class OppgaveDto(
     val utbetalingTilBruker: Boolean,
     val avklarArbeidsforhold: Boolean,
     val selvstendigFrilans: Boolean,
+    val kombinert: Boolean,
     val søktGradering: Boolean,
     val registrerPapir: Boolean,
     val fagsakPeriode: Oppgave.FagsakPeriode? = null

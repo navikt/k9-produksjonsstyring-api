@@ -94,8 +94,9 @@ data class K9SakModell(
             aksjonspunkter = event.aktiveAksjonspunkt(),
             utenlands = erUtenlands(event),
             tilBeslutter = beslutterOppgave,
+            kombinert = false,
             registrerPapir = registrerPapir,
-            selvstendigFrilans = erSelvstendigNæringsdrivndeEllerFrilanser(event),
+            selvstendigFrilans = false,
             søktGradering = false,
             utbetalingTilBruker = false,
             kode6 = false,
@@ -143,24 +144,6 @@ data class K9SakModell(
         return event.aktiveAksjonspunkt().liste.any { entry ->
             (entry.key == AUTOMATISK_MARKERING_AV_UTENLANDSSAK_KODE
                     || entry.key == MANUELL_MARKERING_AV_UTLAND_SAKSTYPE_KODE) && entry.value != AksjonspunktStatus.AVBRUTT.kode
-        }
-    }
-
-    private fun erSelvstendigNæringsdrivndeEllerFrilanser(event: BehandlingProsessEventDto): Boolean {
-        val aktuelleAksjonspunkter = listOf(
-            FASTSETT_BEREGNINGSGRUNNLAG_ARBEIDSTAKER_FRILANS_KODE,
-            VURDER_VARIG_ENDRET_ELLER_NYOPPSTARTET_NÆRING_SELVSTENDIG_NÆRINGSDRIVENDE_KODE,
-            FASTSETT_BEREGNINGSGRUNNLAG_SELVSTENDIG_NÆRINGSDRIVENDE_KODE,
-            FASTSETT_BEREGNINGSGRUNNLAG_FOR_SN_NY_I_ARBEIDSLIVET_KODE,
-            VURDER_FAKTA_FOR_ATFL_SN_KODE
-        )
-        return event.aktiveAksjonspunkt().liste.any { entry ->
-            (
-                    entry.key == FASTSETT_BEREGNINGSGRUNNLAG_ARBEIDSTAKER_FRILANS_KODE ||
-                    entry.key == VURDER_VARIG_ENDRET_ELLER_NYOPPSTARTET_NÆRING_SELVSTENDIG_NÆRINGSDRIVENDE_KODE ||
-                    entry.key == FASTSETT_BEREGNINGSGRUNNLAG_SELVSTENDIG_NÆRINGSDRIVENDE_KODE ||
-                    entry.key == FASTSETT_BEREGNINGSGRUNNLAG_FOR_SN_NY_I_ARBEIDSLIVET_KODE ||
-                    entry.key == VURDER_FAKTA_FOR_ATFL_SN_KODE)
         }
     }
 
