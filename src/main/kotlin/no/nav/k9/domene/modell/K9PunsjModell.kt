@@ -68,9 +68,14 @@ data class K9PunsjModell(
     }
 
     override fun oppgave(): Oppgave {
-
         val sisteEvent = eventer.last()
         val førsteEvent = eventer.first()
+
+        var aktiv = sisteEvent.aksjonspunktKoderMedStatusListe.any { aksjonspunkt -> aksjonspunkt.value == "OPPR" }
+
+        if (sisteEvent.aktiveAksjonspunkt().liste.containsKey("MER_INFORMASJON")) {
+            aktiv = false
+        }
 
         return Oppgave(
             behandlingId = null,
@@ -85,7 +90,7 @@ data class K9PunsjModell(
             behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
             fagsakYtelseType = FagsakYtelseType.PPN,
             eventTid = sisteEvent.eventTid,
-            aktiv = sisteEvent.aksjonspunktKoderMedStatusListe.any { aksjonspunkt -> aksjonspunkt.value == "OPPR" },
+            aktiv = aktiv,
             system = "PUNSJ",
             oppgaveAvsluttet = null,
             utfortFraAdmin = false,
