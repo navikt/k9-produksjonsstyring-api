@@ -10,25 +10,19 @@ import no.nav.k9.aksjonspunktbehandling.K9punsjEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.*
-import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.audit.Auditlogger
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.azuregraph.AzureGraphServiceLocal
-import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
-import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.integrasjon.k9.K9SakService
 import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
-import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
 import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
 import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerServiceLocal
-import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PdlServiceLocal
-import no.nav.k9.integrasjon.pdl.PdlServicePreprod
 import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.integrasjon.sakogbehandling.SakOgBehandlingProducer
 import no.nav.k9.tjenester.avdelingsleder.AvdelingslederTjeneste
@@ -38,12 +32,10 @@ import no.nav.k9.tjenester.kodeverk.HentKodeverkTjeneste
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import no.nav.k9.tjenester.saksbehandler.saksliste.SakslisteTjeneste
 import no.nav.k9.tjenester.sse.RefreshKlienter.initializeRefreshKlienter
-import no.nav.k9.tjenester.sse.SseEvent
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import java.util.*
-import javax.sql.DataSource
 
 @KtorExperimentalAPI
 fun selectModuleBasedOnProfile(application: Application, config: Configuration): List<Module> {
@@ -59,7 +51,7 @@ fun selectModuleBasedOnProfile(application: Application, config: Configuration):
 fun common(app: Application, config: Configuration) = module {
     single { config.koinProfile() }
     single { config }
-    single { app.hikariConfig(config) as DataSource }
+    single { app.hikariConfig(config) }
     single {
         NokkeltallTjeneste(
             oppgaveRepository = get(),
@@ -252,23 +244,22 @@ fun common(app: Application, config: Configuration) = module {
 @KtorExperimentalAPI
 fun localDevConfig(app: Application, config: Configuration) = module {
     single {
-        AzureGraphServiceLocal(
-        ) as IAzureGraphService
+        AzureGraphServiceLocal()
     }
     single {
-        PepClientLocal() as IPepClient
+        PepClientLocal()
     }
     single { RequestContextService(profile = LOCAL) }
 
     single {
-        PdlServiceLocal() as IPdlService
+        PdlServiceLocal()
     }
     single {
-        K9SakServiceLocal() as IK9SakService
+        K9SakServiceLocal()
     }
 
     single {
-        OmsorgspengerServiceLocal() as IOmsorgspengerService
+        OmsorgspengerServiceLocal()
     }
 }
 
@@ -276,34 +267,34 @@ fun localDevConfig(app: Application, config: Configuration) = module {
 fun preprodConfig(app: Application, config: Configuration) = module {
     single {
         AzureGraphService(
-            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
-        ) as IAzureGraphService
+            accessTokenClient = get<AccessTokenClientResolver>().azureV2()
+        )
     }
     single {
-        PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
+        PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config)
     }
     single {
         K9SakService(
             configuration = get(),
             accessTokenClient = get<AccessTokenClientResolver>().naisSts()
-        ) as IK9SakService
+        )
     }
 
     single {
         OmsorgspengerService(
             configuration = get(),
-            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
-        ) as IOmsorgspengerService
+            accessTokenClient = get<AccessTokenClientResolver>().azureV2()
+        )
     }
 
     single { RequestContextService(profile = PREPROD) }
 
     single {
-        PdlServicePreprod(
+        PdlService(
             baseUrl = config.pdlUrl(),
             accessTokenClient = get<AccessTokenClientResolver>().naisSts(),
-            configuration = config
-        ) as IPdlService
+            scope = "api://dev-fss.pdl.pdl-api/.default"
+        )
     }
 }
 
@@ -311,24 +302,24 @@ fun preprodConfig(app: Application, config: Configuration) = module {
 fun prodConfig(app: Application, config: Configuration) = module {
     single {
         AzureGraphService(
-            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
-        ) as IAzureGraphService
+            accessTokenClient = get<AccessTokenClientResolver>().azureV2()
+        )
     }
     single {
-        PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config) as IPepClient
+        PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config)
     }
     single {
         K9SakService(
             configuration = get(),
             accessTokenClient = get<AccessTokenClientResolver>().naisSts()
-        ) as IK9SakService
+        )
     }
 
     single {
         OmsorgspengerService(
             configuration = get(),
-            accessTokenClient = get<AccessTokenClientResolver>().accessTokenClient()
-        ) as IOmsorgspengerService
+            accessTokenClient = get<AccessTokenClientResolver>().azureV2()
+        )
     }
 
     single { RequestContextService(profile = PROD) }
@@ -336,9 +327,9 @@ fun prodConfig(app: Application, config: Configuration) = module {
     single {
         PdlService(
             baseUrl = config.pdlUrl(),
-            accessTokenClient = get<AccessTokenClientResolver>().naisSts(),
-            configuration = config
-        ) as IPdlService
+            accessTokenClient = get<AccessTokenClientResolver>().azureV2(),
+            scope = "api://prod-fss.pdl.pdl-api/.default"
+        )
     }
 }
 

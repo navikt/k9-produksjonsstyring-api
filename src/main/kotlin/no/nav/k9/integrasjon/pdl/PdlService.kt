@@ -10,7 +10,6 @@ import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
-import no.nav.k9.Configuration
 import no.nav.k9.aksjonspunktbehandling.objectMapper
 import no.nav.k9.integrasjon.rest.NavHeaders
 import no.nav.k9.integrasjon.rest.idToken
@@ -27,8 +26,7 @@ import kotlin.coroutines.coroutineContext
 class PdlService @KtorExperimentalAPI constructor(
     baseUrl: URI,
     accessTokenClient: AccessTokenClient,
-    val configuration: Configuration,
-    private val henteNavnScopes: Set<String> = setOf("openid")
+    scope: String
 ) : IPdlService {
     private val cachedAccessTokenClient = CachedAccessTokenClient(accessTokenClient)
     private val cache = Cache<String>(10_000)
@@ -38,6 +36,8 @@ class PdlService @KtorExperimentalAPI constructor(
         baseUrl = baseUrl,
         pathParts = listOf()
     ).toString()
+
+    private val scopes = setOf(scope)
 
     @KtorExperimentalAPI
     override suspend fun person(aktorId: String): PersonPdlResponse {
@@ -57,9 +57,7 @@ class PdlService @KtorExperimentalAPI constructor(
                     query
                 )
                 .header(
-                    HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
-                    NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(henteNavnScopes)
-                        .asAuthoriationHeader(),
+                    HttpHeaders.Authorization to authorizationHeader(),
                     HttpHeaders.Accept to "application/json",
                     HttpHeaders.ContentType to "application/json",
                     NavHeaders.Tema to "OMS",
@@ -132,9 +130,7 @@ class PdlService @KtorExperimentalAPI constructor(
                     query
                 )
                 .header(
-                    HttpHeaders.Authorization to "Bearer ${coroutineContext.idToken().value}",
-                    NavHeaders.ConsumerToken to cachedAccessTokenClient.getAccessToken(henteNavnScopes)
-                        .asAuthoriationHeader(),
+                    HttpHeaders.Authorization to authorizationHeader(),
                     HttpHeaders.Accept to "application/json",
                     HttpHeaders.ContentType to "application/json",
                     NavHeaders.Tema to "OMS",
@@ -186,12 +182,16 @@ class PdlService @KtorExperimentalAPI constructor(
     data class QueryRequest(
         val query: String,
         val variables: Map<String, Any>,
-        val operationName: String? = null
-    ) {
+        val operationName: String? = null) {
         data class Variables(
             val variables: Map<String, Any>
         )
     }
+
+    private suspend fun authorizationHeader() = cachedAccessTokenClient.getAccessToken(
+        scopes = scopes,
+        onBehalfOf = coroutineContext.idToken().value
+    ).asAuthoriationHeader()
 
     private fun getStringFromResource(path: String) =
         PdlService::class.java.getResourceAsStream(path).bufferedReader().use { it.readText() }
