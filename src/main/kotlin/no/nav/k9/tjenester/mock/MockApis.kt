@@ -11,16 +11,18 @@ import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.html.*
 import no.nav.k9.KoinProfile
+import no.nav.k9.aksjonspunktbehandling.K9punsjEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
+import no.nav.k9.domene.modell.AksjonspunktDefWrapper
 import no.nav.k9.domene.modell.BehandlingStatus
-import no.nav.k9.domene.repository.BehandlingProsessEventK9Repository
-import no.nav.k9.domene.repository.OppgaveKøRepository
-import no.nav.k9.domene.repository.OppgaveRepository
-import no.nav.k9.domene.repository.SaksbehandlerRepository
+import no.nav.k9.domene.repository.*
 import no.nav.k9.integrasjon.kafka.dto.BehandlingProsessEventDto
 import no.nav.k9.integrasjon.kafka.dto.EventHendelse
 import no.nav.k9.integrasjon.kafka.dto.Fagsystem
+import no.nav.k9.integrasjon.kafka.dto.PunsjEventDto
 import no.nav.k9.kodeverk.behandling.aksjonspunkt.AksjonspunktDefinisjon
+import no.nav.k9.sak.typer.AktørId
+import no.nav.k9.sak.typer.JournalpostId
 import org.koin.ktor.ext.inject
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -31,7 +33,9 @@ import kotlin.collections.set
 @KtorExperimentalLocationsAPI
 fun Route.MockGrensesnitt() {
     val k9sakEventHandler by inject<K9sakEventHandler>()
+    val k9punsjEventHandler by inject<K9punsjEventHandler>()
     val behandlingProsessEventRepository by inject<BehandlingProsessEventK9Repository>()
+    val punsjEventK9Repository by inject<PunsjEventK9Repository>()
     val oppgaveKøRepository by inject<OppgaveKøRepository>()
     val oppgaveRepository by inject<OppgaveRepository>()
     val saksbehandlerRepository by inject<SaksbehandlerRepository>()
@@ -128,50 +132,78 @@ fun Route.MockGrensesnitt() {
         }
         val aksjonspunktToggle = call.receive<AksjonspunktToggle>()
 
-        val modell = behandlingProsessEventRepository.hent(UUID.fromString(aksjonspunktToggle.eksternid))
+        // punsj time
+        if (AksjonspunktDefWrapper.aksjonspunkterFraPunsj().map { a -> a.kode }.contains(aksjonspunktToggle.kode)) {
+            val modell = punsjEventK9Repository.hent(UUID.fromString(aksjonspunktToggle.eksternid))
 
-        val event = if (modell.erTom()) {
-            BehandlingProsessEventDto(
-                UUID.fromString(aksjonspunktToggle.eksternid),
-                Fagsystem.K9SAK,
-                "Saksnummer",
-                aksjonspunktToggle.aktørid,
-                1234L,
-                LocalDate.now(),
-                LocalDateTime.now(),
-                EventHendelse.AKSJONSPUNKT_OPPRETTET,
-                behandlingStatus = "UTRED",
-                behandlinStatus = "UTRED",
-                aksjonspunktKoderMedStatusListe = mutableMapOf(aksjonspunktToggle.kode to "OPPR"),
-                behandlingSteg = "",
-                opprettetBehandling = LocalDateTime.now(),
-                behandlingTypeKode = "BT-004",
-                ytelseTypeKode = "OMP"
-            )
+            val punsjEventDto = if (modell.erTom()) {
+                PunsjEventDto(
+                    eksternId = UUID.fromString(aksjonspunktToggle.eksternid),
+                    aksjonspunktKoderMedStatusListe = mutableMapOf(aksjonspunktToggle.kode to "OPPR"),
+                    journalpostId = JournalpostId("133742069666"),
+                    eventTid = LocalDateTime.now(),
+                    aktørId = AktørId(aksjonspunktToggle.aktørid)
+                )
+            } else {
+                val sisteEvent = modell.sisteEvent()
+                sisteEvent.aksjonspunktKoderMedStatusListe[aksjonspunktToggle.kode] =
+                    if (aksjonspunktToggle.toggle) "OPPR" else "AVSL"
+
+                PunsjEventDto(
+                    eksternId = sisteEvent.eksternId,
+                    aksjonspunktKoderMedStatusListe = sisteEvent.aksjonspunktKoderMedStatusListe,
+                    journalpostId = sisteEvent.journalpostId,
+                    eventTid = LocalDateTime.now(),
+                    aktørId = sisteEvent.aktørId
+                )
+            }
+            k9punsjEventHandler.prosesser(punsjEventDto)
+
         } else {
-            val sisteEvent = modell.sisteEvent()
-            sisteEvent.aksjonspunktKoderMedStatusListe[aksjonspunktToggle.kode] =
-                if (aksjonspunktToggle.toggle) "OPPR" else "AVSL"
-            BehandlingProsessEventDto(
-                sisteEvent.eksternId,
-                sisteEvent.fagsystem,
-                sisteEvent.saksnummer,
-                sisteEvent.aktørId,
-                sisteEvent.behandlingId,
-                LocalDate.now(),
-                LocalDateTime.now(),
-                EventHendelse.AKSJONSPUNKT_OPPRETTET,
-                behandlingStatus = sisteEvent.behandlingStatus,
-                behandlinStatus = sisteEvent.behandlinStatus,
-                aksjonspunktKoderMedStatusListe = sisteEvent.aksjonspunktKoderMedStatusListe,
-                behandlingSteg = "",
-                opprettetBehandling = LocalDateTime.now(),
-                behandlingTypeKode = "BT-004",
-                ytelseTypeKode = sisteEvent.ytelseTypeKode
-            )
-        }
-        k9sakEventHandler.prosesser(event)
+            val modell = behandlingProsessEventRepository.hent(UUID.fromString(aksjonspunktToggle.eksternid))
 
+            val event = if (modell.erTom()) {
+                BehandlingProsessEventDto(
+                    UUID.fromString(aksjonspunktToggle.eksternid),
+                    Fagsystem.K9SAK,
+                    "Saksnummer",
+                    aksjonspunktToggle.aktørid,
+                    1234L,
+                    LocalDate.now(),
+                    LocalDateTime.now(),
+                    EventHendelse.AKSJONSPUNKT_OPPRETTET,
+                    behandlingStatus = "UTRED",
+                    behandlinStatus = "UTRED",
+                    aksjonspunktKoderMedStatusListe = mutableMapOf(aksjonspunktToggle.kode to "OPPR"),
+                    behandlingSteg = "",
+                    opprettetBehandling = LocalDateTime.now(),
+                    behandlingTypeKode = "BT-004",
+                    ytelseTypeKode = "OMP"
+                )
+            } else {
+                val sisteEvent = modell.sisteEvent()
+                sisteEvent.aksjonspunktKoderMedStatusListe[aksjonspunktToggle.kode] =
+                    if (aksjonspunktToggle.toggle) "OPPR" else "AVSL"
+                BehandlingProsessEventDto(
+                    sisteEvent.eksternId,
+                    sisteEvent.fagsystem,
+                    sisteEvent.saksnummer,
+                    sisteEvent.aktørId,
+                    sisteEvent.behandlingId,
+                    LocalDate.now(),
+                    LocalDateTime.now(),
+                    EventHendelse.AKSJONSPUNKT_OPPRETTET,
+                    behandlingStatus = sisteEvent.behandlingStatus,
+                    behandlinStatus = sisteEvent.behandlinStatus,
+                    aksjonspunktKoderMedStatusListe = sisteEvent.aksjonspunktKoderMedStatusListe,
+                    behandlingSteg = "",
+                    opprettetBehandling = LocalDateTime.now(),
+                    behandlingTypeKode = "BT-004",
+                    ytelseTypeKode = sisteEvent.ytelseTypeKode
+                )
+            }
+            k9sakEventHandler.prosesser(event)
+        }
         call.respond(HttpStatusCode.Accepted)
     }
 
