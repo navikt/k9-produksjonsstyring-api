@@ -122,8 +122,8 @@ class OppgaveRepository(
                     f(null)
                 }
                 runBlocking {
-                    oppgave.kode6 = pepClient.erSakKode6(oppgave.fagsakSaksnummer)
-                    oppgave.skjermet = pepClient.erSakKode7EllerEgenAnsatt(oppgave.fagsakSaksnummer)
+                    oppgave.kode6 = sjekkKode6(oppgave)
+                    oppgave.skjermet = sjekkKode7EllerEgenAnsatt(oppgave)
                 }
                 val json = objectMapper().writeValueAsString(oppgave)
                 tx.run(
@@ -140,6 +140,34 @@ class OppgaveRepository(
         }
     }
 
+    @KtorExperimentalAPI
+    suspend fun sjekkKode6(oppgave : Oppgave): Boolean {
+        if (oppgave.fagsakSaksnummer.isNotBlank()) {
+            val søker = pepClient.erSakKode6(oppgave.fagsakSaksnummer)
+            val pleietrengende = if(oppgave.pleietrengendeAktørId != null) pepClient.erAktørKode6(oppgave.pleietrengendeAktørId) else false
+            val relatertPart = if(oppgave.relatertPartAktørId != null) pepClient.erAktørKode6(oppgave.relatertPartAktørId) else false
+            return (søker || pleietrengende || relatertPart)
+
+        }
+        // oppgaver laget av punsj har ikke fagsakSaksnummer
+        val søker = pepClient.erAktørKode6(oppgave.aktorId)
+        val pleietrengende = if(oppgave.pleietrengendeAktørId != null) pepClient.erAktørKode6(oppgave.pleietrengendeAktørId) else false
+        return (søker || pleietrengende)
+    }
+
+    @KtorExperimentalAPI
+    suspend fun sjekkKode7EllerEgenAnsatt(oppgave : Oppgave): Boolean {
+        if (oppgave.fagsakSaksnummer.isNotBlank()) {
+            val søker = pepClient.erSakKode7EllerEgenAnsatt(oppgave.fagsakSaksnummer)
+            val pleietrengende = if(oppgave.pleietrengendeAktørId != null) pepClient.erAktørKode7EllerEgenAnsatt(oppgave.pleietrengendeAktørId) else false
+            val relatertPart = if(oppgave.relatertPartAktørId != null) pepClient.erAktørKode7EllerEgenAnsatt(oppgave.relatertPartAktørId) else false
+            return (søker || pleietrengende || relatertPart)
+        }
+        // oppgaver laget av punsj har ikke fagsakSaksnummer
+        val søker = pepClient.erAktørKode7EllerEgenAnsatt(oppgave.aktorId)
+        val pleietrengende = if(oppgave.pleietrengendeAktørId != null) pepClient.erAktørKode7EllerEgenAnsatt(oppgave.pleietrengendeAktørId) else false
+        return (søker || pleietrengende)
+    }
 
     @KtorExperimentalAPI
     fun hentOppgaver(oppgaveider: Collection<UUID>): List<Oppgave> {

@@ -369,7 +369,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 registrerPapir = oppgave.registrerPapir,
                 avklarArbeidsforhold = oppgave.avklarArbeidsforhold,
                 fagsakPeriode = oppgave.fagsakPeriode,
-                paaVent = !oppgave.aktiv
+                paaVent = if (oppgave.aksjonspunkter.liste["MER_INFORMASJON"] != null) oppgave.aksjonspunkter.liste["MER_INFORMASJON"] == "OPPR" else false
             )
         } else {
             return OppgaveDto(
