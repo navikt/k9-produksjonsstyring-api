@@ -320,7 +320,17 @@ enum class BehandlingType(override val kode: String, override val navn: String, 
     REVURDERING("BT-004", "Revurdering", "ae0028"),
     INNSYN("BT-006", "Innsyn", "ae0042"),
     TILBAKE("BT-007", "Tilbakekreving", "ae0203"),
-    ANKE("BT-008", "Anke", "ae0046");
+    ANKE("BT-008", "Anke", "ae0046"),
+    PUNSJ_OPPGAVE("BT-008", "Anke", "ae0046"),
+
+    //gjelder punsj
+    PAPIRSØKNAD("PAPIRSØKNAD", "Papirsøknad", "PUNSJ_INNSENDING_TYPE"),
+    PAPIRETTERSENDELSE("PAPIRETTERSENDELSE", "Papirettersendelse", "PUNSJ_INNSENDING_TYPE"),
+    PAPIRINNTEKTSOPPLYSNINGER("PAPIRINNTEKTSOPPLYSNINGER", "Papirinntektsopplysninger", "PUNSJ_INNSENDING_TYPE"),
+    DIGITAL_ETTERSENDELSE("DIGITAL_ETTERSENDELSE", "Digital ettersendelse", "PUNSJ_INNSENDING_TYPE"),
+    INNLOGGET_CHAT("INNLOGGET_CHAT", "Innlogget chat", "PUNSJ_INNSENDING_TYPE"),
+    SKRIV_TIL_OSS_SPØRMSÅL("SKRIV_TIL_OSS_SPØRMSÅL", "Skriv til oss spørmsål", "PUNSJ_INNSENDING_TYPE"),
+    SKRIV_TIL_OSS_SVAR("SRKIV_TIL_OSS_SVAR", "Srkiv til oss svar", "PUNSJ_INNSENDING_TYPE");
 
     companion object {
         @JsonCreator
@@ -336,7 +346,12 @@ enum class BehandlingStatus(override val kode: String, override val navn: String
     FATTER_VEDTAK("FVED", "Fatter vedtak"),
     IVERKSETTER_VEDTAK("IVED", "Iverksetter vedtak"),
     OPPRETTET("OPPRE", "Opprettet"),
-    UTREDES("UTRED", "Utredes");
+    UTREDES("UTRED", "Utredes"),
+
+    // de 3 siste gjelder k9-punsj
+    SATT_PÅ_VENT("VENT", "Satt på vent"),
+    LUKKET("LUKKET", "Lukket"),
+    SENDT_INN("SENDT_INN", "Sendt inn");
 
     override val kodeverk = "BEHANDLING_TYPE"
 
