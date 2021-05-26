@@ -111,7 +111,8 @@ data class K9PunsjModell(
             vurderopptjeningsvilkåret = false,
             ansvarligSaksbehandlerForTotrinn = null,
             ansvarligSaksbehandlerIdent = null,
-            kombinert = false
+            kombinert = false,
+            pleietrengendeAktørId = sisteEvent.pleietrengendeAktørId
         )
     }
 }

@@ -153,7 +153,7 @@ class PepClient @KtorExperimentalAPI constructor(
         val decision = evaluate(requestBuilder)
         return decision
     }
-    
+
     @KtorExperimentalAPI
     override suspend fun kanSendeSakTilStatistikk(
         fagsakNummer: String
@@ -184,6 +184,19 @@ class PepClient @KtorExperimentalAPI constructor(
     }
 
     @KtorExperimentalAPI
+    override suspend fun erAktørKode6(aktørid: String): Boolean {
+        val requestBuilder = XacmlRequestBuilder()
+            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+            .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK_KODE6)
+            .addAccessSubjectAttribute(SUBJECT_TYPE, NONE)
+            .addAccessSubjectAttribute(SUBJECTID, NONE)
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+            .addResourceAttribute(RESOURCE_AKTØR_ID, aktørid)
+
+        return !evaluate(requestBuilder)
+    }
+
+    @KtorExperimentalAPI
     override suspend fun erSakKode7EllerEgenAnsatt(fagsakNummer: String): Boolean {
         val requestBuilder = XacmlRequestBuilder()
             .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
@@ -192,6 +205,19 @@ class PepClient @KtorExperimentalAPI constructor(
             .addAccessSubjectAttribute(SUBJECTID, NONE)
             .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
             .addResourceAttribute(RESOURCE_SAKSNR, fagsakNummer)
+
+        return !evaluate(requestBuilder)
+    }
+
+    @KtorExperimentalAPI
+    override suspend fun erAktørKode7EllerEgenAnsatt(aktørid: String): Boolean {
+        val requestBuilder = XacmlRequestBuilder()
+            .addResourceAttribute(RESOURCE_DOMENE, DOMENE)
+            .addResourceAttribute(RESOURCE_TYPE, TILGANG_SAK_KODE7OGEGENANSATT)
+            .addAccessSubjectAttribute(SUBJECT_TYPE, NONE)
+            .addAccessSubjectAttribute(SUBJECTID, NONE)
+            .addEnvironmentAttribute(ENVIRONMENT_PEP_ID, "srvk9los")
+            .addResourceAttribute(RESOURCE_AKTØR_ID, aktørid)
 
         return !evaluate(requestBuilder)
     }
