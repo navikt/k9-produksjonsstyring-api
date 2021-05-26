@@ -86,9 +86,9 @@ data class K9PunsjModell(
             behandlingsfrist = førsteEvent.eventTid.toLocalDate().plusDays(21).atStartOfDay(),
             behandlingOpprettet = førsteEvent.eventTid,
             forsteStonadsdag = førsteEvent.eventTid.toLocalDate(),
-            behandlingStatus = BehandlingStatus.OPPRETTET,
-            behandlingType = BehandlingType.FORSTEGANGSSOKNAD,
-            fagsakYtelseType = FagsakYtelseType.PPN,
+            behandlingStatus = utledStatus(sisteEvent),
+            behandlingType = utledBehandlingType(førsteEvent),
+            fagsakYtelseType = if(førsteEvent.ytelse != null) FagsakYtelseType.fraKode(førsteEvent.ytelse) else FagsakYtelseType.PPN,
             eventTid = sisteEvent.eventTid,
             aktiv = aktiv,
             system = "PUNSJ",
@@ -114,5 +114,23 @@ data class K9PunsjModell(
             kombinert = false,
             pleietrengendeAktørId = sisteEvent.pleietrengendeAktørId
         )
+    }
+
+    private fun utledStatus(eventDto: PunsjEventDto) : BehandlingStatus {
+        if (eventDto.aktiveAksjonspunkt().liste.containsKey("MER_INFORMASJON")) {
+            return BehandlingStatus.SATT_PÅ_VENT
+        } else if (eventDto.sendtInn != null && eventDto.sendtInn) {
+            return BehandlingStatus.SENDT_INN
+        } else if (eventDto.aktiveAksjonspunkt().erTom() && (eventDto.sendtInn == null || !eventDto.sendtInn)) {
+            return BehandlingStatus.LUKKET
+        }
+        return BehandlingStatus.OPPRETTET
+    }
+
+    private fun utledBehandlingType(eventDto: PunsjEventDto) : BehandlingType {
+        if (eventDto.type == null) {
+            return BehandlingType.FORSTEGANGSSOKNAD
+        }
+        return BehandlingType.fraKode(eventDto.type)
     }
 }
