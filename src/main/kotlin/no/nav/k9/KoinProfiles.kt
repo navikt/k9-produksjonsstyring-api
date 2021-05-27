@@ -10,17 +10,22 @@ import no.nav.k9.aksjonspunktbehandling.K9punsjEventHandler
 import no.nav.k9.aksjonspunktbehandling.K9sakEventHandler
 import no.nav.k9.db.hikariConfig
 import no.nav.k9.domene.repository.*
+import no.nav.k9.integrasjon.abac.IPepClient
 import no.nav.k9.integrasjon.abac.PepClient
 import no.nav.k9.integrasjon.abac.PepClientLocal
 import no.nav.k9.integrasjon.audit.Auditlogger
 import no.nav.k9.integrasjon.azuregraph.AzureGraphService
 import no.nav.k9.integrasjon.azuregraph.AzureGraphServiceLocal
+import no.nav.k9.integrasjon.azuregraph.IAzureGraphService
 import no.nav.k9.integrasjon.datavarehus.StatistikkProducer
+import no.nav.k9.integrasjon.k9.IK9SakService
 import no.nav.k9.integrasjon.k9.K9SakService
 import no.nav.k9.integrasjon.k9.K9SakServiceLocal
 import no.nav.k9.integrasjon.kafka.AsynkronProsesseringV1Service
+import no.nav.k9.integrasjon.omsorgspenger.IOmsorgspengerService
 import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerService
 import no.nav.k9.integrasjon.omsorgspenger.OmsorgspengerServiceLocal
+import no.nav.k9.integrasjon.pdl.IPdlService
 import no.nav.k9.integrasjon.pdl.PdlService
 import no.nav.k9.integrasjon.pdl.PdlServiceLocal
 import no.nav.k9.integrasjon.rest.RequestContextService
@@ -36,6 +41,7 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import java.util.*
+import javax.sql.DataSource
 
 @KtorExperimentalAPI
 fun selectModuleBasedOnProfile(application: Application, config: Configuration): List<Module> {
@@ -51,7 +57,7 @@ fun selectModuleBasedOnProfile(application: Application, config: Configuration):
 fun common(app: Application, config: Configuration) = module {
     single { config.koinProfile() }
     single { config }
-    single { app.hikariConfig(config) }
+    single<DataSource> { app.hikariConfig(config) }
     single {
         NokkeltallTjeneste(
             oppgaveRepository = get(),
@@ -243,44 +249,44 @@ fun common(app: Application, config: Configuration) = module {
 
 @KtorExperimentalAPI
 fun localDevConfig(app: Application, config: Configuration) = module {
-    single {
+    single<IAzureGraphService> {
         AzureGraphServiceLocal()
     }
-    single {
+    single<IPepClient> {
         PepClientLocal()
     }
     single { RequestContextService(profile = LOCAL) }
 
-    single {
+    single<IPdlService> {
         PdlServiceLocal()
     }
-    single {
+    single<IK9SakService> {
         K9SakServiceLocal()
     }
 
-    single {
+    single<IOmsorgspengerService> {
         OmsorgspengerServiceLocal()
     }
 }
 
 @KtorExperimentalAPI
 fun preprodConfig(app: Application, config: Configuration) = module {
-    single {
+    single<IAzureGraphService> {
         AzureGraphService(
             accessTokenClient = get<AccessTokenClientResolver>().azureV2()
         )
     }
-    single {
+    single<IPepClient> {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config)
     }
-    single {
+    single<IK9SakService> {
         K9SakService(
             configuration = get(),
             accessTokenClient = get<AccessTokenClientResolver>().naisSts()
         )
     }
 
-    single {
+    single<IOmsorgspengerService> {
         OmsorgspengerService(
             configuration = get(),
             accessTokenClient = get<AccessTokenClientResolver>().azureV2()
@@ -289,10 +295,10 @@ fun preprodConfig(app: Application, config: Configuration) = module {
 
     single { RequestContextService(profile = PREPROD) }
 
-    single {
+    single<IPdlService> {
         PdlService(
             baseUrl = config.pdlUrl(),
-            accessTokenClient = get<AccessTokenClientResolver>().naisSts(),
+            accessTokenClient = get<AccessTokenClientResolver>().azureV2(),
             scope = "api://dev-fss.pdl.pdl-api/.default"
         )
     }
@@ -300,22 +306,22 @@ fun preprodConfig(app: Application, config: Configuration) = module {
 
 @KtorExperimentalAPI
 fun prodConfig(app: Application, config: Configuration) = module {
-    single {
+    single<IAzureGraphService> {
         AzureGraphService(
             accessTokenClient = get<AccessTokenClientResolver>().azureV2()
         )
     }
-    single {
+    single<IPepClient> {
         PepClient(azureGraphService = get(), auditlogger = Auditlogger(config), config = config)
     }
-    single {
+    single<IK9SakService> {
         K9SakService(
             configuration = get(),
             accessTokenClient = get<AccessTokenClientResolver>().naisSts()
         )
     }
 
-    single {
+    single<IOmsorgspengerService> {
         OmsorgspengerService(
             configuration = get(),
             accessTokenClient = get<AccessTokenClientResolver>().azureV2()
@@ -324,7 +330,7 @@ fun prodConfig(app: Application, config: Configuration) = module {
 
     single { RequestContextService(profile = PROD) }
 
-    single {
+    single<IPdlService> {
         PdlService(
             baseUrl = config.pdlUrl(),
             accessTokenClient = get<AccessTokenClientResolver>().azureV2(),
