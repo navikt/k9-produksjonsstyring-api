@@ -35,7 +35,8 @@ class K9sakEventHandler @KtorExperimentalAPI constructor(
         FagsakYtelseType.OMSORGSPENGER,
         FagsakYtelseType.PLEIEPENGER_SYKT_BARN,
         FagsakYtelseType.OMSORGSPENGER_KS,
-        FagsakYtelseType.OMSORGSPENGER_MA
+        FagsakYtelseType.OMSORGSPENGER_MA,
+        FagsakYtelseType.OMSORGSPENGER_AO
     )
 
     @KtorExperimentalAPI
