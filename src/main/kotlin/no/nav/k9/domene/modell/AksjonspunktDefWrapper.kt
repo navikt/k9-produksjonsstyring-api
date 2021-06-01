@@ -32,12 +32,12 @@ class AksjonspunktDefWrapper {
                     vilkårtype = it.vilkårType?.name
                 )
             }
-            val listeMedAlle = punsj()
+            val listeMedAlle = aksjonspunkterFraPunsj()
             listeMedAlle.addAll(fraK9Sak)
             return listeMedAlle
         }
 
-        private fun punsj(): MutableList<Aksjonspunkt>{
+        fun aksjonspunkterFraPunsj(): MutableList<Aksjonspunkt>{
             return mutableListOf(Aksjonspunkt("PUNSJ", "Punsj oppgave", "MANU", "", "", null, false),
             Aksjonspunkt("UTLØPT", "Utløpt oppgave", "MANU", "", "", null, false),
             Aksjonspunkt("MER_INFORMASJON", "Venter på informasjon", "MANU", "", "", null, false))

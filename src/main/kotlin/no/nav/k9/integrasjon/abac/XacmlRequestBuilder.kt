@@ -6,6 +6,7 @@ const val ENVIRONMENT_OIDC_TOKEN_BODY = "no.nav.abac.attributter.environment.fel
 const val ENVIRONMENT_PEP_ID = "no.nav.abac.attributter.environment.felles.pep_id"
 const val RESOURCE_DOMENE = "no.nav.abac.attributter.resource.felles.domene"
 const val RESOURCE_FNR = "no.nav.abac.attributter.resource.felles.person.fnr"
+const val RESOURCE_AKTØR_ID = "no.nav.abac.attributter.resource.felles.person.aktoerId_resource"
 const val RESOURCE = "no.nav.abac.attributter.k9.oppgaveno.nav.abac.attributter.resource.felles.resource"
 const val RESOURCE_TYPE = "no.nav.abac.attributter.resource.felles.resource_type"
 const val SUBJECTID = "urn:oasis:names:tc:xacml:1.0:subject:subject-id"

@@ -341,33 +341,65 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 )
             }
         val person = pdlService.person(oppgave.aktorId)
-        return OppgaveDto(
-            status = oppgaveStatus,
-            behandlingId = oppgave.behandlingId,
-            journalpostId = oppgave.journalpostId,
-            saksnummer = oppgave.fagsakSaksnummer,
-            navn = person.person?.navn() ?: "Ukjent navn",
-            system = oppgave.system,
-            personnummer = if (person.person != null) {
-                person.person.fnr()
-            } else {
-                "Ukjent fnummer"
-            },
-            behandlingstype = oppgave.behandlingType,
-            fagsakYtelseType = oppgave.fagsakYtelseType,
-            behandlingStatus = oppgave.behandlingStatus,
-            erTilSaksbehandling = oppgave.aktiv,
-            opprettetTidspunkt = oppgave.behandlingOpprettet,
-            behandlingsfrist = oppgave.behandlingsfrist,
-            eksternId = oppgave.eksternId,
-            tilBeslutter = oppgave.tilBeslutter,
-            utbetalingTilBruker = oppgave.utbetalingTilBruker,
-            selvstendigFrilans = oppgave.selvstendigFrilans,
-            søktGradering = oppgave.søktGradering,
-            registrerPapir = oppgave.registrerPapir,
-            avklarArbeidsforhold = oppgave.avklarArbeidsforhold,
-            fagsakPeriode = oppgave.fagsakPeriode
-        )
+
+        if (oppgave.system == "PUNSJ") {
+            return OppgaveDto(
+                status = oppgaveStatus,
+                behandlingId = oppgave.behandlingId,
+                journalpostId = oppgave.journalpostId,
+                saksnummer = oppgave.fagsakSaksnummer,
+                navn = person.person?.navn() ?: "Ukjent navn",
+                system = oppgave.system,
+                personnummer = if (person.person != null) {
+                    person.person.fnr()
+                } else {
+                    "Ukjent fnummer"
+                },
+                behandlingstype = oppgave.behandlingType,
+                fagsakYtelseType = oppgave.fagsakYtelseType,
+                behandlingStatus = oppgave.behandlingStatus,
+                erTilSaksbehandling = oppgave.aktiv,
+                opprettetTidspunkt = oppgave.behandlingOpprettet,
+                behandlingsfrist = oppgave.behandlingsfrist,
+                eksternId = oppgave.eksternId,
+                tilBeslutter = oppgave.tilBeslutter,
+                utbetalingTilBruker = oppgave.utbetalingTilBruker,
+                selvstendigFrilans = oppgave.selvstendigFrilans,
+                søktGradering = oppgave.søktGradering,
+                registrerPapir = oppgave.registrerPapir,
+                avklarArbeidsforhold = oppgave.avklarArbeidsforhold,
+                fagsakPeriode = oppgave.fagsakPeriode,
+                paaVent = if (oppgave.aksjonspunkter.liste["MER_INFORMASJON"] != null) oppgave.aksjonspunkter.liste["MER_INFORMASJON"] == "OPPR" else false
+            )
+        } else {
+            return OppgaveDto(
+                status = oppgaveStatus,
+                behandlingId = oppgave.behandlingId,
+                journalpostId = oppgave.journalpostId,
+                saksnummer = oppgave.fagsakSaksnummer,
+                navn = person.person?.navn() ?: "Ukjent navn",
+                system = oppgave.system,
+                personnummer = if (person.person != null) {
+                    person.person.fnr()
+                } else {
+                    "Ukjent fnummer"
+                },
+                behandlingstype = oppgave.behandlingType,
+                fagsakYtelseType = oppgave.fagsakYtelseType,
+                behandlingStatus = oppgave.behandlingStatus,
+                erTilSaksbehandling = oppgave.aktiv,
+                opprettetTidspunkt = oppgave.behandlingOpprettet,
+                behandlingsfrist = oppgave.behandlingsfrist,
+                eksternId = oppgave.eksternId,
+                tilBeslutter = oppgave.tilBeslutter,
+                utbetalingTilBruker = oppgave.utbetalingTilBruker,
+                selvstendigFrilans = oppgave.selvstendigFrilans,
+                søktGradering = oppgave.søktGradering,
+                registrerPapir = oppgave.registrerPapir,
+                avklarArbeidsforhold = oppgave.avklarArbeidsforhold,
+                fagsakPeriode = oppgave.fagsakPeriode
+            )
+        }
     }
 
 

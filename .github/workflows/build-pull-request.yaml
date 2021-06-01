@@ -1,10 +1,15 @@
 name: Build Pull Request
 
-on: [pull_request]
-
-env:
-  GITHUB_USERNAME: x-access-token
-  GITHUB_TOKEN: ${{ secrets.LOS_TOKEN }}
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '**.MD'
+      - '.gitignore'
+      - 'LICENCE'
+      - 'CODEOWNERS'
+      - 'nais/**'
+      - 'gradle/**'
 
 jobs:
   Build:
@@ -13,9 +18,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v2
         with:
           java-version: 16
+          distribution: 'adopt'
       - uses: actions/cache@v2
         with:
           path: ~/.gradle/caches

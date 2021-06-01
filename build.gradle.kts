@@ -5,7 +5,7 @@ val dusseldorfKtorVersion = "1.5.3.d73b2af"
 val ktorVersion = "1.5.3"
 val mainClass = "no.nav.k9.K9LosKt"
 val kafkaVersion = "2.7.0" // Alligned med version fra kafka-embedded-env
-val hikariVersion = "4.0.2"
+val hikariVersion = "4.0.23
 val flywayVersion = "7.9.1"
 val vaultJdbcVersion = "1.3.7"
 val kafkaEmbeddedEnvVersion = "2.7.0"
@@ -52,12 +52,12 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.6")
 
     // Kontrakter
-    implementation("no.nav.k9.sak:kontrakt:3.1.28")
-    implementation("no.nav.k9.sak:kodeverk:3.1.28")
+    implementation("no.nav.k9.sak:kontrakt:3.2.3")
+    implementation("no.nav.k9.sak:kodeverk:3.2.3")
     implementation("no.nav.k9.statistikk:kontrakter:2.0_20201201123022_bfccad8")
 
     // Div
-    implementation(enforcedPlatform( "com.fasterxml.jackson:jackson-bom:2.12.1" ))
+    implementation(enforcedPlatform( "com.fasterxml.jackson:jackson-bom:2.12.3" ))
     implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("com.papertrailapp:logback-syslog4j:1.0.0")
 
@@ -66,12 +66,12 @@ dependencies {
     implementation("org.koin:koin-ktor:$koinVersion")
 
     // Test
-    testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.23.1")
+    testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.24")
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
-    testImplementation("io.mockk:mockk:1.10.6")
+    testImplementation("io.mockk:mockk:1.11.0")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
