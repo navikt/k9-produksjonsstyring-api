@@ -332,6 +332,7 @@ enum class BehandlingType(override val kode: String, override val navn: String, 
     INNLOGGET_CHAT("INNLOGGET_CHAT", "Innlogget chat", "PUNSJ_INNSENDING_TYPE"),
     SKRIV_TIL_OSS_SPØRMSÅL("SKRIV_TIL_OSS_SPØRMSÅL", "Skriv til oss spørmsål", "PUNSJ_INNSENDING_TYPE"),
     SKRIV_TIL_OSS_SVAR("SKRIV_TIL_OSS_SVAR", "Skriv til oss svar", "PUNSJ_INNSENDING_TYPE"),
+    SAMTALEREFERAT("SAMTALEREFERAT", "Samtalereferat", "PUNSJ_INNSENDING_TYPE"),
     UKJENT("UKJENT", "Ukjent", "PUNSJ_INNSENDING_TYPE");
 
     companion object {
