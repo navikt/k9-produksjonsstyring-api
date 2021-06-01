@@ -723,12 +723,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 var personNavn: String
                 var personFnummer: String
                 val navn = if (KoinProfile.PREPROD == configuration.koinProfile()) {
-                    "${oppgave.fagsakSaksnummer} " +
-                            oppgave.aksjonspunkter.liste.entries.stream().map { t ->
-                                val a = Aksjonspunkter().aksjonspunkter()
-                                    .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
-                                "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
-                            }.toList().joinToString(", ")
+                    "${oppgave.fagsakSaksnummer} "
+                  //          oppgave.aksjonspunkter.liste.entries.stream().map { t ->
+                  //              val a = Aksjonspunkter().aksjonspunkter()
+                 //                   .find { aksjonspunkt -> aksjonspunkt.kode == t.key }
+                 //               "${t.key} ${a?.navn ?: "Ukjent aksjonspunkt"}"
+                 //           }.toList().joinToString(", ")
                 } else {
                     person.person?.navn() ?: "Uten navn"
                 }
