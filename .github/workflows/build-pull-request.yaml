@@ -30,4 +30,4 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Bygge JAR
         run: |
-          ./gradlew test shadowjar
+          ./gradlew clean test shadowjar
