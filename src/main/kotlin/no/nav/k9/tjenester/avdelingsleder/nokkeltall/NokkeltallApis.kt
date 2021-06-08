@@ -9,6 +9,7 @@ import io.ktor.routing.Route
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
+import no.nav.k9.integrasjon.rest.RequestContextService
 import no.nav.k9.tjenester.saksbehandler.oppgave.OppgaveTjeneste
 import org.koin.ktor.ext.inject
 import java.time.LocalDate
@@ -18,11 +19,14 @@ import java.time.LocalDate
 fun Route.NokkeltallApis() {
     val nokkeltallTjeneste by inject<NokkeltallTjeneste>()
     val oppgaveTjeneste by inject<OppgaveTjeneste>()
+    val requestContextService by inject<RequestContextService>()
     @Location("/behandlinger-under-arbeid")
     class getAlleOppgaver
 
     get { _: getAlleOppgaver ->
-        call.respond(nokkeltallTjeneste.hentOppgaverUnderArbeid())
+        requestContextService.withRequestContext(call) {
+            call.respond(nokkeltallTjeneste.hentOppgaverUnderArbeid())
+        }
     }
 
     @Location("/beholdning-historikk")
@@ -43,7 +47,9 @@ fun Route.NokkeltallApis() {
     class hentDagensTall
 
     get { _: hentDagensTall ->
-        call.respond(nokkeltallTjeneste.hentDagensTall())
+        requestContextService.withRequestContext(call) {
+            call.respond(nokkeltallTjeneste.hentDagensTall())
+        }
     }
 
     @Location("/ferdigstilte-historikk")
