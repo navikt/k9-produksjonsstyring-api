@@ -14,7 +14,7 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
     private val statistikkRepository: StatistikkRepository
 ) {
 
-    fun hentOppgaverUnderArbeid(): List<AlleOppgaverDto> {
+    suspend fun hentOppgaverUnderArbeid(): List<AlleOppgaverDto> {
         return oppgaveRepository.hentAlleOppgaverUnderArbeid()
     }
 
@@ -52,7 +52,7 @@ class NokkeltallTjeneste @KtorExperimentalAPI constructor(
         }
     }
 
-    fun hentDagensTall(): List<AlleApneBehandlinger> {
+    suspend fun hentDagensTall(): List<AlleApneBehandlinger> {
         return oppgaveRepository.hentApneBehandlingerPerBehandlingtypeIdag()
     }
 }

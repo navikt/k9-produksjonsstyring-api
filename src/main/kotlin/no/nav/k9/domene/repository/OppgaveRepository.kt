@@ -204,7 +204,8 @@ class OppgaveRepository(
             .sortedBy { oppgave -> oppgave.behandlingOpprettet }
     }
 
-    fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
+    suspend fun hentAlleOppgaverUnderArbeid(): List<AlleOppgaverDto> {
+        val kode6 = pepClient.harTilgangTilKode6()
         try {
             val json = using(sessionOf(dataSource)) {
                 it.run(
@@ -214,10 +215,10 @@ class OppgaveRepository(
                         (data -> 'fagsakYtelseType' ->> 'kode') as fagsakYtelseType,
                         (data -> 'behandlingType' ->> 'kode') as behandlingType,
                         not (data -> 'tilBeslutter') ::boolean as tilBehandling
-                        from oppgave o where (data -> 'aktiv') ::boolean
+                        from oppgave o where (data -> 'aktiv') ::boolean and (data -> 'kode6'):: Boolean =:kode6
                         group by  behandlingType, fagsakYtelseType, tilBehandling
                     """.trimIndent(),
-                        mapOf()
+                        mapOf("kode6" to kode6)
                     )
                         .map { row ->
                             AlleOppgaverDto(
@@ -239,7 +240,8 @@ class OppgaveRepository(
         }
     }
 
-    fun hentApneBehandlingerPerBehandlingtypeIdag(): List<AlleApneBehandlinger> {
+    suspend fun hentApneBehandlingerPerBehandlingtypeIdag(): List<AlleApneBehandlinger> {
+        val kode6 = pepClient.harTilgangTilKode6()
         try {
             val json = using(sessionOf(dataSource)) {
                 it.run(
@@ -247,10 +249,10 @@ class OppgaveRepository(
                         """
                         select count(*) as antall,
                         (data -> 'behandlingType' ->> 'kode') as behandlingType
-                        from oppgave o where (data -> 'aktiv') ::boolean
+                        from oppgave o where (data -> 'aktiv') ::boolean and (data -> 'kode6'):: Boolean =:kode6
                         group by  behandlingType
                     """.trimIndent(),
-                        mapOf()
+                        mapOf("kode6" to kode6)
                     )
                         .map { row ->
                             AlleApneBehandlinger(
