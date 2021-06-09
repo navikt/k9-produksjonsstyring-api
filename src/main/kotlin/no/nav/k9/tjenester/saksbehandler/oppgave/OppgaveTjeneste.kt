@@ -441,6 +441,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = it.behandlingType,
+                fagsakYtelseType = it.fagsakYtelseType,
                 dato = it.dato,
                 antallNye = it.nye.size,
                 antallFerdigstilte = it.ferdigstilteSaksbehandler.size,
