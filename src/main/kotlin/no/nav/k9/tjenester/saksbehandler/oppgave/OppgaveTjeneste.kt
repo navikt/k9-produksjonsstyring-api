@@ -421,19 +421,19 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
-        val slåttSammenAlleFagsakYtelser = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
-        for (entry in statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).groupBy { it.dato }) {
-            entry.value.groupBy { it.behandlingType }.forEach { behandlingType ->
-                slåttSammenAlleFagsakYtelser.add(behandlingType.value.reduce { acc, alleOppgaverNyeOgFerdigstilte ->
-                    acc.nye.addAll(alleOppgaverNyeOgFerdigstilte.nye)
-                    acc.ferdigstilte.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilte)
-                    acc.ferdigstilteSaksbehandler.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilteSaksbehandler)
-                    acc
-                })
-            }
-        }
+//        val slåttSammenAlleFagsakYtelser = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
+//        for (entry in statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).groupBy { it.dato }) {
+//            entry.value.groupBy { it.fagsakYtelseType }.forEach { behandlingType ->
+//                slåttSammenAlleFagsakYtelser.add(behandlingType.value.reduce { acc, alleOppgaverNyeOgFerdigstilte ->
+//                    acc.nye.addAll(alleOppgaverNyeOgFerdigstilte.nye)
+//                    acc.ferdigstilte.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilte)
+//                    acc.ferdigstilteSaksbehandler.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilteSaksbehandler)
+//                    acc
+//                })
+//            }
+//        }
 
-        return slåttSammenAlleFagsakYtelser.map {
+        return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
             val hentIdentTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
             val antallFerdistilteMine =
                 reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
