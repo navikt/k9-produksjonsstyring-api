@@ -432,8 +432,13 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 //                })
 //            }
 //        }
+        val omsorgspengerYtelser = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.OMSORGSDAGER, FagsakYtelseType.OMSORGSPENGER_KS)
+        val alleTallene = statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7)
+        alleTallene.forEach {
+            if (omsorgspengerYtelser.contains(it.fagsakYtelseType)) it.fagsakYtelseType = FagsakYtelseType.OMSORGSPENGER
+        }
 
-        return statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).map {
+        return alleTallene.map {
             val hentIdentTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
             val antallFerdistilteMine =
                 reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
