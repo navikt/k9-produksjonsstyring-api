@@ -197,7 +197,12 @@ class AvdelingslederTjeneste(
     }
 
     suspend fun endreYtelsesType(ytelse: YtelsesTypeDto) {
-        val omsorgspengerYtelser = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.OMSORGSDAGER, FagsakYtelseType.OMSORGSPENGER_KS)
+        val omsorgspengerYtelser = listOf(
+            FagsakYtelseType.OMSORGSPENGER,
+            FagsakYtelseType.OMSORGSDAGER,
+            FagsakYtelseType.OMSORGSPENGER_KS,
+            FagsakYtelseType.OMSORGSPENGER_AO,
+            FagsakYtelseType.OMSORGSPENGER_MA)
         oppgaveKøRepository.lagre(UUID.fromString(ytelse.id))
         { oppgaveKø ->
             oppgaveKø!!.filtreringYtelseTyper = mutableListOf()

@@ -432,7 +432,12 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 //                })
 //            }
 //        }
-        val omsorgspengerYtelser = listOf(FagsakYtelseType.OMSORGSPENGER, FagsakYtelseType.OMSORGSDAGER, FagsakYtelseType.OMSORGSPENGER_KS)
+        val omsorgspengerYtelser = listOf(
+            FagsakYtelseType.OMSORGSPENGER,
+            FagsakYtelseType.OMSORGSDAGER,
+            FagsakYtelseType.OMSORGSPENGER_KS,
+            FagsakYtelseType.OMSORGSPENGER_MA,
+            FagsakYtelseType.OMSORGSPENGER_AO)
         val alleTallene = statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7)
         alleTallene.forEach {
             if (omsorgspengerYtelser.contains(it.fagsakYtelseType)) it.fagsakYtelseType = FagsakYtelseType.OMSORGSPENGER
