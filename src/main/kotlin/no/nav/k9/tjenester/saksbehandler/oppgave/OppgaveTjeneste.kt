@@ -421,19 +421,18 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
-        val slåttSammenAlleFagsakYtelser = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
-        for (entry in statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).groupBy { it.dato }) {
-            entry.value.groupBy { it.behandlingType }.forEach { behandlingType ->
-                slåttSammenAlleFagsakYtelser.add(behandlingType.value.reduce { acc, alleOppgaverNyeOgFerdigstilte ->
-                    acc.nye.addAll(alleOppgaverNyeOgFerdigstilte.nye)
-                    acc.ferdigstilte.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilte)
-                    acc.ferdigstilteSaksbehandler.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilteSaksbehandler)
-                    acc
-                })
-            }
+        val omsorgspengerYtelser = listOf(
+            FagsakYtelseType.OMSORGSPENGER,
+            FagsakYtelseType.OMSORGSDAGER,
+            FagsakYtelseType.OMSORGSPENGER_KS,
+            FagsakYtelseType.OMSORGSPENGER_MA,
+            FagsakYtelseType.OMSORGSPENGER_AO)
+        val alleTallene = statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7)
+        alleTallene.forEach {
+            if (omsorgspengerYtelser.contains(it.fagsakYtelseType)) it.fagsakYtelseType = FagsakYtelseType.OMSORGSPENGER
         }
 
-        return slåttSammenAlleFagsakYtelser.map {
+        return alleTallene.map {
             val hentIdentTilInnloggetBruker = azureGraphService.hentIdentTilInnloggetBruker()
             val antallFerdistilteMine =
                 reservasjonRepository.hentSelvOmDeIkkeErAktive(it.ferdigstilte.map { UUID.fromString(it)!! }
@@ -441,6 +440,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                     .filter { it.reservertAv == hentIdentTilInnloggetBruker }.size
             NyeOgFerdigstilteOppgaverDto(
                 behandlingType = it.behandlingType,
+                fagsakYtelseType = it.fagsakYtelseType,
                 dato = it.dato,
                 antallNye = it.nye.size,
                 antallFerdigstilte = it.ferdigstilteSaksbehandler.size,
