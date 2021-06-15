@@ -8,6 +8,7 @@ import no.nav.k9.domene.modell.BehandlingStatus
 import no.nav.k9.domene.modell.BehandlingType
 import no.nav.k9.domene.modell.FagsakYtelseType
 import no.nav.k9.tjenester.avdelingsleder.nokkeltall.AlleOppgaverNyeOgFerdigstilte
+import no.nav.k9.tjenester.saksbehandler.oppgave.BehandletOppgave
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.context.stopKoin
@@ -86,6 +87,68 @@ class StatistikkRepositoryTest : KoinTest {
         val omsorgspenger = hentFerdigstilte.reversed().filter { it.fagsakYtelseType == FagsakYtelseType.OMSORGSPENGER }
         assertSame(1, omsorgspenger.find { it.behandlingType == BehandlingType.FORSTEGANGSSOKNAD }?.nye?.size )
 
+    }
+
+    @KtorExperimentalAPI
+    @Test
+    fun skalFiltrereUnikeSistBehandledeSaker() {
+
+        val statistikkRepository  = get<StatistikkRepository>()
+        val duplikatEksternId = UUID.randomUUID()
+        val unikEksternid = UUID.randomUUID()
+
+        val oppgave = BehandletOppgave(
+            behandlingId = null,
+            journalpostId = null,
+            system = "K9SAK",
+            navn = "Trøtt Bolle",
+            eksternId = duplikatEksternId,
+            personnummer = "84757594394",
+            saksnummer = "PlUy6"
+        )
+        val oppgave2 = BehandletOppgave(
+            behandlingId = null,
+            journalpostId = null,
+            system = "K9SAK",
+            navn = "Walter White",
+            eksternId = duplikatEksternId,
+            personnummer = "84757594394",
+            saksnummer = "5yuP8"
+        )
+        val oppgave3 = BehandletOppgave(
+            behandlingId = 78567,
+            journalpostId = null,
+            system = "K9SAK",
+            navn = "Dorull Talentfull",
+            eksternId = unikEksternid,
+            personnummer = "84757594394",
+            saksnummer = "Z34Yt"
+        )
+        val oppgave4 = BehandletOppgave(
+            behandlingId = null,
+            journalpostId = "465789506",
+            system = "PUNSJ",
+            navn = "Knott Klumpete",
+            eksternId = UUID.randomUUID(),
+            personnummer = "25678098976",
+            saksnummer = ""
+        )
+        statistikkRepository.lagreBehandling("238909876"){
+            oppgave
+        }
+        statistikkRepository.lagreBehandling("238909876"){
+            oppgave2
+        }
+        statistikkRepository.lagreBehandling("238909876"){
+            oppgave3
+        }
+        statistikkRepository.lagreBehandling("238909876"){
+            oppgave4
+        }
+        val sistBehandlede = statistikkRepository.hentBehandlinger("238909876")
+
+        assertSame(3, sistBehandlede.size)
+        assertSame(1, sistBehandlede.filter { it.eksternId === duplikatEksternId }.size)
     }
 }
 
