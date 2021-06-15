@@ -421,17 +421,6 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
 
     @KtorExperimentalAPI
     suspend fun hentNyeOgFerdigstilteOppgaver(): List<NyeOgFerdigstilteOppgaverDto> {
-//        val slåttSammenAlleFagsakYtelser = mutableListOf<AlleOppgaverNyeOgFerdigstilte>()
-//        for (entry in statistikkRepository.hentFerdigstilteOgNyeHistorikkPerAntallDager(7).groupBy { it.dato }) {
-//            entry.value.groupBy { it.fagsakYtelseType }.forEach { behandlingType ->
-//                slåttSammenAlleFagsakYtelser.add(behandlingType.value.reduce { acc, alleOppgaverNyeOgFerdigstilte ->
-//                    acc.nye.addAll(alleOppgaverNyeOgFerdigstilte.nye)
-//                    acc.ferdigstilte.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilte)
-//                    acc.ferdigstilteSaksbehandler.addAll(alleOppgaverNyeOgFerdigstilte.ferdigstilteSaksbehandler)
-//                    acc
-//                })
-//            }
-//        }
         val omsorgspengerYtelser = listOf(
             FagsakYtelseType.OMSORGSPENGER,
             FagsakYtelseType.OMSORGSDAGER,
