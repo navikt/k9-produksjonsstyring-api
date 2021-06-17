@@ -281,6 +281,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 avklarArbeidsforhold = false,
                 selvstendigFrilans = false,
                 søktGradering = false,
+                registrerPapir = false,
             )
         }
         return null
@@ -365,6 +366,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 utbetalingTilBruker = oppgave.utbetalingTilBruker,
                 selvstendigFrilans = oppgave.selvstendigFrilans,
                 søktGradering = oppgave.søktGradering,
+                registrerPapir = oppgave.registrerPapir,
                 avklarArbeidsforhold = oppgave.avklarArbeidsforhold,
                 fagsakPeriode = oppgave.fagsakPeriode,
                 paaVent = if (oppgave.aksjonspunkter.liste["MER_INFORMASJON"] != null) oppgave.aksjonspunkter.liste["MER_INFORMASJON"] == "OPPR" else false
@@ -393,6 +395,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                 utbetalingTilBruker = oppgave.utbetalingTilBruker,
                 selvstendigFrilans = oppgave.selvstendigFrilans,
                 søktGradering = oppgave.søktGradering,
+                registrerPapir = oppgave.registrerPapir,
                 avklarArbeidsforhold = oppgave.avklarArbeidsforhold,
                 fagsakPeriode = oppgave.fagsakPeriode
             )
@@ -659,6 +662,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                             utbetalingTilBruker = oppgave.utbetalingTilBruker,
                             søktGradering = oppgave.søktGradering,
                             selvstendigFrilans = oppgave.selvstendigFrilans,
+                            registrerPapir = oppgave.registrerPapir,
                             avklarArbeidsforhold = oppgave.avklarArbeidsforhold
                         )
                     )
@@ -754,6 +758,7 @@ class OppgaveTjeneste @KtorExperimentalAPI constructor(
                         utbetalingTilBruker = oppgave.utbetalingTilBruker,
                         selvstendigFrilans = oppgave.selvstendigFrilans,
                         søktGradering = oppgave.søktGradering,
+                        registrerPapir = oppgave.registrerPapir,
                         avklarArbeidsforhold = oppgave.avklarArbeidsforhold
                     )
                 )
