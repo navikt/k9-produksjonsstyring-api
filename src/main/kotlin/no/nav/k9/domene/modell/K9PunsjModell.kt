@@ -101,7 +101,6 @@ data class K9PunsjModell(
             utbetalingTilBruker = false,
             selvstendigFrilans = false,
             søktGradering = false,
-            registrerPapir = true,
             årskvantum = false,
             avklarMedlemskap = false,
             avklarArbeidsforhold = false,

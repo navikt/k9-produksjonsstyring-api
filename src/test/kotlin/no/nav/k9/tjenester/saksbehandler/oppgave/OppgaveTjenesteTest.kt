@@ -58,7 +58,6 @@ class OppgaveTjenesteTest : KoinTest {
             selvstendigFrilans = false,
             kombinert = false,
             søktGradering = false,
-            registrerPapir = true,
             årskvantum = false,
             avklarArbeidsforhold = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
@@ -120,7 +119,6 @@ class OppgaveTjenesteTest : KoinTest {
             selvstendigFrilans = false,
             kombinert = false,
             søktGradering = false,
-            registrerPapir = true,
             årskvantum = false,
             avklarArbeidsforhold = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
@@ -192,7 +190,6 @@ class OppgaveTjenesteTest : KoinTest {
             selvstendigFrilans = false,
             kombinert = false,
             søktGradering = false,
-            registrerPapir = true,
             årskvantum = false,
             avklarArbeidsforhold = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
@@ -222,7 +219,6 @@ class OppgaveTjenesteTest : KoinTest {
             selvstendigFrilans = false,
             kombinert = false,
             søktGradering = false,
-            registrerPapir = true,
             årskvantum = false,
             avklarArbeidsforhold = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
