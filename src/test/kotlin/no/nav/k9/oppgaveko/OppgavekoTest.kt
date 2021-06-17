@@ -90,7 +90,7 @@ class OppgavekoTest :KoinTest{
             filtreringAndreKriterierType = mutableListOf(
                 AndreKriterierDto(
                     uuid.toString(),
-                    AndreKriterierType.PAPIRSØKNAD,
+                    AndreKriterierType.AARSKVANTUM,
                     true,
                     true
                 ),
@@ -132,9 +132,8 @@ class OppgavekoTest :KoinTest{
             selvstendigFrilans = false,
             kombinert = false,
             søktGradering = false,
-            registrerPapir = true,
-            årskvantum = false,
-            avklarArbeidsforhold = false,
+            årskvantum = true,
+            avklarArbeidsforhold = true,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
         val oppgave2 = Oppgave(
@@ -161,7 +160,6 @@ class OppgavekoTest :KoinTest{
             selvstendigFrilans = true,
             kombinert = false,
             søktGradering = false,
-            registrerPapir = true,
             årskvantum = false,
             avklarArbeidsforhold = false,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
@@ -178,7 +176,7 @@ class OppgavekoTest :KoinTest{
         every { KoinProfile.LOCAL == config.koinProfile() } returns true
         val hent = oppgaveTjeneste.hentOppgaver(oppgaveko.id)
         assert(hent.size == 1)
-        assert(hent[0].registrerPapir)
+        assert(hent[0].avklarArbeidsforhold)
         assert(!hent[0].selvstendigFrilans)
     }
 }
