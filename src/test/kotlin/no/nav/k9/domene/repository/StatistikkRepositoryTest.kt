@@ -94,33 +94,31 @@ class StatistikkRepositoryTest : KoinTest {
     fun skalFiltrereUnikeSistBehandledeSaker() {
 
         val statistikkRepository  = get<StatistikkRepository>()
-        val duplikatEksternId = UUID.randomUUID()
-        val unikEksternid = UUID.randomUUID()
 
         val oppgave = BehandletOppgave(
             behandlingId = null,
             journalpostId = null,
             system = "K9SAK",
             navn = "Trøtt Bolle",
-            eksternId = duplikatEksternId,
+            eksternId = UUID.randomUUID(),
             personnummer = "84757594394",
-            saksnummer = "PlUy6"
+            saksnummer = "PLUy6"
         )
         val oppgave2 = BehandletOppgave(
             behandlingId = null,
             journalpostId = null,
             system = "K9SAK",
             navn = "Walter White",
-            eksternId = duplikatEksternId,
+            eksternId = UUID.randomUUID(),
             personnummer = "84757594394",
-            saksnummer = "5yuP8"
+            saksnummer = "PLUy6"
         )
         val oppgave3 = BehandletOppgave(
             behandlingId = 78567,
             journalpostId = null,
             system = "K9SAK",
             navn = "Dorull Talentfull",
-            eksternId = unikEksternid,
+            eksternId = UUID.randomUUID(),
             personnummer = "84757594394",
             saksnummer = "Z34Yt"
         )
@@ -148,7 +146,7 @@ class StatistikkRepositoryTest : KoinTest {
         val sistBehandlede = statistikkRepository.hentBehandlinger("238909876")
 
         assertSame(3, sistBehandlede.size)
-        assertSame(1, sistBehandlede.filter { it.eksternId === duplikatEksternId }.size)
+        assertSame(1, sistBehandlede.filter { it.saksnummer == "PLUy6" }.size)
     }
 }
 
