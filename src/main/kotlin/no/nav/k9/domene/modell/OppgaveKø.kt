@@ -152,11 +152,6 @@ data class OppgaveKø(
             return true
         }
 
-        if (oppgave.registrerPapir && kriterier.map { it.andreKriterierType }
-                .contains(AndreKriterierType.PAPIRSØKNAD)) {
-            return true
-        }
-
         if (oppgave.årskvantum && kriterier.map { it.andreKriterierType }
                 .contains(AndreKriterierType.AARSKVANTUM)) {
             return true
@@ -254,7 +249,6 @@ enum class KøSortering(
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class AndreKriterierType(override val kode: String, override val navn: String) : Kodeverdi {
     TIL_BESLUTTER("TIL_BESLUTTER", "Til beslutter"),
-    PAPIRSØKNAD("PAPIRSOKNAD", "Punsj"),
 //    UTBETALING_TIL_BRUKER("UTBETALING_TIL_BRUKER", "Utbetaling til bruker"),
 //    UTLANDSSAK("UTLANDSSAK", "Utland"),
 //    SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),

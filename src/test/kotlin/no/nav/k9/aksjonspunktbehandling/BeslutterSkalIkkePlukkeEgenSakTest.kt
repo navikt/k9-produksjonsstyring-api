@@ -59,7 +59,6 @@ class BeslutterSkalIkkePlukkeEgenSakTest : KoinTest {
             selvstendigFrilans = false,
             kombinert = false,
             søktGradering = false,
-            registrerPapir = false,
             årskvantum = false,
             avklarMedlemskap = false,
             avklarArbeidsforhold = false,

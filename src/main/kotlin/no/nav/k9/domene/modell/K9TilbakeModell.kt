@@ -32,7 +32,6 @@ data class K9TilbakeModell(
         var aktiv = true
         var oppgaveAvsluttet: LocalDateTime? = null
         var beslutterOppgave = false
-        var registrerPapir = false
 
         when (eventResultat) {
             EventResultat.LUKK_OPPGAVE -> {
@@ -50,9 +49,6 @@ data class K9TilbakeModell(
             EventResultat.GJENÅPNE_OPPGAVE -> TODO()
             EventResultat.OPPRETT_BESLUTTER_OPPGAVE -> {
                 beslutterOppgave = true
-            }
-            EventResultat.OPPRETT_PAPIRSØKNAD_OPPGAVE -> {
-                registrerPapir = true
             }
             EventResultat.OPPRETT_OPPGAVE -> {
                 aktiv = true
@@ -91,7 +87,6 @@ data class K9TilbakeModell(
             aksjonspunkter = Aksjonspunkter(event.aktiveAksjonspunkt().liste),
             utenlands = false,
             tilBeslutter = beslutterOppgave,
-            registrerPapir = registrerPapir,
             selvstendigFrilans = false,
             søktGradering = false,
             utbetalingTilBruker = false,

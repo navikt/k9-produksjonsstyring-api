@@ -66,10 +66,10 @@ class StatistikkRepository(
         val json = using(sessionOf(dataSource)) {
             it.run(
                 queryOf(
-                    """select  data , timestamp from (
-                            select distinct on (eksternId) (data ::jsonb -> 'eksternId') as eksternId , (data ::jsonb -> 'timestamp') as timestamp, data from (
+                    """select data, timestamp from (
+                            select distinct on (saksnummer) (data ::jsonb -> 'saksnummer') as saksnummer , (data ::jsonb -> 'timestamp') as timestamp, data from (
                             select jsonb_array_elements_text(data ::jsonb -> 'siste_behandlinger') as data
-                            from siste_behandlinger where id = :id) as saker order by eksternId desc ) as s order by timestamp desc limit 10""".trimIndent(),
+                                from siste_behandlinger where id = :id) as saker order by saksnummer, timestamp desc ) as s order by timestamp desc limit 10""".trimIndent(),
                     mapOf("id" to ident)
                 )
                     .map { row ->
