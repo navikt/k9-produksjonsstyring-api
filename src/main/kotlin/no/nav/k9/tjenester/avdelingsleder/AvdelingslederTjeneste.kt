@@ -198,7 +198,6 @@ class AvdelingslederTjeneste(
 
     suspend fun endreYtelsesType(ytelse: YtelsesTypeDto) {
         val omsorgsdagerYtelser = listOf(
-            FagsakYtelseType.OMSORGSPENGER,
             FagsakYtelseType.OMSORGSDAGER,
             FagsakYtelseType.OMSORGSPENGER_KS,
             FagsakYtelseType.OMSORGSPENGER_AO,
