@@ -90,13 +90,13 @@ class OppgavekoTest :KoinTest{
             filtreringAndreKriterierType = mutableListOf(
                 AndreKriterierDto(
                     uuid.toString(),
-                    AndreKriterierType.AARSKVANTUM,
+                    AndreKriterierType.TIL_BESLUTTER,
                     true,
                     true
                 ),
                 AndreKriterierDto(
                     uuid.toString(),
-                    AndreKriterierType.SELVSTENDIG_FRILANS,
+                    AndreKriterierType.AVKLAR_MEDLEMSKAP,
                     true,
                     false
                 )
@@ -132,7 +132,7 @@ class OppgavekoTest :KoinTest{
             selvstendigFrilans = false,
             kombinert = false,
             søktGradering = false,
-            årskvantum = true,
+            årskvantum = false,
             avklarArbeidsforhold = true,
             avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
@@ -162,7 +162,7 @@ class OppgavekoTest :KoinTest{
             søktGradering = false,
             årskvantum = false,
             avklarArbeidsforhold = false,
-            avklarMedlemskap = false, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
+            avklarMedlemskap = true, kode6 = false, utenlands = false, vurderopptjeningsvilkåret = false
         )
 
         oppgaveRepository.lagre(oppgave1.eksternId) { oppgave1 }

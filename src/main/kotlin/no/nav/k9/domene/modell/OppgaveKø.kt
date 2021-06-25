@@ -152,13 +152,13 @@ data class OppgaveKø(
             return true
         }
 
-        if (oppgave.årskvantum && kriterier.map { it.andreKriterierType }
-                .contains(AndreKriterierType.AARSKVANTUM)) {
+        if (oppgave.avklarMedlemskap && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.AVKLAR_MEDLEMSKAP)) {
             return true
         }
 
-        if (oppgave.avklarMedlemskap && kriterier.map { it.andreKriterierType }
-                .contains(AndreKriterierType.AVKLAR_MEDLEMSKAP)) {
+/*        if (oppgave.årskvantum && kriterier.map { it.andreKriterierType }
+                .contains(AndreKriterierType.AARSKVANTUM)) {
             return true
         }
 
@@ -189,7 +189,7 @@ data class OppgaveKø(
         if (oppgave.selvstendigFrilans && kriterier.map { it.andreKriterierType }
                 .contains(AndreKriterierType.SELVSTENDIG_FRILANS)) {
             return true
-        }
+        } */
 
         return false
     }
@@ -252,12 +252,12 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
 //    UTBETALING_TIL_BRUKER("UTBETALING_TIL_BRUKER", "Utbetaling til bruker"),
 //    UTLANDSSAK("UTLANDSSAK", "Utland"),
 //    SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
-    SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
+ //   SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
 //    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
-    AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
-    AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap"),
-    VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Avklar opptjeningsvilkåret"),
-    AVKLAR_ARBEIDSFORHOLD("AVKLAR_ARBEIDSFORHOLD", "Avklar arbeidsforhold");
+//    AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
+    AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap");
+//    VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Avklar opptjeningsvilkåret"),
+//    AVKLAR_ARBEIDSFORHOLD("AVKLAR_ARBEIDSFORHOLD", "Avklar arbeidsforhold");
 
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 

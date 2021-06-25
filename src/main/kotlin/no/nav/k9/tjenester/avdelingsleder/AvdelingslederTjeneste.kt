@@ -197,8 +197,7 @@ class AvdelingslederTjeneste(
     }
 
     suspend fun endreYtelsesType(ytelse: YtelsesTypeDto) {
-        val omsorgspengerYtelser = listOf(
-            FagsakYtelseType.OMSORGSPENGER,
+        val omsorgsdagerYtelser = listOf(
             FagsakYtelseType.OMSORGSDAGER,
             FagsakYtelseType.OMSORGSPENGER_KS,
             FagsakYtelseType.OMSORGSPENGER_AO,
@@ -207,8 +206,8 @@ class AvdelingslederTjeneste(
         { oppgaveKø ->
             oppgaveKø!!.filtreringYtelseTyper = mutableListOf()
             if (ytelse.fagsakYtelseType != null) {
-                if (ytelse.fagsakYtelseType == "OMP") {
-                    omsorgspengerYtelser.map { oppgaveKø.filtreringYtelseTyper.add(it)  }
+                if (ytelse.fagsakYtelseType == "OMD") {
+                    omsorgsdagerYtelser.map { oppgaveKø.filtreringYtelseTyper.add(it)  }
                 } else {
                     oppgaveKø.filtreringYtelseTyper.add(FagsakYtelseType.fraKode(ytelse.fagsakYtelseType))
                 }
