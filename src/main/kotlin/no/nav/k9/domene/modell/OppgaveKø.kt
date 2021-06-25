@@ -264,7 +264,9 @@ enum class AndreKriterierType(override val kode: String, override val navn: Stri
     companion object {
         @JsonCreator
         @JvmStatic
-        fun fraKode(kode: String): AndreKriterierType = values().find { it.kode == kode }!!
+        fun fraKode(kode: String): AndreKriterierType{
+            return values().find { it.kode == kode } ?: throw IllegalStateException("Kjenner ikke igjen koden=$kode")
+        }
     }
 }
 
