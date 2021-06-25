@@ -71,7 +71,7 @@ data class OppgaveKø(
             return false
         }
 
-        if (reservasjonRepository!=null && erOppgavenReservert(reservasjonRepository, oppgave)) {
+        if (reservasjonRepository != null && erOppgavenReservert(reservasjonRepository, oppgave)) {
             return false
         }
         if (!erInnenforOppgavekøensPeriode(oppgave)) {
@@ -194,7 +194,7 @@ data class OppgaveKø(
         return false
     }
 
-     fun erOppgavenReservert(
+    fun erOppgavenReservert(
         reservasjonRepository: ReservasjonRepository,
         oppgave: Oppgave
     ): Boolean {
@@ -249,22 +249,23 @@ enum class KøSortering(
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class AndreKriterierType(override val kode: String, override val navn: String) : Kodeverdi {
     TIL_BESLUTTER("TIL_BESLUTTER", "Til beslutter"),
-//    UTBETALING_TIL_BRUKER("UTBETALING_TIL_BRUKER", "Utbetaling til bruker"),
+    //    UTBETALING_TIL_BRUKER("UTBETALING_TIL_BRUKER", "Utbetaling til bruker"),
 //    UTLANDSSAK("UTLANDSSAK", "Utland"),
 //    SOKT_GRADERING("SOKT_GRADERING", "Søkt gradering"),
- //   SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
-//    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
-//    AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
-    AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap");
-//    VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Avklar opptjeningsvilkåret"),
-//    AVKLAR_ARBEIDSFORHOLD("AVKLAR_ARBEIDSFORHOLD", "Avklar arbeidsforhold");
+    SELVSTENDIG_FRILANS("SELVSTENDIG_FRILANS", "Selvstendig næringsdrivende/frilans"),
+
+    //    KOMBINERT("KOMBINERT", "Kombinert arbeidstaker - selvstendig/frilans"),
+    AARSKVANTUM("AARSKVANTUM", "Årskvantum"),
+    AVKLAR_MEDLEMSKAP("AVKLAR_MEDLEMSKAP", "Avklar medlemskap"),
+    VURDER_OPPTJENINGSVILKÅRET("VURDER_OPPTJENINGSVILKÅRET", "Avklar opptjeningsvilkåret"),
+    AVKLAR_ARBEIDSFORHOLD("AVKLAR_ARBEIDSFORHOLD", "Avklar arbeidsforhold");
 
     override val kodeverk = "ANDRE_KRITERIER_TYPE"
 
     companion object {
         @JsonCreator
         @JvmStatic
-        fun fraKode(kode: String): AndreKriterierType{
+        fun fraKode(kode: String): AndreKriterierType {
             return values().find { it.kode == kode } ?: throw IllegalStateException("Kjenner ikke igjen koden=$kode")
         }
     }
